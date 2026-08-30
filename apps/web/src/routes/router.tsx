@@ -1,17 +1,13 @@
 import { createBrowserRouter } from 'react-router-dom';
-
-function DevelopmentPlaceholder() {
-  return (
-    <main className="p-6 font-sans">
-      <h1>Arunreah Dental Clinic</h1>
-      <p>Development Environment Ready</p>
-    </main>
-  );
-}
+import { LandingPage } from '@/features/landing-page/LandingPage';
 
 export const router = createBrowserRouter([
   {
+    path: '/',
+    element: <LandingPage />,
+  },
+  {
     path: '*',
-    element: <DevelopmentPlaceholder />,
+    element: <LandingPage />,
   },
 ]);
