@@ -36,6 +36,13 @@
       "when": 1788112375851,
       "tag": "0004_brave_centennial",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1788112933776,
+      "tag": "0005_classy_the_phantom",
+      "breakpoints": true
     }
   ]
 }
