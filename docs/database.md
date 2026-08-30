@@ -67,6 +67,11 @@ only the public CMS fields: bilingual clinic name, tagline, short about text,
 an R2 logo object key, and the three approved numeric statistics. Image bytes
 remain in R2; `logo_key` is only a reference.
 
+`contact_settings` stores one contact configuration record (`id = contact`). It
+contains public phone numbers, primary email, social URLs, bilingual business
+hours, a Google Maps URL, and no notification destinations or provider secrets.
+Branch-specific contact and location details remain in the Branches domain.
+
 ## Migration workflow
 
 Generate migration SQL with `pnpm --filter @arunreah/api db:generate`. Apply the
