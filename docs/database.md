@@ -60,6 +60,11 @@ flags, and display order. Appointment indexes support inbox status filters,
 preferred-date review, service/doctor/branch filtering, and chronological
 ordering by creation time.
 
+`branches` additionally indexes published, Branches-page-visible records by
+display order. A branch remains referenced by appointments through a restrictive
+foreign key, so it must be deactivated instead of deleted once appointment
+history exists.
+
 ## Clinic information
 
 `clinic_settings` stores one clinic information record (`id = clinic`). It holds
