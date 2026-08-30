@@ -1,33 +1,20 @@
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
-import { getRuntimeConfig } from './config/env';
-import { healthRoute } from './routes/health';
-import type { Bindings } from './types/env';
-import { errorResponse } from './utils/api-response';
+import { errorResponse } from '@arunreah/shared';
+import { corsMiddleware } from './middleware/cors';
+import { globalErrorHandler } from './middleware/error-handler';
+import { requestLogger } from './middleware/request-logger';
+import { healthModule } from './modules/health/health.route';
+import type { AppEnv } from './types/env';
 
-export const app = new Hono<{ Bindings: Bindings }>();
+export const app = new Hono<AppEnv>();
 
-app.use('*', async (context, next) => {
-  const { corsAllowedOrigin } = getRuntimeConfig(context.env);
+app.use('*', requestLogger);
+app.use('*', corsMiddleware);
 
-  return cors({
-    origin: corsAllowedOrigin,
-    allowMethods: ['GET'],
-  })(context, next);
-});
-
-app.route('/health', healthRoute);
+app.route('/api/health', healthModule);
 
 app.notFound((context) => {
   return context.json(errorResponse('NOT_FOUND', 'The requested resource was not found.'), 404);
 });
 
-app.onError((error, context) => {
-  console.error('Unhandled API error', {
-    message: error instanceof Error ? error.message : 'Unknown error',
-    method: context.req.method,
-    path: context.req.path,
-  });
-
-  return context.json(errorResponse('INTERNAL_ERROR', 'An unexpected error occurred.'), 500);
-});
+app.onError(globalErrorHandler);

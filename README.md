@@ -54,7 +54,7 @@ pnpm dev
 
 - Frontend: `http://localhost:5173`
 - API: `http://localhost:8787`
-- Health endpoint: `http://localhost:8787/health`
+- Health endpoint: `http://localhost:8787/api/health`
 
 The Worker uses Wrangler local mode. The D1 and R2 bindings in
 `apps/api/wrangler.jsonc` use safe placeholders until real Cloudflare resources

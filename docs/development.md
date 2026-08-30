@@ -9,7 +9,7 @@ cp apps/api/.dev.vars.example apps/api/.dev.vars
 pnpm dev
 ```
 
-Visit `http://localhost:5173` and `http://localhost:8787/health`.
+Visit `http://localhost:5173` and `http://localhost:8787/api/health`.
 
 ## Workspace commands
 
