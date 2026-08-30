@@ -18,7 +18,7 @@
 | Area                 | Tables                                                                          | Notes                                                                                                                 |
 | -------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | Administration       | `admins`, `admin_sessions`, `admin_login_rate_limits`                           | Admin roles, credentials, opaque hashed session-token metadata, and login-rate-limit state.                           |
-| Settings             | `clinic_settings`, `contact_settings`                                           | Singleton-style configuration records; application enforcement of one record is deferred to future settings services. |
+| Settings             | `clinic_settings`, `contact_settings`                                           | Singleton-style configuration records. Clinic information is enforced as one application-managed record.              |
 | Public CMS           | `branches`, `services`, `doctors`, `showcases`                                  | Slugged bilingual content with publication status and display ordering.                                               |
 | Content children     | `service_benefits`, `doctor_expertise`, `doctor_education`, `showcase_sections` | Ordered bilingual child content.                                                                                      |
 | Related content      | `service_related_services`, `doctor_related_doctors`, `showcase_related`        | Ordered self-referential relations with unique source/target pairs.                                                   |
@@ -59,6 +59,13 @@ The schema indexes published content lookups by slug, status, featured/homepage
 flags, and display order. Appointment indexes support inbox status filters,
 preferred-date review, service/doctor/branch filtering, and chronological
 ordering by creation time.
+
+## Clinic information
+
+`clinic_settings` stores one clinic information record (`id = clinic`). It holds
+only the public CMS fields: bilingual clinic name, tagline, short about text,
+an R2 logo object key, and the three approved numeric statistics. Image bytes
+remain in R2; `logo_key` is only a reference.
 
 ## Migration workflow
 
