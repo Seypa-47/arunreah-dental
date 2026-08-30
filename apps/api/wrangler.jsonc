@@ -6,7 +6,7 @@
   "workers_dev": true,
   "vars": {
     "APP_ENV": "development",
-    "CORS_ALLOWED_ORIGIN": "http://localhost:5173",
+    "CORS_ALLOWED_ORIGINS": "http://localhost:5173",
   },
   "d1_databases": [
     {
@@ -27,7 +27,7 @@
       "name": "arunreah-api-staging",
       "vars": {
         "APP_ENV": "staging",
-        "CORS_ALLOWED_ORIGIN": "https://staging.example.com",
+        "CORS_ALLOWED_ORIGINS": "https://staging.example.com",
       },
       "d1_databases": [
         {
@@ -48,7 +48,7 @@
       "name": "arunreah-api-production",
       "vars": {
         "APP_ENV": "production",
-        "CORS_ALLOWED_ORIGIN": "https://www.example.com",
+        "CORS_ALLOWED_ORIGINS": "https://www.example.com",
       },
       "d1_databases": [
         {

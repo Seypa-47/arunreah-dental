@@ -14,7 +14,7 @@ R2 stores file/image objects; D1 stores only R2 keys and metadata.
 
 ## API baseline
 
-The only current endpoint is `GET /health`. Future routes belong under a
+The only current endpoint is `GET /api/health`. Future routes belong under a
 versioned API prefix such as `/api/v1`. The shared API response baseline is:
 
 ```ts

@@ -3,6 +3,8 @@ import type { Bindings } from '../types/env';
 export function getRuntimeConfig(bindings: Bindings) {
   return {
     appEnv: bindings.APP_ENV,
-    corsAllowedOrigin: bindings.CORS_ALLOWED_ORIGIN,
+    corsAllowedOrigins: bindings.CORS_ALLOWED_ORIGINS.split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
   } as const;
 }
