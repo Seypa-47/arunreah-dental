@@ -1,0 +1,3 @@
+# Local Worker secrets only. Copy to .dev.vars; never commit the result.
+# No secrets are required for the health-check foundation.
+# Future secret names are documented in docs/environments.md.

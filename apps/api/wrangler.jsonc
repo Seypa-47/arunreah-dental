@@ -1,0 +1,69 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "arunreah-api-development",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-04-01",
+  "workers_dev": true,
+  "vars": {
+    "APP_ENV": "development",
+    "CORS_ALLOWED_ORIGIN": "http://localhost:5173",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "arunreah-dental-development",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ASSETS",
+      "bucket_name": "arunreah-dental-development",
+    },
+  ],
+  "env": {
+    "staging": {
+      "name": "arunreah-api-staging",
+      "vars": {
+        "APP_ENV": "staging",
+        "CORS_ALLOWED_ORIGIN": "https://staging.example.com",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "arunreah-dental-staging",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "ASSETS",
+          "bucket_name": "arunreah-dental-staging",
+        },
+      ],
+    },
+    "production": {
+      "name": "arunreah-api-production",
+      "vars": {
+        "APP_ENV": "production",
+        "CORS_ALLOWED_ORIGIN": "https://www.example.com",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "arunreah-dental-production",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "ASSETS",
+          "bucket_name": "arunreah-dental-production",
+        },
+      ],
+    },
+  },
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@arunreah/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --local",
+    "build": "wrangler deploy --dry-run --env=\"\"",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply arunreah-dental-development --local",
+    "db:migrate:staging": "wrangler d1 migrations apply arunreah-dental-staging --env staging",
+    "db:migrate:production": "wrangler d1 migrations apply arunreah-dental-production --env production"
+  },
+  "dependencies": {
+    "@arunreah/shared": "workspace:*",
+    "drizzle-orm": "^0.41.0",
+    "hono": "^4.7.7",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260828.1",
+    "drizzle-kit": "^0.31.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.2",
+    "wrangler": "^4.12.0"
+  }
+}

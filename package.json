@@ -1,0 +1,28 @@
+{
+  "name": "arunreah-dental",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.1",
+  "scripts": {
+    "dev": "concurrently --names web,api --prefix-colors cyan,magenta \"pnpm --filter @arunreah/web dev\" \"pnpm --filter @arunreah/api dev\"",
+    "dev:web": "pnpm --filter @arunreah/web dev",
+    "dev:api": "pnpm --filter @arunreah/api dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.25.1",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.30.1"
+  }
+}
