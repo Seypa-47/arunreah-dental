@@ -1,9 +1,10 @@
 import { useState, type PropsWithChildren } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import type { LandingNavigationItem, LandingService } from '@/features/landing-page/types';
 
 const asset = (name: string) => `/assets/landing/${name}`;
-const serviceAnchor = (name: string) => `#service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
+const serviceAnchor = (name: string) => `/#service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
 
 type SiteLayoutProps = PropsWithChildren<{
   actions: {
@@ -16,6 +17,25 @@ type SiteLayoutProps = PropsWithChildren<{
 
 export function SiteLayout({ actions, children, navigation, services = [] }: SiteLayoutProps) {
   const [activeLanguage, setActiveLanguage] = useState<'en' | 'km'>('en');
+  const { hash, pathname } = useLocation();
+
+  const isActiveNavigationItem = (item: LandingNavigationItem) => {
+    if (item.href.startsWith('/doctors')) {
+      return pathname.startsWith('/doctors');
+    }
+
+    if (item.href === '/') {
+      return pathname === '/' && !hash;
+    }
+
+    if (item.href.includes('#')) {
+      const itemHash = item.href.slice(item.href.indexOf('#'));
+
+      return pathname === '/' && hash === itemHash;
+    }
+
+    return false;
+  };
 
   return (
     <div className="min-h-screen bg-[#f7fafc] text-[#17364c]">
@@ -31,15 +51,16 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
           </a>
 
           <nav aria-label="Primary navigation" className="hidden items-center gap-6 lg:flex">
-            {navigation.map((item, index) => {
+            {navigation.map((item) => {
+              const isActive = isActiveNavigationItem(item);
               const linkClass =
-                index === 0
+                isActive
                   ? 'text-[14px] font-semibold leading-5 tracking-[0.4px] text-[#3695b9] transition hover:text-[#2299bb] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2f9fbe]'
                   : 'text-[14px] font-medium leading-5 text-[#475569] transition hover:text-[#2299bb] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2f9fbe]';
 
               if (item.label !== 'Services') {
                 return (
-                  <a className={linkClass} href={item.href} key={item.label}>
+                  <a aria-current={isActive ? 'page' : undefined} className={linkClass} href={item.href} key={item.label}>
                     {item.label}
                   </a>
                 );
