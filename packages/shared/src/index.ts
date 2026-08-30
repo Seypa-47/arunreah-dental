@@ -60,4 +60,17 @@ export type {
   ServiceListQuery,
   ServiceLanguage,
 } from './schemas/services';
+export {
+  adminDoctorListQuerySchema,
+  createDoctorSchema,
+  doctorStatusValues,
+  publicDoctorQuerySchema,
+  updateDoctorSchema,
+} from './schemas/doctors';
+export type {
+  AdminDoctorListQuery,
+  CreateDoctorInput,
+  DoctorLanguage,
+  UpdateDoctorInput,
+} from './schemas/doctors';
 export type { ApiError, ApiResponse, ApiSuccess } from './api/response';

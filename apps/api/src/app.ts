@@ -13,6 +13,7 @@ import { publicContactModule } from './modules/contact/contact.route';
 import { adminBranchesModule } from './modules/branches/branch-admin.route';
 import { publicBranchesModule } from './modules/branches/branch.route';
 import { adminServicesModule, publicServicesModule } from './modules/services/service.route';
+import { adminDoctorsModule, publicDoctorsModule } from './modules/doctors/doctor.route';
 import type { AppEnv } from './types/env';
 
 export const app = new Hono<AppEnv>();
@@ -31,6 +32,8 @@ app.route('/api/admin/branches', adminBranchesModule);
 app.route('/api/public/branches', publicBranchesModule);
 app.route('/api/admin/services', adminServicesModule);
 app.route('/api/public/services', publicServicesModule);
+app.route('/api/admin/doctors', adminDoctorsModule);
+app.route('/api/public/doctors', publicDoctorsModule);
 
 app.notFound((context) => {
   return context.json(errorResponse('NOT_FOUND', 'The requested resource was not found.'), 404);

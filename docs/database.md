@@ -96,6 +96,27 @@ Services referenced by appointment history cannot be deleted. They should be
 unpublished or archived so the appointment's service reference and historical
 snapshot remain intact.
 
+## Doctor content
+
+`doctors` stores bilingual public profiles, including title, specialty, short
+bio, longer about content, R2 photo object key, and optional professional
+statistics. The existing `role_*` and `biography_*` columns are exposed by the
+API as title and about content respectively, preserving schema compatibility.
+Statistics are stored as integers; patient satisfaction is a percentage from
+0 to 100. Doctor phone numbers remain optional and are not exposed publicly.
+
+`doctor_expertise` and `doctor_education` are ordered child collections, each
+limited by the API to ten entries. `doctor_related_doctors` is limited to three
+unique doctors and cannot relate a doctor to itself. When a PATCH payload
+supplies expertise, education, or related-doctor IDs, it replaces that complete
+collection; omission leaves it unchanged. Public detail responses exclude
+unpublished related doctors and return only their card summaries.
+
+Doctors referenced by appointments cannot be deleted. Unpublish or archive the
+profile instead so the optional appointment reference and immutable doctor-name
+snapshot remain historically valid. Booking will continue to treat choosing a
+doctor as optional; no scheduling or availability fields are stored here.
+
 ## Migration workflow
 
 Generate migration SQL with `pnpm --filter @arunreah/api db:generate`. Apply the
