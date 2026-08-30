@@ -15,14 +15,14 @@
 
 ## Entities
 
-| Area | Tables | Notes |
-| --- | --- | --- |
-| Administration | `admins`, `admin_sessions` | Credentials and opaque, hashed session-token metadata. No auth flow is implemented yet. |
-| Settings | `clinic_settings`, `contact_settings` | Singleton-style configuration records; application enforcement of one record is deferred to future settings services. |
-| Public CMS | `branches`, `services`, `doctors`, `showcases` | Slugged bilingual content with publication status and display ordering. |
-| Content children | `service_benefits`, `doctor_expertise`, `doctor_education`, `showcase_sections` | Ordered bilingual child content. |
-| Related content | `service_related_services`, `doctor_related_doctors`, `showcase_related` | Ordered self-referential relations with unique source/target pairs. |
-| Appointment requests | `appointments` | References service, optional doctor, and branch; preserves names as historical snapshots. |
+| Area                 | Tables                                                                          | Notes                                                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Administration       | `admins`, `admin_sessions`, `admin_login_rate_limits`                           | Admin roles, credentials, opaque hashed session-token metadata, and login-rate-limit state.                           |
+| Settings             | `clinic_settings`, `contact_settings`                                           | Singleton-style configuration records; application enforcement of one record is deferred to future settings services. |
+| Public CMS           | `branches`, `services`, `doctors`, `showcases`                                  | Slugged bilingual content with publication status and display ordering.                                               |
+| Content children     | `service_benefits`, `doctor_expertise`, `doctor_education`, `showcase_sections` | Ordered bilingual child content.                                                                                      |
+| Related content      | `service_related_services`, `doctor_related_doctors`, `showcase_related`        | Ordered self-referential relations with unique source/target pairs.                                                   |
+| Appointment requests | `appointments`                                                                  | References service, optional doctor, and branch; preserves names as historical snapshots.                             |
 
 ## Relationships
 

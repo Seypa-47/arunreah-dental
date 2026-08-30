@@ -27,4 +27,10 @@ export default tseslint.config(
       globals: globals.worker,
     },
   },
+  {
+    files: ['apps/api/scripts/**/*.mjs'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 );

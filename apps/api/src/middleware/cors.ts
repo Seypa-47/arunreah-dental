@@ -9,6 +9,7 @@ export const corsMiddleware: MiddlewareHandler<AppEnv> = async (context, next) =
 
   return cors({
     origin: (origin) => (allowedOrigins.has(origin) ? origin : undefined),
+    credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'X-Request-Id'],
   })(context, next);
