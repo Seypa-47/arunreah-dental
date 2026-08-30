@@ -41,6 +41,8 @@ export type LandingDoctor = {
   imageAlt: string;
   imageUrl: string;
   name: string;
+  profileHref?: string;
+  skills?: string[];
   specialty: string;
 };
 
