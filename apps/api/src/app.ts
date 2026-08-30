@@ -6,6 +6,8 @@ import { requestLogger } from './middleware/request-logger';
 import { healthModule } from './modules/health/health.route';
 import { adminsModule } from './modules/admins/admins.route';
 import { authModule } from './modules/auth/auth.route';
+import { adminClinicModule } from './modules/clinic/clinic-admin.route';
+import { publicClinicModule } from './modules/clinic/clinic.route';
 import type { AppEnv } from './types/env';
 
 export const app = new Hono<AppEnv>();
@@ -16,6 +18,8 @@ app.use('*', corsMiddleware);
 app.route('/api/health', healthModule);
 app.route('/api/auth', authModule);
 app.route('/api/admin/admins', adminsModule);
+app.route('/api/admin/clinic', adminClinicModule);
+app.route('/api/public/clinic', publicClinicModule);
 
 app.notFound((context) => {
   return context.json(errorResponse('NOT_FOUND', 'The requested resource was not found.'), 404);

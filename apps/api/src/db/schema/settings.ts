@@ -1,4 +1,4 @@
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { timestamps } from './common';
 
 export const clinicSettings = sqliteTable('clinic_settings', {
@@ -7,9 +7,12 @@ export const clinicSettings = sqliteTable('clinic_settings', {
   clinicNameKm: text('clinic_name_km').notNull(),
   taglineEn: text('tagline_en'),
   taglineKm: text('tagline_km'),
-  aboutEn: text('about_en'),
-  aboutKm: text('about_km'),
+  shortAboutEn: text('short_about_en'),
+  shortAboutKm: text('short_about_km'),
   logoKey: text('logo_key'),
+  yearsExperience: integer('years_experience'),
+  successfulCases: integer('successful_cases'),
+  patientSatisfaction: integer('patient_satisfaction'),
   ...timestamps(),
 });
 
