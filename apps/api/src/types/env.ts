@@ -8,9 +8,12 @@ export type Bindings = {
 export type AppVariables = {
   requestId: string;
   requestStartedAt: number;
+  authenticatedAdmin: AuthenticatedAdmin;
+  authenticatedSessionId: string;
 };
 
 export type AppEnv = {
   Bindings: Bindings;
   Variables: AppVariables;
 };
+import type { AuthenticatedAdmin } from './auth';

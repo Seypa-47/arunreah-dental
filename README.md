@@ -79,6 +79,8 @@ pnpm format:check
 `apps/web/.env.local` contains public browser values only. Never place secrets
 in `VITE_*` variables. `apps/api/.dev.vars` is reserved for local Worker
 secrets and is not committed. See [environment documentation](docs/environments.md).
+Admin authentication and role-based access are documented in
+[authentication.md](docs/authentication.md).
 
 ## Environments
 
