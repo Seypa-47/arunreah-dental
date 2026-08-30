@@ -16,11 +16,12 @@ export type LandingHero = {
 };
 
 export type LandingService = {
+  description: string;
   iconAlt: string;
   iconUrl: string;
   imageAlt: string;
   imageUrl: string;
-  khmerName: string;
+  khmerName?: string;
   name: string;
 };
 
@@ -63,7 +64,7 @@ export type LandingPageContent = {
     linkGroups: LandingFooterLinkGroup[];
     tagline: string;
   };
-  hero: LandingHero;
+  heroes: LandingHero[];
   navigation: LandingNavigationItem[];
   services: LandingService[];
   showcase: LandingShowcase[];
