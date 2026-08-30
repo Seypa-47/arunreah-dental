@@ -1,85 +1,147 @@
 import type {
+  DoctorDetailContent,
   DoctorsPageContent,
+  LandingDoctor,
   LandingPageContent,
   LandingNavigationItem,
 } from '@/features/landing-page/types';
 
-const allDoctors = [
+function doctorDetail({
+  education,
+  experience = 'Full profile information will be updated soon.',
+  pageDescription,
+  profileHref,
+  services,
+}: {
+  education: string[];
+  experience?: string;
+  pageDescription: string;
+  profileHref: string;
+  services: string[];
+}): LandingDoctor['detail'] {
+  return {
+    biography:
+      'Full doctor biography and consultation information will be updated when the clinic provides the final profile content.',
+    education,
+    experience,
+    languages: ['English', 'Khmer'],
+    pageDescription,
+    profileHref,
+    services,
+  };
+}
+
+const doctorProfiles: LandingDoctor[] = [
   {
     bookingLabel: 'Book with Asst.Prof. Heng',
     credential: 'DDS, 25+ YEARS EXPERIENCE',
+    detail: doctorDetail({
+      education: ['DDS', 'Certificate of Implant'],
+      experience: '25+ years of dental experience with advanced implant care.',
+      pageDescription: 'Implant specialist with 25+ years of dental experience.',
+      profileHref: '/doctors/sreng-heng',
+      services: ['Implant Dentistry'],
+    }),
     focus: 'Implant Specialist',
     imageAlt: 'Portrait of Asst.Prof. Sreng Heng',
     imageUrl: '/assets/landing/doctor-sreng-heng.jpg',
     name: 'Asst.Prof. Sreng Heng',
-    profileHref: '/doctors/sreng-heng',
-    skills: ['Implant Dentistry'],
     specialty: 'Implant Dentistry',
   },
   {
     bookingLabel: 'Book with Dr. Sontary',
     credential: 'DDS, POS',
+    detail: doctorDetail({
+      education: ['DDS', 'Progressive Orthodontics Seminars POS', 'Certificate of Implant', 'Member of ICCDE'],
+      pageDescription: 'Orthodontics and implant dentistry specialist.',
+      profileHref: '/doctors/chho-sonthary',
+      services: ['Orthodontics', 'Implant Dentistry'],
+    }),
     focus: 'ICCDE Member',
-    imageAlt: 'Portrait of Dr. Chho Sontary',
+    imageAlt: 'Portrait of Dr. Chho Sonthary',
     imageUrl: '/assets/landing/doctor-chho-sontary.jpg',
     name: 'Dr. Chho Sonthary',
-    profileHref: '/doctors/chho-sonthary',
-    skills: ['Orthodontics', 'Implant Dentistry'],
     specialty: 'Orthodontics & Implant Dentistry',
   },
   {
     bookingLabel: 'Book with Dr. Delux',
     credential: 'M.SC. ORTHODONTICS',
+    detail: doctorDetail({
+      education: ['M.Sc. Orthodontics', 'Progressive Orthodontics Seminars POS', 'DDS'],
+      pageDescription: 'Orthodontics specialist trained in Germany.',
+      profileHref: '/doctors/yim-delux',
+      services: ['Orthodontics'],
+    }),
     focus: 'Orthodontics Specialist (Germany)',
     imageAlt: 'Portrait of Dr. Yim Delux',
     imageUrl: '/assets/landing/doctor-yim-delux-new.jpg',
     name: 'Dr. Yim Delux',
-    profileHref: '/doctors/yim-delux',
-    skills: ['Orthodontics'],
     specialty: 'Orthodontics',
   },
   {
     bookingLabel: 'Book with Dr. Kunthy',
     credential: 'DDS, DIPLOMA IN IMPLANTOLOGY',
+    detail: doctorDetail({
+      education: ['DDS', 'Certificate of Implant', 'Diploma of Implant, Frankfurt University Germany'],
+      pageDescription: 'Implantology specialist trained in Germany.',
+      profileHref: '/doctors/chuong-kunthy',
+      services: ['Implant Dentistry'],
+    }),
     focus: 'Implantology Specialist (Germany)',
     imageAlt: 'Portrait of Dr. Chuong Kunthy',
     imageUrl: '/assets/landing/doctor-chuong-kunthy.jpg',
     name: 'Dr. Chuong Kunthy',
-    profileHref: '/doctors/chuong-kunthy',
-    skills: ['Implant Dentistry'],
     specialty: 'Implant Dentistry',
   },
   {
     bookingLabel: 'Book with Dr. Thanith',
     credential: 'DDS',
+    detail: doctorDetail({
+      education: ['DDS', 'Diploma of Digital Smile', 'Certificate of Implant'],
+      pageDescription: 'Digital smile design and implant dentistry care.',
+      profileHref: '/doctors/taing-thanith',
+      services: ['Digital Smile Design', 'Implant Dentistry'],
+    }),
     focus: 'Digital Smile Design',
     imageAlt: 'Portrait of Dr. Taing Thanith',
     imageUrl: '/assets/landing/doctor-taing-thanith-new.jpg',
     name: 'Dr. Taing Thanith',
-    profileHref: '/doctors/taing-thanith',
-    skills: ['Digital Smile Design', 'Implant Dentistry'],
     specialty: 'Digital Smile Design & Implant Dentistry',
   },
   {
     bookingLabel: 'Book with Dr. Kimly',
     credential: 'DDS, POS',
+    detail: doctorDetail({
+      education: [
+        'DDS',
+        'Progressive Orthodontics Seminars POS',
+        'Certificate of Endodontic',
+        'Certificate of Implant',
+        'Full Mouth Reconstruction',
+      ],
+      pageDescription: 'Full mouth reconstruction, orthodontics, endodontics, and implant care.',
+      profileHref: '/doctors/chea-kimly',
+      services: ['Full Mouth Reconstruction', 'Orthodontics', 'Endodontics', 'Implant Dentistry'],
+    }),
     focus: 'Full Mouth Reconstruction',
     imageAlt: 'Portrait of Dr. Chea Kimly',
     imageUrl: '/assets/landing/doctor-chea-kimly-new.jpg',
     name: 'Dr. Chea Kimly',
-    profileHref: '/doctors/chea-kimly',
-    skills: ['Orthodontics', 'Endodontics', 'Implant Dentistry', 'Full Mouth Reconstruction'],
     specialty: 'Orthodontics, Endodontics & Implant Dentistry',
   },
   {
     bookingLabel: 'Book with Dr. Bunhabb',
     credential: 'ENDODONTIC',
+    detail: doctorDetail({
+      education: ['Certificate of Implant', 'Certificate of Endodontic'],
+      pageDescription: 'Endodontic and implantology specialist.',
+      profileHref: '/doctors/heng-bunhabb',
+      services: ['Endodontics', 'Implant Dentistry'],
+    }),
     focus: 'Implantology Specialist',
     imageAlt: 'Portrait of Dr. Heng Bunhabb',
     imageUrl: '/assets/landing/doctor-heng-bunhabb.jpg',
     name: 'Dr. Heng Bunhabb',
-    profileHref: '/doctors/heng-bunhabb',
-    skills: ['Implant Dentistry', 'Endodontics'],
     specialty: 'Implant Dentistry & Endodontics',
   },
 ];
@@ -93,6 +155,46 @@ function pageNavigation(navigation: LandingNavigationItem[]) {
     ...item,
     href: item.label === 'Doctors' ? '/doctors' : homeHref(item.href),
   }));
+}
+
+function doctorByHref(profileHref: string) {
+  const doctor = doctorProfiles.find((profile) => profile.detail.profileHref === profileHref);
+
+  if (!doctor) {
+    throw new Error(`Doctor profile not found: ${profileHref}`);
+  }
+
+  return doctor;
+}
+
+function publicPageFooter() {
+  const doctorsFooterServiceLinks = [
+    { href: '/#services', label: 'General Dentistry' },
+    { href: '/#services', label: 'Orthodontic' },
+    { href: '/#services', label: 'Root Canal Treatment' },
+    { href: '/#services', label: 'Pediatric Dentistry' },
+    { href: '/#services', label: 'Dental Implant' },
+    { href: '/#services', label: 'Digital Smile Design' },
+    { href: '/#showcase', label: 'Showcase' },
+  ];
+
+  return {
+    ...landingPageContent.footer,
+    branchLinks: landingPageContent.footer.branchLinks.map((link) => ({
+      ...link,
+      href: homeHref(link.href),
+    })),
+    linkGroups: landingPageContent.footer.linkGroups.map((group) => ({
+      ...group,
+      links:
+        group.title === 'Services'
+          ? doctorsFooterServiceLinks
+          : group.links.map((link) => ({
+              ...link,
+              href: link.label === 'Doctor' ? '/doctors' : homeHref(link.href),
+            })),
+    })),
+  };
 }
 
 const landingPageContent: LandingPageContent = {
@@ -197,7 +299,12 @@ const landingPageContent: LandingPageContent = {
       name: 'Radiology',
     },
   ],
-  doctors: allDoctors.slice(0, 4),
+  doctors: [
+    doctorByHref('/doctors/chho-sonthary'),
+    doctorByHref('/doctors/sreng-heng'),
+    doctorByHref('/doctors/yim-delux'),
+    doctorByHref('/doctors/chuong-kunthy'),
+  ],
   branches: [
     {
       hours: 'Mon - Sun, 8:00 AM - 7:00 PM',
@@ -273,41 +380,25 @@ export async function fetchLandingPage(): Promise<LandingPageContent> {
 }
 
 export async function fetchDoctorsPage(): Promise<DoctorsPageContent> {
-  const doctorsFooterServiceLinks = [
-    { href: '/#services', label: 'General Dentistry' },
-    { href: '/#services', label: 'Orthodontic' },
-    { href: '/#services', label: 'Root Canal Treatment' },
-    { href: '/#services', label: 'Pediatric Dentistry' },
-    { href: '/#services', label: 'Dental Implant' },
-    { href: '/#services', label: 'Digital Smile Design' },
-    { href: '/#showcase', label: 'Showcase' },
-  ];
-
   return {
     actions: landingPageContent.actions,
-    doctors: allDoctors,
-    footer: {
-      ...landingPageContent.footer,
-      branchLinks: landingPageContent.footer.branchLinks.map((link) => ({
-        ...link,
-        href: homeHref(link.href),
-      })),
-      linkGroups: landingPageContent.footer.linkGroups.map((group) => ({
-        ...group,
-        links:
-          group.title === 'Services'
-            ? doctorsFooterServiceLinks
-            : group.links.map((link) => ({
-                ...link,
-                href: link.label === 'Doctor' ? '/doctors' : homeHref(link.href),
-              })),
-      })),
-    },
+    doctors: doctorProfiles,
+    footer: publicPageFooter(),
     hero: {
       description:
         'Dedicated professionals committed to providing the highest standard of dental care with a compassionate approach.',
       title: 'Our Expert Medical Team',
     },
+    navigation: pageNavigation(landingPageContent.navigation),
+    services: landingPageContent.services,
+  };
+}
+
+export async function fetchDoctorDetail(profileSlug: string | undefined): Promise<DoctorDetailContent> {
+  return {
+    actions: landingPageContent.actions,
+    doctor: doctorProfiles.find((doctor) => doctor.detail.profileHref.endsWith(`/${profileSlug}`)),
+    footer: publicPageFooter(),
     navigation: pageNavigation(landingPageContent.navigation),
     services: landingPageContent.services,
   };

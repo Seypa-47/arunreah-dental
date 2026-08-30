@@ -9,7 +9,10 @@ function FooterLinks({ group }: { group: LandingFooterLinkGroup }) {
       <ul className="space-y-4">
         {group.links.map((link) => (
           <li key={link.label}>
-            <a className="text-[16px] font-normal leading-[26px] text-[#3c494c] underline hover:text-[#209cc2]" href={link.href}>
+            <a
+              className="text-[16px] font-normal leading-[26px] text-[#3c494c] underline hover:text-[#209cc2]"
+              href={link.href}
+            >
               {link.label}
             </a>
           </li>

@@ -29,9 +29,7 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
     }
 
     if (item.href.includes('#')) {
-      const itemHash = item.href.slice(item.href.indexOf('#'));
-
-      return pathname === '/' && hash === itemHash;
+      return pathname === '/' && hash === item.href.slice(item.href.indexOf('#'));
     }
 
     return false;

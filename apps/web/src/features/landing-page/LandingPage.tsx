@@ -300,15 +300,21 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
             className="h-[354px] overflow-hidden rounded-lg border-[#edf2f7] shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
             key={doctor.name}
           >
-            <img
-              alt={doctor.imageAlt}
-              className="h-[256px] w-full bg-[#eaf2f6] object-cover object-top"
-              src={doctor.imageUrl}
-            />
-            <div className="flex h-[76px] flex-col justify-center px-4 py-3">
-              <h3 className="text-[14px] font-semibold leading-5 text-[#0c2243]">{doctor.name}</h3>
-              <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695b9]">{doctor.specialty}</p>
-            </div>
+            <a
+              aria-label="View all doctors"
+              className="block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+              href="/doctors"
+            >
+              <img
+                alt={doctor.imageAlt}
+                className="h-[256px] w-full bg-[#eaf2f6] object-cover object-top"
+                src={doctor.imageUrl}
+              />
+              <div className="flex h-[76px] flex-col justify-center px-4 py-3">
+                <h3 className="text-[14px] font-semibold leading-5 text-[#0c2243]">{doctor.name}</h3>
+                <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695b9]">{doctor.specialty}</p>
+              </div>
+            </a>
           </Card>
         ))}
       </div>

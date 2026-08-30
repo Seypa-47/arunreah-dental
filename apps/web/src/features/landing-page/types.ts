@@ -28,6 +28,15 @@ export type LandingService = {
 export type LandingDoctor = {
   bookingLabel?: string;
   credential?: string;
+  detail: {
+    biography: string;
+    education: string[];
+    experience: string;
+    languages: string[];
+    pageDescription: string;
+    profileHref: string;
+    services: string[];
+  };
   focus?: string;
   imageAlt: string;
   imageUrl: string;
@@ -73,6 +82,10 @@ export type LandingPageContent = {
   navigation: LandingNavigationItem[];
   services: LandingService[];
   showcase: LandingShowcase[];
+};
+
+export type DoctorDetailContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  doctor: LandingDoctor | undefined;
 };
 
 export type DoctorsPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
