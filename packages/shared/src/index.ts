@@ -48,4 +48,16 @@ export type {
   PublicBranchRead,
   UpdateBranchInput,
 } from './schemas/branches';
+export {
+  createServiceSchema,
+  updateServiceSchema,
+  serviceListQuerySchema,
+  servicePublicQuerySchema,
+} from './schemas/services';
+export type {
+  CreateServiceInput,
+  UpdateServiceInput,
+  ServiceListQuery,
+  ServiceLanguage,
+} from './schemas/services';
 export type { ApiError, ApiResponse, ApiSuccess } from './api/response';

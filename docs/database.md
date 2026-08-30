@@ -15,14 +15,14 @@
 
 ## Entities
 
-| Area                 | Tables                                                                          | Notes                                                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Administration       | `admins`, `admin_sessions`, `admin_login_rate_limits`                           | Admin roles, credentials, opaque hashed session-token metadata, and login-rate-limit state.                           |
-| Settings             | `clinic_settings`, `contact_settings`                                           | Singleton-style configuration records. Clinic information is enforced as one application-managed record.              |
-| Public CMS           | `branches`, `services`, `doctors`, `showcases`                                  | Slugged bilingual content with publication status and display ordering.                                               |
-| Content children     | `service_benefits`, `doctor_expertise`, `doctor_education`, `showcase_sections` | Ordered bilingual child content.                                                                                      |
-| Related content      | `service_related_services`, `doctor_related_doctors`, `showcase_related`        | Ordered self-referential relations with unique source/target pairs.                                                   |
-| Appointment requests | `appointments`                                                                  | References service, optional doctor, and branch; preserves names as historical snapshots.                             |
+| Area                 | Tables                                                                          | Notes                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Administration       | `admins`, `admin_sessions`, `admin_login_rate_limits`                           | Admin roles, credentials, opaque hashed session-token metadata, and login-rate-limit state.              |
+| Settings             | `clinic_settings`, `contact_settings`                                           | Singleton-style configuration records. Clinic information is enforced as one application-managed record. |
+| Public CMS           | `branches`, `services`, `doctors`, `showcases`                                  | Slugged bilingual content with publication status and display ordering.                                  |
+| Content children     | `service_benefits`, `doctor_expertise`, `doctor_education`, `showcase_sections` | Ordered bilingual child content.                                                                         |
+| Related content      | `service_related_services`, `doctor_related_doctors`, `showcase_related`        | Ordered self-referential relations with unique source/target pairs.                                      |
+| Appointment requests | `appointments`                                                                  | References service, optional doctor, and branch; preserves names as historical snapshots.                |
 
 ## Relationships
 
@@ -76,6 +76,25 @@ remain in R2; `logo_key` is only a reference.
 contains public phone numbers, primary email, social URLs, bilingual business
 hours, a Google Maps URL, and no notification destinations or provider secrets.
 Branch-specific contact and location details remain in the Branches domain.
+
+## Service content
+
+`services` contains bilingual service listing and detail content only; it does
+not contain prices or scheduling data. It stores R2 object keys for its listing,
+hero, and about images. Service detail content includes hero, about,
+treatment-at-a-glance, CTA, and SEO fields in English and Khmer.
+
+`service_benefits` is an ordered child collection, limited by the API to six
+items. `service_related_services` is an ordered self-reference, limited by the
+API to three unique services and never allowed to reference the source service.
+For a create or update request, supplying either collection replaces that whole
+collection; omitting it leaves the existing collection unchanged. Public detail
+responses return related-service summaries only and exclude unpublished related
+services.
+
+Services referenced by appointment history cannot be deleted. They should be
+unpublished or archived so the appointment's service reference and historical
+snapshot remain intact.
 
 ## Migration workflow
 
