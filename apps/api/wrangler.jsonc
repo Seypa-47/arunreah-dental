@@ -7,6 +7,7 @@
   "vars": {
     "APP_ENV": "development",
     "CORS_ALLOWED_ORIGINS": "http://localhost:5173",
+    "MEDIA_PUBLIC_BASE_URL": "",
   },
   "d1_databases": [
     {
@@ -28,6 +29,7 @@
       "vars": {
         "APP_ENV": "staging",
         "CORS_ALLOWED_ORIGINS": "https://staging.example.com",
+        "MEDIA_PUBLIC_BASE_URL": "https://media-staging.example.com",
       },
       "d1_databases": [
         {
@@ -49,6 +51,7 @@
       "vars": {
         "APP_ENV": "production",
         "CORS_ALLOWED_ORIGINS": "https://www.example.com",
+        "MEDIA_PUBLIC_BASE_URL": "https://media.example.com",
       },
       "d1_databases": [
         {

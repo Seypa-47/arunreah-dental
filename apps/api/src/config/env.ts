@@ -6,5 +6,6 @@ export function getRuntimeConfig(bindings: Bindings) {
     corsAllowedOrigins: bindings.CORS_ALLOWED_ORIGINS.split(',')
       .map((origin) => origin.trim())
       .filter(Boolean),
+    mediaPublicBaseUrl: bindings.MEDIA_PUBLIC_BASE_URL?.replace(/\/+$/, '') ?? '',
   } as const;
 }

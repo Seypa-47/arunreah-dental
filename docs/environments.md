@@ -36,6 +36,14 @@ TURNSTILE_SECRET_KEY
 
 No real secret is required for the current health-check-only foundation.
 
+## Public R2 media origin
+
+`MEDIA_PUBLIC_BASE_URL` is a non-secret Worker variable used only to form the
+stable URL returned after CMS media uploads. Configure it to the HTTPS origin of
+the R2 custom domain for each environment, without a trailing slash. It is
+empty locally because Wrangler's local R2 simulation has no public custom
+domain. Do not use the R2 API endpoint or credentials as this value.
+
 ## Cloudflare placeholders
 
 `apps/api/wrangler.jsonc` includes separate development, staging, and production

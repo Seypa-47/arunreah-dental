@@ -3,6 +3,7 @@ export type Bindings = {
   ASSETS: R2Bucket;
   APP_ENV: 'development' | 'staging' | 'production';
   CORS_ALLOWED_ORIGINS: string;
+  MEDIA_PUBLIC_BASE_URL?: string;
 };
 
 export type AppVariables = {
