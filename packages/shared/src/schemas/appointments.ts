@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+export const appointmentStatusValues = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'] as const;
+
+export const appointmentStatusSchema = z.enum(appointmentStatusValues);
+
 const cambodianPhone = z
   .string()
   .trim()
@@ -33,3 +37,36 @@ export const createPublicAppointmentSchema = z
   .strict();
 
 export type CreatePublicAppointmentInput = z.infer<typeof createPublicAppointmentSchema>;
+export type AppointmentStatus = z.infer<typeof appointmentStatusSchema>;
+
+const appointmentListDate = isoDate.optional();
+
+export const adminAppointmentListQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    search: z.string().trim().min(1).max(160).optional(),
+    status: appointmentStatusSchema.optional(),
+    serviceId: z.string().uuid().optional(),
+    doctorId: z.string().uuid().optional(),
+    branchId: z.string().uuid().optional(),
+    fromDate: appointmentListDate,
+    toDate: appointmentListDate,
+    sort: z.enum(['createdAt', 'preferredDate', 'updatedAt', 'status']).default('createdAt'),
+    order: z.enum(['asc', 'desc']).default('desc'),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.fromDate && value.toDate && value.fromDate > value.toDate) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['toDate'],
+        message: 'toDate must be on or after fromDate.',
+      });
+    }
+  });
+
+export const updateAppointmentStatusSchema = z.object({ status: appointmentStatusSchema }).strict();
+
+export type AdminAppointmentListQuery = z.infer<typeof adminAppointmentListQuerySchema>;
+export type UpdateAppointmentStatusInput = z.infer<typeof updateAppointmentStatusSchema>;

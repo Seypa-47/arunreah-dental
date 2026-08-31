@@ -1,7 +1,13 @@
 export { errorResponse, successResponse } from './api/response';
 export { apiErrorCodes } from './api/error-codes';
 export { deleteMediaSchema, mediaCategorySchema, mediaCategoryValues } from './schemas/media';
-export { createPublicAppointmentSchema } from './schemas/appointments';
+export {
+  adminAppointmentListQuerySchema,
+  appointmentStatusSchema,
+  appointmentStatusValues,
+  createPublicAppointmentSchema,
+  updateAppointmentStatusSchema,
+} from './schemas/appointments';
 export { adminRoleValues, permissionValues, rolesByPermission } from './auth/roles';
 export { adminLoginSchema, createAdminSchema, updateAdminSchema } from './schemas/admin-auth';
 export {
@@ -28,7 +34,12 @@ export {
 } from './schemas/branches';
 export type { ApiErrorCode } from './api/error-codes';
 export type { DeleteMediaInput, MediaCategory } from './schemas/media';
-export type { CreatePublicAppointmentInput } from './schemas/appointments';
+export type {
+  AdminAppointmentListQuery,
+  AppointmentStatus,
+  CreatePublicAppointmentInput,
+  UpdateAppointmentStatusInput,
+} from './schemas/appointments';
 export type { AdminRole, Permission } from './auth/roles';
 export type { AdminLoginInput, CreateAdminInput, UpdateAdminInput } from './schemas/admin-auth';
 export type {
