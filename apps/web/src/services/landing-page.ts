@@ -1,6 +1,7 @@
 import type {
   AboutPageContent,
   BranchesPageContent,
+  ContactPageContent,
   DoctorDetailContent,
   DoctorsPageContent,
   LandingDoctor,
@@ -298,9 +299,11 @@ function pageNavigation(navigation: LandingNavigationItem[]) {
         ? '/about'
         : item.label === 'Doctors'
           ? '/doctors'
-          : item.label === 'Branches'
-            ? '/branches'
-            : homeHref(item.href),
+            : item.label === 'Branches'
+              ? '/branches'
+              : item.label === 'Contact'
+                ? '/contact'
+              : homeHref(item.href),
   }));
 }
 
@@ -338,7 +341,12 @@ function publicPageFooter() {
           ? doctorsFooterServiceLinks
           : group.links.map((link) => ({
               ...link,
-              href: link.label === 'Doctor' || link.label === 'Doctors' ? '/doctors' : homeHref(link.href),
+              href:
+                link.label === 'Doctor' || link.label === 'Doctors'
+                  ? '/doctors'
+                  : link.label === 'Contact'
+                    ? '/contact'
+                    : homeHref(link.href),
             })),
     })),
   };
@@ -502,6 +510,7 @@ const landingPageContent: LandingPageContent = {
           { href: '#services', label: 'Services' },
           { href: '/doctors', label: 'Doctors' },
           { href: '/branches', label: 'Branches' },
+          { href: '/contact', label: 'Contact' },
         ],
       },
       {
@@ -742,6 +751,116 @@ export async function fetchAboutPage(): Promise<AboutPageContent> {
       iconUrl: '/assets/landing/service-icon-periodontics.svg',
       title: 'Our Vision',
     },
+  };
+}
+
+export async function fetchContactPage(): Promise<ContactPageContent> {
+  const contactCards: ContactPageContent['contactCards'] = [
+    {
+      description: '098 701 302',
+      icon: 'phone',
+      label: 'Call Us',
+      value: '098 701 302',
+    },
+    {
+      description: 'info@arunreahdental.com',
+      icon: 'email',
+      label: 'Email Us',
+      value: 'info@arunreahdental.com',
+    },
+    {
+      description: '8:00 AM - 7:00 PM',
+      icon: 'clock',
+      label: 'Opening Hours',
+      value: '8:00 AM - 7:00 PM',
+    },
+    {
+      description: '2 branches in Phnom Penh',
+      icon: 'location',
+      label: 'Visit Us',
+      value: '2 branches in Phnom Penh',
+    },
+  ];
+
+  return {
+    actions: landingPageContent.actions,
+    contactCards,
+    footer: publicPageFooter(),
+    form: {
+      branches: ['Toul Tompoung Branch', 'Psa Chas Branch'],
+      fields: {
+        email: 'Email Address',
+        fullName: 'Full Name',
+        message: 'Message',
+        phone: 'Phone Number',
+        preferredBranch: 'Preferred Branch',
+        preferredDate: 'Preferred Date',
+        preferredTime: 'Preferred Time',
+        service: 'Service Needed',
+      },
+      messageLimit: 500,
+      placeholders: {
+        email: 'Enter your email address',
+        fullName: 'Enter your full name',
+        message: 'Tell us how we can help you...',
+        phone: 'Enter your phone number',
+        preferredBranch: 'Select a branch',
+        preferredDate: 'Select date',
+        preferredTime: 'Select time',
+        service: 'Select a service',
+      },
+      services: landingPageContent.services.map((service) => service.name),
+      submitLabel: 'Send Inquiry',
+      times: ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'],
+      title: 'Send Us a Message',
+    },
+    hero: {
+      backgroundImageAlt: 'Bright modern dental treatment room',
+      backgroundImageUrl: '/assets/landing/figma-branches/image2_183_4173.png',
+      eyebrow: 'Get In Touch',
+      info: [
+        {
+          description: '098 701 302\n012 964 200',
+          icon: 'phone',
+          label: 'Call Us',
+          value: '098 701 302\n012 964 200',
+        },
+        {
+          description: 'info@arunreahdental.com',
+          icon: 'email',
+          label: 'Email Us',
+          value: 'info@arunreahdental.com',
+        },
+        {
+          description: 'Mon - Sun\n8:00 AM - 7:00 PM',
+          icon: 'clock',
+          label: 'Opening Hours',
+          value: 'Mon - Sun\n8:00 AM - 7:00 PM',
+        },
+        {
+          description: '2 branches in Phnom Penh',
+          icon: 'location',
+          label: 'Visit Us',
+          value: '2 branches in Phnom Penh',
+        },
+      ],
+      subtitle: 'We are here to answer your questions, help you choose the right branch, and book your appointment with ease.',
+      title: 'Contact Arunreah',
+    },
+    maps: [
+      {
+        imageAlt: 'Map preview for Arunreah Dental Toul Tompoung Branch',
+        imageUrl: '/assets/landing/contact-map.svg',
+        label: 'Arunreah Dental',
+      },
+      {
+        imageAlt: 'Map preview for Arunreah Dental Psa Chas Branch',
+        imageUrl: '/assets/landing/contact-map.svg',
+        label: 'Arunreah Dental',
+      },
+    ],
+    navigation: pageNavigation(landingPageContent.navigation),
+    services: landingPageContent.services,
   };
 }
 

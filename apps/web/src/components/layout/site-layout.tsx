@@ -1,5 +1,5 @@
 import { useState, type PropsWithChildren } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import type { LandingNavigationItem, LandingService } from '@/features/landing-page/types';
 
@@ -18,6 +18,7 @@ type SiteLayoutProps = PropsWithChildren<{
 export function SiteLayout({ actions, children, navigation, services = [] }: SiteLayoutProps) {
   const [activeLanguage, setActiveLanguage] = useState<'en' | 'km'>('en');
   const { hash, pathname } = useLocation();
+  const navigate = useNavigate();
 
   const isActiveNavigationItem = (item: LandingNavigationItem) => {
     if (item.href.startsWith('/doctors')) {
@@ -101,11 +102,15 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
                   <img alt="" aria-hidden="true" className="size-3" src={asset('header-phone.svg')} />
                 </span>
               }
+              onClick={() => navigate('/contact')}
               variant="secondary"
             >
               {actions.contactLabel}
             </Button>
-            <Button className="h-9 min-h-9 rounded-full bg-[#3696b9] px-5 py-0 text-[14px] font-bold shadow-[0_10px_15px_-3px_#cffafe,0_4px_6px_-4px_#cffafe] hover:bg-[#2f8fb0]">
+            <Button
+              className="h-9 min-h-9 rounded-full bg-[#3696b9] px-5 py-0 text-[14px] font-bold shadow-[0_10px_15px_-3px_#cffafe,0_4px_6px_-4px_#cffafe] hover:bg-[#2f8fb0]"
+              onClick={() => navigate('/contact')}
+            >
               {actions.appointmentLabel}
             </Button>
             <div aria-label="Language selector" className="hidden items-center gap-2 pl-2 sm:flex" role="group">
