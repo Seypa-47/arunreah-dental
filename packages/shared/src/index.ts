@@ -73,4 +73,17 @@ export type {
   DoctorLanguage,
   UpdateDoctorInput,
 } from './schemas/doctors';
+export {
+  adminShowcaseListQuerySchema,
+  createShowcaseSchema,
+  publicShowcaseQuerySchema,
+  showcaseStatusValues,
+  updateShowcaseSchema,
+} from './schemas/showcases';
+export type {
+  AdminShowcaseListQuery,
+  CreateShowcaseInput,
+  ShowcaseLanguage,
+  UpdateShowcaseInput,
+} from './schemas/showcases';
 export type { ApiError, ApiResponse, ApiSuccess } from './api/response';
