@@ -4,6 +4,7 @@ export type Bindings = {
   APP_ENV: 'development' | 'staging' | 'production';
   CORS_ALLOWED_ORIGINS: string;
   MEDIA_PUBLIC_BASE_URL?: string;
+  TURNSTILE_SECRET_KEY?: string;
 };
 
 export type AppVariables = {

@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, index, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { check, index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { admins } from './admins';
 import { appointmentStatusValues, timestamps } from './common';
 import { branches } from './branches';
@@ -10,6 +10,8 @@ export const appointments = sqliteTable(
   'appointments',
   {
     id: text('id').primaryKey(),
+    reference: text('reference').notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
     status: text('status', { enum: appointmentStatusValues }).notNull().default('PENDING'),
     serviceId: text('service_id')
       .notNull()
@@ -30,7 +32,9 @@ export const appointments = sqliteTable(
     patientNote: text('patient_note'),
     preferredDate: text('preferred_date').notNull(),
     preferredTime: text('preferred_time').notNull(),
-    locale: text('locale', { enum: ['en', 'km'] }).notNull().default('en'),
+    locale: text('locale', { enum: ['en', 'km'] })
+      .notNull()
+      .default('en'),
     statusUpdatedAt: text('status_updated_at'),
     statusUpdatedByAdminId: text('status_updated_by_admin_id').references(() => admins.id, {
       onDelete: 'set null',
@@ -45,11 +49,26 @@ export const appointments = sqliteTable(
     index('appointments_service_id_idx').on(table.serviceId),
     index('appointments_branch_id_idx').on(table.branchId),
     index('appointments_created_at_idx').on(table.createdAt),
+    uniqueIndex('appointments_reference_unique').on(table.reference),
+    uniqueIndex('appointments_idempotency_key_unique').on(table.idempotencyKey),
     index('appointments_status_preferred_date_idx').on(table.status, table.preferredDate),
     check(
       'appointments_status_check',
       sql`status in ('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED')`,
     ),
     check('appointments_locale_check', sql`locale in ('en', 'km')`),
+  ],
+);
+
+export const appointmentRequestRateLimits = sqliteTable(
+  'appointment_request_rate_limits',
+  {
+    key: text('key').primaryKey(),
+    attempts: integer('attempts').notNull().default(0),
+    windowStartedAt: text('window_started_at').notNull(),
+    ...timestamps(),
+  },
+  (table) => [
+    index('appointment_request_rate_limits_window_started_at_idx').on(table.windowStartedAt),
   ],
 );
