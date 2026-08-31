@@ -41,6 +41,7 @@ const state = vi.hoisted(() => ({
   appointments: [] as AppointmentRecord[],
   rateLimits: new Map<string, { attempts: number; windowStartedAt: string }>(),
   notificationReferences: [] as string[],
+  notificationPayloads: [] as Array<{ reference: string; status?: string; patientName?: string }>,
   notificationFails: false,
   createFails: false,
 }));
@@ -73,8 +74,9 @@ vi.mock('../src/repositories/appointment.repository', () => ({
   },
 }));
 vi.mock('../src/services/appointment-notification.service', () => ({
-  notifyClinicOfAppointment: async ({ reference }: { reference: string }) => {
+  notifyClinicOfAppointment: async ({ reference, ...payload }: { reference: string }) => {
     state.notificationReferences.push(reference);
+    state.notificationPayloads.push({ reference, ...payload });
     if (state.notificationFails) throw new Error('Notification provider failed');
   },
 }));
@@ -125,6 +127,7 @@ beforeEach(() => {
   state.appointments = [];
   state.rateLimits.clear();
   state.notificationReferences = [];
+  state.notificationPayloads = [];
   state.notificationFails = false;
   state.createFails = false;
   state.services.set(ids.service, {
@@ -160,6 +163,10 @@ describe('public appointment request API', () => {
       patientPhone: '+855 12 345 678',
     });
     expect(state.notificationReferences).toEqual([body.data.reference]);
+    expect(state.notificationPayloads[0]).toMatchObject({
+      reference: body.data.reference,
+      patientName: 'Sok Dara',
+    });
   });
 
   it('accepts No Preference when doctorId is omitted or null', async () => {
@@ -243,5 +250,6 @@ describe('public appointment request API', () => {
     expect(response.status).toBe(500);
     expect(state.appointments).toHaveLength(0);
     expect(state.notificationReferences).toEqual([]);
+    expect(state.notificationPayloads).toEqual([]);
   });
 });
