@@ -21,32 +21,46 @@ function CalendarIcon() {
   return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
 }
 
+function PhoneIcon() {
+  return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-phone.svg')} />;
+}
+
+function EducationIcon({ index }: { index: number }) {
+  const icons = ['service-icon-general.svg', 'service-icon-implant.svg', 'service-icon-orthodontic.svg', 'service-icon-root-canal.svg'];
+  const icon = icons[index % icons.length] ?? 'service-icon-general.svg';
+
+  return (
+    <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[#f0f7fa]">
+      <img alt="" aria-hidden="true" className="max-h-[18px] max-w-[18px]" src={asset(icon)} />
+    </span>
+  );
+}
+
 function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
   return (
-    <section className="bg-[#f7fafc] pb-[72px] pt-[64px]">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-10 px-4 sm:px-6 lg:grid-cols-[490px_1fr] lg:items-center lg:px-0">
-        <div className="overflow-hidden rounded-lg border border-[#e7eef2] bg-[#edf5f8] shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
-          <img alt={doctor.imageAlt} className="h-[560px] w-full object-cover object-top" src={doctor.imageUrl} />
+    <section className="bg-white pb-[58px] pt-[52px]">
+      <div className="mx-auto grid w-full max-w-[1120px] gap-8 px-4 sm:px-6 lg:grid-cols-[390px_1fr] lg:items-center lg:px-0">
+        <div className="overflow-hidden rounded-2xl border border-[#e7eef2] bg-[#edf5f8] shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
+          <img alt={doctor.imageAlt} className="h-[448px] w-full object-cover object-top" src={doctor.imageUrl} />
         </div>
         <div>
-          <a
-            className="mb-8 inline-flex text-[14px] font-bold leading-5 text-[#3695b9] transition hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
-            href="/doctors"
-          >
-            Back to doctors
-          </a>
-          <p className="text-[13px] font-extrabold uppercase leading-5 tracking-[0.6px] text-[#3695b9]">
-            {doctor.credential}
+          <p className="text-[12px] font-extrabold uppercase leading-5 tracking-[0.6px] text-[#3695b9]">
+            {doctor.detail.roleTitle}
           </p>
-          <h1 className="mt-4 text-[40px] font-extrabold leading-[48px] text-[#005687] sm:text-[52px] sm:leading-[60px]">
+          <h1 className="mt-3 text-[34px] font-extrabold leading-[42px] text-[#005687] sm:text-[42px] sm:leading-[50px]">
             {doctor.name}
           </h1>
-          <p className="mt-5 text-[22px] font-semibold leading-8 text-[#334155]">{doctor.focus}</p>
-          <p className="mt-5 max-w-[590px] text-[16px] font-medium leading-8 text-[#64748b]">
-            {doctor.detail.pageDescription}
-          </p>
+          <p className="mt-3 max-w-[520px] text-[16px] font-medium leading-7 text-[#5f6974]">{doctor.detail.heroSummary}</p>
+          <div className="mt-5 grid gap-4 border-y border-[#e7eef2] py-6 sm:grid-cols-3">
+            {doctor.detail.stats.map((stat) => (
+              <div key={stat.label}>
+                <p className="text-[26px] font-extrabold leading-8 text-[#3695b9]">{stat.value}</p>
+                <p className="mt-1 text-[12px] font-semibold leading-4 text-[#5f6974]">{stat.label}</p>
+              </div>
+            ))}
+          </div>
           <Button
-            className="mt-8 min-h-[50px] rounded-md bg-[#3695b9] px-8 text-[15px] font-extrabold shadow-[0_10px_20px_rgba(54,149,185,0.22)] hover:bg-[#2f8fb0]"
+            className="mt-6 min-h-[44px] rounded-md bg-[#3695b9] px-6 text-[14px] font-extrabold shadow-[0_8px_16px_rgba(54,149,185,0.18)] hover:bg-[#2f8fb0]"
             icon={<CalendarIcon />}
           >
             {doctor.bookingLabel ?? 'Book Appointment'}
@@ -57,11 +71,11 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
   );
 }
 
-function DetailList({ items }: { items: string[] }) {
+function ExpertiseList({ items }: { items: string[] }) {
   return (
-    <ul className="mt-5 space-y-3">
+    <ul className="mt-4 space-y-2.5">
       {items.map((item) => (
-        <li className="flex items-start gap-3 text-[15px] font-medium leading-6 text-[#475569]" key={item}>
+        <li className="flex items-start gap-3 text-[14px] font-medium leading-6 text-[#475569]" key={item}>
           <span aria-hidden="true" className="mt-2 size-2 shrink-0 rounded-full bg-[#3695b9]" />
           {item}
         </li>
@@ -70,30 +84,117 @@ function DetailList({ items }: { items: string[] }) {
   );
 }
 
+function CertificationCard({
+  certification,
+  index,
+}: {
+  certification: LandingDoctor['detail']['certifications'][number];
+  index: number;
+}) {
+  return (
+    <Card className="flex min-h-[78px] items-center gap-4 rounded-lg border-[#e7eef2] bg-white p-4 shadow-none">
+      <EducationIcon index={index} />
+      <div>
+        <h3 className="text-[13px] font-extrabold leading-5 text-[#005687]">{certification.title}</h3>
+        <p className="text-[12px] font-medium leading-5 text-[#64748b]">{certification.institution}</p>
+      </div>
+    </Card>
+  );
+}
+
+function OtherSpecialistCard({ doctor }: { doctor: LandingDoctor }) {
+  return (
+    <Card className="overflow-hidden rounded-lg border-[#e7eef2] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]">
+      <a
+        aria-label={`View profile for ${doctor.name}`}
+        className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+        href={doctor.detail.profileHref}
+      >
+        <img alt={doctor.imageAlt} className="h-[186px] w-full bg-[#edf5f8] object-cover object-top" src={doctor.imageUrl} />
+        <div className="bg-white px-4 py-3">
+          <h3 className="text-[13px] font-extrabold leading-5 text-[#1f2937]">{doctor.name}</h3>
+          <p className="mt-1 text-[12px] font-semibold leading-4 text-[#3695b9]">{doctor.focus ?? doctor.specialty}</p>
+        </div>
+      </a>
+    </Card>
+  );
+}
+
 function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
   return (
-    <section className="bg-white pb-[76px] pt-[68px]">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-[1fr_410px] lg:px-0">
-        <Card className="rounded-lg border-[#e7eef2] p-8 shadow-[0_1px_2px_rgba(15,23,42,0.06)] sm:p-10">
-          <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.2px] text-[#3695b9]">Profile</p>
-          <h2 className="mt-3 text-[30px] font-extrabold leading-9 text-[#005687]">About {doctor.name}</h2>
-          <p className="mt-6 text-[16px] font-normal leading-8 text-[#5f6974]">{doctor.detail.biography}</p>
-        </Card>
-        <div className="space-y-8">
-          <Card className="rounded-lg border-[#e7eef2] p-8 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
-            <h2 className="text-[22px] font-extrabold leading-8 text-[#005687]">Education</h2>
-            <DetailList items={doctor.detail.education} />
-          </Card>
-          <Card className="rounded-lg border-[#e7eef2] p-8 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
-            <h2 className="text-[22px] font-extrabold leading-8 text-[#005687]">Expertise</h2>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {doctor.detail.services.map((service) => (
-                <Badge className="rounded-full bg-[#f0f9fa] px-3 py-1 text-[12px] font-extrabold text-[#005687]" key={service}>
-                  {service}
-                </Badge>
+    <section className="bg-[#f7fafc] pb-[62px] pt-[54px]">
+      <div className="mx-auto grid w-full max-w-[1120px] gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_310px] lg:px-0">
+        <div>
+          <section>
+            <h2 className="text-[26px] font-extrabold leading-8 text-[#005687]">About the Doctor</h2>
+            <div className="mt-6 space-y-5 text-[15px] font-medium leading-7 text-[#5f6974]">
+              {doctor.detail.about.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
               ))}
             </div>
+          </section>
+
+          <section className="mt-12">
+            <h2 className="text-[26px] font-extrabold leading-8 text-[#005687]">Education & Certifications</h2>
+            <div className="mt-7 grid gap-5 sm:grid-cols-2">
+              {doctor.detail.certifications.map((certification, index) => (
+                <CertificationCard certification={certification} index={index} key={certification.title} />
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <aside className="space-y-7">
+          <Card className="rounded-2xl border-[#e7eef2] bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
+            <h2 className="text-[20px] font-extrabold leading-7 text-[#005687]">Areas of Expertise</h2>
+            <ExpertiseList items={doctor.detail.services} />
           </Card>
+          <Card className="rounded-2xl !border-transparent !bg-[#3695b9] p-6 text-white shadow-[0_12px_24px_rgba(54,149,185,0.20)]">
+            <h2 className="text-[20px] font-extrabold leading-7">Schedule an Appointment</h2>
+            <p className="mt-4 text-[13px] font-medium leading-5 text-white/75">
+              Select a convenient time for your consultation with {doctor.name}.
+            </p>
+            <Button className="mt-6 min-h-[42px] w-full rounded-lg bg-[#2fc0d2] text-[13px] font-extrabold hover:bg-[#26adbd]">
+              Book Now
+            </Button>
+            <a
+              className="mt-5 flex items-center justify-center gap-2 text-[13px] font-bold leading-5 text-white/85 hover:underline"
+              href="tel:+85523456789"
+            >
+              <PhoneIcon />
+              +855 23 456 789
+            </a>
+          </Card>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+function OtherSpecialists({ doctors }: { doctors: LandingDoctor[] }) {
+  if (doctors.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="bg-[#f7fafc] pb-[78px] pt-[54px]">
+      <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-0">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-[28px] font-extrabold leading-9 text-[#005687]">Other Specialists</h2>
+            <p className="mt-3 text-[15px] font-medium leading-6 text-[#5f6974]">
+              Meet our team of highly qualified dental experts.
+            </p>
+          </div>
+          <div className="hidden gap-3 sm:flex" aria-hidden="true">
+            <span className="grid size-9 place-items-center rounded-full border border-[#3695b9] text-[#3695b9]">&lsaquo;</span>
+            <span className="grid size-9 place-items-center rounded-full bg-[#3695b9] text-white">&rsaquo;</span>
+          </div>
+        </div>
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {doctors.map((doctor) => (
+            <OtherSpecialistCard doctor={doctor} key={doctor.detail.profileHref} />
+          ))}
         </div>
       </div>
     </section>
@@ -106,6 +207,7 @@ function DoctorDetailView({ content }: { content: DoctorDetailContent & { doctor
       <main>
         <DoctorHero doctor={content.doctor} />
         <DoctorDetails doctor={content.doctor} />
+        <OtherSpecialists doctors={content.otherDoctors} />
       </main>
       <SiteFooter {...content.footer} />
     </SiteLayout>
@@ -116,9 +218,9 @@ function DoctorDetailSkeleton() {
   return (
     <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
       <main aria-busy="true" aria-label="Loading doctor detail page">
-        <section className="bg-[#f7fafc] py-[64px]">
-          <div className="mx-auto grid max-w-[1280px] gap-10 px-4 sm:px-6 lg:grid-cols-[490px_1fr] lg:px-0">
-            <div className="h-[560px] animate-pulse rounded-lg bg-[#d6ecf3]" />
+        <section className="bg-[#f7fafc] py-[52px]">
+          <div className="mx-auto grid max-w-[1120px] gap-8 px-4 sm:px-6 lg:grid-cols-[390px_1fr] lg:px-0">
+            <div className="h-[448px] animate-pulse rounded-lg bg-[#d6ecf3]" />
             <div className="py-10">
               <div className="h-5 w-48 animate-pulse rounded bg-[#d6ecf3]" />
               <div className="mt-5 h-16 w-full max-w-[420px] animate-pulse rounded bg-[#d6ecf3]" />

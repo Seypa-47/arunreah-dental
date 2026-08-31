@@ -7,27 +7,42 @@ import type {
 } from '@/features/landing-page/types';
 
 function doctorDetail({
+  about,
+  certifications,
   education,
   experience = 'Full profile information will be updated soon.',
+  heroSummary,
   pageDescription,
   profileHref,
+  roleTitle,
   services,
+  stats,
 }: {
+  about: string[];
+  certifications: LandingDoctor['detail']['certifications'];
   education: string[];
   experience?: string;
+  heroSummary: string;
   pageDescription: string;
   profileHref: string;
+  roleTitle: string;
   services: string[];
+  stats: LandingDoctor['detail']['stats'];
 }): LandingDoctor['detail'] {
   return {
+    about,
     biography:
       'Full doctor biography and consultation information will be updated when the clinic provides the final profile content.',
+    certifications,
     education,
     experience,
+    heroSummary,
     languages: ['English', 'Khmer'],
     pageDescription,
     profileHref,
+    roleTitle,
     services,
+    stats,
   };
 }
 
@@ -36,11 +51,28 @@ const doctorProfiles: LandingDoctor[] = [
     bookingLabel: 'Book with Asst.Prof. Heng',
     credential: 'DDS, 25+ YEARS EXPERIENCE',
     detail: doctorDetail({
+      about: [
+        'Asst. Prof. Sreng Heng is a senior implant specialist with more than 25 years of clinical experience in restorative and implant dentistry.',
+        'His work combines academic discipline with practical treatment planning, helping patients receive stable, natural-looking implant and rehabilitation care.',
+      ],
+      certifications: [
+        { institution: 'University of Health Sciences', title: 'DDS (Doctor of Dental Surgery)' },
+        { institution: 'Advanced implant training', title: 'Certificate of Implant' },
+        { institution: 'Faculty of Dentistry', title: 'Assistant Professor' },
+      ],
       education: ['DDS', 'Certificate of Implant'],
       experience: '25+ years of dental experience with advanced implant care.',
+      heroSummary:
+        'A leading expert in implantology with over 25 years of clinical excellence and academic contribution.',
       pageDescription: 'Implant specialist with 25+ years of dental experience.',
       profileHref: '/doctors/sreng-heng',
+      roleTitle: 'Senior Implant Specialist',
       services: ['Implant Dentistry'],
+      stats: [
+        { label: 'Years Experience', value: '25+' },
+        { label: 'Implant Focus', value: '10k+' },
+        { label: 'Patient Care', value: '99%' },
+      ],
     }),
     focus: 'Implant Specialist',
     imageAlt: 'Portrait of Asst.Prof. Sreng Heng',
@@ -52,10 +84,28 @@ const doctorProfiles: LandingDoctor[] = [
     bookingLabel: 'Book with Dr. Sontary',
     credential: 'DDS, POS',
     detail: doctorDetail({
+      about: [
+        'Dr. Chho Sonthary focuses on orthodontics and implant dentistry, with training through Progressive Orthodontics Seminars and implant certification.',
+        'She brings a careful, patient-centered approach to smile alignment, functional bite improvement, and long-term restorative planning.',
+      ],
+      certifications: [
+        { institution: 'University of Health Sciences', title: 'DDS (Doctor of Dental Surgery)' },
+        { institution: 'Progressive Orthodontics Seminars', title: 'POS Orthodontics Training' },
+        { institution: 'Advanced implant training', title: 'Certificate of Implant' },
+        { institution: 'International Congress of Oral Implantologists', title: 'ICCDE Member' },
+      ],
       education: ['DDS', 'Progressive Orthodontics Seminars POS', 'Certificate of Implant', 'Member of ICCDE'],
+      heroSummary:
+        'An orthodontics and implant dentistry clinician focused on healthy alignment, confident smiles, and precise restorative care.',
       pageDescription: 'Orthodontics and implant dentistry specialist.',
       profileHref: '/doctors/chho-sonthary',
+      roleTitle: 'Orthodontics & Implant Dentistry',
       services: ['Orthodontics', 'Implant Dentistry'],
+      stats: [
+        { label: 'Core Specialties', value: '2' },
+        { label: 'Certifications', value: '4' },
+        { label: 'Patient Care', value: '99%' },
+      ],
     }),
     focus: 'ICCDE Member',
     imageAlt: 'Portrait of Dr. Chho Sonthary',
@@ -67,10 +117,28 @@ const doctorProfiles: LandingDoctor[] = [
     bookingLabel: 'Book with Dr. Delux',
     credential: 'M.SC. ORTHODONTICS',
     detail: doctorDetail({
+      about: [
+        'Dr. Yim Delux is an orthodontics specialist with M.Sc. training from Duisburg-Essen University in Germany.',
+        'His clinical focus is on structured orthodontic planning, bite correction, and creating balanced smiles through modern orthodontic techniques.',
+      ],
+      certifications: [
+        { institution: 'Duisburg-Essen University, Germany', title: 'M.Sc. Orthodontics' },
+        { institution: 'Progressive Orthodontics Seminars', title: 'POS Orthodontics Training' },
+        { institution: 'University of Health Sciences', title: 'DDS (Doctor of Dental Surgery)' },
+        { institution: 'PFA, ICCDE, CDA, CAO', title: 'Professional Memberships' },
+      ],
       education: ['M.Sc. Orthodontics', 'Progressive Orthodontics Seminars POS', 'DDS'],
+      heroSummary:
+        'A Germany-trained orthodontics specialist helping patients improve alignment, bite function, and smile confidence.',
       pageDescription: 'Orthodontics specialist trained in Germany.',
       profileHref: '/doctors/yim-delux',
+      roleTitle: 'Orthodontics Specialist',
       services: ['Orthodontics'],
+      stats: [
+        { label: 'Specialty Focus', value: 'M.Sc.' },
+        { label: 'Memberships', value: '4' },
+        { label: 'Patient Care', value: '99%' },
+      ],
     }),
     focus: 'Orthodontics Specialist (Germany)',
     imageAlt: 'Portrait of Dr. Yim Delux',
@@ -82,10 +150,27 @@ const doctorProfiles: LandingDoctor[] = [
     bookingLabel: 'Book with Dr. Kunthy',
     credential: 'DDS, DIPLOMA IN IMPLANTOLOGY',
     detail: doctorDetail({
+      about: [
+        'Dr. Chuong Kunthy specializes in implant dentistry with implant training from the University of Puthisastra and diploma-level implant study in Germany.',
+        'He focuses on careful implant treatment planning, functional restoration, and predictable outcomes for missing-tooth replacement.',
+      ],
+      certifications: [
+        { institution: 'University of Health Sciences', title: 'DDS (Doctor of Dental Surgery)' },
+        { institution: 'University of Puthisastra', title: 'Certificate of Implant' },
+        { institution: 'Frankfurt University, Germany', title: 'Diploma of Implant' },
+      ],
       education: ['DDS', 'Certificate of Implant', 'Diploma of Implant, Frankfurt University Germany'],
+      heroSummary:
+        'A Germany-trained implantology clinician focused on precise implant planning and long-lasting restorative outcomes.',
       pageDescription: 'Implantology specialist trained in Germany.',
       profileHref: '/doctors/chuong-kunthy',
+      roleTitle: 'Implantology Specialist',
       services: ['Implant Dentistry'],
+      stats: [
+        { label: 'Implant Training', value: 'DE' },
+        { label: 'Credentials', value: '3' },
+        { label: 'Patient Care', value: '99%' },
+      ],
     }),
     focus: 'Implantology Specialist (Germany)',
     imageAlt: 'Portrait of Dr. Chuong Kunthy',
@@ -97,10 +182,27 @@ const doctorProfiles: LandingDoctor[] = [
     bookingLabel: 'Book with Dr. Thanith',
     credential: 'DDS',
     detail: doctorDetail({
+      about: [
+        'Dr. Taing Thanith provides digital smile design and implant dentistry care, combining aesthetic planning with restorative function.',
+        'His approach helps patients visualize treatment goals and receive coordinated care for natural-looking smile improvements.',
+      ],
+      certifications: [
+        { institution: 'University of Health Sciences', title: 'DDS (Doctor of Dental Surgery)' },
+        { institution: 'Digital Smile Design Training', title: 'Diploma of Digital Smile' },
+        { institution: 'Advanced implant training', title: 'Certificate of Implant' },
+      ],
       education: ['DDS', 'Diploma of Digital Smile', 'Certificate of Implant'],
+      heroSummary:
+        'A digital smile design clinician focused on aesthetic planning, implant care, and confident smile transformation.',
       pageDescription: 'Digital smile design and implant dentistry care.',
       profileHref: '/doctors/taing-thanith',
+      roleTitle: 'Digital Smile Design Clinician',
       services: ['Digital Smile Design', 'Implant Dentistry'],
+      stats: [
+        { label: 'Smile Planning', value: 'DSD' },
+        { label: 'Credentials', value: '3' },
+        { label: 'Patient Care', value: '99%' },
+      ],
     }),
     focus: 'Digital Smile Design',
     imageAlt: 'Portrait of Dr. Taing Thanith',
@@ -112,6 +214,17 @@ const doctorProfiles: LandingDoctor[] = [
     bookingLabel: 'Book with Dr. Kimly',
     credential: 'DDS, POS',
     detail: doctorDetail({
+      about: [
+        'Dr. Chea Kimly works across full mouth reconstruction, orthodontics, endodontics, and implant dentistry.',
+        'His broad training supports complex treatment plans where bite, tooth structure, root health, and restorative outcomes need to work together.',
+      ],
+      certifications: [
+        { institution: 'University of Health Sciences', title: 'DDS (Doctor of Dental Surgery)' },
+        { institution: 'Progressive Orthodontics Seminars', title: 'POS Orthodontics Training' },
+        { institution: 'Advanced endodontic training', title: 'Certificate of Endodontic' },
+        { institution: 'Advanced implant training', title: 'Certificate of Implant' },
+        { institution: 'Full Mouth Reconstruction Training', title: 'Full Mouth Reconstruction' },
+      ],
       education: [
         'DDS',
         'Progressive Orthodontics Seminars POS',
@@ -119,9 +232,17 @@ const doctorProfiles: LandingDoctor[] = [
         'Certificate of Implant',
         'Full Mouth Reconstruction',
       ],
+      heroSummary:
+        'A multidisciplinary clinician focused on full mouth reconstruction, orthodontics, endodontics, and implant care.',
       pageDescription: 'Full mouth reconstruction, orthodontics, endodontics, and implant care.',
       profileHref: '/doctors/chea-kimly',
+      roleTitle: 'Full Mouth Reconstruction Clinician',
       services: ['Full Mouth Reconstruction', 'Orthodontics', 'Endodontics', 'Implant Dentistry'],
+      stats: [
+        { label: 'Care Areas', value: '4' },
+        { label: 'Credentials', value: '5' },
+        { label: 'Patient Care', value: '99%' },
+      ],
     }),
     focus: 'Full Mouth Reconstruction',
     imageAlt: 'Portrait of Dr. Chea Kimly',
@@ -133,10 +254,27 @@ const doctorProfiles: LandingDoctor[] = [
     bookingLabel: 'Book with Dr. Bunhabb',
     credential: 'ENDODONTIC',
     detail: doctorDetail({
+      about: [
+        'Dr. Heng Bunhabb focuses on endodontic care and implant dentistry, with certification in both treatment areas.',
+        'He supports patients who need root-focused dental treatment, tooth preservation planning, and implant-based restoration options.',
+      ],
+      certifications: [
+        { institution: 'University of Health Sciences', title: 'DDS (Doctor of Dental Surgery)' },
+        { institution: 'Advanced implant training', title: 'Certificate of Implant' },
+        { institution: 'Advanced endodontic training', title: 'Certificate of Endodontic' },
+      ],
       education: ['Certificate of Implant', 'Certificate of Endodontic'],
+      heroSummary:
+        'An endodontic and implant dentistry clinician focused on tooth preservation and restorative treatment planning.',
       pageDescription: 'Endodontic and implantology specialist.',
       profileHref: '/doctors/heng-bunhabb',
+      roleTitle: 'Endodontic & Implant Dentistry',
       services: ['Endodontics', 'Implant Dentistry'],
+      stats: [
+        { label: 'Core Specialties', value: '2' },
+        { label: 'Credentials', value: '3' },
+        { label: 'Patient Care', value: '99%' },
+      ],
     }),
     focus: 'Implantology Specialist',
     imageAlt: 'Portrait of Dr. Heng Bunhabb',
@@ -395,11 +533,14 @@ export async function fetchDoctorsPage(): Promise<DoctorsPageContent> {
 }
 
 export async function fetchDoctorDetail(profileSlug: string | undefined): Promise<DoctorDetailContent> {
+  const doctor = doctorProfiles.find((profile) => profile.detail.profileHref.endsWith(`/${profileSlug}`));
+
   return {
     actions: landingPageContent.actions,
-    doctor: doctorProfiles.find((doctor) => doctor.detail.profileHref.endsWith(`/${profileSlug}`)),
+    doctor,
     footer: publicPageFooter(),
     navigation: pageNavigation(landingPageContent.navigation),
+    otherDoctors: doctorProfiles.filter((profile) => profile.detail.profileHref !== doctor?.detail.profileHref).slice(0, 4),
     services: landingPageContent.services,
   };
 }
