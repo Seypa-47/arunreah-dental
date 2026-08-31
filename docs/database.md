@@ -117,6 +117,21 @@ profile instead so the optional appointment reference and immutable doctor-name
 snapshot remain historically valid. Booking will continue to treat choosing a
 doctor as optional; no scheduling or availability fields are stored here.
 
+## Showcase content
+
+`showcases` is a small bilingual article/case content model with title,
+category, summary, body, cover-image R2 object key, SEO metadata, publication
+status, homepage visibility, and display order. It is not a generic page or
+block editor. `showcase_sections` provides up to twelve ordered TEXT, IMAGE, or
+QUOTE sections; its values are display content only.
+
+`showcase_related` permits up to three unique related showcases and cannot
+point an item at itself. Public responses return only published related card
+summaries. Supplying `sections` or `relatedShowcaseIds` in a PATCH replaces the
+complete collection; omitting either retains it. Deleting a showcase first
+removes its section and both incoming/outgoing related-content rows. R2 objects
+are not automatically deleted because their lifecycle may be shared.
+
 ## Migration workflow
 
 Generate migration SQL with `pnpm --filter @arunreah/api db:generate`. Apply the

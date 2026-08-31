@@ -12,9 +12,17 @@ export const showcases = sqliteTable(
     displayOrder: integer('display_order').notNull().default(0),
     titleEn: text('title_en').notNull(),
     titleKm: text('title_km').notNull(),
+    categoryEn: text('category_en'),
+    categoryKm: text('category_km'),
     excerptEn: text('excerpt_en'),
     excerptKm: text('excerpt_km'),
+    bodyEn: text('body_en'),
+    bodyKm: text('body_km'),
     coverImageKey: text('cover_image_key'),
+    metaTitleEn: text('meta_title_en'),
+    metaTitleKm: text('meta_title_km'),
+    metaDescriptionEn: text('meta_description_en'),
+    metaDescriptionKm: text('meta_description_km'),
     ...timestamps(),
   },
   (table) => [
@@ -34,7 +42,9 @@ export const showcaseSections = sqliteTable(
     showcaseId: text('showcase_id')
       .notNull()
       .references(() => showcases.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
-    sectionType: text('section_type', { enum: ['TEXT', 'IMAGE', 'QUOTE'] }).notNull().default('TEXT'),
+    sectionType: text('section_type', { enum: ['TEXT', 'IMAGE', 'QUOTE'] })
+      .notNull()
+      .default('TEXT'),
     headingEn: text('heading_en'),
     headingKm: text('heading_km'),
     bodyEn: text('body_en'),
