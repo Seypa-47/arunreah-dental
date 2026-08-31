@@ -36,6 +36,12 @@ TURNSTILE_SECRET_KEY
 
 No real secret is required for the current health-check-only foundation.
 
+Public appointment requests require `TURNSTILE_SECRET_KEY` in staging and
+production. Set it with `wrangler secret put TURNSTILE_SECRET_KEY --env staging`
+or `--env production`; never place it in `wrangler.jsonc` or `VITE_*` values.
+Local development may omit it, allowing local API testing without a real
+Turnstile challenge.
+
 ## Public R2 media origin
 
 `MEDIA_PUBLIC_BASE_URL` is a non-secret Worker variable used only to form the

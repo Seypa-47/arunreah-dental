@@ -18,6 +18,7 @@
 | Area                 | Tables                                                                          | Notes                                                                                                    |
 | -------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | Administration       | `admins`, `admin_sessions`, `admin_login_rate_limits`                           | Admin roles, credentials, opaque hashed session-token metadata, and login-rate-limit state.              |
+| Appointment requests | `appointments`, `appointment_request_rate_limits`                               | Patient request records, immutable CMS snapshots, idempotency state, and public submission rate limits.  |
 | Settings             | `clinic_settings`, `contact_settings`                                           | Singleton-style configuration records. Clinic information is enforced as one application-managed record. |
 | Public CMS           | `branches`, `services`, `doctors`, `showcases`                                  | Slugged bilingual content with publication status and display ordering.                                  |
 | Content children     | `service_benefits`, `doctor_expertise`, `doctor_education`, `showcase_sections` | Ordered bilingual child content.                                                                         |
@@ -46,6 +47,12 @@ appointments *—1 branches
 
 `appointments.status` has a database check constraint permitting exactly:
 `PENDING`, `CONFIRMED`, `COMPLETED`, and `CANCELLED`.
+
+Public submissions always create `PENDING` records. `reference` is a
+patient-safe unique value for acknowledgement and staff search; `idempotency_key`
+stores a SHA-256 hash of the client-provided UUID, preventing duplicate retry
+records without storing the raw idempotency token. Existing historical rows are
+backfilled with `LEGACY-<id>` values by migration `0008`.
 
 Appointments require a service and branch. Doctors are optional, allowing a
 patient to submit “no preference.” Service, doctor, and branch name snapshots
