@@ -6,6 +6,8 @@ import type {
   LandingDoctor,
   LandingPageContent,
   LandingNavigationItem,
+  LandingService,
+  ServicesPageContent,
 } from '@/features/landing-page/types';
 
 function doctorDetail({
@@ -296,6 +298,8 @@ function pageNavigation(navigation: LandingNavigationItem[]) {
     href:
       item.label === 'About'
         ? '/about'
+        : item.label === 'Services'
+          ? '/services'
         : item.label === 'Doctors'
           ? '/doctors'
           : item.label === 'Branches'
@@ -316,12 +320,12 @@ function doctorByHref(profileHref: string) {
 
 function publicPageFooter() {
   const doctorsFooterServiceLinks = [
-    { href: '/#services', label: 'General Dentistry' },
-    { href: '/#services', label: 'Orthodontic' },
-    { href: '/#services', label: 'Root Canal Treatment' },
-    { href: '/#services', label: 'Pediatric Dentistry' },
-    { href: '/#services', label: 'Dental Implant' },
-    { href: '/#services', label: 'Digital Smile Design' },
+    { href: '/services#service-general-dentistry', label: 'General Dentistry' },
+    { href: '/services#service-orthodontics', label: 'Orthodontic' },
+    { href: '/services#service-root-canal', label: 'Root Canal Treatment' },
+    { href: '/services#service-pediatric-dentistry', label: 'Pediatric Dentistry' },
+    { href: '/services#service-dental-implants', label: 'Dental Implant' },
+    { href: '/services#service-cosmetic-dentistry', label: 'Digital Smile Design' },
     { href: '/#showcase', label: 'Showcase' },
   ];
 
@@ -338,11 +342,83 @@ function publicPageFooter() {
           ? doctorsFooterServiceLinks
           : group.links.map((link) => ({
               ...link,
-              href: link.label === 'Doctor' || link.label === 'Doctors' ? '/doctors' : homeHref(link.href),
+              href:
+                link.label === 'Doctor' || link.label === 'Doctors'
+                  ? '/doctors'
+                  : link.label === 'Services'
+                    ? '/services'
+                    : homeHref(link.href),
             })),
     })),
   };
 }
+
+const servicesPageServices: LandingService[] = [
+  {
+    description: 'Routine dental care, examinations, cleaning, fillings, and preventive treatments.',
+    iconAlt: 'General dentistry icon',
+    iconUrl: '/assets/landing/service-icon-general.svg',
+    imageAlt: 'Modern dental equipment for general dentistry',
+    imageUrl: '/assets/landing/branches-clinic.png',
+    name: 'General Dentistry',
+  },
+  {
+    description: 'Modern tooth replacement solutions designed to restore missing teeth, function, and appearance.',
+    iconAlt: 'Dental implants icon',
+    iconUrl: '/assets/landing/service-icon-implant.svg',
+    imageAlt: 'Dental implant model',
+    imageUrl: '/assets/landing/service-implant.png',
+    name: 'Dental Implants',
+  },
+  {
+    description: 'Braces and orthodontic treatments designed to improve tooth alignment and bite.',
+    iconAlt: 'Orthodontics icon',
+    iconUrl: '/assets/landing/service-icon-orthodontic.svg',
+    imageAlt: 'Orthodontic braces model',
+    imageUrl: '/assets/landing/service-orthodontic.png',
+    name: 'Orthodontics',
+  },
+  {
+    description: "Dental treatments focused on improving the appearance and confidence of a patient's smile.",
+    iconAlt: 'Cosmetic dentistry icon',
+    iconUrl: '/assets/landing/service-icon-veneer.svg',
+    imageAlt: 'Cosmetic dentistry smile preview',
+    imageUrl: '/assets/landing/service-veneer.png',
+    name: 'Cosmetic Dentistry',
+  },
+  {
+    description: 'Professional whitening treatment designed to brighten teeth and improve smile appearance.',
+    iconAlt: 'Teeth whitening icon',
+    iconUrl: '/assets/landing/service-icon-smile-design.svg',
+    imageAlt: 'Bright dental treatment room for whitening',
+    imageUrl: '/assets/landing/figma-branches/image3_183_4173.jpg',
+    name: 'Teeth Whitening',
+  },
+  {
+    description: 'Treatment designed to save and restore teeth affected by infection or damage inside the tooth.',
+    iconAlt: 'Root canal icon',
+    iconUrl: '/assets/landing/service-icon-root-canal.svg',
+    imageAlt: 'Root canal treatment model',
+    imageUrl: '/assets/landing/service-root-canal.png',
+    name: 'Root Canal',
+  },
+  {
+    description: 'Friendly dental care specifically designed for children and their developing teeth.',
+    iconAlt: 'Pediatric dentistry icon',
+    iconUrl: '/assets/landing/service-icon-general.svg',
+    imageAlt: 'Pediatric dental care room',
+    imageUrl: '/assets/landing/service-general.png',
+    name: 'Pediatric Dentistry',
+  },
+  {
+    description: 'Specialized procedures including tooth extraction, wisdom tooth treatment, and surgical care.',
+    iconAlt: 'Oral surgery icon',
+    iconUrl: '/assets/landing/service-icon-implant.svg',
+    imageAlt: 'Dental surgical instruments',
+    imageUrl: '/assets/landing/branch-card-clinic.png',
+    name: 'Oral Surgery',
+  },
+];
 
 const landingPageContent: LandingPageContent = {
   actions: {
@@ -641,6 +717,27 @@ export async function fetchBranchesPage(): Promise<BranchesPageContent> {
       branchesTitle: 'Find a Clinic Near You',
     },
     services: landingPageContent.services,
+  };
+}
+
+export async function fetchServicesPage(): Promise<ServicesPageContent> {
+  return {
+    actions: landingPageContent.actions,
+    cta: {
+      consultationLabel: 'Book a Consultation',
+      contactLabel: 'Contact Us',
+      description:
+        'Our dental team can help you understand your options and recommend an appropriate treatment based on your dental needs.',
+      title: 'Not Sure Which Treatment You Need?',
+    },
+    footer: publicPageFooter(),
+    hero: {
+      description:
+        'Explore our range of dental services designed to support your oral health, restore your smile, and provide personalized care for every stage of life.',
+      title: 'Our Services',
+    },
+    navigation: pageNavigation(landingPageContent.navigation),
+    services: servicesPageServices,
   };
 }
 

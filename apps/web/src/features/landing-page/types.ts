@@ -208,3 +208,16 @@ export type BranchesPageContent = Pick<LandingPageContent, 'actions' | 'footer' 
     branchesTitle: string;
   };
 };
+
+export type ServicesPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  cta: {
+    consultationLabel: string;
+    contactLabel: string;
+    description: string;
+    title: string;
+  };
+  hero: {
+    description: string;
+    title: string;
+  };
+};

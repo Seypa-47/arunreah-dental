@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import type { LandingNavigationItem, LandingService } from '@/features/landing-page/types';
 
 const asset = (name: string) => `/assets/landing/${name}`;
-const serviceAnchor = (name: string) => `/#service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
+const serviceId = (name: string) => `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
 
 type SiteLayoutProps = PropsWithChildren<{
   actions: {
@@ -18,6 +18,7 @@ type SiteLayoutProps = PropsWithChildren<{
 export function SiteLayout({ actions, children, navigation, services = [] }: SiteLayoutProps) {
   const [activeLanguage, setActiveLanguage] = useState<'en' | 'km'>('en');
   const { hash, pathname } = useLocation();
+  const serviceAnchor = (name: string) => (pathname === '/' ? `#${serviceId(name)}` : `/services#${serviceId(name)}`);
 
   const isActiveNavigationItem = (item: LandingNavigationItem) => {
     if (item.href.startsWith('/doctors')) {

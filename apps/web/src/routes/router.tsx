@@ -4,6 +4,7 @@ import { BranchesPage } from '@/features/branches-page/BranchesPage';
 import { DoctorDetailPage } from '@/features/doctor-detail-page/DoctorDetailPage';
 import { DoctorsPage } from '@/features/doctors-page/DoctorsPage';
 import { LandingPage } from '@/features/landing-page/LandingPage';
+import { ServicesPage } from '@/features/services-page/ServicesPage';
 
 export const router = createBrowserRouter([
   {
@@ -13,6 +14,10 @@ export const router = createBrowserRouter([
   {
     path: '/about',
     element: <AboutPage />,
+  },
+  {
+    path: '/services',
+    element: <ServicesPage />,
   },
   {
     path: '/doctors',
