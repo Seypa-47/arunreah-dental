@@ -49,6 +49,34 @@ function DirectionIcon() {
   );
 }
 
+function MetricLocationIcon() {
+  return (
+    <svg aria-hidden="true" className="size-[22px]" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M12 21.2s7-5.95 7-11.75A6.86 6.86 0 0 0 12 2.5a6.86 6.86 0 0 0-7 6.95c0 5.8 7 11.75 7 11.75Z"
+        fill="#167fb0"
+      />
+      <circle cx="12" cy="9.45" fill="white" r="2.25" />
+    </svg>
+  );
+}
+
+function HighlightLocationIcon() {
+  return (
+    <svg aria-hidden="true" className="size-[15px]" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M12 21.2s7-5.95 7-11.75A6.86 6.86 0 0 0 12 2.5a6.86 6.86 0 0 0-7 6.95c0 5.8 7 11.75 7 11.75Z"
+        fill="#167fb0"
+      />
+      <circle cx="12" cy="9.45" fill="white" r="2.25" />
+    </svg>
+  );
+}
+
+function CalendarIcon({ className = 'size-[18px]' }: { className?: string }) {
+  return <AssetIcon className={`${className} brightness-0 invert`} name="hero-calendar.svg" />;
+}
+
 function ActionLink({
   children,
   href,
@@ -107,7 +135,11 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
               {hero.highlights.map((item) => (
                 <div className="flex items-center gap-3" key={item.label}>
                   <span className="grid size-[36px] place-items-center rounded-full bg-[#eef8fb]">
-                    <img alt="" aria-hidden="true" className="size-[14px]" src={item.iconUrl} />
+                    {item.label === '2 Modern Clinics' ? (
+                      <HighlightLocationIcon />
+                    ) : (
+                      <img alt="" aria-hidden="true" className="size-[14px]" src={item.iconUrl} />
+                    )}
                   </span>
                   <span className="text-[14px] font-extrabold leading-5 text-[#17364c]">{item.label}</span>
                 </div>
@@ -124,7 +156,11 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
             key={metric.title}
           >
             <span className="grid size-[45px] shrink-0 place-items-center rounded-md bg-[#eef8fb]">
-              <img alt="" aria-hidden="true" className="size-[19px]" src={metric.iconUrl} />
+              {metric.title === 'Locations' ? (
+                <MetricLocationIcon />
+              ) : (
+                <img alt="" aria-hidden="true" className="size-[19px]" src={metric.iconUrl} />
+              )}
             </span>
             <div>
               <p className="text-[12px] font-medium leading-4 text-[#96a0aa]">{metric.label}</p>
@@ -134,8 +170,8 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
           </div>
         ))}
         <Button
-          className="min-h-[52px] rounded-full px-7 text-[14px]"
-          icon={<AssetIcon className="size-[15px] brightness-0 invert" name="hero-calendar.svg" />}
+          className="min-h-[62px] rounded-[14px] bg-[#3ca8c7] px-9 text-[16px] shadow-[0_10px_22px_rgba(58,167,200,0.20)] hover:bg-[#329abb]"
+          icon={<CalendarIcon />}
         >
           {hero.appointmentLabel}
         </Button>
@@ -310,10 +346,11 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
             </div>
           </div>
           <Button
-            className="min-h-[58px] rounded-full bg-white px-10 text-[#3695b9] shadow-none hover:bg-[#eef8fb]"
-            icon={<ArrowIcon />}
+            className="min-h-[58px] rounded-full bg-white px-12 text-[15px] text-[#3695b9] shadow-none hover:bg-[#eef8fb] hover:text-[#2f8cad] focus-visible:outline-white"
+            variant="secondary"
           >
             {cta.buttonLabel}
+            <ArrowIcon />
           </Button>
         </div>
       </div>
