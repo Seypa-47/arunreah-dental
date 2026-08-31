@@ -11,7 +11,7 @@ const skeletonNavigation = [
   { href: '/about', label: 'About' },
   { href: '/#services', label: 'Services' },
   { href: '/doctors', label: 'Doctors' },
-  { href: '/#branches', label: 'Branches' },
+  { href: '/branches', label: 'Branches' },
 ];
 
 function ArrowIcon() {
