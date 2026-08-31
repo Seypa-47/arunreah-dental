@@ -1,5 +1,6 @@
 export { errorResponse, successResponse } from './api/response';
 export { apiErrorCodes } from './api/error-codes';
+export { deleteMediaSchema, mediaCategorySchema, mediaCategoryValues } from './schemas/media';
 export { adminRoleValues, permissionValues, rolesByPermission } from './auth/roles';
 export { adminLoginSchema, createAdminSchema, updateAdminSchema } from './schemas/admin-auth';
 export {
@@ -25,6 +26,7 @@ export {
   updateBranchSchema,
 } from './schemas/branches';
 export type { ApiErrorCode } from './api/error-codes';
+export type { DeleteMediaInput, MediaCategory } from './schemas/media';
 export type { AdminRole, Permission } from './auth/roles';
 export type { AdminLoginInput, CreateAdminInput, UpdateAdminInput } from './schemas/admin-auth';
 export type {

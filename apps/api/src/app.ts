@@ -15,6 +15,7 @@ import { publicBranchesModule } from './modules/branches/branch.route';
 import { adminServicesModule, publicServicesModule } from './modules/services/service.route';
 import { adminDoctorsModule, publicDoctorsModule } from './modules/doctors/doctor.route';
 import { adminShowcasesModule, publicShowcasesModule } from './modules/showcases/showcase.route';
+import { adminMediaModule } from './modules/media/media.route';
 import type { AppEnv } from './types/env';
 
 export const app = new Hono<AppEnv>();
@@ -36,6 +37,7 @@ app.route('/api/public/services', publicServicesModule);
 app.route('/api/admin/doctors', adminDoctorsModule);
 app.route('/api/public/doctors', publicDoctorsModule);
 app.route('/api/admin/showcases', adminShowcasesModule);
+app.route('/api/admin/media', adminMediaModule);
 app.route('/api/public/showcases', publicShowcasesModule);
 
 app.notFound((context) => {
