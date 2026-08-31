@@ -107,3 +107,46 @@ export type DoctorsPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
     title: string;
   };
 };
+
+export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  differences: {
+    description: string;
+    iconUrl: string;
+    title: string;
+  }[];
+  facilities: {
+    description: string;
+    imageAlt: string;
+    imageUrl: string;
+    title: string;
+  }[];
+  hero: {
+    eyebrow: string;
+    imageAlt: string;
+    imageUrl: string;
+    subtitle: string;
+    title: string;
+  };
+  mission: {
+    description: string;
+    iconUrl: string;
+    title: string;
+  };
+  stats: {
+    iconUrl: string;
+    label: string;
+    value: string;
+  }[];
+  story: {
+    eyebrow: string;
+    imageAlt: string;
+    imageUrl: string;
+    paragraphs: string[];
+    title: string;
+  };
+  vision: {
+    description: string;
+    iconUrl: string;
+    title: string;
+  };
+};

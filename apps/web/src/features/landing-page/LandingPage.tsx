@@ -429,7 +429,7 @@ function LandingPageSkeleton() {
       navigation={[
         { href: '/', label: 'Home' },
         { href: '#services', label: 'Services' },
-        { href: '#doctors', label: 'Doctors' },
+        { href: '/doctors', label: 'Doctors' },
       ]}
     >
       <main aria-busy="true" aria-label="Loading landing page" className="bg-white">

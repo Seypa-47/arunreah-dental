@@ -24,6 +24,10 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
       return pathname.startsWith('/doctors');
     }
 
+    if (!item.href.includes('#') && item.href !== '/') {
+      return pathname === item.href;
+    }
+
     if (item.href === '/') {
       return pathname === '/' && !hash;
     }
