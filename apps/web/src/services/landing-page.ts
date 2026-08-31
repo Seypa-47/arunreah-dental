@@ -1,4 +1,5 @@
 import type {
+  AboutPageContent,
   DoctorDetailContent,
   DoctorsPageContent,
   LandingDoctor,
@@ -291,7 +292,7 @@ function homeHref(href: string) {
 function pageNavigation(navigation: LandingNavigationItem[]) {
   return navigation.map((item) => ({
     ...item,
-    href: item.label === 'Doctors' ? '/doctors' : homeHref(item.href),
+    href: item.label === 'About' ? '/about' : item.label === 'Doctors' ? '/doctors' : homeHref(item.href),
   }));
 }
 
@@ -329,7 +330,7 @@ function publicPageFooter() {
           ? doctorsFooterServiceLinks
           : group.links.map((link) => ({
               ...link,
-              href: link.label === 'Doctor' ? '/doctors' : homeHref(link.href),
+              href: link.label === 'Doctor' || link.label === 'Doctors' ? '/doctors' : homeHref(link.href),
             })),
     })),
   };
@@ -342,9 +343,9 @@ const landingPageContent: LandingPageContent = {
   },
   navigation: [
     { href: '/', label: 'Home' },
-    { href: '#about', label: 'About' },
+    { href: '/about', label: 'About' },
     { href: '#services', label: 'Services' },
-    { href: '#doctors', label: 'Doctors' },
+    { href: '/doctors', label: 'Doctors' },
     { href: '#branches', label: 'Branches' },
   ],
   heroes: [
@@ -489,9 +490,9 @@ const landingPageContent: LandingPageContent = {
         title: 'Quick Links',
         links: [
           { href: '/', label: 'Home' },
-          { href: '#about', label: 'About' },
+          { href: '/about', label: 'About' },
           { href: '#services', label: 'Services' },
-          { href: '#doctors', label: 'Doctor' },
+          { href: '/doctors', label: 'Doctors' },
           { href: '#branches', label: 'Branches' },
         ],
       },
@@ -529,6 +530,92 @@ export async function fetchDoctorsPage(): Promise<DoctorsPageContent> {
     },
     navigation: pageNavigation(landingPageContent.navigation),
     services: landingPageContent.services,
+  };
+}
+
+export async function fetchAboutPage(): Promise<AboutPageContent> {
+  return {
+    actions: landingPageContent.actions,
+    differences: [
+      {
+        description: 'State-of-the-art equipment ensures accurate diagnosis and effective treatment.',
+        iconUrl: '/assets/landing/service-icon-smile-design.svg',
+        title: 'Advanced Technology',
+      },
+      {
+        description: 'Relaxing environment and personalized care for a stress-free experience.',
+        iconUrl: '/assets/landing/branch-card-clock.svg',
+        title: 'Patient Comfort',
+      },
+      {
+        description: 'Highly trained professionals committed to delivering exceptional results.',
+        iconUrl: '/assets/landing/service-icon-implant.svg',
+        title: 'Expert Specialists',
+      },
+      {
+        description: 'Strict sterilization protocols to ensure the highest standards of safety.',
+        iconUrl: '/assets/landing/branches-check.svg',
+        title: 'Safe & Sterile',
+      },
+    ],
+    facilities: [
+      {
+        description: 'Equipped with the latest ergonomic technology for maximum patient comfort during procedures.',
+        imageAlt: 'Modern dental treatment room',
+        imageUrl: '/assets/landing/branches-clinic.png',
+        title: 'Advanced Treatment Rooms',
+      },
+      {
+        description: 'High-precision digital scans for accurate diagnosis and implant planning.',
+        imageAlt: 'Digital dental imaging suite',
+        imageUrl: '/assets/landing/service-smile-design.png',
+        title: 'Digital Imaging Suite',
+      },
+      {
+        description: 'A relaxing environment designed to reduce dental anxiety and provide a premium experience.',
+        imageAlt: 'Comfortable patient lounge',
+        imageUrl: '/assets/landing/branch-card-clinic.png',
+        title: 'VIP Patient Lounge',
+      },
+    ],
+    footer: publicPageFooter(),
+    hero: {
+      eyebrow: 'Who We Are',
+      imageAlt: 'Arunreah Dental Clinic building exterior',
+      imageUrl: '/assets/landing/hero-psa-chas.png',
+      subtitle: 'Providing world-class dental care with a touch of luxury and precision in Cambodia.',
+      title: 'About Arunreah Dental Clinic',
+    },
+    mission: {
+      description:
+        'To provide precise, comfortable, and professional dental treatments through a combination of expert specialists, cutting-edge technology, and a relaxing luxury environment.',
+      iconUrl: '/assets/landing/service-icon-smile-design.svg',
+      title: 'Our Mission',
+    },
+    navigation: pageNavigation(landingPageContent.navigation),
+    services: landingPageContent.services,
+    stats: [
+      { iconUrl: '/assets/landing/hero-calendar.svg', label: 'Years of Experience', value: '10+' },
+      { iconUrl: '/assets/landing/service-icon-implant.svg', label: 'Happy Patients', value: '25,000+' },
+      { iconUrl: '/assets/landing/service-icon-general.svg', label: 'Dental Specialists', value: '15+' },
+      { iconUrl: '/assets/landing/branches-pin.svg', label: 'Branch Locations', value: '2' },
+    ],
+    story: {
+      eyebrow: 'About Us',
+      imageAlt: 'Arunreah Dental Clinic reception area',
+      imageUrl: '/assets/landing/branch-card-clinic.png',
+      paragraphs: [
+        'Founded with a vision to redefine dental care in the region, Arunreah Dental Clinic has been a pioneer in medical luxury. We believe that every smile tells a story, and we are here to ensure yours is bright, healthy, and confident.',
+        'From our humble beginnings to becoming one of the most trusted names in dentistry, our commitment to using state-of-the-art technology and providing a patient-centric experience has never wavered.',
+      ],
+      title: 'Our Story of Excellence',
+    },
+    vision: {
+      description:
+        'To be the leading provider of innovative and compassionate dental care in Southeast Asia, recognized for our commitment to quality and patient well-being.',
+      iconUrl: '/assets/landing/service-icon-periodontics.svg',
+      title: 'Our Vision',
+    },
   };
 }
 
