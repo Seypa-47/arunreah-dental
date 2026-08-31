@@ -150,3 +150,61 @@ export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | '
     title: string;
   };
 };
+
+export type BranchesPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  benefits: {
+    description: string;
+    iconUrl: string;
+    title: string;
+  }[];
+  branches: {
+    address: string;
+    badge: string;
+    bookingLabel: string;
+    directionsLabel: string;
+    directionsUrl: string;
+    hoursDays: string;
+    hoursTime: string;
+    imageAlt: string;
+    imageUrl: string;
+    mapLabel: string;
+    mapUrl: string;
+    mapChipEmbedded?: boolean;
+    name: string;
+    phoneLabel: string;
+    phones: string[];
+  }[];
+  cta: {
+    backgroundImageAlt: string;
+    backgroundImageUrl: string;
+    buttonLabel: string;
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+  };
+  hero: {
+    appointmentLabel: string;
+    backgroundImageAlt: string;
+    backgroundImageUrl: string;
+    eyebrow: string;
+    highlights: {
+      iconUrl: string;
+      label: string;
+    }[];
+    metrics: {
+      description: string;
+      iconUrl: string;
+      label: string;
+      title: string;
+    }[];
+    subtitle: string;
+    title: string;
+  };
+  sections: {
+    benefitsEyebrow: string;
+    benefitsTitle: string;
+    branchesDescription: string;
+    branchesEyebrow: string;
+    branchesTitle: string;
+  };
+};

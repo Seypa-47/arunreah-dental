@@ -1,5 +1,6 @@
 import type {
   AboutPageContent,
+  BranchesPageContent,
   DoctorDetailContent,
   DoctorsPageContent,
   LandingDoctor,
@@ -292,7 +293,14 @@ function homeHref(href: string) {
 function pageNavigation(navigation: LandingNavigationItem[]) {
   return navigation.map((item) => ({
     ...item,
-    href: item.label === 'About' ? '/about' : item.label === 'Doctors' ? '/doctors' : homeHref(item.href),
+    href:
+      item.label === 'About'
+        ? '/about'
+        : item.label === 'Doctors'
+          ? '/doctors'
+          : item.label === 'Branches'
+            ? '/branches'
+            : homeHref(item.href),
   }));
 }
 
@@ -346,7 +354,7 @@ const landingPageContent: LandingPageContent = {
     { href: '/about', label: 'About' },
     { href: '#services', label: 'Services' },
     { href: '/doctors', label: 'Doctors' },
-    { href: '#branches', label: 'Branches' },
+    { href: '/branches', label: 'Branches' },
   ],
   heroes: [
     {
@@ -479,8 +487,8 @@ const landingPageContent: LandingPageContent = {
   ],
   footer: {
     branchLinks: [
-      { href: '#branches', label: 'Toul Tompoung Branch' },
-      { href: '#branches', label: 'Psa Chas Branch' },
+      { href: '/branches', label: 'Toul Tompoung Branch' },
+      { href: '/branches', label: 'Psa Chas Branch' },
     ],
     description:
       'Providing medical luxury dental care with a focus on precision, comfort, and professional excellence.',
@@ -493,7 +501,7 @@ const landingPageContent: LandingPageContent = {
           { href: '/about', label: 'About' },
           { href: '#services', label: 'Services' },
           { href: '/doctors', label: 'Doctors' },
-          { href: '#branches', label: 'Branches' },
+          { href: '/branches', label: 'Branches' },
         ],
       },
       {
@@ -516,6 +524,124 @@ const landingPageContent: LandingPageContent = {
 
 export async function fetchLandingPage(): Promise<LandingPageContent> {
   return landingPageContent;
+}
+
+export async function fetchBranchesPage(): Promise<BranchesPageContent> {
+  return {
+    actions: landingPageContent.actions,
+    benefits: [
+      {
+        description: 'Advanced equipment for precise diagnosis and effective treatment.',
+        iconUrl: '/assets/landing/benefit-technology.svg',
+        title: 'Modern Technology',
+      },
+      {
+        description: 'Two easily accessible branches in Phnom Penh.',
+        iconUrl: '/assets/landing/benefit-location.svg',
+        title: 'Convenient Locations',
+      },
+      {
+        description: 'A relaxing environment with gentle, patient-centered care.',
+        iconUrl: '/assets/landing/benefit-care.svg',
+        title: 'Comfort & Care',
+      },
+      {
+        description: 'Skilled and compassionate professionals you can trust.',
+        iconUrl: '/assets/landing/benefit-team.svg',
+        title: 'Experienced Team',
+      },
+    ],
+    branches: [
+      {
+        address: '#123, Street 155, Sangkat Toul Tompoung I, Khan Chamkarmon, Phnom Penh, Cambodia',
+        badge: 'Toul Tompoung Branch',
+        bookingLabel: 'Book at this Branch',
+        directionsLabel: 'Get Directions',
+        directionsUrl: 'https://www.google.com/maps/search/?api=1&query=Arunreah%20Dental%20Clinic%20Toul%20Tompoung',
+        hoursDays: 'Mon - Sun',
+        hoursTime: '8:00 AM - 7:00 PM',
+        imageAlt: 'Bright dental clinic treatment room at Arunreah Dental Clinic Toul Tompoung',
+        imageUrl: '/assets/landing/figma-branches/image3_183_4173.jpg',
+        mapLabel: 'View on Map',
+        mapUrl: 'https://www.google.com/maps/search/?api=1&query=Arunreah%20Dental%20Clinic%20Toul%20Tompoung',
+        name: 'Arunreah Dental Clinic - TTP',
+        phoneLabel: 'Call Now',
+        phones: ['098 701 302', '012 964 200'],
+      },
+      {
+        address: '#45, Street 13, Sangkat Wat Phnom, Khan Daun Penh, Phnom Penh, Cambodia (Near Old Market)',
+        badge: 'Psa Chas Branch',
+        bookingLabel: 'Book at this Branch',
+        directionsLabel: 'Get Directions',
+        directionsUrl: 'https://www.google.com/maps/search/?api=1&query=Arunreah%20Dental%20Clinic%20Psa%20Chas',
+        hoursDays: 'Mon - Sun',
+        hoursTime: '8:00 AM - 7:00 PM',
+        imageAlt: 'Modern clinic reception at Arunreah Dental Clinic Psa Chas',
+        imageUrl: '/assets/landing/figma-branches/image4_183_4173.jpg',
+        mapLabel: 'View on Map',
+        mapUrl: 'https://www.google.com/maps/search/?api=1&query=Arunreah%20Dental%20Clinic%20Psa%20Chas',
+        name: 'Arunreah Dental Clinic - Psa Chas',
+        phoneLabel: 'Call Now',
+        phones: ['069 978 997', '061 978 997'],
+      },
+    ],
+    cta: {
+      backgroundImageAlt: 'Soft-focus dental treatment room',
+      backgroundImageUrl: '/assets/landing/figma-branches/image5_183_4173.jpg',
+      buttonLabel: 'Book Appointment',
+      eyebrow: 'Ready for a Healthier Dental Clinic?',
+      subtitle: 'Our team is here to help you smile with confidence.',
+      title: 'Book Your Appointment Today',
+    },
+    footer: publicPageFooter(),
+    hero: {
+      appointmentLabel: landingPageContent.actions.appointmentLabel,
+      backgroundImageAlt: 'Bright modern Arunreah Dental Clinic treatment room',
+      backgroundImageUrl: '/assets/landing/figma-branches/image2_183_4173.png',
+      eyebrow: 'Container',
+      highlights: [
+        {
+          iconUrl: '/assets/landing/branches-pin.svg',
+          label: '2 Modern Clinics',
+        },
+        {
+          iconUrl: '/assets/landing/branches-check.svg',
+          label: 'Same Trusted Care',
+        },
+      ],
+      metrics: [
+        {
+          description: 'Across Phnom Penh',
+          iconUrl: '/assets/landing/branches-pin.svg',
+          label: '2 Convenient',
+          title: 'Locations',
+        },
+        {
+          description: '8:00 AM - 7:00 PM',
+          iconUrl: '/assets/landing/branch-card-clock.svg',
+          label: 'Opening Hours',
+          title: 'Mon - Sun',
+        },
+        {
+          description: 'Thousands of Patients',
+          iconUrl: '/assets/landing/branches-check.svg',
+          label: 'Quality Care',
+          title: 'Trusted by',
+        },
+      ],
+      subtitle: 'Two convenient locations, the same commitment to exceptional dental care and your bright smile.',
+      title: 'Visit Our Clinics',
+    },
+    navigation: pageNavigation(landingPageContent.navigation),
+    sections: {
+      benefitsEyebrow: 'Why Visit Arunreah Dental Clinic?',
+      benefitsTitle: 'Care You Can Trust',
+      branchesDescription: 'Modern facilities, advanced technology, and a caring team ready to help.',
+      branchesEyebrow: 'Our Clinic Locations',
+      branchesTitle: 'Find a Clinic Near You',
+    },
+    services: landingPageContent.services,
+  };
 }
 
 export async function fetchDoctorsPage(): Promise<DoctorsPageContent> {

@@ -325,7 +325,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
 function BranchesSection({ branches }: { branches: LandingBranch[] }) {
   return (
     <section className="bg-[#f7fafc] pb-[64px] pt-[22px]" id="branches">
-      <SectionHeader actionLabel="See All Branches" title="Branches" />
+      <SectionHeader actionHref="/branches" actionLabel="See All Branches" title="Branches" />
       <div className="mx-auto mt-[26px] grid w-full max-w-[1440px] gap-6 px-4 sm:px-6 lg:grid-cols-2 lg:px-20">
         {branches.map((branch) => {
           const [days, time] = branch.hours.split(', ');
