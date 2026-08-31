@@ -17,6 +17,7 @@ import {
 import { notifyClinicOfAppointment } from './appointment-notification.service';
 import { hashSessionToken } from './session.service';
 import { verifyTurnstile } from './turnstile.service';
+import type { Bindings } from '../types/env';
 
 function clinicToday() {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -58,6 +59,7 @@ export async function createPublicAppointmentRequest(
   input: CreatePublicAppointmentInput,
   environment: 'development' | 'staging' | 'production',
   turnstileSecret: string | undefined,
+  notificationEnvironment: Bindings,
   headers: Headers,
   rateLimitKey: string,
 ) {
@@ -124,7 +126,22 @@ export async function createPublicAppointmentRequest(
   if (!appointment) throw new Error('Appointment request could not be created.');
 
   try {
-    await notifyClinicOfAppointment({ reference: appointment.reference });
+    await notifyClinicOfAppointment(
+      {
+        reference: appointment.reference,
+        patientName: appointment.patientName,
+        phone: appointment.patientPhone,
+        email: appointment.patientEmail ?? input.email,
+        serviceName: appointment.serviceNameSnapshot,
+        doctorName: appointment.doctorNameSnapshot,
+        branchName: appointment.branchNameSnapshot,
+        preferredDate: appointment.preferredDate,
+        preferredTime: appointment.preferredTime,
+        notes: appointment.patientNote,
+        createdAt: appointment.createdAt,
+      },
+      notificationEnvironment,
+    );
   } catch {
     console.error('Appointment notification failed', { reference: appointment.reference });
   }

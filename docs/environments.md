@@ -30,8 +30,9 @@ Secrets belong in Cloudflare Worker secrets remotely and in untracked
 
 ```text
 SESSION_SIGNING_KEY
-EMAIL_PROVIDER_API_KEY
 TURNSTILE_SECRET_KEY
+RESEND_API_KEY
+TELEGRAM_BOT_TOKEN
 ```
 
 No real secret is required for the current health-check-only foundation.
@@ -41,6 +42,38 @@ production. Set it with `wrangler secret put TURNSTILE_SECRET_KEY --env staging`
 or `--env production`; never place it in `wrangler.jsonc` or `VITE_*` values.
 Local development may omit it, allowing local API testing without a real
 Turnstile challenge.
+
+## Appointment notifications
+
+Appointment persistence is independent from notification delivery: a request is
+saved with status `PENDING` before notification is attempted. A delivery failure
+is logged with only the appointment reference and provider result; it never
+removes or changes the saved appointment.
+
+The provider enablement and recipient configuration are non-secret Worker vars.
+Set them in `wrangler.jsonc` only after selecting real environment-specific
+values, or use local `.dev.vars` for testing:
+
+```text
+EMAIL_NOTIFICATIONS_ENABLED=true
+EMAIL_NOTIFICATION_RECIPIENT=appointments@clinic.example
+EMAIL_FROM_ADDRESS=Arunreah Dental <appointments@clinic.example>
+TELEGRAM_NOTIFICATIONS_ENABLED=true
+TELEGRAM_CHAT_ID=-1001234567890
+```
+
+Use Worker secrets for credentials:
+
+```text
+RESEND_API_KEY
+TELEGRAM_BOT_TOKEN
+```
+
+Email uses Resend's HTTP API when enabled and correctly configured. Telegram
+uses the Bot API. Neither provider is attempted when its corresponding enabled
+flag is `false`. Set remote secrets with `wrangler secret put RESEND_API_KEY
+--env staging` (and the analogous production command), never in `VITE_*`, D1,
+or committed files.
 
 ## Public R2 media origin
 
