@@ -111,7 +111,7 @@ function ServiceHero({ service }: { service: ServiceDetail }) {
           </h1>
           <p className="mt-5 max-w-[560px] text-[17px] font-medium leading-8 text-[#7c8794]">{service.hero.subtitle}</p>
           <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-            <Button className="min-h-[54px] rounded-md px-8 text-[13px]" onClick={() => navigate('/contact')}>
+            <Button className="min-h-[54px] rounded-md px-8 text-[13px]" onClick={() => navigate('/book-appointment')}>
               {service.hero.appointmentLabel}
             </Button>
             <Button
@@ -153,7 +153,7 @@ function GlanceCard({ glance }: { glance: ServiceDetail['glance'] }) {
           </div>
         ))}
       </div>
-      <Button className="mt-8 min-h-[48px] w-full rounded-md text-[13px]" onClick={() => navigate('/contact')}>
+      <Button className="mt-8 min-h-[48px] w-full rounded-md text-[13px]" onClick={() => navigate('/book-appointment')}>
         {glance.actionLabel}
       </Button>
     </Card>
@@ -256,7 +256,7 @@ function ServiceCta({ cta }: { cta: ServiceDetail['cta'] }) {
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
             className="min-h-[52px] w-full rounded-lg bg-white px-8 text-[13px] text-[#3695b9] shadow-none hover:bg-[#eef8fb] sm:w-auto"
-            onClick={() => navigate('/contact')}
+            onClick={() => navigate('/book-appointment')}
             variant="secondary"
           >
             {cta.appointmentLabel}

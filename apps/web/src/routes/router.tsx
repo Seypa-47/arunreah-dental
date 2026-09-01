@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { AboutPage } from '@/features/about-page/AboutPage';
+import { BookAppointmentPage } from '@/features/book-appointment-page/BookAppointmentPage';
 import { BranchesPage } from '@/features/branches-page/BranchesPage';
 import { ContactPage } from '@/features/contact-page/ContactPage';
 import { DoctorDetailPage } from '@/features/doctor-detail-page/DoctorDetailPage';
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
   {
     path: '/contact',
     element: <ContactPage />,
+  },
+  {
+    path: '/book-appointment',
+    element: <BookAppointmentPage />,
   },
   {
     path: '*',

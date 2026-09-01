@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -106,6 +107,8 @@ function SectionHeader({
 }
 
 function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
+  const navigate = useNavigate();
+
   return (
     <article className="w-full shrink-0 snap-center">
       <div className="relative mx-auto w-full max-w-[1120px] px-4 pb-10 pt-5 sm:px-6 md:h-[610px] md:px-0 md:pb-0">
@@ -138,6 +141,7 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
               <Button
                 className="min-h-[50px] w-full max-w-[234px] rounded-xl border border-[#009fb2] text-[16px] font-bold text-[#3696b9]"
                 icon={<AssetIcon className="h-4 w-[14px]" name="hero-calendar.svg" />}
+                onClick={() => navigate('/book-appointment')}
                 variant="secondary"
               >
                 {hero.appointmentLabel}

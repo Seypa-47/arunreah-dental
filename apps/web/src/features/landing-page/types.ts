@@ -320,3 +320,67 @@ export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
     label: string;
   }[];
 };
+
+export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  branches: {
+    address: string;
+    imageAlt: string;
+    imageUrl: string;
+    mapLabel: string;
+    mapUrl: string;
+    name: string;
+  }[];
+  calendar: {
+    dates: {
+      day: number;
+      disabled?: boolean;
+      key: string;
+      muted?: boolean;
+    }[];
+    monthLabel: string;
+    selectedDateKey: string;
+    selectedDateLabel: string;
+    weekdays: string[];
+  };
+  doctors: {
+    name: string;
+    value: string;
+  }[];
+  form: {
+    fields: {
+      email: string;
+      fullName: string;
+      notes: string;
+      phone: string;
+    };
+    placeholders: {
+      email: string;
+      fullName: string;
+      notes: string;
+      phone: string;
+    };
+    submitLabel: string;
+  };
+  help: {
+    email: string;
+    phone: string;
+    title: string;
+    subtitle: string;
+  };
+  hero: {
+    backgroundImageAlt: string;
+    backgroundImageUrl: string;
+    subtitle: string;
+    title: string;
+  };
+  information: string[];
+  servicesList: {
+    name: string;
+    value: string;
+  }[];
+  summary: {
+    duration: string;
+    title: string;
+  };
+  times: string[];
+};
