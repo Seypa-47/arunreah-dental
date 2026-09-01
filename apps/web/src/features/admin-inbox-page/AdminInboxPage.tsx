@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { AdminSidebar } from '@/components/layout/admin-sidebar';
 import type { AdminInboxContent, AdminNavIcon } from '@/services/admin-inbox';
 import { useAdminInboxPageQuery } from './use-admin-inbox-page';
 
@@ -34,42 +35,6 @@ function AdminIcon({ className = 'size-5', name }: { className?: string; name: I
     <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
       {paths[name]}
     </svg>
-  );
-}
-
-function Sidebar({ content }: { content: AdminInboxContent }) {
-  return (
-    <aside className="flex w-full shrink-0 flex-col border-b border-[#e1e8f0] bg-white px-5 py-5 lg:min-h-screen lg:w-[302px] lg:border-b-0 lg:border-r lg:px-7 lg:py-7">
-      <a aria-label="Arunreah Dental Clinic admin inbox" className="mx-2 inline-flex w-fit" href="/admin/appointments/inbox">
-        <img alt={content.brand.logoAlt} className="h-auto w-[168px] max-w-full" src={content.brand.logoUrl} />
-      </a>
-      <nav aria-label="Admin navigation" className="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:mt-11 lg:block">
-        {content.navigation.map((item, index) => {
-          const isSubItem = item.section === 'appointments' && index > 1;
-          const isActive = item.label === 'Inbox';
-
-          return (
-            <a
-              aria-current={isActive ? 'page' : undefined}
-              className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${isSubItem ? 'lg:ml-4' : ''} ${isActive ? 'bg-[#2187a8] text-white shadow-[0_6px_12px_rgba(33,135,168,0.14)]' : 'text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]'}`}
-              href={isActive ? '/admin/appointments/inbox' : '#'}
-              key={item.label}
-              onClick={(event) => {
-                if (!isActive) event.preventDefault();
-              }}
-            >
-              <AdminIcon className="size-5 shrink-0" name={item.icon} />
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              {item.label === 'Appointments' ? <AdminIcon className="size-4" name="chevronDown" /> : null}
-            </a>
-          );
-        })}
-      </nav>
-      <a className="mt-7 flex items-center gap-3 px-3 py-2.5 text-[14px] font-semibold text-[#ed3838] transition hover:text-[#c92727] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed3838] lg:mt-auto" href="/admin/login">
-        <svg aria-hidden="true" className="size-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M10 17 15 12l-5-5M15 12H3" /><path d="M13 5h5v14h-5" /></svg>
-        Logout
-      </a>
-    </aside>
   );
 }
 
@@ -218,5 +183,5 @@ export function AdminInboxPage() {
   if (isLoading) return <InboxSkeleton />;
   if (isError || !data || data.navigation.length === 0) return <InboxUnavailable onRetry={() => void refetch()} />;
 
-  return <div className="min-h-screen bg-[#f6f8fb] lg:flex"><Sidebar content={data} /><InboxContent content={data} /></div>;
+  return <div className="min-h-screen bg-[#f6f8fb] lg:flex"><AdminSidebar activeLabel="Inbox" brand={data.brand} navigation={data.navigation} /><InboxContent content={data} /></div>;
 }

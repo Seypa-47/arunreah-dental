@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { AboutPage } from '@/features/about-page/AboutPage';
 import { AdminLoginPage } from '@/features/admin-login-page/AdminLoginPage';
 import { AdminInboxPage } from '@/features/admin-inbox-page/AdminInboxPage';
+import { AdminDashboardPage } from '@/features/admin-dashboard-page/AdminDashboardPage';
 import { BookAppointmentPage } from '@/features/book-appointment-page/BookAppointmentPage';
 import { BranchesPage } from '@/features/branches-page/BranchesPage';
 import { ContactPage } from '@/features/contact-page/ContactPage';
@@ -15,6 +16,10 @@ export const router = createBrowserRouter([
   {
     path: '/admin/login',
     element: <AdminLoginPage />,
+  },
+  {
+    path: '/admin/dashboard',
+    element: <AdminDashboardPage />,
   },
   {
     path: '/admin/appointments/inbox',
