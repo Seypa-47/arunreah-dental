@@ -221,3 +221,58 @@ export type ServicesPageContent = Pick<LandingPageContent, 'actions' | 'footer' 
     title: string;
   };
 };
+
+export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  contactCards: {
+    description: string;
+    icon: 'clock' | 'email' | 'location' | 'phone';
+    label: string;
+    value: string;
+  }[];
+  form: {
+    branches: string[];
+    fields: {
+      email: string;
+      fullName: string;
+      message: string;
+      phone: string;
+      preferredBranch: string;
+      preferredDate: string;
+      preferredTime: string;
+      service: string;
+    };
+    messageLimit: number;
+    placeholders: {
+      email: string;
+      fullName: string;
+      message: string;
+      phone: string;
+      preferredBranch: string;
+      preferredDate: string;
+      preferredTime: string;
+      service: string;
+    };
+    services: string[];
+    submitLabel: string;
+    times: string[];
+    title: string;
+  };
+  hero: {
+    backgroundImageAlt: string;
+    backgroundImageUrl: string;
+    eyebrow: string;
+    info: {
+      description: string;
+      icon: 'clock' | 'email' | 'location' | 'phone';
+      label: string;
+      value: string;
+    }[];
+    subtitle: string;
+    title: string;
+  };
+  maps: {
+    imageAlt: string;
+    imageUrl: string;
+    label: string;
+  }[];
+};
