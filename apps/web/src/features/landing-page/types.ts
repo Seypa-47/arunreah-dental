@@ -222,6 +222,50 @@ export type ServicesPageContent = Pick<LandingPageContent, 'actions' | 'footer' 
   };
 };
 
+export type ServiceDetailContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  otherServices: LandingService[];
+  service:
+    | (LandingService & {
+        about: {
+          imageAlt: string;
+          imageUrl: string;
+          paragraphs: string[];
+          title: string;
+        };
+        benefits: {
+          description: string;
+          icon: 'check' | 'heart' | 'shield' | 'smile' | 'star' | 'utensils';
+          title: string;
+        }[];
+        cta: {
+          appointmentLabel: string;
+          contactLabel: string;
+          description: string;
+          title: string;
+        };
+        glance: {
+          actionLabel: string;
+          items: {
+            description: string;
+            icon: 'calendar' | 'clock' | 'consultation' | 'recovery';
+            label: string;
+          }[];
+          title: string;
+        };
+        hero: {
+          appointmentLabel: string;
+          consultationLabel: string;
+          eyebrow: string;
+          imageAlt: string;
+          imageUrl: string;
+          subtitle: string;
+          title: string;
+        };
+        slug: string;
+      })
+    | undefined;
+};
+
 export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
   contactCards: {
     description: string;

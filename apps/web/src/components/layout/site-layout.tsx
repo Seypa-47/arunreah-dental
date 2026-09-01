@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import type { LandingNavigationItem, LandingService } from '@/features/landing-page/types';
 
 const asset = (name: string) => `/assets/landing/${name}`;
-const serviceId = (name: string) => `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
+const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
 
 type SiteLayoutProps = PropsWithChildren<{
   actions: {
@@ -18,11 +18,16 @@ type SiteLayoutProps = PropsWithChildren<{
 export function SiteLayout({ actions, children, navigation, services = [] }: SiteLayoutProps) {
   const [activeLanguage, setActiveLanguage] = useState<'en' | 'km'>('en');
   const { hash, pathname } = useLocation();
-  const serviceAnchor = (name: string) => (pathname === '/' ? `#${serviceId(name)}` : `/services#${serviceId(name)}`);
+  const navigate = useNavigate();
+  const serviceHref = (name: string) => `/services/${serviceSlug(name)}`;
 
   const isActiveNavigationItem = (item: LandingNavigationItem) => {
     if (item.href.startsWith('/doctors')) {
       return pathname.startsWith('/doctors');
+    }
+
+    if (item.href.startsWith('/services')) {
+      return pathname.startsWith('/services');
     }
 
     if (!item.href.includes('#') && item.href !== '/') {
@@ -82,7 +87,7 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
                     {services.map((service) => (
                       <a
                         className="block rounded-xl px-4 py-3 text-[14px] font-medium leading-5 text-[#475569] transition hover:bg-[#f0f9fa] hover:text-[#005687] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
-                        href={serviceAnchor(service.name)}
+                        href={serviceHref(service.name)}
                         key={service.name}
                       >
                         {service.name}

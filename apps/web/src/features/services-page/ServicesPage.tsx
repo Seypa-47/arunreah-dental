@@ -17,6 +17,7 @@ const skeletonNavigation = [
 
 const serviceId = (name: string) =>
   `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
+const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
 
 function ArrowIcon() {
   return (
@@ -60,7 +61,7 @@ function ServiceCard({ service }: { service: LandingService }) {
       <a
         aria-label={`View ${service.name}`}
         className="mt-5 inline-flex items-center gap-2 text-[15px] font-extrabold leading-5 text-[#3695b9] transition hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
-        href={`#${id}`}
+        href={`/services/${serviceSlug(service.name)}`}
       >
         View Service
         <ArrowIcon />
@@ -92,14 +93,14 @@ function ConsultationCta({ cta }: { cta: ServicesPageContent['cta'] }) {
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
             className="min-h-[56px] w-full rounded-xl px-9 text-[15px] shadow-[0_16px_24px_rgba(58,167,200,0.24)] sm:w-auto"
-            onClick={() => navigate('/#contact')}
+            onClick={() => navigate('/contact')}
             type="button"
           >
             {cta.consultationLabel}
           </Button>
           <Button
             className="min-h-[56px] w-full rounded-xl border border-[#d8e6ee] px-9 text-[15px] text-[#3695b9] shadow-none hover:border-[#c4dfeb] sm:w-auto"
-            onClick={() => navigate('/#contact')}
+            onClick={() => navigate('/contact')}
             type="button"
             variant="secondary"
           >

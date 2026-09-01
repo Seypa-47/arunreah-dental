@@ -10,7 +10,7 @@ import { useContactPageQuery } from './use-contact-page';
 const skeletonNavigation = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
-  { href: '/#services', label: 'Services' },
+  { href: '/services', label: 'Services' },
   { href: '/doctors', label: 'Doctors' },
   { href: '/branches', label: 'Branches' },
 ];
