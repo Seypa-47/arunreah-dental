@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -37,6 +37,8 @@ function EducationIcon({ index }: { index: number }) {
 }
 
 function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
+  const navigate = useNavigate();
+
   return (
     <section className="bg-white pb-[58px] pt-[52px]">
       <div className="mx-auto grid w-full max-w-[1120px] gap-8 px-4 sm:px-6 lg:grid-cols-[390px_1fr] lg:items-center lg:px-0">
@@ -62,6 +64,7 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
           <Button
             className="mt-6 min-h-[44px] rounded-md bg-[#3695b9] px-6 text-[14px] font-extrabold shadow-[0_8px_16px_rgba(54,149,185,0.18)] hover:bg-[#2f8fb0]"
             icon={<CalendarIcon />}
+            onClick={() => navigate('/book-appointment')}
           >
             {doctor.bookingLabel ?? 'Book Appointment'}
           </Button>
@@ -121,6 +124,8 @@ function OtherSpecialistCard({ doctor }: { doctor: LandingDoctor }) {
 }
 
 function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
+  const navigate = useNavigate();
+
   return (
     <section className="bg-[#f7fafc] pb-[62px] pt-[54px]">
       <div className="mx-auto grid w-full max-w-[1120px] gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_310px] lg:px-0">
@@ -154,7 +159,10 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
             <p className="mt-4 text-[13px] font-medium leading-5 text-white/75">
               Select a convenient time for your consultation with {doctor.name}.
             </p>
-            <Button className="mt-6 min-h-[42px] w-full rounded-lg bg-[#2fc0d2] text-[13px] font-extrabold hover:bg-[#26adbd]">
+            <Button
+              className="mt-6 min-h-[42px] w-full rounded-lg bg-[#2fc0d2] text-[13px] font-extrabold hover:bg-[#26adbd]"
+              onClick={() => navigate('/book-appointment')}
+            >
               Book Now
             </Button>
             <a

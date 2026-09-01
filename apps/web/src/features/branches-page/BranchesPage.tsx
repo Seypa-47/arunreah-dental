@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -113,6 +114,8 @@ function ActionLink({
 }
 
 function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
+  const navigate = useNavigate();
+
   return (
     <section className="relative bg-[#eef5f8] pb-0">
       <div className="relative min-h-[505px] overflow-hidden bg-white">
@@ -172,6 +175,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
         <Button
           className="min-h-[62px] rounded-[14px] bg-[#3ca8c7] px-9 text-[16px] shadow-[0_10px_22px_rgba(58,167,200,0.20)] hover:bg-[#329abb]"
           icon={<CalendarIcon />}
+          onClick={() => navigate('/book-appointment')}
         >
           {hero.appointmentLabel}
         </Button>
@@ -260,7 +264,7 @@ function BranchCard({
           <ActionLink href={phoneHref} icon={asset('branch-card-phone.svg')} variant="soft">
             {branch.phoneLabel}
           </ActionLink>
-          <ActionLink href="/#contact" icon={asset('hero-calendar.svg')}>
+          <ActionLink href="/book-appointment" icon={asset('hero-calendar.svg')}>
             {branch.bookingLabel}
           </ActionLink>
         </div>
@@ -325,6 +329,8 @@ function BenefitsSection({ content }: { content: BranchesPageContent }) {
 }
 
 function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
+  const navigate = useNavigate();
+
   return (
     <section className="bg-white">
       <div className="relative mx-auto w-full max-w-[1440px] overflow-hidden rounded-xl bg-gradient-to-r from-[#16a8b6] to-[#163a5a] px-6 py-11 text-white sm:px-16">
@@ -347,6 +353,7 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
           </div>
           <Button
             className="min-h-[58px] rounded-full bg-white px-12 text-[15px] text-[#3695b9] shadow-none hover:bg-[#eef8fb] hover:text-[#2f8cad] focus-visible:outline-white"
+            onClick={() => navigate('/book-appointment')}
             variant="secondary"
           >
             {cta.buttonLabel}

@@ -114,7 +114,7 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
             </Button>
             <Button
               className="h-9 min-h-9 rounded-full bg-[#3696b9] px-5 py-0 text-[14px] font-bold shadow-[0_10px_15px_-3px_#cffafe,0_4px_6px_-4px_#cffafe] hover:bg-[#2f8fb0]"
-              onClick={() => navigate('/contact')}
+              onClick={() => navigate('/book-appointment')}
             >
               {actions.appointmentLabel}
             </Button>

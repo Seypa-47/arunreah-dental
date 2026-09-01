@@ -93,7 +93,7 @@ function ConsultationCta({ cta }: { cta: ServicesPageContent['cta'] }) {
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
             className="min-h-[56px] w-full rounded-xl px-9 text-[15px] shadow-[0_16px_24px_rgba(58,167,200,0.24)] sm:w-auto"
-            onClick={() => navigate('/contact')}
+            onClick={() => navigate('/book-appointment')}
             type="button"
           >
             {cta.consultationLabel}
