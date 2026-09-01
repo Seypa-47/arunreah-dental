@@ -33,6 +33,8 @@ type AdminSidebarProps = {
 const routeForNavigation = (label: string) => {
   if (label === 'Dashboard') return '/admin/dashboard';
   if (label === 'Inbox') return '/admin/appointments/inbox';
+  if (label === 'Calendar') return '/admin/appointments/calendar';
+  if (label === 'All Appointments') return '/admin/appointments';
   return '#';
 };
 
@@ -85,8 +87,6 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
               <div
                 className="col-span-2 sm:col-span-1 lg:col-auto"
                 key={item.label}
-                onMouseEnter={() => setAppointmentsExpanded(true)}
-                onMouseLeave={() => setAppointmentsExpanded(hasActiveAppointmentItem)}
               >
                 <button
                   aria-expanded={appointmentsExpanded}
