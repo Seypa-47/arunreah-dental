@@ -8,6 +8,7 @@ import type {
   LandingPageContent,
   LandingNavigationItem,
   LandingService,
+  ServiceDetailContent,
   ServicesPageContent,
 } from '@/features/landing-page/types';
 
@@ -293,6 +294,10 @@ function homeHref(href: string) {
   return href.startsWith('#') ? `/${href}` : href;
 }
 
+function serviceSlug(name: string) {
+  return name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
+}
+
 function pageNavigation(navigation: LandingNavigationItem[]) {
   return navigation.map((item) => ({
     ...item,
@@ -323,12 +328,12 @@ function doctorByHref(profileHref: string) {
 
 function publicPageFooter() {
   const doctorsFooterServiceLinks = [
-    { href: '/services#service-general-dentistry', label: 'General Dentistry' },
-    { href: '/services#service-orthodontics', label: 'Orthodontic' },
-    { href: '/services#service-root-canal', label: 'Root Canal Treatment' },
-    { href: '/services#service-pediatric-dentistry', label: 'Pediatric Dentistry' },
-    { href: '/services#service-dental-implants', label: 'Dental Implant' },
-    { href: '/services#service-cosmetic-dentistry', label: 'Digital Smile Design' },
+    { href: '/services/general-dentistry', label: 'General Dentistry' },
+    { href: '/services/orthodontics', label: 'Orthodontic' },
+    { href: '/services/root-canal', label: 'Root Canal Treatment' },
+    { href: '/services/pediatric-dentistry', label: 'Pediatric Dentistry' },
+    { href: '/services/dental-implants', label: 'Dental Implant' },
+    { href: '/services/cosmetic-dentistry', label: 'Digital Smile Design' },
     { href: '/#showcase', label: 'Showcase' },
   ];
 
@@ -423,6 +428,145 @@ const servicesPageServices: LandingService[] = [
   },
 ];
 
+type ServiceDetail = NonNullable<ServiceDetailContent['service']>;
+
+function buildServiceDetail({
+  aboutImageUrl,
+  benefits,
+  eyebrow,
+  heroImageUrl,
+  service,
+  subtitle,
+}: {
+  aboutImageUrl?: string;
+  benefits: ServiceDetail['benefits'];
+  eyebrow?: string;
+  heroImageUrl?: string;
+  service: LandingService;
+  subtitle?: string;
+}): ServiceDetail {
+  return {
+    ...service,
+    about: {
+      imageAlt: `${service.name} treatment detail`,
+      imageUrl: aboutImageUrl ?? service.imageUrl,
+      paragraphs: [
+        `${service.name} focuses on restoring comfort, function, and confidence with careful diagnosis and personalized treatment planning.`,
+        'Our team explains each step clearly, uses modern clinical techniques, and recommends treatment options based on your oral health needs.',
+      ],
+      title: `About ${service.name}`,
+    },
+    benefits,
+    cta: {
+      appointmentLabel: 'Book Your Appointment',
+      contactLabel: 'Contact Our Clinic',
+      description: `Schedule a consultation with our dental team and discover how ${service.name.toLowerCase()} can support your smile.`,
+      title: 'Ready to Take Care of Your Smile?',
+    },
+    glance: {
+      actionLabel: 'Book Initial Assessment',
+      items: [
+        { description: '3 - 9 Months (varies per patient)', icon: 'clock', label: 'Duration' },
+        { description: '7 - 10 Days post-treatment', icon: 'recovery', label: 'Recovery' },
+        { description: '4 - 6 Appointments', icon: 'calendar', label: 'Number of Visits' },
+        { description: 'Initial Assessment Required', icon: 'consultation', label: 'Consultation' },
+      ],
+      title: 'Treatment at a Glance',
+    },
+    hero: {
+      appointmentLabel: 'Book an Appointment',
+      consultationLabel: 'Request Consultation',
+      eyebrow: eyebrow ?? service.name,
+      imageAlt: `${service.name} patient smile`,
+      imageUrl: heroImageUrl ?? service.imageUrl,
+      subtitle: subtitle ?? service.description,
+      title: `Restore Your Smile with ${service.name}`,
+    },
+    slug: serviceSlug(service.name),
+  };
+}
+
+const serviceDetails: ServiceDetail[] = servicesPageServices.map((service) => {
+  if (service.name === 'Dental Implants') {
+    return buildServiceDetail({
+      aboutImageUrl: '/assets/landing/service-implant.png',
+      benefits: [
+        {
+          description: 'Implants look, feel, and function just like your own natural teeth, seamlessly blending with your smile.',
+          icon: 'smile',
+          title: 'Natural Appearance',
+        },
+        {
+          description: 'Eat all your favorite foods with confidence. Implants provide superior chewing power compared to dentures.',
+          icon: 'utensils',
+          title: 'Improved Function',
+        },
+        {
+          description: 'With proper care, dental implants can last a lifetime, making them a highly cost-effective choice.',
+          icon: 'shield',
+          title: 'Long-Term Solution',
+        },
+        {
+          description: 'Because they are anchored in the jaw, they eliminate the discomfort and rubbing associated with removable dentures.',
+          icon: 'check',
+          title: 'Comfortable Fit',
+        },
+        {
+          description: 'A complete smile boosts your self-esteem, allowing you to speak and laugh without hesitation.',
+          icon: 'star',
+          title: 'Improved Confidence',
+        },
+        {
+          description: 'Implants help preserve the jawbone and prevent bone loss, maintaining your overall facial structure.',
+          icon: 'heart',
+          title: 'Supports Oral Health',
+        },
+      ],
+      eyebrow: 'Dental Implants',
+      heroImageUrl: '/assets/landing/service-veneer.png',
+      service,
+      subtitle:
+        'A permanent, natural-looking solution for missing teeth. Regain your confidence and oral function with our advanced implant technology.',
+    });
+  }
+
+  return buildServiceDetail({
+    benefits: [
+      {
+        description: 'Care plans are shaped around your diagnosis, goals, comfort, and long-term oral health.',
+        icon: 'check',
+        title: 'Personalized Care',
+      },
+      {
+        description: 'Modern equipment and clinical techniques help make treatment accurate, efficient, and comfortable.',
+        icon: 'shield',
+        title: 'Modern Technique',
+      },
+      {
+        description: 'Our team focuses on natural-looking outcomes that support your confidence every day.',
+        icon: 'smile',
+        title: 'Confident Results',
+      },
+      {
+        description: 'Clear guidance helps you understand each step before, during, and after your appointment.',
+        icon: 'heart',
+        title: 'Patient Comfort',
+      },
+      {
+        description: 'Treatment planning considers both immediate needs and long-term smile health.',
+        icon: 'star',
+        title: 'Lasting Value',
+      },
+      {
+        description: 'We help protect healthy teeth and gums while improving function and appearance.',
+        icon: 'utensils',
+        title: 'Better Function',
+      },
+    ],
+    service,
+  });
+});
+
 const landingPageContent: LandingPageContent = {
   actions: {
     appointmentLabel: 'Book Appointment',
@@ -431,7 +575,7 @@ const landingPageContent: LandingPageContent = {
   navigation: [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
-    { href: '#services', label: 'Services' },
+    { href: '/services', label: 'Services' },
     { href: '/doctors', label: 'Doctors' },
     { href: '/branches', label: 'Branches' },
   ],
@@ -578,7 +722,7 @@ const landingPageContent: LandingPageContent = {
         links: [
           { href: '/', label: 'Home' },
           { href: '/about', label: 'About' },
-          { href: '#services', label: 'Services' },
+          { href: '/services', label: 'Services' },
           { href: '/doctors', label: 'Doctors' },
           { href: '/branches', label: 'Branches' },
           { href: '/contact', label: 'Contact' },
@@ -587,14 +731,14 @@ const landingPageContent: LandingPageContent = {
       {
         title: 'Services',
         links: [
-          { href: '#services', label: 'General Dentistry' },
-          { href: '#services', label: 'Gum & Periodontal Treatment' },
-          { href: '#services', label: 'Pediatric Dentistry' },
-          { href: '#services', label: 'Cosmetic Dentistry' },
-          { href: '#services', label: 'Root Canal & Filling' },
-          { href: '#services', label: 'Orthodontics' },
-          { href: '#services', label: 'Oral Surgery' },
-          { href: '#services', label: 'Radiology' },
+          { href: '/services/general-dentistry', label: 'General Dentistry' },
+          { href: '/services/dental-implants', label: 'Dental Implant' },
+          { href: '/services/orthodontics', label: 'Orthodontic' },
+          { href: '/services/cosmetic-dentistry', label: 'Cosmetic Dentistry' },
+          { href: '/services/teeth-whitening', label: 'Teeth Whitening' },
+          { href: '/services/root-canal', label: 'Root Canal Treatment' },
+          { href: '/services/pediatric-dentistry', label: 'Pediatric Dentistry' },
+          { href: '/services/oral-surgery', label: 'Oral Surgery' },
           { href: '#showcase', label: 'Showcase' },
         ],
       },
@@ -741,6 +885,19 @@ export async function fetchServicesPage(): Promise<ServicesPageContent> {
       title: 'Our Services',
     },
     navigation: pageNavigation(landingPageContent.navigation),
+    services: servicesPageServices,
+  };
+}
+
+export async function fetchServiceDetail(serviceSlugParam: string | undefined): Promise<ServiceDetailContent> {
+  const service = serviceDetails.find((item) => item.slug === serviceSlugParam);
+
+  return {
+    actions: landingPageContent.actions,
+    footer: publicPageFooter(),
+    navigation: pageNavigation(landingPageContent.navigation),
+    otherServices: servicesPageServices.filter((item) => serviceSlug(item.name) !== serviceSlugParam).slice(0, 3),
+    service,
     services: servicesPageServices,
   };
 }

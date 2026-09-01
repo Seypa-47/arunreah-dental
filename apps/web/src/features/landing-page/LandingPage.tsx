@@ -428,7 +428,7 @@ function LandingPageSkeleton() {
       actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }}
       navigation={[
         { href: '/', label: 'Home' },
-        { href: '#services', label: 'Services' },
+        { href: '/services', label: 'Services' },
         { href: '/doctors', label: 'Doctors' },
       ]}
     >

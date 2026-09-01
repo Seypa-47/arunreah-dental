@@ -9,7 +9,7 @@ import { useAboutPageQuery } from './use-about-page';
 const skeletonNavigation = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
-  { href: '/#services', label: 'Services' },
+  { href: '/services', label: 'Services' },
   { href: '/doctors', label: 'Doctors' },
   { href: '/branches', label: 'Branches' },
 ];
@@ -153,7 +153,7 @@ function FacilitiesSection({ facilities }: Pick<AboutPageContent, 'facilities'>)
           </div>
           <a
             className="hidden items-center gap-2 text-[13px] font-extrabold leading-5 text-[#3695b9] hover:text-[#005687] sm:inline-flex"
-            href="/#services"
+            href="/services"
           >
             See All Services
             <ArrowIcon />
