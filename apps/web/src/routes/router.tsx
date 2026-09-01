@@ -3,6 +3,8 @@ import { AboutPage } from '@/features/about-page/AboutPage';
 import { AdminLoginPage } from '@/features/admin-login-page/AdminLoginPage';
 import { AdminInboxPage } from '@/features/admin-inbox-page/AdminInboxPage';
 import { AdminDashboardPage } from '@/features/admin-dashboard-page/AdminDashboardPage';
+import { AdminCalendarPage } from '@/features/admin-calendar-page/AdminCalendarPage';
+import { AdminAllAppointmentsPage } from '@/features/admin-all-appointments-page/AdminAllAppointmentsPage';
 import { BookAppointmentPage } from '@/features/book-appointment-page/BookAppointmentPage';
 import { BranchesPage } from '@/features/branches-page/BranchesPage';
 import { ContactPage } from '@/features/contact-page/ContactPage';
@@ -20,6 +22,14 @@ export const router = createBrowserRouter([
   {
     path: '/admin/dashboard',
     element: <AdminDashboardPage />,
+  },
+  {
+    path: '/admin/appointments/calendar',
+    element: <AdminCalendarPage />,
+  },
+  {
+    path: '/admin/appointments',
+    element: <AdminAllAppointmentsPage />,
   },
   {
     path: '/admin/appointments/inbox',
