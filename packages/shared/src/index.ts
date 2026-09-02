@@ -33,6 +33,13 @@ export {
   updateBranchSchema,
 } from './schemas/branches';
 export type { ApiErrorCode } from './api/error-codes';
+export type {
+  DashboardAppointmentSummary,
+  DashboardContentMetric,
+  DashboardContentSummary,
+  DashboardRecentAppointment,
+  DashboardResponse,
+} from './contracts/dashboard';
 export type { DeleteMediaInput, MediaCategory } from './schemas/media';
 export type {
   AdminAppointmentListQuery,
