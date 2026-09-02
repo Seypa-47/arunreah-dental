@@ -131,14 +131,17 @@ export async function listAdminAppointments(
 export async function updateAppointmentStatus(
   database: DatabaseClient,
   id: string,
+  expectedStatus: AppointmentStatus,
   status: AppointmentStatus,
   updatedByAdminId: string,
 ) {
   const now = new Date().toISOString();
-  await database
+  const [updated] = await database
     .update(appointments)
     .set({ status, statusUpdatedAt: now, statusUpdatedByAdminId: updatedByAdminId, updatedAt: now })
-    .where(eq(appointments.id, id));
+    .where(and(eq(appointments.id, id), eq(appointments.status, expectedStatus)))
+    .returning({ id: appointments.id });
+  if (!updated) return undefined;
   return findAppointmentById(database, id);
 }
 

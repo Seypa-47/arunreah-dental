@@ -168,6 +168,16 @@ describe('media API routes', () => {
     expect(
       (await upload('CMS_ADMIN', new File(['x'], 'file.svg', { type: 'image/svg+xml' }))).status,
     ).toBe(400);
+
+    const oversizedRequest = new Request('http://localhost/api/admin/media', {
+      method: 'POST',
+      headers: {
+        ...(await headers('CMS_ADMIN')),
+        'Content-Length': String(5 * 1024 * 1024 + 64 * 1024 + 1),
+      },
+      body: new FormData(),
+    });
+    expect((await app.request(oversizedRequest, undefined, bindings)).status).toBe(400);
   });
 
   it('stores valid JPEG, PNG, and WEBP images using safe unique keys', async () => {

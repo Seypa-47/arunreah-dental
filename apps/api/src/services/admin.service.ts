@@ -74,9 +74,12 @@ export async function updateManagedAdmin(
     throw new HttpError(409, 'CONFLICT', 'At least one active super administrator is required.');
   }
 
-  const admin = await updateAdmin(database, targetAdminId, input);
+  const admin = await updateAdmin(database, targetAdminId, input, removesActiveSuperAdmin);
 
   if (!admin) {
+    if (removesActiveSuperAdmin) {
+      throw new HttpError(409, 'CONFLICT', 'At least one active super administrator is required.');
+    }
     throw new Error('Updated administrator could not be loaded.');
   }
 

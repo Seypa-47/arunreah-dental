@@ -6,12 +6,18 @@ import { HttpError } from '../../shared/http-error';
 import { parseRequestBody } from '../../shared/request';
 import {
   deleteOrphanedMedia,
+  MAX_MEDIA_MULTIPART_BYTES,
   uploadImage,
   validateMediaCategory,
 } from '../../services/media.service';
 import type { AppEnv } from '../../types/env';
 
 export async function uploadMediaController(context: Context<AppEnv>) {
+  const contentLength = Number(context.req.header('Content-Length'));
+  if (Number.isFinite(contentLength) && contentLength > MAX_MEDIA_MULTIPART_BYTES) {
+    throw new HttpError(400, 'MEDIA_TOO_LARGE', 'Image uploads must not exceed 5 MB.');
+  }
+
   const formData = await context.req.formData().catch(() => undefined);
   const file = formData?.get('file');
   const category = formData?.get('category');

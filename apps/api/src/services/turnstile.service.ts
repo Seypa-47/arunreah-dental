@@ -1,6 +1,7 @@
 import { HttpError } from '../shared/http-error';
 
 type TurnstileResponse = { success?: boolean };
+const turnstileTimeoutMs = 5_000;
 
 export async function verifyTurnstile(
   token: string | undefined,
@@ -22,6 +23,7 @@ export async function verifyTurnstile(
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ secret, response: token, remoteip: clientIp }),
+      signal: AbortSignal.timeout(turnstileTimeoutMs),
     });
     const result = (await response.json().catch(() => undefined)) as TurnstileResponse | undefined;
     if (!response.ok || result?.success !== true) {

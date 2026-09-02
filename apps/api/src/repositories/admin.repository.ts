@@ -1,4 +1,4 @@
-import { and, count, eq } from 'drizzle-orm';
+import { and, count, eq, sql } from 'drizzle-orm';
 import type { AdminRole, CreateAdminInput, UpdateAdminInput } from '@arunreah/shared';
 import { admins } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
@@ -42,7 +42,12 @@ export async function createAdmin(
   return findAdminById(database, id);
 }
 
-export async function updateAdmin(database: DatabaseClient, id: string, input: UpdateAdminInput) {
+export async function updateAdmin(
+  database: DatabaseClient,
+  id: string,
+  input: UpdateAdminInput,
+  requireAnotherActiveSuperAdmin = false,
+) {
   const changes: {
     displayName?: string;
     email?: string;
@@ -58,8 +63,18 @@ export async function updateAdmin(database: DatabaseClient, id: string, input: U
   if (input.role !== undefined) changes.role = input.role;
   if (input.isActive !== undefined) changes.isActive = input.isActive;
 
-  await database.update(admins).set(changes).where(eq(admins.id, id));
-
+  const where = requireAnotherActiveSuperAdmin
+    ? and(
+        eq(admins.id, id),
+        sql`(select count(*) from admins where role = 'SUPER_ADMIN' and is_active = 1) > 1`,
+      )
+    : eq(admins.id, id);
+  const [updated] = await database
+    .update(admins)
+    .set(changes)
+    .where(where)
+    .returning({ id: admins.id });
+  if (!updated) return undefined;
   return findAdminById(database, id);
 }
 
