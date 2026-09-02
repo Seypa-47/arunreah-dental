@@ -11,10 +11,10 @@ import { parseRequestBody } from '../../shared/request';
 import {
   assertLoginAllowed,
   clearFailedLogins,
-  createLoginRateLimitKey,
+  createLoginRateLimitKeys,
   getClientIp,
   normalizeAdminEmail,
-  recordFailedLogin,
+  recordFailedLogins,
 } from '../../services/auth.service';
 import { hashPassword, verifyPassword } from '../../services/password.service';
 import {
@@ -32,9 +32,9 @@ authModule.post('/login', async (context) => {
   const input = await parseRequestBody(context, adminLoginSchema);
   const email = normalizeAdminEmail(input.email);
   const database = createDbClient(context.env.DB);
-  const rateLimitKey = await createLoginRateLimitKey(email, getClientIp(context.req.raw.headers));
+  const rateLimitKeys = await createLoginRateLimitKeys(email, getClientIp(context.req.raw.headers));
 
-  await assertLoginAllowed(database, rateLimitKey);
+  await assertLoginAllowed(database, rateLimitKeys);
 
   const admin = await findAdminByEmail(database, email);
   const passwordIsValid = admin
@@ -42,11 +42,11 @@ authModule.post('/login', async (context) => {
     : await hashPassword(input.password).then(() => false);
 
   if (!admin || !admin.isActive || !passwordIsValid) {
-    await recordFailedLogin(database, rateLimitKey);
+    await recordFailedLogins(database, rateLimitKeys);
     throw new HttpError(401, 'UNAUTHORIZED', 'Invalid email or password.');
   }
 
-  await clearFailedLogins(database, rateLimitKey);
+  await clearFailedLogins(database, rateLimitKeys);
 
   const token = createSessionToken();
   await createAdminSession(database, {

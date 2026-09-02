@@ -5,6 +5,8 @@ import { isMediaKeyReferenced } from '../repositories/media.repository';
 import { HttpError } from '../shared/http-error';
 
 export const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+/** Allows multipart boundaries and the small category field without accepting large bodies. */
+export const MAX_MEDIA_MULTIPART_BYTES = MAX_IMAGE_UPLOAD_BYTES + 64 * 1024;
 
 const imageFormats = {
   'image/jpeg': {

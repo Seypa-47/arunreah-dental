@@ -131,7 +131,19 @@ export async function changeAppointmentStatus(
     );
   }
 
-  const updated = await repository.updateAppointmentStatus(database, id, input.status, adminId);
-  if (!updated) throw new Error('Updated appointment could not be loaded.');
+  const updated = await repository.updateAppointmentStatus(
+    database,
+    id,
+    current.status,
+    input.status,
+    adminId,
+  );
+  if (!updated) {
+    throw new HttpError(
+      409,
+      'CONFLICT',
+      'Appointment status was changed by another staff member. Reload and try again.',
+    );
+  }
   return updated;
 }

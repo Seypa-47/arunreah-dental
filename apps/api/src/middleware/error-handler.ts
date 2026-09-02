@@ -6,16 +6,23 @@ import type { AppEnv } from '../types/env';
 export const globalErrorHandler: ErrorHandler<AppEnv> = (error, context) => {
   const requestId = context.get('requestId');
 
+  if (error instanceof HttpError) {
+    console.warn('API request rejected', {
+      requestId,
+      method: context.req.method,
+      path: context.req.path,
+      status: error.status,
+      code: error.code,
+    });
+    return context.json(errorResponse(error.code, error.message), error.status);
+  }
+
   console.error('Unhandled API error', {
     requestId,
     method: context.req.method,
     path: context.req.path,
-    message: error instanceof Error ? error.message : 'Unknown error',
+    errorType: error instanceof Error ? error.name : 'UnknownError',
   });
-
-  if (error instanceof HttpError) {
-    return context.json(errorResponse(error.code, error.message), error.status);
-  }
 
   return context.json(errorResponse('INTERNAL_ERROR', 'An unexpected error occurred.'), 500);
 };

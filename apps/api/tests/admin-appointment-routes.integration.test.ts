@@ -38,6 +38,7 @@ const state = vi.hoisted(() => ({
   appointments: [] as AppointmentRecord[],
   sessions: new Map<string, SessionRecord>(),
   currentRecordsAvailable: true,
+  rejectNextStatusUpdate: false,
 }));
 
 vi.mock('../src/db/client', () => ({ createDbClient: () => ({}) }));
@@ -138,9 +139,11 @@ vi.mock('../src/repositories/appointment.repository', () => ({
   updateAppointmentStatus: async (
     _database: unknown,
     id: string,
+    _expectedStatus: AppointmentRecord['status'],
     status: AppointmentRecord['status'],
     adminId: string,
   ) => {
+    if (state.rejectNextStatusUpdate) return undefined;
     const appointment = state.appointments.find((item) => item.id === id);
     if (!appointment) return undefined;
     appointment.status = status;
@@ -212,6 +215,7 @@ beforeEach(() => {
   state.appointments = [];
   state.sessions.clear();
   state.currentRecordsAvailable = true;
+  state.rejectNextStatusUpdate = false;
 });
 
 describe('admin appointment inbox API', () => {
@@ -398,5 +402,25 @@ describe('admin appointment inbox API', () => {
         })
       ).status,
     ).toBe(400);
+  });
+
+  it('rejects a status update when another staff member changed the record first', async () => {
+    state.appointments = [appointmentFixture()];
+    state.rejectNextStatusUpdate = true;
+    const response = await request(
+      '/api/admin/appointments/550e8400-e29b-41d4-a716-446655440001/status',
+      'RECEPTIONIST',
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CONFIRMED' }),
+      },
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'CONFLICT' },
+    });
+    expect(state.appointments[0]?.status).toBe('PENDING');
   });
 });
