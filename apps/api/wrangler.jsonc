@@ -28,14 +28,14 @@
       "name": "arunreah-api-staging",
       "vars": {
         "APP_ENV": "staging",
-        "CORS_ALLOWED_ORIGINS": "https://staging.example.com",
-        "MEDIA_PUBLIC_BASE_URL": "https://media-staging.example.com",
+        "CORS_ALLOWED_ORIGINS": "http://localhost:5173",
+        "MEDIA_PUBLIC_BASE_URL": "",
       },
       "d1_databases": [
         {
           "binding": "DB",
           "database_name": "arunreah-dental-staging",
-          "database_id": "00000000-0000-0000-0000-000000000000",
+          "database_id": "7fc1477b-a22b-4dc8-a2f9-3054ade0a0d1",
           "migrations_dir": "migrations",
         },
       ],

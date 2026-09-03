@@ -11,8 +11,8 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply arunreah-dental-development --local",
-    "db:migrate:staging": "wrangler d1 migrations apply arunreah-dental-staging --env staging",
-    "db:migrate:production": "wrangler d1 migrations apply arunreah-dental-production --env production",
+    "db:migrate:staging": "wrangler d1 migrations apply arunreah-dental-staging --env staging --remote",
+    "db:migrate:production": "wrangler d1 migrations apply arunreah-dental-production --env production --remote",
     "admin:bootstrap:sql": "node scripts/generate-super-admin-sql.mjs"
   },
   "dependencies": {
