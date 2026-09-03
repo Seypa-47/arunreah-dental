@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { useLandingPageQuery } from './use-landing-page';
 
 const asset = (name: string) => `/assets/landing/${name}`;
 const serviceId = (name: string) => `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
+const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
 
 function AssetIcon({ alt = '', className, name }: { alt?: string; className: string; name: string }) {
   return <img alt={alt} aria-hidden={alt ? undefined : true} className={className} src={asset(name)} />;
@@ -84,7 +85,7 @@ function SectionHeader({
   const titleColor = 'text-[#005687]';
 
   return (
-    <div className="mx-auto flex w-full max-w-[1280px] items-end justify-between gap-4 px-4 sm:px-6 lg:px-0">
+    <div className="mx-auto flex w-full max-w-[1280px] items-end justify-between gap-4 px-4 sm:px-6 lg:px-8">
       <div className={align === 'center' ? 'mx-auto text-center' : undefined}>
         {eyebrow ? (
           <p className="mb-4 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695b9]">
@@ -94,13 +95,13 @@ function SectionHeader({
         <h2 className={`text-[30px] font-extrabold leading-9 ${titleColor}`}>{title}</h2>
       </div>
       {align === 'left' ? (
-        <a
+        <Link
           className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#35a6c7] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2f9fbe] sm:inline-flex"
-          href={actionHref}
+          to={actionHref}
         >
           {actionLabel}
           <ArrowIcon />
-        </a>
+        </Link>
       ) : null}
     </div>
   );
@@ -111,7 +112,7 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
 
   return (
     <article className="w-full shrink-0 snap-center">
-      <div className="relative mx-auto w-full max-w-[1120px] px-4 pb-10 pt-5 sm:px-6 md:h-[610px] md:px-0 md:pb-0">
+      <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-10 pt-5 sm:px-6 md:h-[610px] md:px-8 md:pb-0">
         <div className="relative h-full">
           <div className="relative h-[340px] overflow-hidden rounded-[32px] bg-[#dfe9ee] shadow-[0_14px_28px_rgba(15,23,42,0.10)] md:absolute md:inset-x-0 md:top-4 md:h-[510px]">
             <img alt={hero.imageAlt} className="h-full w-full object-cover object-center" src={hero.imageUrl} />
@@ -223,22 +224,6 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
               <HeroArrowButton direction="right" onClick={() => scrollToBranch(1)} />
             </div>
           </div>
-          <div
-            aria-label="Hero branch slides"
-            className="absolute left-1/2 top-[590px] hidden -translate-x-1/2 items-center gap-3 rounded-full bg-white/95 px-3 py-2 shadow-[0_8px_18px_rgba(15,23,42,0.10)] md:flex"
-          >
-            {heroes.map((hero, index) => (
-              <button
-                aria-label={`Go to ${hero.address}`}
-                className={`size-2 rounded-full transition ${
-                  activeHeroIndex === index ? 'bg-[#3695B9]' : 'bg-[#cbd5e1]'
-                }`}
-                key={hero.address}
-                onClick={() => scrollToHero(index)}
-                type="button"
-              />
-            ))}
-          </div>
         </>
       ) : null}
     </section>
@@ -246,48 +231,112 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
 }
 
 function ServicesSection({ services }: { services: LandingService[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { clientWidth, scrollLeft, scrollWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollDistance = 280;
+      scrollRef.current.scrollBy({
+        behavior: 'smooth',
+        left: direction === 'left' ? -scrollDistance : scrollDistance,
+      });
+    }
+  };
+
   return (
-    <section className="mt-[55px] overflow-hidden bg-white pb-[64px] pt-[64px]" id="services">
-      <div className="relative">
-        <SectionHeader actionLabel="See All Services" align="center" eyebrow="What We Offer" title="Our Services" />
-        <a
-          className="absolute right-4 top-[36px] hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#2a86a8] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2f9fbe] sm:inline-flex lg:right-20"
-          href="#"
+    <section className="mt-[55px] bg-white pb-[64px] pt-[64px]" id="services">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695b9]">
+              What We Offer
+            </p>
+            <h2 className="text-[30px] font-extrabold leading-9 text-[#005687]">Our Services</h2>
+          </div>
+          <div className="flex items-center gap-5">
+            <Link
+              className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#35a6c7] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2f9fbe] sm:inline-flex"
+              to="/services"
+            >
+              See All Services
+              <ArrowIcon />
+            </Link>
+            <div className="flex items-center gap-2">
+              <button
+                aria-label="Scroll services left"
+                className={`grid size-9 place-items-center rounded-full border transition duration-200 ${
+                  canScrollLeft
+                    ? 'border-[#3695b9] text-[#3695b9] hover:bg-[#f0f9fa]'
+                    : 'cursor-not-allowed border-[#e2e8f0] text-[#cbd5e1]'
+                }`}
+                disabled={!canScrollLeft}
+                onClick={() => handleScroll('left')}
+                type="button"
+              >
+                ‹
+              </button>
+              <button
+                aria-label="Scroll services right"
+                className={`grid size-9 place-items-center rounded-full transition duration-200 ${
+                  canScrollRight
+                    ? 'bg-[#3695b9] text-white shadow-sm hover:bg-[#2e84a5]'
+                    : 'cursor-not-allowed bg-[#e2e8f0] text-[#94a3b8]'
+                }`}
+                disabled={!canScrollRight}
+                onClick={() => handleScroll('right')}
+                type="button"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 snap-x snap-mandatory scroll-smooth"
+          onScroll={checkScroll}
+          ref={scrollRef}
         >
-          See All Services
-          <ArrowIcon />
-        </a>
-      </div>
-      <div className="service-marquee mx-auto mt-12 w-full max-w-[1440px] overflow-hidden px-4 sm:px-6 lg:px-20">
-        <div className="service-marquee-track flex w-max gap-[50px]">
-          {[0, 1].map((copyIndex) => (
-            <div aria-hidden={copyIndex === 1} className="flex gap-[50px]" key={copyIndex}>
-              {services.map((service) => (
-                <Card
-                  className="flex h-[340px] min-w-[290px] flex-col items-center rounded-[24px] border-2 !border-[#3695B9] px-6 py-6 text-center shadow-[0_1px_1px_rgba(0,0,0,0.05)]"
-                  id={copyIndex === 0 ? serviceId(service.name) : undefined}
-                  key={`${copyIndex}-${service.name}`}
+          {services.map((service) => {
+            const slug = serviceSlug(service.name);
+            const id = serviceId(service.name);
+
+            return (
+              <Card
+                className="h-[354px] w-[286px] shrink-0 snap-start overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
+                id={id}
+                key={service.name}
+              >
+                <Link
+                  aria-label={`View ${service.name}`}
+                  className="block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+                  to={`/services/${slug}`}
                 >
-                  <span className="mb-5 grid size-12 place-items-center rounded-2xl bg-[#f0f9fa]">
-                    <img alt={service.iconAlt} className="max-h-[22px] max-w-[25px]" src={service.iconUrl} />
-                  </span>
-                  <div>
-                    <h3 className="text-[16px] font-bold leading-5 text-[#00a6ba]">{service.name}</h3>
-                    <p className="mx-auto mt-4 min-h-[54px] max-w-[220px] text-[13px] font-normal leading-[18px] text-[#7c8798]">
+                  <img
+                    alt={service.imageAlt}
+                    className="h-[246px] w-full bg-[#eaf2f6] object-cover object-center"
+                    src={service.imageUrl}
+                  />
+                  <div className="flex h-[108px] flex-col justify-center px-4 py-3">
+                    <h3 className="text-[14px] font-semibold leading-5 text-[#0c2243]">{service.name}</h3>
+                    <p className="mt-1 line-clamp-2 text-[12px] font-medium leading-[18px] text-[#3695b9]">
                       {service.description}
                     </p>
                   </div>
-                  <div className="mt-auto grid h-[118px] w-full place-items-center">
-                    <img
-                      alt={service.imageAlt}
-                      className="max-h-[118px] max-w-[150px] object-contain"
-                      src={service.imageUrl}
-                    />
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ))}
+                </Link>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -298,16 +347,16 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
   return (
     <section className="bg-[#f7fafc] pb-[48px] pt-[56px]" id="doctors">
       <SectionHeader actionHref="/doctors" actionLabel="See All Doctors" title="Meet Our Specialists" />
-      <div className="mx-auto mt-[60px] grid w-full max-w-[1192px] gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-0">
+      <div className="mx-auto mt-[60px] grid w-full max-w-[1280px] gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         {doctors.map((doctor) => (
           <Card
             className="h-[354px] overflow-hidden rounded-lg border-[#edf2f7] shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
             key={doctor.name}
           >
-            <a
+            <Link
               aria-label="View all doctors"
               className="block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
-              href="/doctors"
+              to="/doctors"
             >
               <img
                 alt={doctor.imageAlt}
@@ -318,7 +367,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
                 <h3 className="text-[14px] font-semibold leading-5 text-[#0c2243]">{doctor.name}</h3>
                 <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695b9]">{doctor.specialty}</p>
               </div>
-            </a>
+            </Link>
           </Card>
         ))}
       </div>
@@ -330,7 +379,7 @@ function BranchesSection({ branches }: { branches: LandingBranch[] }) {
   return (
     <section className="bg-[#f7fafc] pb-[64px] pt-[22px]" id="branches">
       <SectionHeader actionHref="/branches" actionLabel="See All Branches" title="Branches" />
-      <div className="mx-auto mt-[26px] grid w-full max-w-[1440px] gap-6 px-4 sm:px-6 lg:grid-cols-2 lg:px-20">
+      <div className="mx-auto mt-[26px] grid w-full max-w-[1280px] gap-6 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         {branches.map((branch) => {
           const [days, time] = branch.hours.split(', ');
 
@@ -380,19 +429,19 @@ function BranchesSection({ branches }: { branches: LandingBranch[] }) {
 function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
   return (
     <section className="mt-[33px] bg-[#3695b9] pb-[54px] pt-[59px] text-white" id="showcase">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-20">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="mb-[35px] flex items-end justify-between border-b border-white/30 pb-4">
           <div>
             <h2 className="text-[32px] font-bold leading-10">Latest Showcase</h2>
             <div className="mt-2 h-0.5 w-[200px] rounded-full bg-white" />
           </div>
-          <a
+          <Link
             className="hidden items-center gap-2 text-[16px] font-semibold leading-6 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:inline-flex"
-            href="#"
+            to="/admin/showcase"
           >
             View Show Cases
             <AssetIcon className="h-3 w-[8px]" name="showcase-chevron.svg" />
-          </a>
+          </Link>
         </div>
         <div className="grid gap-[40px] md:grid-cols-3">
           {showcase.map((item) => (
