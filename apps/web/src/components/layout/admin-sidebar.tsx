@@ -42,6 +42,7 @@ const routeForNavigation = (label: string) => {
   if (label === 'Calendar') return '/admin/appointments/calendar';
   if (label === 'All Appointments') return '/admin/appointments';
   if (label === 'Services' || label === 'Service Management') return '/admin/services';
+  if (label === 'Doctors' || label === 'Doctor Management') return '/admin/doctors';
   return '#';
 };
 
