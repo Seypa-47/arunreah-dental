@@ -1,4 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchAdminAllAppointmentsContent } from '@/services/admin-all-appointments';
+import { queryKeys } from '@/lib/query-keys';
+import { getAdminAppointments, normalizeAppointmentFilters, type AppointmentListFilters } from '@/services/appointments';
 
-export function useAdminAllAppointmentsPageQuery() { return useQuery({ queryFn: fetchAdminAllAppointmentsContent, queryKey: ['admin-all-appointments-page'] }); }
+export function useAdminAllAppointmentsPageQuery(filters: AppointmentListFilters) {
+  const normalizedFilters = normalizeAppointmentFilters(filters);
+  return useQuery({
+    queryFn: () => getAdminAppointments(normalizedFilters),
+    queryKey: queryKeys.admin.appointments(normalizedFilters),
+    retry: false,
+  });
+}

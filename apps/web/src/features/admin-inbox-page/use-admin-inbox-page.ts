@@ -1,9 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchAdminInboxContent } from '@/services/admin-inbox';
+import { queryKeys } from '@/lib/query-keys';
+import { getAdminAppointments, normalizeAppointmentFilters, type AppointmentListFilters } from '@/services/appointments';
 
-export function useAdminInboxPageQuery() {
+export function useAdminInboxPageQuery(filters: AppointmentListFilters) {
+  const normalizedFilters = normalizeAppointmentFilters(filters);
   return useQuery({
-    queryFn: fetchAdminInboxContent,
-    queryKey: ['admin-appointment-inbox'],
+    queryFn: () => getAdminAppointments(normalizedFilters),
+    queryKey: queryKeys.admin.appointments(normalizedFilters),
+    retry: false,
   });
 }

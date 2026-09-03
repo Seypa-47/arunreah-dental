@@ -1,5 +1,21 @@
 # Frontend API foundation
 
+## Phase 2: dashboard and appointments
+
+The private dashboard uses `GET /api/admin/dashboard` with the authenticated
+cookie. Its optional `appointments`/`recentAppointments` and `content` sections
+are determined by the server-side role, so the CMS dashboard must never infer or
+render appointment data that is absent from the response.
+
+Appointment staff views use `GET /api/admin/appointments`,
+`GET /api/admin/appointments/:id`, and
+`PATCH /api/admin/appointments/:id/status`. Status writes invalidate the
+appointment list/detail and dashboard query keys. The local API must be running,
+`VITE_API_BASE_URL` must point to it, and an admin must sign in first.
+
+Staging browser authentication still requires same-site HTTPS frontend and API
+domains; do not rely on a cross-site `workers.dev` cookie setup.
+
 ## Public environment configuration
 
 The browser receives only `VITE_*` values. Copy the example file locally:
