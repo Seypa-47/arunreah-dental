@@ -24,7 +24,7 @@ export type AdminIconName =
 type AdminNavigationItem = {
   icon: AdminNavIcon;
   label: string;
-  section?: 'appointments' | 'services' | 'doctors';
+  section?: 'appointments' | 'services' | 'doctors' | 'clinic';
 };
 
 type AdminSidebarProps = {
@@ -355,3 +355,4 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
     </aside>
   );
 }
+with him. We were traveling with him.
