@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchAdminDashboardContent } from '@/services/admin-dashboard';
+import { queryKeys } from '@/lib/query-keys';
+import { getAdminDashboard } from '@/services/dashboard';
 
 export function useAdminDashboardPageQuery() {
   return useQuery({
-    queryFn: fetchAdminDashboardContent,
-    queryKey: ['admin-dashboard-page'],
+    queryFn: () => getAdminDashboard(),
+    queryKey: queryKeys.dashboard(),
+    retry: false,
   });
 }

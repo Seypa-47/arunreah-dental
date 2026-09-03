@@ -24,6 +24,7 @@ export const queryKeys = {
   admin: {
     appointments: (filters: Record<string, string | number | boolean | undefined> = {}) =>
       ['admin', 'appointments', filters] as const,
+    appointment: (id: string) => ['admin', 'appointments', id] as const,
     branches: (filters: Record<string, string | number | boolean | undefined> = {}) =>
       ['admin', 'branches', filters] as const,
     clinic: () => ['admin', 'clinic'] as const,
