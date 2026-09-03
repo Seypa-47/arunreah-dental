@@ -38,7 +38,7 @@ export type AdminServiceDetailContent = {
   empty: { description: string; title: string };
   footer: { copyright: string; encryptionLabel: string; sslLabel: string };
   header: { breadcrumb: string[]; subtitle: string; title: string };
-  navigation: { icon: AdminNavIcon; label: string; section?: 'appointments' | 'services' }[];
+  navigation: { icon: AdminNavIcon; label: string; section?: 'appointments' | 'services' | 'doctors' }[];
   ordering: {
     categoryLabel: string;
     categoryOptions: string[];
