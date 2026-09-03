@@ -11,5 +11,7 @@ function readPublicEnv(key: PublicEnvKey): string {
 }
 
 export const env = {
-  apiBaseUrl: readPublicEnv('VITE_API_BASE_URL'),
+  get apiBaseUrl() {
+    return readPublicEnv('VITE_API_BASE_URL');
+  },
 } as const;
