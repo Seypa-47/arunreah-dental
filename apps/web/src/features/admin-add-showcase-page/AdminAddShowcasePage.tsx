@@ -250,6 +250,7 @@ export function AdminAddShowcasePage() {
 
       {/* Main Content Area */}
       <main className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+        <div className="mx-auto max-w-[1440px] w-full">
         {/* Success toast banner */}
         {isSaved && (
           <div className="mb-6 flex items-center gap-3 rounded-2xl border border-[#bbf7d0] bg-[#f0fdf4] p-4 text-[#15803d] shadow-sm">
@@ -1027,6 +1028,7 @@ export function AdminAddShowcasePage() {
             </span>
           </div>
         </footer>
+        </div>
       </main>
     </div>
   );

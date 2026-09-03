@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,19 +19,10 @@ const serviceId = (name: string) =>
   `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
 const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
 
-function ArrowIcon() {
-  return (
-    <span
-      aria-hidden="true"
-      className="size-[13px] bg-current [mask-image:url('/assets/landing/arrow-right.svg')] [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain]"
-    />
-  );
-}
-
 function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
   return (
     <section className="bg-white pb-[70px] pt-[96px] text-center">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-0">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="relative mx-auto inline-block">
           <h1 className="relative z-10 text-[38px] font-extrabold leading-[46px] text-[#3695b9] sm:text-[48px] sm:leading-[56px]">
             {hero.title}
@@ -41,7 +32,7 @@ function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
             className="absolute bottom-0 left-1/2 h-[18px] w-[196px] -translate-x-1/2 rounded-full bg-[#d9edf4]"
           />
         </div>
-        <p className="mx-auto mt-5 max-w-[640px] text-[18px] font-medium leading-8 text-[#7f8794]">{hero.description}</p>
+        <p className="mx-auto mt-5 max-w-[640px] text-[18px] font-medium leading-8 text-[#6b7280]">{hero.description}</p>
       </div>
     </section>
   );
@@ -49,23 +40,49 @@ function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
 
 function ServiceCard({ service }: { service: LandingService }) {
   const id = serviceId(service.name);
+  const slug = serviceSlug(service.name);
 
   return (
     <Card
-      className="rounded-2xl border-[#e6edf2] bg-white p-[26px] shadow-none transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(15,23,42,0.06)]"
+      className="group flex h-full flex-col overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
       id={id}
     >
-      <img alt={service.imageAlt} className="h-[190px] w-full rounded-xl bg-[#edf5f8] object-cover" src={service.imageUrl} />
-      <h2 className="mt-[26px] text-[22px] font-extrabold leading-7 text-[#005687]">{service.name}</h2>
-      <p className="mt-4 min-h-[92px] text-[16px] font-medium leading-7 text-[#858d99]">{service.description}</p>
-      <a
+      <Link
         aria-label={`View ${service.name}`}
-        className="mt-5 inline-flex items-center gap-2 text-[15px] font-extrabold leading-5 text-[#3695b9] transition hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
-        href={`/services/${serviceSlug(service.name)}`}
+        className="flex h-full flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+        to={`/services/${slug}`}
       >
-        View Service
-        <ArrowIcon />
-      </a>
+        <img
+          alt={service.imageAlt}
+          className="h-[210px] w-full bg-[#eaf2f6] object-cover object-center"
+          src={service.imageUrl}
+        />
+        <div className="flex flex-1 flex-col justify-between p-4">
+          <div>
+            <h2 className="text-[15px] font-semibold leading-5 text-[#0c2243] transition-colors group-hover:text-[#3695b9]">
+              {service.name}
+            </h2>
+            <p className="mt-2 text-[13px] font-medium leading-[20px] text-[#6b7280]">
+              {service.description}
+            </p>
+          </div>
+          <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3695b9] transition group-hover:text-[#2187a8]">
+            Learn More
+            <svg
+              aria-hidden="true"
+              className="size-3.5 transition duration-150 group-hover:translate-x-1"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </span>
+        </div>
+      </Link>
     </Card>
   );
 }
@@ -73,7 +90,7 @@ function ServiceCard({ service }: { service: LandingService }) {
 function ServicesGrid({ services }: { services: LandingService[] }) {
   return (
     <section aria-label="Dental services" className="bg-white pb-[84px]">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-x-8 gap-y-9 px-4 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-0">
+      <div className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 sm:grid-cols-2 lg:grid-cols-4 sm:px-6 lg:px-8">
         {services.map((service) => (
           <ServiceCard key={service.name} service={service} />
         ))}
@@ -89,7 +106,7 @@ function ConsultationCta({ cta }: { cta: ServicesPageContent['cta'] }) {
     <section className="bg-[#f7fafc] px-4 py-[88px] sm:px-6">
       <Card className="mx-auto max-w-[960px] rounded-[22px] border-[#e5edf2] bg-white px-6 py-[56px] text-center shadow-[0_2px_6px_rgba(15,23,42,0.04)] sm:px-12">
         <h2 className="text-[30px] font-extrabold leading-9 text-[#005687]">{cta.title}</h2>
-        <p className="mx-auto mt-5 max-w-[680px] text-[18px] font-medium leading-8 text-[#858d99]">{cta.description}</p>
+        <p className="mx-auto mt-5 max-w-[680px] text-[18px] font-medium leading-8 text-[#6b7280]">{cta.description}</p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
             className="min-h-[56px] w-full rounded-xl px-9 text-[15px] shadow-[0_16px_24px_rgba(58,167,200,0.24)] sm:w-auto"
@@ -135,9 +152,9 @@ function ServicesPageSkeleton() {
             <div className="mx-auto mt-5 h-16 w-full animate-pulse rounded bg-[#edf5f8]" />
           </div>
         </section>
-        <section className="mx-auto grid max-w-[1280px] gap-x-8 gap-y-9 px-4 pb-[84px] sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-0">
+        <section className="mx-auto grid max-w-[1280px] gap-6 px-4 pb-[84px] sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
           {Array.from({ length: 8 }, (_, index) => (
-            <div className="h-[430px] animate-pulse rounded-2xl bg-[#edf5f8]" key={index} />
+            <div className="h-[354px] animate-pulse rounded-lg bg-[#edf5f8]" key={index} />
           ))}
         </section>
       </main>

@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -41,8 +41,8 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
 
   return (
     <section className="bg-white pb-[58px] pt-[52px]">
-      <div className="mx-auto grid w-full max-w-[1120px] gap-8 px-4 sm:px-6 lg:grid-cols-[390px_1fr] lg:items-center lg:px-0">
-        <div className="overflow-hidden rounded-2xl border border-[#e7eef2] bg-[#edf5f8] shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
+      <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-[390px_1fr] lg:items-center lg:px-8">
+        <div className="overflow-hidden rounded-2xl border border-[#edf2f7] bg-[#edf5f8] shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
           <img alt={doctor.imageAlt} className="h-[448px] w-full object-cover object-top" src={doctor.imageUrl} />
         </div>
         <div>
@@ -52,12 +52,12 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
           <h1 className="mt-3 text-[34px] font-extrabold leading-[42px] text-[#005687] sm:text-[42px] sm:leading-[50px]">
             {doctor.name}
           </h1>
-          <p className="mt-3 max-w-[520px] text-[16px] font-medium leading-7 text-[#5f6974]">{doctor.detail.heroSummary}</p>
-          <div className="mt-5 grid gap-4 border-y border-[#e7eef2] py-6 sm:grid-cols-3">
+          <p className="mt-3 max-w-[520px] text-[16px] font-medium leading-7 text-[#6b7280]">{doctor.detail.heroSummary}</p>
+          <div className="mt-5 grid gap-4 border-y border-[#edf2f7] py-6 sm:grid-cols-3">
             {doctor.detail.stats.map((stat) => (
               <div key={stat.label}>
                 <p className="text-[26px] font-extrabold leading-8 text-[#3695b9]">{stat.value}</p>
-                <p className="mt-1 text-[12px] font-semibold leading-4 text-[#5f6974]">{stat.label}</p>
+                <p className="mt-1 text-[12px] font-semibold leading-4 text-[#6b7280]">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -78,7 +78,7 @@ function ExpertiseList({ items }: { items: string[] }) {
   return (
     <ul className="mt-4 space-y-2.5">
       {items.map((item) => (
-        <li className="flex items-start gap-3 text-[14px] font-medium leading-6 text-[#475569]" key={item}>
+        <li className="flex items-start gap-3 text-[14px] font-medium leading-6 text-[#6b7280]" key={item}>
           <span aria-hidden="true" className="mt-2 size-2 shrink-0 rounded-full bg-[#3695b9]" />
           {item}
         </li>
@@ -95,11 +95,11 @@ function CertificationCard({
   index: number;
 }) {
   return (
-    <Card className="flex min-h-[78px] items-center gap-4 rounded-lg border-[#e7eef2] bg-white p-4 shadow-none">
+    <Card className="flex min-h-[78px] items-center gap-4 rounded-lg border-[#edf2f7] bg-white p-4 shadow-none">
       <EducationIcon index={index} />
       <div>
-        <h3 className="text-[13px] font-extrabold leading-5 text-[#005687]">{certification.title}</h3>
-        <p className="text-[12px] font-medium leading-5 text-[#64748b]">{certification.institution}</p>
+        <h3 className="text-[13px] font-extrabold leading-5 text-[#0c2243]">{certification.title}</h3>
+        <p className="text-[12px] font-medium leading-5 text-[#6b7280]">{certification.institution}</p>
       </div>
     </Card>
   );
@@ -107,18 +107,18 @@ function CertificationCard({
 
 function OtherSpecialistCard({ doctor }: { doctor: LandingDoctor }) {
   return (
-    <Card className="overflow-hidden rounded-lg border-[#e7eef2] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]">
-      <a
+    <Card className="overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]">
+      <Link
         aria-label={`View profile for ${doctor.name}`}
         className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
-        href={doctor.detail.profileHref}
+        to={doctor.detail.profileHref}
       >
         <img alt={doctor.imageAlt} className="h-[186px] w-full bg-[#edf5f8] object-cover object-top" src={doctor.imageUrl} />
         <div className="bg-white px-4 py-3">
-          <h3 className="text-[13px] font-extrabold leading-5 text-[#1f2937]">{doctor.name}</h3>
+          <h3 className="text-[13px] font-extrabold leading-5 text-[#0c2243]">{doctor.name}</h3>
           <p className="mt-1 text-[12px] font-semibold leading-4 text-[#3695b9]">{doctor.focus ?? doctor.specialty}</p>
         </div>
-      </a>
+      </Link>
     </Card>
   );
 }
@@ -128,11 +128,11 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
 
   return (
     <section className="bg-[#f7fafc] pb-[62px] pt-[54px]">
-      <div className="mx-auto grid w-full max-w-[1120px] gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_310px] lg:px-0">
+      <div className="mx-auto grid w-full max-w-[1280px] gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_310px] lg:px-8">
         <div>
           <section>
             <h2 className="text-[26px] font-extrabold leading-8 text-[#005687]">About the Doctor</h2>
-            <div className="mt-6 space-y-5 text-[15px] font-medium leading-7 text-[#5f6974]">
+            <div className="mt-6 space-y-5 text-[15px] font-medium leading-7 text-[#6b7280]">
               {doctor.detail.about.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
@@ -186,11 +186,11 @@ function OtherSpecialists({ doctors }: { doctors: LandingDoctor[] }) {
 
   return (
     <section className="bg-[#f7fafc] pb-[78px] pt-[54px]">
-      <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-0">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="text-[28px] font-extrabold leading-9 text-[#005687]">Other Specialists</h2>
-            <p className="mt-3 text-[15px] font-medium leading-6 text-[#5f6974]">
+            <p className="mt-3 text-[15px] font-medium leading-6 text-[#6b7280]">
               Meet our team of highly qualified dental experts.
             </p>
           </div>
@@ -227,7 +227,7 @@ function DoctorDetailSkeleton() {
     <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
       <main aria-busy="true" aria-label="Loading doctor detail page">
         <section className="bg-[#f7fafc] py-[52px]">
-          <div className="mx-auto grid max-w-[1120px] gap-8 px-4 sm:px-6 lg:grid-cols-[390px_1fr] lg:px-0">
+          <div className="mx-auto grid max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-[390px_1fr] lg:px-8">
             <div className="h-[448px] animate-pulse rounded-lg bg-[#d6ecf3]" />
             <div className="py-10">
               <div className="h-5 w-48 animate-pulse rounded bg-[#d6ecf3]" />

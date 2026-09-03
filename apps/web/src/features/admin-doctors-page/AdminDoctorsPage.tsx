@@ -972,7 +972,8 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
   };
 
   return (
-    <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-7 lg:px-10 lg:py-10">
+    <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+      <div className="mx-auto max-w-[1440px] w-full">
       {/* Top Header */}
       <header className="flex flex-wrap items-end justify-between gap-5">
         <div>
@@ -1192,6 +1193,7 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
       <DoctorsFooter footer={content.footer} />
 
       {/* Add Specialist Modal */}
+      </div>
       <AddDoctorModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}

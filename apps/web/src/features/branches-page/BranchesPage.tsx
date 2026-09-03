@@ -125,7 +125,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
           src={hero.backgroundImageUrl}
         />
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-white via-white/88 to-white/12" />
-        <div className="relative mx-auto flex min-h-[505px] w-full max-w-[1280px] items-center px-4 sm:px-6 lg:px-0">
+        <div className="relative mx-auto flex min-h-[505px] w-full max-w-[1280px] items-center px-4 sm:px-6 lg:px-8">
           <div className="max-w-[520px] pt-4">
             <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[5px] text-[#3695b9]">
               {hero.eyebrow}
@@ -144,7 +144,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
                       <img alt="" aria-hidden="true" className="size-[14px]" src={item.iconUrl} />
                     )}
                   </span>
-                  <span className="text-[14px] font-extrabold leading-5 text-[#17364c]">{item.label}</span>
+                  <span className="text-[14px] font-extrabold leading-5 text-[#0c2243]">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -152,10 +152,10 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
         </div>
       </div>
 
-      <Card className="relative z-10 mx-auto -mt-[64px] grid w-[calc(100%-32px)] max-w-[1280px] gap-5 rounded-xl border-[#dfe8ed] px-6 py-7 shadow-[0_16px_38px_rgba(15,23,42,0.08)] sm:px-8 lg:grid-cols-[1fr_1fr_1fr_240px] lg:items-center">
+      <Card className="relative z-10 mx-auto -mt-[64px] grid w-[calc(100%-32px)] max-w-[1280px] gap-5 rounded-xl border-[#edf2f7] px-6 py-7 shadow-[0_16px_38px_rgba(15,23,42,0.08)] sm:px-8 lg:grid-cols-[1fr_1fr_1fr_240px] lg:items-center">
         {hero.metrics.map((metric) => (
           <div
-            className="flex items-center gap-5 border-[#e7eef2] lg:border-r lg:last:border-r-0"
+            className="flex items-center gap-5 border-[#edf2f7] lg:border-r lg:last:border-r-0"
             key={metric.title}
           >
             <span className="grid size-[45px] shrink-0 place-items-center rounded-md bg-[#eef8fb]">
@@ -166,9 +166,9 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
               )}
             </span>
             <div>
-              <p className="text-[12px] font-medium leading-4 text-[#96a0aa]">{metric.label}</p>
-              <p className="text-[16px] font-extrabold leading-5 text-[#17364c]">{metric.title}</p>
-              <p className="text-[11px] font-medium leading-4 text-[#96a0aa]">{metric.description}</p>
+              <p className="text-[12px] font-medium leading-4 text-[#6b7280]">{metric.label}</p>
+              <p className="text-[16px] font-extrabold leading-5 text-[#0c2243]">{metric.title}</p>
+              <p className="text-[11px] font-medium leading-4 text-[#6b7280]">{metric.description}</p>
             </div>
           </div>
         ))}
@@ -199,7 +199,7 @@ function SectionIntro({
       <h2 className="mt-5 text-[34px] font-extrabold leading-[42px] text-[#005687] sm:text-[40px] sm:leading-[48px]">
         {title}
       </h2>
-      {description ? <p className="mt-6 text-[14px] font-medium leading-6 text-[#7d8792]">{description}</p> : null}
+      {description ? <p className="mt-6 text-[14px] font-medium leading-6 text-[#6b7280]">{description}</p> : null}
     </div>
   );
 }
@@ -214,7 +214,7 @@ function BranchCard({
   const phoneHref = `tel:${branch.phones[0]?.replaceAll(' ', '') ?? ''}`;
 
   return (
-    <Card className="grid overflow-hidden rounded-xl border-[#dfe8ed] shadow-[0_2px_4px_rgba(15,23,42,0.04)] lg:h-[402px] lg:grid-cols-2">
+    <Card className="grid overflow-hidden rounded-xl border-[#edf2f7] shadow-[0_2px_4px_rgba(15,23,42,0.04)] lg:h-[402px] lg:grid-cols-2">
       <div className={`${flipped ? 'lg:order-2' : ''} px-6 py-8 sm:px-[46px] sm:py-[42px]`}>
         <Badge className="gap-1.5 !bg-[#3695b9] px-3 py-1 text-[10px] !text-white">
           <AssetIcon className="size-[10px] brightness-0 invert" name="branch-card-pin-alt.svg" />
@@ -224,7 +224,7 @@ function BranchCard({
           {branch.name}
         </h3>
 
-        <dl className="mt-[30px] space-y-[18px] text-[14px] font-medium leading-6 text-[#4f5f72]">
+        <dl className="mt-[30px] space-y-[18px] text-[14px] font-medium leading-6 text-[#6b7280]">
           <div className="flex gap-4">
             <dt>
               <span className="sr-only">Address</span>
@@ -237,7 +237,7 @@ function BranchCard({
               <span className="sr-only">Phone</span>
               <AssetIcon className="mt-1 size-[18px]" name="branch-card-phone.svg" />
             </dt>
-            <dd className="flex flex-wrap gap-x-8 gap-y-1 font-extrabold text-[#17364c]">
+            <dd className="flex flex-wrap gap-x-8 gap-y-1 font-extrabold text-[#0c2243]">
               {branch.phones.map((phone) => (
                 <a className="hover:text-[#3695b9] hover:underline" href={`tel:${phone.replaceAll(' ', '')}`} key={phone}>
                   {phone}
@@ -251,8 +251,8 @@ function BranchCard({
               <AssetIcon className="mt-1 size-[18px]" name="branch-card-clock.svg" />
             </dt>
             <dd>
-              <span className="mr-5 text-[#8a95a3]">{branch.hoursDays}</span>
-              <span className="font-extrabold text-[#17364c]">{branch.hoursTime}</span>
+              <span className="mr-5 text-[#6b7280]">{branch.hoursDays}</span>
+              <span className="font-extrabold text-[#0c2243]">{branch.hoursTime}</span>
             </dd>
           </div>
         </dl>
@@ -272,7 +272,7 @@ function BranchCard({
       <div className={`relative min-h-[320px] lg:min-h-full ${flipped ? 'lg:order-1' : ''}`}>
         <img alt={branch.imageAlt} className="absolute inset-0 h-full w-full object-cover" src={branch.imageUrl} />
         <a
-          className={`absolute bottom-[26px] left-[28px] inline-flex min-h-[58px] items-center overflow-hidden rounded-md bg-white text-[13px] font-extrabold text-[#17364c] shadow-[0_12px_26px_rgba(15,23,42,0.14)] transition hover:text-[#3695b9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9] ${
+          className={`absolute bottom-[26px] left-[28px] inline-flex min-h-[58px] items-center overflow-hidden rounded-md bg-white text-[13px] font-extrabold text-[#0c2243] shadow-[0_12px_26px_rgba(15,23,42,0.14)] transition hover:text-[#3695b9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9] ${
             flipped ? '' : 'lg:left-8'
           }`}
           href={branch.mapUrl}
@@ -295,7 +295,7 @@ function BranchesList({ content }: { content: BranchesPageContent }) {
         eyebrow={content.sections.branchesEyebrow}
         title={content.sections.branchesTitle}
       />
-      <div className="mx-auto mt-[66px] grid w-[calc(100%-32px)] max-w-[1360px] gap-[62px] sm:w-[calc(100%-48px)] lg:w-[calc(100%-80px)]">
+      <div className="mx-auto mt-[66px] grid w-full max-w-[1280px] gap-[62px] px-4 sm:px-6 lg:px-8">
         {content.branches.map((branch, index) => (
           <BranchCard branch={branch} flipped={index % 2 === 1} key={branch.name} />
         ))}
@@ -308,7 +308,7 @@ function BenefitsSection({ content }: { content: BranchesPageContent }) {
   return (
     <section className="bg-white py-[96px]">
       <SectionIntro eyebrow={content.sections.benefitsEyebrow} title={content.sections.benefitsTitle} />
-      <div className="mx-auto mt-[70px] grid w-full max-w-[1280px] gap-8 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-0">
+      <div className="mx-auto mt-[70px] grid w-full max-w-[1280px] gap-8 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         {content.benefits.map((item) => (
           <Card
             className="min-h-[226px] rounded-xl !border-transparent !bg-[#f7fafc] px-8 py-[30px] text-center shadow-none transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
@@ -317,8 +317,8 @@ function BenefitsSection({ content }: { content: BranchesPageContent }) {
             <span className="mx-auto grid size-[56px] place-items-center rounded-full bg-white shadow-[0_8px_16px_rgba(15,23,42,0.12)] ring-1 ring-[#e6eef3]">
               <img alt="" aria-hidden="true" className="max-h-[25px] max-w-[25px]" src={item.iconUrl} />
             </span>
-            <h3 className="mt-[30px] text-[18px] font-extrabold leading-6 text-[#005687]">{item.title}</h3>
-            <p className="mx-auto mt-[13px] max-w-[230px] text-[16px] font-medium leading-6 text-[#7d8792]">
+            <h3 className="mt-[30px] text-[18px] font-extrabold leading-6 text-[#0c2243]">{item.title}</h3>
+            <p className="mx-auto mt-[13px] max-w-[230px] text-[16px] font-medium leading-6 text-[#6b7280]">
               {item.description}
             </p>
           </Card>
@@ -333,7 +333,7 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
 
   return (
     <section className="bg-white">
-      <div className="relative mx-auto w-full max-w-[1440px] overflow-hidden rounded-xl bg-gradient-to-r from-[#16a8b6] to-[#163a5a] px-6 py-11 text-white sm:px-16">
+      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-xl bg-gradient-to-r from-[#16a8b6] to-[#163a5a] px-6 py-11 text-white sm:px-16">
         <img
           alt={cta.backgroundImageAlt}
           className="absolute inset-y-0 right-0 hidden h-full w-[48%] object-cover opacity-25 md:block"

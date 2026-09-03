@@ -61,7 +61,7 @@ export type AdminDoctorsContent = {
   navigation: {
     icon: AdminNavIcon;
     label: string;
-    section?: 'appointments' | 'services';
+    section?: 'appointments' | 'services' | 'doctors' | 'clinic';
   }[];
   table: {
     doctor: string;

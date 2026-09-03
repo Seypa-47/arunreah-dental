@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -46,10 +47,10 @@ function RecentRequests({ content }: { content: AdminDashboardContent }) {
     <Card className="overflow-hidden rounded-[32px] border-[#dce5ef] shadow-[0_2px_4px_rgba(15,23,42,0.03)]">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e1e8f0] px-7 py-6">
         <h2 className="text-[20px] font-bold text-[#182238]" id="recent-requests-heading">{content.table.title}</h2>
-        <a className="inline-flex items-center gap-2 text-[14px] font-semibold text-[#197da2] hover:text-[#096d91] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8]" href="/admin/appointments/inbox">
+        <Link className="inline-flex items-center gap-2 text-[14px] font-semibold text-[#197da2] hover:text-[#096d91] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8]" to="/admin/appointments/inbox">
           {content.table.viewAllLabel}
           <AdminIcon className="size-4" name="chevronRight" />
-        </a>
+        </Link>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[830px] border-collapse text-left">
@@ -73,7 +74,7 @@ function RecentRequests({ content }: { content: AdminDashboardContent }) {
                   <button aria-expanded={openMenuId === appointment.id} aria-label={`${content.table.actionLabel} for ${appointment.patientName}`} className="rounded-lg p-1.5 text-[#2187a8] transition hover:bg-[#edf7fb] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8]" onClick={() => setOpenMenuId((id) => id === appointment.id ? undefined : appointment.id)} type="button">
                     <span aria-hidden="true" className="flex flex-col gap-0.5"><i className="size-1 rounded-full bg-current" /><i className="size-1 rounded-full bg-current" /><i className="size-1 rounded-full bg-current" /></span>
                   </button>
-                  {openMenuId === appointment.id ? <div className="absolute right-7 top-12 z-10 w-36 rounded-xl border border-[#dce5ef] bg-white p-2 text-left shadow-[0_10px_24px_rgba(15,23,42,0.12)]"><a className="block rounded-lg px-3 py-2 text-sm text-[#52647d] hover:bg-[#f4f8fb]" href="/admin/appointments/inbox">View request</a></div> : null}
+                  {openMenuId === appointment.id ? <div className="absolute right-7 top-12 z-10 w-36 rounded-xl border border-[#dce5ef] bg-white p-2 text-left shadow-[0_10px_24px_rgba(15,23,42,0.12)]"><Link className="block rounded-lg px-3 py-2 text-sm text-[#52647d] hover:bg-[#f4f8fb]" to="/admin/appointments/inbox">View request</Link></div> : null}
                 </td>
               </tr>
             ))}
@@ -86,8 +87,8 @@ function RecentRequests({ content }: { content: AdminDashboardContent }) {
 
 function DashboardContent({ content }: { content: AdminDashboardContent }) {
   return (
-    <main className="flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-7 lg:px-[42px] lg:py-[45px]">
-      <div className="mx-auto max-w-[1120px]">
+    <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+      <div className="mx-auto max-w-[1440px] w-full">
         <header className="flex flex-wrap items-end justify-between gap-5">
           <div>
             <h1 className="text-[28px] font-bold tracking-[-0.6px] text-[#182238] sm:text-[33px]">{content.header.title}</h1>

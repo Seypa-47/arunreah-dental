@@ -73,7 +73,7 @@ const adminCalendarContent: AdminCalendarContent = {
   footer: { copyright: `© ${new Date().getFullYear()} Arunreah Dental Clinic. All rights reserved.`, encryptionLabel: '256-bit Encryption', sslLabel: 'SSL Secured' },
   header: { subtitle: 'Schedule and track patient visits effortlessly.', title: 'Appointment Calendar' },
   navigation: [
-    { icon: 'dashboard', label: 'Dashboard' }, { icon: 'appointments', label: 'Appointments', section: 'appointments' }, { icon: 'inbox', label: 'Inbox', section: 'appointments' }, { icon: 'calendar', label: 'Calendar', section: 'appointments' }, { icon: 'appointments', label: 'All Appointments', section: 'appointments' }, { icon: 'services', label: 'Services' }, { icon: 'doctors', label: 'Doctors' }, { icon: 'doctors', label: 'Doctor Management', section: 'doctors' }, { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' }, { icon: 'doctors', label: 'Specializations', section: 'doctors' }, { icon: 'showcase', label: 'Showcase' }, { icon: 'clinicInfo', label: 'Clinic Info' },
+    { icon: 'dashboard', label: 'Dashboard' }, { icon: 'appointments', label: 'Appointments', section: 'appointments' }, { icon: 'inbox', label: 'Inbox', section: 'appointments' }, { icon: 'calendar', label: 'Calendar', section: 'appointments' }, { icon: 'appointments', label: 'All Appointments', section: 'appointments' }, { icon: 'services', label: 'Services' }, { icon: 'doctors', label: 'Doctors' }, { icon: 'doctors', label: 'Doctor Management', section: 'doctors' }, { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' }, { icon: 'showcase', label: 'Showcase' }, { icon: 'clinicInfo', label: 'Clinic Info' },
   ],
   newAppointment: {
     cancelLabel: 'Cancel',

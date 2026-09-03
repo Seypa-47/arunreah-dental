@@ -81,7 +81,6 @@ const adminDashboardContent: AdminDashboardContent = {
     { icon: 'doctors', label: 'Doctors' },
     { icon: 'doctors', label: 'Doctor Management', section: 'doctors' },
     { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' },
-    { icon: 'doctors', label: 'Specializations', section: 'doctors' },
     { icon: 'showcase', label: 'Showcase' },
     { icon: 'clinicInfo', label: 'Clinic Info' },
   ],

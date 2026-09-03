@@ -120,14 +120,15 @@ function InboxContent({ content }: { content: AdminInboxContent }) {
   };
 
   return (
-    <main className="flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-7 lg:px-[42px] lg:py-[45px]">
-      <header className="flex flex-wrap items-end justify-between gap-5">
-        <div>
-          <h1 className="text-[28px] font-bold tracking-[-0.6px] text-[#182238] sm:text-[33px]">{content.header.title}</h1>
-          <p className="mt-1 text-[16px] text-[#71839e] sm:text-[17px]">{content.header.subtitle}</p>
-        </div>
-        <div className="inline-flex h-[42px] items-center gap-2.5 rounded-xl border border-[#dce5ef] bg-white px-4 text-[14px] font-medium text-[#71839e]"><AdminIcon className="size-4" name="calendar" />{content.header.dateLabel}</div>
-      </header>
+    <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+      <div className="mx-auto max-w-[1440px] w-full">
+        <header className="flex flex-wrap items-end justify-between gap-5">
+          <div>
+            <h1 className="text-[28px] font-bold tracking-[-0.6px] text-[#182238] sm:text-[33px]">{content.header.title}</h1>
+            <p className="mt-1 text-[16px] text-[#71839e] sm:text-[17px]">{content.header.subtitle}</p>
+          </div>
+          <div className="inline-flex h-[42px] items-center gap-2.5 rounded-xl border border-[#dce5ef] bg-white px-4 text-[14px] font-medium text-[#71839e]"><AdminIcon className="size-4" name="calendar" />{content.header.dateLabel}</div>
+        </header>
 
       <div className="mt-9 grid gap-6 xl:grid-cols-[minmax(0,1.37fr)_minmax(370px,0.92fr)]">
         <Card className="flex min-h-[610px] flex-col overflow-visible rounded-[32px] border-[#dce5ef] shadow-[0_2px_4px_rgba(15,23,42,0.03)]">
@@ -165,6 +166,7 @@ function InboxContent({ content }: { content: AdminInboxContent }) {
         <p>{content.footer.copyright}</p>
         <div className="flex flex-wrap gap-7"><span className="inline-flex items-center gap-2"><AdminIcon className="size-4 text-[#2187a8]" name="shield" />{content.footer.sslLabel}</span><span className="inline-flex items-center gap-2"><AdminIcon className="size-4 text-[#2187a8]" name="lock" />{content.footer.encryptionLabel}</span></div>
       </footer>
+      </div>
     </main>
   );
 }
