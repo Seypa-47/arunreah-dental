@@ -361,6 +361,7 @@ export function AdminShowcasePage() {
 
       {/* Main Content Area */}
       <main className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+        <div className="mx-auto max-w-[1440px] w-full">
         {/* Breadcrumb & Header */}
         <div>
           <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[14px]">
@@ -952,6 +953,7 @@ export function AdminShowcasePage() {
             </span>
           </div>
         </footer>
+        </div>
 
         {/* Modal for adding article */}
         <AddShowcaseModal

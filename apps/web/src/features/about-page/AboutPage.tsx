@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -40,7 +41,7 @@ function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
 function StorySection({ stats, story }: Pick<AboutPageContent, 'stats' | 'story'>) {
   return (
     <section className="bg-white py-[86px]">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-0">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-14 lg:grid-cols-[520px_1fr]">
           <img
             alt={story.imageAlt}
@@ -51,7 +52,7 @@ function StorySection({ stats, story }: Pick<AboutPageContent, 'stats' | 'story'
             <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[5px] text-[#3695b9]">{story.eyebrow}</p>
             <h2 className="mt-3 text-[34px] font-extrabold leading-[42px] text-[#0c2243]">{story.title}</h2>
             <div className="mt-2 h-1 w-[88px] rounded-full bg-[#3695b9]" />
-            <div className="mt-7 space-y-6 text-[16px] font-medium leading-8 text-[#7a8491]">
+            <div className="mt-7 space-y-6 text-[16px] font-medium leading-8 text-[#6b7280]">
               {story.paragraphs.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
@@ -68,7 +69,7 @@ function StorySection({ stats, story }: Pick<AboutPageContent, 'stats' | 'story'
               <img alt="" aria-hidden="true" className="size-5" src={stat.iconUrl} />
               <div>
                 <p className="text-[28px] font-extrabold leading-8 text-[#0c2243]">{stat.value}</p>
-                <p className="mt-1 text-[11px] font-extrabold uppercase leading-4 text-[#8a95a3]">{stat.label}</p>
+                <p className="mt-1 text-[11px] font-extrabold uppercase leading-4 text-[#6b7280]">{stat.label}</p>
               </div>
             </div>
           ))}
@@ -109,7 +110,7 @@ function VisionMissionSection({
             </span>
             <h2 className="text-[30px] font-extrabold leading-9 text-[#005687]">{mission.title}</h2>
           </div>
-          <p className="text-[16px] font-medium leading-8 text-[#7a8491]">{mission.description}</p>
+          <p className="text-[16px] font-medium leading-8 text-[#6b7280]">{mission.description}</p>
         </div>
       </article>
     </section>
@@ -119,7 +120,7 @@ function VisionMissionSection({
 function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences'>) {
   return (
     <section className="bg-white py-[88px] text-center">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-0">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[5px] text-[#3695b9]">Why Choose Us</p>
         <h2 className="mt-3 text-[34px] font-extrabold leading-[42px] text-[#005687]">What Makes Us Different</h2>
         <div className="mt-[58px] grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
@@ -128,8 +129,8 @@ function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences
               <span className="mx-auto grid size-12 place-items-center rounded-lg bg-white">
                 <img alt="" aria-hidden="true" className="max-h-6 max-w-6" src={item.iconUrl} />
               </span>
-              <h3 className="mt-6 text-[16px] font-extrabold leading-6 text-[#005687]">{item.title}</h3>
-              <p className="mt-3 text-[13px] font-medium leading-5 text-[#87919f]">{item.description}</p>
+              <h3 className="mt-6 text-[16px] font-extrabold leading-6 text-[#0c2243]">{item.title}</h3>
+              <p className="mt-3 text-[13px] font-medium leading-5 text-[#6b7280]">{item.description}</p>
             </Card>
           ))}
         </div>
@@ -141,7 +142,7 @@ function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences
 function FacilitiesSection({ facilities }: Pick<AboutPageContent, 'facilities'>) {
   return (
     <section className="bg-[#f7fafc] py-[86px]">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-0">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[5px] text-[#3695b9]">
@@ -151,20 +152,20 @@ function FacilitiesSection({ facilities }: Pick<AboutPageContent, 'facilities'>)
               Premium Care. Advanced Facilities.
             </h2>
           </div>
-          <a
+          <Link
             className="hidden items-center gap-2 text-[13px] font-extrabold leading-5 text-[#3695b9] hover:text-[#005687] sm:inline-flex"
-            href="/services"
+            to="/services"
           >
             See All Services
             <ArrowIcon />
-          </a>
+          </Link>
         </div>
         <div className="mt-10 grid gap-8 lg:grid-cols-3">
           {facilities.map((facility) => (
             <article key={facility.title}>
               <img alt={facility.imageAlt} className="h-[226px] w-full rounded-xl object-cover" src={facility.imageUrl} />
-              <h3 className="mt-6 text-[18px] font-extrabold leading-6 text-[#005687]">{facility.title}</h3>
-              <p className="mt-3 text-[14px] font-medium leading-6 text-[#87919f]">{facility.description}</p>
+              <h3 className="mt-6 text-[18px] font-extrabold leading-6 text-[#0c2243]">{facility.title}</h3>
+              <p className="mt-3 text-[14px] font-medium leading-6 text-[#6b7280]">{facility.description}</p>
             </article>
           ))}
         </div>

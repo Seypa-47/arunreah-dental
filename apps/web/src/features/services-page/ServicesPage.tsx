@@ -32,7 +32,7 @@ function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
             className="absolute bottom-0 left-1/2 h-[18px] w-[196px] -translate-x-1/2 rounded-full bg-[#d9edf4]"
           />
         </div>
-        <p className="mx-auto mt-5 max-w-[640px] text-[18px] font-medium leading-8 text-[#7f8794]">{hero.description}</p>
+        <p className="mx-auto mt-5 max-w-[640px] text-[18px] font-medium leading-8 text-[#6b7280]">{hero.description}</p>
       </div>
     </section>
   );
@@ -62,7 +62,7 @@ function ServiceCard({ service }: { service: LandingService }) {
             <h2 className="text-[15px] font-semibold leading-5 text-[#0c2243] transition-colors group-hover:text-[#3695b9]">
               {service.name}
             </h2>
-            <p className="mt-2 text-[13px] font-medium leading-[20px] text-[#556987]">
+            <p className="mt-2 text-[13px] font-medium leading-[20px] text-[#6b7280]">
               {service.description}
             </p>
           </div>
@@ -106,7 +106,7 @@ function ConsultationCta({ cta }: { cta: ServicesPageContent['cta'] }) {
     <section className="bg-[#f7fafc] px-4 py-[88px] sm:px-6">
       <Card className="mx-auto max-w-[960px] rounded-[22px] border-[#e5edf2] bg-white px-6 py-[56px] text-center shadow-[0_2px_6px_rgba(15,23,42,0.04)] sm:px-12">
         <h2 className="text-[30px] font-extrabold leading-9 text-[#005687]">{cta.title}</h2>
-        <p className="mx-auto mt-5 max-w-[680px] text-[18px] font-medium leading-8 text-[#858d99]">{cta.description}</p>
+        <p className="mx-auto mt-5 max-w-[680px] text-[18px] font-medium leading-8 text-[#6b7280]">{cta.description}</p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
             className="min-h-[56px] w-full rounded-xl px-9 text-[15px] shadow-[0_16px_24px_rgba(58,167,200,0.24)] sm:w-auto"

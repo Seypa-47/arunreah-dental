@@ -1,5 +1,5 @@
 import { useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -698,7 +698,8 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
   };
 
   return (
-    <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-6 sm:px-7 lg:px-[34px] lg:py-[30px]">
+    <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+      <div className="mx-auto max-w-[1440px] w-full">
       {notification ? (
         <div
           aria-live="polite"
@@ -722,9 +723,9 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       <header className="flex flex-wrap items-start justify-between gap-5">
         <div>
           <nav aria-label="Breadcrumb" className="text-[12px] font-bold text-[#71839e]">
-            <a className="text-[#2187a8] hover:text-[#0f6f90]" href="/admin/services">
+            <Link className="text-[#2187a8] hover:text-[#0f6f90]" to="/admin/services">
               {content.header.breadcrumb[0]}
-            </a>
+            </Link>
             <span className="mx-2 text-[#a7b5c7]">›</span>
             <span>{content.header.breadcrumb[1]}</span>
           </nav>
@@ -775,6 +776,7 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       </div>
 
       <AdminFooter footer={content.footer} />
+      </div>
     </main>
   );
 }
@@ -801,12 +803,12 @@ function EmptyState({ content }: { content: AdminServiceDetailContent }) {
         <Card className="max-w-md p-8 text-center">
           <h1 className="text-2xl font-bold text-[#182238]">{content.empty.title}</h1>
           <p className="mt-3 text-[#71839e]">{content.empty.description}</p>
-          <a
+          <Link
             className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2187a8] px-5 text-sm font-bold text-white"
-            href="/admin/services"
+            to="/admin/services"
           >
             Back to Services
-          </a>
+          </Link>
         </Card>
       </main>
     </div>

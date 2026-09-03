@@ -219,6 +219,7 @@ export function AdminClinicInfoPage({
 
       {/* Main Content Area */}
       <main className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+        <div className="mx-auto max-w-[1440px] w-full">
         {/* Toast notification */}
         {toastMessage && (
           <div className="fixed top-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-[#bbf7d0] bg-[#f0fdf4] p-4 text-[14px] font-semibold text-[#15803d] shadow-lg">
@@ -1589,6 +1590,7 @@ export function AdminClinicInfoPage({
             </svg>
             <span>Save Changes</span>
           </Button>
+        </div>
         </div>
       </main>
     </div>

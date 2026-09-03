@@ -100,11 +100,11 @@ function ChevronIcon({ direction }: { direction: 'left' | 'right' }) {
 }
 
 const fieldClass =
-  'h-[54px] w-full rounded-xl border border-[#d9e4eb] bg-white px-12 text-[14px] font-semibold text-[#25384a] outline-none transition placeholder:text-[#aeb7c2] focus:border-[#3695b9] focus:ring-2 focus:ring-[#d9f0f7]';
+  'h-[54px] w-full rounded-xl border border-[#d9e4eb] bg-white px-12 text-[14px] font-semibold text-[#0c2243] outline-none transition placeholder:text-[#94a3b8] focus:border-[#3695b9] focus:ring-2 focus:ring-[#d9f0f7]';
 
 function FieldIcon({ name }: { name: IconName }) {
   return (
-    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#a3adba]">
+    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
       <AppointmentIcon className="size-[18px]" name={name} />
     </span>
   );
@@ -127,13 +127,13 @@ function SelectField({
 }) {
   return (
     <div>
-      <label className="mb-3 block text-[13px] font-extrabold leading-4 text-[#4e5967]" htmlFor={id}>
+      <label className="mb-3 block text-[13px] font-extrabold leading-4 text-[#005687]" htmlFor={id}>
         {label}
       </label>
       <div className="relative">
         <FieldIcon name={icon} />
         <select
-          className={`${fieldClass} appearance-none pr-11 text-[#6b7280]`}
+          className={`${fieldClass} appearance-none pr-11 text-[#0c2243]`}
           id={id}
           name={id}
           onChange={(event) => onChange(event.target.value)}
@@ -145,7 +145,7 @@ function SelectField({
             </option>
           ))}
         </select>
-        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#a3adba]">
+        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
           <ChevronIcon direction="right" />
         </span>
       </div>
@@ -168,7 +168,7 @@ function TextField({
 }) {
   return (
     <div>
-      <label className="mb-3 block text-[13px] font-extrabold leading-4 text-[#4e5967]" htmlFor={id}>
+      <label className="mb-3 block text-[13px] font-extrabold leading-4 text-[#005687]" htmlFor={id}>
         {label}
       </label>
       <div className="relative">
@@ -182,27 +182,27 @@ function TextField({
 function SectionTitle({ number, title }: { number: string; title: string }) {
   return (
     <div className="flex items-center gap-4">
-      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#0076a8] text-[15px] font-extrabold text-white">
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#3695b9] text-[15px] font-extrabold text-white">
         {number}
       </span>
-      <h2 className="text-[22px] font-extrabold leading-7 text-[#253244]">{title}</h2>
+      <h2 className="text-[22px] font-extrabold leading-7 text-[#005687]">{title}</h2>
     </div>
   );
 }
 
 function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] }) {
   return (
-    <section className="relative overflow-hidden bg-[#0c7fa9]">
+    <section className="relative overflow-hidden bg-[#3695b9]">
       <img
         alt={hero.backgroundImageAlt}
         className="absolute inset-0 h-full w-full object-cover object-center opacity-20"
         src={hero.backgroundImageUrl}
       />
-      <div aria-hidden="true" className="absolute inset-0 bg-[#047aa6]/88" />
-      <div className="relative mx-auto flex min-h-[300px] w-full max-w-[1240px] items-center px-4 pb-12 pt-12 sm:px-6 lg:px-0">
+      <div aria-hidden="true" className="absolute inset-0 bg-[#3695b9]/90" />
+      <div className="relative mx-auto flex min-h-[300px] w-full max-w-[1280px] items-center px-4 pb-12 pt-12 sm:px-6 lg:px-8">
         <div className="max-w-[600px]">
           <h1 className="text-[42px] font-extrabold leading-[52px] text-white">{hero.title}</h1>
-          <p className="mt-5 max-w-[520px] text-[18px] font-medium leading-8 text-white/75">{hero.subtitle}</p>
+          <p className="mt-5 max-w-[520px] text-[18px] font-medium leading-8 text-white/85">{hero.subtitle}</p>
         </div>
       </div>
     </section>
@@ -221,17 +221,17 @@ function AppointmentCalendar({
   return (
     <div>
       <div className="mb-7 flex items-center justify-between">
-        <button aria-label="Previous month" className="text-[#a7b1bd] transition hover:text-[#3695b9]" type="button">
+        <button aria-label="Previous month" className="text-[#94a3b8] transition hover:text-[#3695b9]" type="button">
           <ChevronIcon direction="left" />
         </button>
-        <h3 className="text-[16px] font-extrabold leading-6 text-[#253244]">{calendar.monthLabel}</h3>
-        <button aria-label="Next month" className="text-[#a7b1bd] transition hover:text-[#3695b9]" type="button">
+        <h3 className="text-[16px] font-extrabold leading-6 text-[#0c2243]">{calendar.monthLabel}</h3>
+        <button aria-label="Next month" className="text-[#94a3b8] transition hover:text-[#3695b9]" type="button">
           <ChevronIcon direction="right" />
         </button>
       </div>
       <div className="grid grid-cols-7 gap-y-5 text-center">
         {calendar.weekdays.map((day) => (
-          <span className="text-[12px] font-extrabold leading-4 text-[#a3adba]" key={day}>
+          <span className="text-[12px] font-extrabold leading-4 text-[#6b7280]" key={day}>
             {day}
           </span>
         ))}
@@ -242,10 +242,10 @@ function AppointmentCalendar({
               aria-pressed={isSelected}
               className={`mx-auto grid size-9 place-items-center rounded-full text-[13px] font-extrabold transition ${
                 isSelected
-                  ? 'bg-[#0076a8] text-white'
+                  ? 'bg-[#3695b9] text-white'
                   : date.muted
                     ? 'text-[#d5dce3]'
-                    : 'text-[#5f6b7a] hover:bg-[#edf7fb] hover:text-[#0076a8]'
+                    : 'text-[#6b7280] hover:bg-[#edf7fb] hover:text-[#3695b9]'
               }`}
               disabled={date.disabled}
               key={date.key}
@@ -272,7 +272,7 @@ function AvailableTimes({
 }) {
   return (
     <div>
-      <h3 className="mb-6 text-center text-[16px] font-extrabold leading-6 text-[#253244]">Available Time</h3>
+      <h3 className="mb-6 text-center text-[16px] font-extrabold leading-6 text-[#0c2243]">Available Time</h3>
       <div className="space-y-3">
         {times.map((time) => {
           const isSelected = time === selectedTime;
@@ -281,8 +281,8 @@ function AvailableTimes({
               aria-pressed={isSelected}
               className={`h-[50px] w-full rounded-lg border text-[15px] font-extrabold transition ${
                 isSelected
-                  ? 'border-[#0076a8] bg-[#0076a8] text-white shadow-[0_12px_22px_rgba(0,118,168,0.2)]'
-                  : 'border-[#e6edf2] bg-white text-[#727d8b] hover:border-[#bcdce8] hover:text-[#0076a8]'
+                  ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-[0_12px_22px_rgba(54,149,185,0.2)]'
+                  : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
               }`}
               key={time}
               onClick={() => onSelectTime(time)}
@@ -327,7 +327,7 @@ function AppointmentForm({
   };
 
   return (
-    <Card className="rounded-xl border-[#dfe8ee] px-6 py-10 shadow-[0_18px_40px_rgba(15,23,42,0.08)] sm:px-10 lg:px-[44px]">
+    <Card className="rounded-xl border-[#edf2f7] px-6 py-10 shadow-[0_18px_40px_rgba(15,23,42,0.08)] sm:px-10 lg:px-[44px]">
       <form className="space-y-[54px]" onSubmit={handleSubmit}>
         <section>
           <SectionTitle number="1" title="Appointment Details" />
@@ -389,7 +389,7 @@ function AppointmentForm({
           </div>
         </section>
 
-        <Button className="min-h-[64px] rounded-lg bg-[#0076a8] px-10 text-[17px] shadow-[0_14px_28px_rgba(0,118,168,0.25)]">
+        <Button className="min-h-[64px] rounded-lg bg-[#3695b9] px-10 text-[17px] shadow-[0_14px_28px_rgba(54,149,185,0.25)] hover:bg-[#2f8fb0]">
           <AppointmentIcon className="size-[18px]" name="calendar" />
           {content.form.submitLabel}
         </Button>
@@ -401,9 +401,9 @@ function AppointmentForm({
 function SummaryRow({ icon, label, value }: { icon: IconName; label: string; value: string }) {
   return (
     <div className="grid grid-cols-[24px_1fr_auto] items-center gap-5">
-      <AppointmentIcon className="size-[17px] text-[#0076a8]" name={icon} />
-      <span className="text-[15px] font-medium leading-5 text-[#87909d]">{label}</span>
-      <span className="text-right text-[15px] font-extrabold leading-5 text-[#253244]">{value}</span>
+      <AppointmentIcon className="size-[17px] text-[#3695b9]" name={icon} />
+      <span className="text-[15px] font-medium leading-5 text-[#6b7280]">{label}</span>
+      <span className="text-right text-[15px] font-extrabold leading-5 text-[#0c2243]">{value}</span>
     </div>
   );
 }
@@ -424,16 +424,16 @@ function AppointmentSummary({
   selectedTime: string;
 }) {
   return (
-    <Card className="sticky top-20 rounded-xl border-[#dfe8ee] px-7 py-8 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
-      <h2 className="text-[22px] font-extrabold leading-7 text-[#253244]">{content.summary.title}</h2>
+    <Card className="sticky top-20 rounded-xl border-[#edf2f7] px-7 py-8 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
+      <h2 className="text-[22px] font-extrabold leading-7 text-[#005687]">{content.summary.title}</h2>
       <div className="mt-7 rounded-xl bg-[#edf7fb] p-4">
         <div className="grid grid-cols-[96px_1fr] gap-5">
           <img alt={branch.imageAlt} className="h-[96px] w-[96px] rounded-lg bg-[#e8e8f0] object-cover" src={branch.imageUrl} />
           <div>
-            <h3 className="text-[14px] font-extrabold leading-5 text-[#0076a8]">{branch.name}</h3>
-            <p className="mt-1 text-[12px] font-medium leading-5 text-[#7b8794]">{branch.address}</p>
+            <h3 className="text-[14px] font-extrabold leading-5 text-[#0c2243]">{branch.name}</h3>
+            <p className="mt-1 text-[12px] font-medium leading-5 text-[#6b7280]">{branch.address}</p>
             <a
-              className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-extrabold text-[#0076a8] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
+              className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-extrabold text-[#3695b9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
               href={branch.mapUrl}
             >
               <AppointmentIcon className="size-[13px]" name="location" />
@@ -452,14 +452,14 @@ function AppointmentSummary({
       </div>
 
       <div className="mt-8 rounded-xl border border-[#d7e7ef] bg-[#f4fbfd] p-6">
-        <h3 className="flex items-center gap-2 text-[14px] font-extrabold leading-5 text-[#0076a8]">
+        <h3 className="flex items-center gap-2 text-[14px] font-extrabold leading-5 text-[#3695b9]">
           <AppointmentIcon className="size-[16px]" name="doctor" />
           Important Information
         </h3>
         <ul className="mt-5 space-y-5">
           {content.information.map((item) => (
-            <li className="flex gap-4 text-[13px] font-medium leading-5 text-[#697583]" key={item}>
-              <AppointmentIcon className="mt-0.5 size-[13px] shrink-0 text-[#0076a8]" name="check" />
+            <li className="flex gap-4 text-[13px] font-medium leading-5 text-[#6b7280]" key={item}>
+              <AppointmentIcon className="mt-0.5 size-[13px] shrink-0 text-[#3695b9]" name="check" />
               <span>{item}</span>
             </li>
           ))}
@@ -467,9 +467,9 @@ function AppointmentSummary({
       </div>
 
       <div className="mt-8 border-t border-[#edf2f5] pt-8">
-        <h3 className="text-[18px] font-extrabold leading-6 text-[#253244]">{content.help.title}</h3>
-        <p className="mt-2 text-[13px] font-medium leading-5 text-[#87909d]">{content.help.subtitle}</p>
-        <div className="mt-5 space-y-3 text-[14px] font-extrabold leading-5 text-[#0076a8]">
+        <h3 className="text-[18px] font-extrabold leading-6 text-[#005687]">{content.help.title}</h3>
+        <p className="mt-2 text-[13px] font-medium leading-5 text-[#6b7280]">{content.help.subtitle}</p>
+        <div className="mt-5 space-y-3 text-[14px] font-extrabold leading-5 text-[#3695b9]">
           <a className="flex items-center gap-3 hover:text-[#005687]" href={`tel:${content.help.phone.replaceAll(/[^0-9+]/g, '')}`}>
             <AppointmentIcon className="size-[16px]" name="phone" />
             {content.help.phone}
@@ -520,7 +520,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main className="bg-[#f2f7fa]">
         <AppointmentHero hero={content.hero} />
-        <section className="relative z-10 mx-auto grid w-full max-w-[1240px] gap-8 px-4 pb-[94px] sm:px-6 lg:-mt-[28px] lg:grid-cols-[1fr_390px] lg:px-0">
+        <section className="relative z-10 mx-auto grid w-full max-w-[1280px] gap-8 px-4 pb-[94px] sm:px-6 lg:-mt-[28px] lg:grid-cols-[1fr_390px] lg:px-8">
           <AppointmentForm
             content={content}
             onSelectBranch={setSelectedBranch}
@@ -554,7 +554,7 @@ function BookAppointmentSkeleton() {
     <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
       <main aria-busy="true" aria-label="Loading appointment page" className="bg-[#f2f7fa]">
         <section className="h-[300px] animate-pulse bg-[#238eb4]" />
-        <section className="relative z-10 mx-auto grid max-w-[1240px] gap-8 px-4 pb-[94px] sm:px-6 lg:-mt-[28px] lg:grid-cols-[1fr_390px] lg:px-0">
+        <section className="relative z-10 mx-auto grid max-w-[1280px] gap-8 px-4 pb-[94px] sm:px-6 lg:-mt-[28px] lg:grid-cols-[1fr_390px] lg:px-8">
           <div className="h-[1020px] animate-pulse rounded-xl bg-white" />
           <div className="h-[645px] animate-pulse rounded-xl bg-white" />
         </section>
