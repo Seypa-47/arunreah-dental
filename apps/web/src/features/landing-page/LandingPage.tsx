@@ -207,8 +207,10 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
     <section aria-label="Clinic branches" className="relative bg-[#f7fafc]">
       <div
         className="hero-carousel flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        data-scroll-container
         onScroll={syncActiveHero}
         ref={carouselRef}
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {heroes.map((hero) => (
           <HeroSlide hero={hero} key={hero.address} />
@@ -234,6 +236,10 @@ function ServicesSection({ services }: { services: LandingService[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeftStart = useRef(0);
+  const hasMoved = useRef(false);
 
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -250,6 +256,35 @@ function ServicesSection({ services }: { services: LandingService[] }) {
         behavior: 'smooth',
         left: direction === 'left' ? -scrollDistance : scrollDistance,
       });
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    isDragging.current = true;
+    hasMoved.current = false;
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeftStart.current = scrollRef.current.scrollLeft;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !scrollRef.current) return;
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.2;
+    if (Math.abs(walk) > 5) {
+      hasMoved.current = true;
+    }
+    scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    isDragging.current = false;
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!scrollRef.current) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 5) {
+      scrollRef.current.scrollLeft += e.deltaY;
     }
   };
 
@@ -303,9 +338,16 @@ function ServicesSection({ services }: { services: LandingService[] }) {
         </div>
 
         <div
-          className="no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="no-scrollbar mt-6 flex cursor-grab gap-6 overflow-x-auto px-1.5 py-4 scroll-smooth active:cursor-grabbing select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          data-scroll-container
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseUpOrLeave}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUpOrLeave}
           onScroll={checkScroll}
+          onWheel={handleWheel}
           ref={scrollRef}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {services.map((service) => {
             const slug = serviceSlug(service.name);
@@ -313,18 +355,24 @@ function ServicesSection({ services }: { services: LandingService[] }) {
 
             return (
               <Card
-                className="h-[354px] w-[286px] shrink-0 snap-start overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
+                className="h-[354px] w-[286px] shrink-0 overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
                 id={id}
                 key={service.name}
               >
                 <Link
                   aria-label={`View ${service.name}`}
                   className="block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+                  onClick={(e) => {
+                    if (hasMoved.current) {
+                      e.preventDefault();
+                    }
+                  }}
                   to={`/services/${slug}`}
                 >
                   <img
                     alt={service.imageAlt}
-                    className="h-[246px] w-full bg-[#eaf2f6] object-cover object-center"
+                    className="pointer-events-none h-[246px] w-full bg-[#eaf2f6] object-cover object-center"
+                    draggable={false}
                     src={service.imageUrl}
                   />
                   <div className="flex h-[108px] flex-col justify-center px-4 py-3">

@@ -23,15 +23,31 @@ img {
   display: block;
 }
 
-.no-scrollbar::-webkit-scrollbar {
+/* Hide scrollbars across all browsers while retaining full scrolling capability */
+.no-scrollbar::-webkit-scrollbar,
+.hero-carousel::-webkit-scrollbar,
+[data-scroll-container]::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
+  background: transparent !important;
 }
 
-.no-scrollbar {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
+.no-scrollbar::-webkit-scrollbar-thumb,
+.hero-carousel::-webkit-scrollbar-thumb,
+[data-scroll-container]::-webkit-scrollbar-thumb,
+.no-scrollbar::-webkit-scrollbar-track,
+.hero-carousel::-webkit-scrollbar-track,
+[data-scroll-container]::-webkit-scrollbar-track {
+  display: none !important;
+  background: transparent !important;
+}
+
+.no-scrollbar,
+.hero-carousel,
+[data-scroll-container] {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
 }
 
 * {
