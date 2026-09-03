@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { LandingFooterLinkGroup, LandingPageContent } from '@/features/landing-page/types';
 
 const asset = (name: string) => `/assets/landing/${name}`;
@@ -7,16 +8,28 @@ function FooterLinks({ group }: { group: LandingFooterLinkGroup }) {
     <div>
       <h2 className="mb-5 text-[20px] font-semibold leading-[26px] text-[#3695b9]">{group.title}</h2>
       <ul className="space-y-3">
-        {group.links.map((link) => (
-          <li key={link.label}>
-            <a
-              className="text-[14px] font-normal leading-[22px] text-[#3c494c] underline hover:text-[#209cc2]"
-              href={link.href}
-            >
-              {link.label}
-            </a>
-          </li>
-        ))}
+        {group.links.map((link) => {
+          const isInternal = link.href.startsWith('/');
+          return (
+            <li key={link.label}>
+              {isInternal ? (
+                <Link
+                  className="text-[14px] font-normal leading-[22px] text-[#3c494c] underline hover:text-[#209cc2]"
+                  to={link.href}
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  className="text-[14px] font-normal leading-[22px] text-[#3c494c] underline hover:text-[#209cc2]"
+                  href={link.href}
+                >
+                  {link.label}
+                </a>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
@@ -25,7 +38,7 @@ function FooterLinks({ group }: { group: LandingFooterLinkGroup }) {
 export function SiteFooter({ branchLinks, description, linkGroups, tagline }: LandingPageContent['footer']) {
   return (
     <footer className="bg-white pb-12 pt-7" id="about">
-      <div className="mx-auto grid w-full max-w-[1440px] gap-8 px-4 sm:px-6 lg:flex lg:items-start lg:justify-between lg:gap-10 lg:px-[58px]">
+      <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:flex lg:items-start lg:justify-between lg:gap-10 lg:px-8">
         <div className="lg:w-[340px]">
           <img
             alt="Arunreah Dental Clinic"
@@ -39,6 +52,8 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
               aria-label="Visit Arunreah Dental Clinic on Facebook"
               className="grid size-6 place-items-center rounded-full bg-[#2563eb]"
               href="https://www.facebook.com/"
+              rel="noreferrer"
+              target="_blank"
             >
               <img alt="" className="size-3.5" src={asset('footer-facebook.svg')} />
             </a>
@@ -46,6 +61,8 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
               aria-label="Contact Arunreah Dental Clinic on Messenger"
               className="grid size-6 place-items-center rounded-full bg-[#08c]"
               href="https://www.messenger.com/"
+              rel="noreferrer"
+              target="_blank"
             >
               <img alt="" className="size-3.5" src={asset('footer-messenger.svg')} />
             </a>
@@ -57,9 +74,9 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
             {branchLinks.map((link) => (
               <li className="flex items-center gap-4 text-[#3c494c]" key={link.label}>
                 <img alt="" aria-hidden="true" className="size-5 shrink-0" src={asset('branch-card-pin-alt.svg')} />
-                <a className="text-[14px] font-normal leading-[22px] hover:text-[#209cc2]" href={link.href}>
+                <Link className="text-[14px] font-normal leading-[22px] hover:text-[#209cc2]" to={link.href}>
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
