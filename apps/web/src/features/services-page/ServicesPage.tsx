@@ -44,24 +44,43 @@ function ServiceCard({ service }: { service: LandingService }) {
 
   return (
     <Card
-      className="h-[354px] overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_6px_16px_rgba(15,23,42,0.08)]"
+      className="group flex h-full flex-col overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
       id={id}
     >
       <Link
         aria-label={`View ${service.name}`}
-        className="block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+        className="flex h-full flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
         to={`/services/${slug}`}
       >
         <img
           alt={service.imageAlt}
-          className="h-[246px] w-full bg-[#eaf2f6] object-cover object-center"
+          className="h-[210px] w-full bg-[#eaf2f6] object-cover object-center"
           src={service.imageUrl}
         />
-        <div className="flex h-[108px] flex-col justify-center px-4 py-3">
-          <h2 className="text-[14px] font-semibold leading-5 text-[#0c2243]">{service.name}</h2>
-          <p className="mt-1 line-clamp-2 text-[12px] font-medium leading-[18px] text-[#3695b9]">
-            {service.description}
-          </p>
+        <div className="flex flex-1 flex-col justify-between p-4">
+          <div>
+            <h2 className="text-[15px] font-semibold leading-5 text-[#0c2243] transition-colors group-hover:text-[#3695b9]">
+              {service.name}
+            </h2>
+            <p className="mt-2 text-[13px] font-medium leading-[20px] text-[#556987]">
+              {service.description}
+            </p>
+          </div>
+          <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3695b9] transition group-hover:text-[#2187a8]">
+            Learn More
+            <svg
+              aria-hidden="true"
+              className="size-3.5 transition duration-150 group-hover:translate-x-1"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </span>
         </div>
       </Link>
     </Card>
