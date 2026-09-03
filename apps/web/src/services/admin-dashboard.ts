@@ -29,7 +29,7 @@ export type AdminDashboardContent = {
   navigation: {
     icon: AdminNavIcon;
     label: string;
-    section?: 'appointments';
+    section?: 'appointments' | 'services';
   }[];
   table: {
     actionLabel: string;

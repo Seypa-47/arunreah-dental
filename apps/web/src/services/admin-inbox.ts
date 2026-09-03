@@ -38,7 +38,7 @@ export type AdminInboxContent = {
   navigation: {
     icon: AdminNavIcon;
     label: string;
-    section?: 'appointments';
+    section?: 'appointments' | 'services';
   }[];
   pagination: {
     nextLabel: string;
