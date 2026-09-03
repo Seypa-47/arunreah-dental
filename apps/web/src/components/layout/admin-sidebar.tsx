@@ -1,4 +1,7 @@
 import { useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAdminNavigation } from '@/features/admin-auth/admin-navigation';
+import { useAdminSession } from '@/features/admin-auth/session-provider';
 import type { AdminNavIcon } from '@/services/admin-inbox';
 
 export type AdminIconName =
@@ -84,11 +87,15 @@ export function AdminIcon({ className = 'size-5', name }: { className?: string; 
 }
 
 export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarProps) {
-  const hasActiveAppointmentItem = navigation.some(
+  const { admin, isLoggingOut, logout } = useAdminSession();
+  const navigate = useNavigate();
+  const [logoutFailed, setLogoutFailed] = useState(false);
+  const effectiveNavigation = admin ? getAdminNavigation(admin.role) : navigation;
+  const hasActiveAppointmentItem = effectiveNavigation.some(
     (item) => item.section === 'appointments' && item.label !== 'Appointments' && item.label === activeLabel,
   );
   const [appointmentsExpanded, setAppointmentsExpanded] = useState(hasActiveAppointmentItem);
-  const hasActiveServiceItem = navigation.some(
+  const hasActiveServiceItem = effectiveNavigation.some(
     (item) => item.section === 'services' && item.label !== 'Services' && item.label === activeLabel,
   );
   const [servicesExpanded, setServicesExpanded] = useState(hasActiveServiceItem);
@@ -96,7 +103,7 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
     activeLabel === 'Doctors' ||
     activeLabel === 'Doctor Management' ||
     activeLabel === 'Add New Doctor' ||
-    navigation.some(
+    effectiveNavigation.some(
       (item) => item.section === 'doctors' && item.label === activeLabel,
     );
   const [doctorsExpanded, setDoctorsExpanded] = useState(hasActiveDoctorItem);
@@ -105,11 +112,11 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
     activeLabel === 'Clinic Settings' ||
     activeLabel === 'Branches / Locations' ||
     activeLabel === 'Contact Settings' ||
-    navigation.some(
+    effectiveNavigation.some(
       (item) => item.section === 'clinic' && item.label === activeLabel,
     );
   const [clinicInfoExpanded, setClinicInfoExpanded] = useState(hasActiveClinicItem);
-  const primaryNavigation = navigation.filter(
+  const primaryNavigation = effectiveNavigation.filter(
     (item) =>
       !item.section ||
       item.label === 'Appointments' ||
@@ -117,9 +124,9 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
       item.label === 'Doctors' ||
       item.label === 'Clinic Info',
   );
-  const appointmentNavigation = navigation.filter((item) => item.section === 'appointments' && item.label !== 'Appointments');
-  const serviceNavigation = navigation.filter((item) => item.section === 'services' && item.label !== 'Services');
-  const rawDoctorNav = navigation.filter(
+  const appointmentNavigation = effectiveNavigation.filter((item) => item.section === 'appointments' && item.label !== 'Appointments');
+  const serviceNavigation = effectiveNavigation.filter((item) => item.section === 'services' && item.label !== 'Services');
+  const rawDoctorNav = effectiveNavigation.filter(
     (item) => item.section === 'doctors' && item.label !== 'Doctors' && item.label !== 'Specializations',
   );
   const defaultDoctorNavigation: AdminNavigationItem[] = [
@@ -127,7 +134,7 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
     { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' },
   ];
   const doctorNavigation = rawDoctorNav.length > 0 ? rawDoctorNav : defaultDoctorNavigation;
-  const rawClinicNav = navigation.filter((item) => item.section === 'clinic' && item.label !== 'Clinic Info');
+  const rawClinicNav = effectiveNavigation.filter((item) => item.section === 'clinic' && item.label !== 'Clinic Info');
   const defaultClinicNavigation: AdminNavigationItem[] = [
     { icon: 'clinicInfo', label: 'Clinic Settings', section: 'clinic' },
     { icon: 'clinicInfo', label: 'Branches / Locations', section: 'clinic' },
@@ -347,10 +354,25 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
           );
         })}
       </nav>
-      <a className="mt-7 flex items-center gap-3 px-3 py-2.5 text-[14px] font-semibold text-[#ed3838] transition hover:text-[#c92727] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed3838] lg:mt-auto" href="/admin/login">
+      {logoutFailed ? (
+        <p aria-live="polite" className="mt-5 px-3 text-sm text-[#c92727]" role="alert">
+          We could not sign you out. Please try again.
+        </p>
+      ) : null}
+      <button
+        className="mt-7 flex items-center gap-3 px-3 py-2.5 text-left text-[14px] font-semibold text-[#ed3838] transition hover:text-[#c92727] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed3838] disabled:cursor-not-allowed disabled:opacity-60 lg:mt-auto"
+        disabled={isLoggingOut}
+        onClick={() => {
+          setLogoutFailed(false);
+          void logout()
+            .then(() => navigate('/admin/login', { replace: true }))
+            .catch(() => setLogoutFailed(true));
+        }}
+        type="button"
+      >
         <svg aria-hidden="true" className="size-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M10 17 15 12l-5-5M15 12H3" /><path d="M13 5h5v14h-5" /></svg>
-        Logout
-      </a>
+        {isLoggingOut ? 'Signing out…' : 'Logout'}
+      </button>
     </aside>
   );
 }

@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { fetchAdminLoginContent, submitAdminLogin } from '@/services/admin-auth';
+import { useAdminSession } from '@/features/admin-auth/session-provider';
+import { fetchAdminLoginContent } from '@/services/admin-auth';
 
 export function useAdminLoginPageQuery() {
   return useQuery({
@@ -9,7 +10,9 @@ export function useAdminLoginPageQuery() {
 }
 
 export function useAdminLoginMutation() {
+  const { login } = useAdminSession();
+
   return useMutation({
-    mutationFn: submitAdminLogin,
+    mutationFn: login,
   });
 }
