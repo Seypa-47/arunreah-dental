@@ -9,6 +9,8 @@ import { AdminServiceDetailPage } from '@/features/admin-service-detail-page/Adm
 import { AdminServicesPage } from '@/features/admin-services-page/AdminServicesPage';
 import { AdminDoctorsPage } from '@/features/admin-doctors-page/AdminDoctorsPage';
 import { AdminAddDoctorPage } from '@/features/admin-add-doctor-page/AdminAddDoctorPage';
+import { AdminShowcasePage } from '@/features/admin-showcase-page/AdminShowcasePage';
+import { AdminAddShowcasePage } from '@/features/admin-add-showcase-page/AdminAddShowcasePage';
 import { BookAppointmentPage } from '@/features/book-appointment-page/BookAppointmentPage';
 import { BranchesPage } from '@/features/branches-page/BranchesPage';
 import { ContactPage } from '@/features/contact-page/ContactPage';
@@ -54,6 +56,14 @@ export const router = createBrowserRouter([
   {
     path: '/admin/doctors',
     element: <AdminDoctorsPage />,
+  },
+  {
+    path: '/admin/showcase/new',
+    element: <AdminAddShowcasePage />,
+  },
+  {
+    path: '/admin/showcase',
+    element: <AdminShowcasePage />,
   },
   {
     path: '/',

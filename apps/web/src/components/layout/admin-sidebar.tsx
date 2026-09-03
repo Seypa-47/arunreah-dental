@@ -45,6 +45,7 @@ const routeForNavigation = (label: string) => {
   if (label === 'Doctors' || label === 'Doctor Management') return '/admin/doctors';
   if (label === 'Add New Doctor') return '/admin/doctors/new';
   if (label === 'Specializations') return '/admin/doctors/specializations';
+  if (label === 'Showcase') return '/admin/showcase';
   return '#';
 };
 
