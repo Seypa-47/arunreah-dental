@@ -1,4 +1,5 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -173,7 +174,7 @@ function DoctorDetailPanel({
           {onClose ? (
             <button
               aria-label="Close specialist panel"
-              className="rounded-lg p-2 text-xl text-[#71839e] hover:bg-[#f4f8fb] lg:hidden"
+              className="rounded-lg p-2 text-xl text-[#71839e] hover:bg-[#f4f8fb]"
               onClick={onClose}
               type="button"
             >
@@ -515,6 +516,164 @@ function DoctorDetailPanel({
   );
 }
 
+function NoDoctorSelectedPanel() {
+  return (
+    <aside
+      aria-label="No doctor selected"
+      className="flex min-h-[580px] flex-col items-center justify-center rounded-[28px] border border-[#e1e8f0] bg-white p-8 text-center shadow-[0_2px_4px_rgba(15,23,42,0.02)] xl:p-10"
+    >
+      {/* Illustration */}
+      <div className="relative mb-6 flex size-36 items-center justify-center rounded-full bg-[#f0f7fb]">
+        {/* Main tile */}
+        <div className="flex size-20 items-center justify-center rounded-2xl border border-[#edf2f7] bg-white shadow-[0_4px_16px_rgba(15,23,42,0.06)]">
+          <svg
+            aria-hidden="true"
+            className="size-10 text-[#2187a8]"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm-5 13c-1.66 0-3 1.34-3 3v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-1.66-1.34-3-3-3h-1.08c-.46.73-1.12 1.32-1.92 1.71V19a2 2 0 1 1-4 0v-1.29c-.8-.39-1.46-.98-1.92-1.71H7z" />
+          </svg>
+        </div>
+        {/* Overlapping pencil edit badge */}
+        <div className="absolute -bottom-1 -right-1 flex size-10 items-center justify-center rounded-2xl border border-[#e2e8f0] bg-white text-[#71839e] shadow-[0_4px_12px_rgba(15,23,42,0.08)]">
+          <svg
+            aria-hidden="true"
+            className="size-5 text-[#8699b0]"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Heading & Subtitle */}
+      <h2 className="text-[20px] font-bold text-[#182238]">No Doctor Selected</h2>
+      <p className="mt-3 max-w-[320px] text-[14px] leading-relaxed text-[#71839e]">
+        Select a doctor from the list on the left to view and manage their profile details, specialty,
+        and website presence.
+      </p>
+
+      {/* Quick tip pill */}
+      <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#eef7fb] px-5 py-2.5 text-[13px] font-medium text-[#2187a8]">
+        <svg
+          aria-hidden="true"
+          className="size-4 shrink-0"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4M12 8h.01" />
+        </svg>
+        <span>Quick Tip: You can also use the search bar</span>
+      </div>
+    </aside>
+  );
+}
+
+function DoctorsEmptyState({ onAddDoctor }: { onAddDoctor: () => void }) {
+  return (
+    <Card className="mt-8 flex min-h-[580px] flex-col items-center justify-center rounded-[28px] border-[#e1e8f0] bg-white p-10 text-center shadow-[0_2px_4px_rgba(15,23,42,0.02)] sm:p-14">
+      {/* Decorative circular disc */}
+      <div className="relative mb-7 flex size-44 items-center justify-center rounded-full bg-[#edf6fb]">
+        {/* Floating sparkles / stars */}
+        <span
+          aria-hidden="true"
+          className="absolute left-6 top-4 select-none text-base font-bold text-[#b5d5e5]"
+        >
+          +
+        </span>
+        <span
+          aria-hidden="true"
+          className="absolute right-7 top-5 select-none text-sm text-[#b5d5e5]"
+        >
+          ★
+        </span>
+        <span
+          aria-hidden="true"
+          className="absolute bottom-6 left-6 select-none text-xs font-bold text-[#b5d5e5]"
+        >
+          •
+        </span>
+
+        {/* Main tile */}
+        <div className="flex size-24 items-center justify-center rounded-2xl border border-[#edf2f7] bg-white shadow-[0_6px_20px_rgba(15,23,42,0.06)]">
+          <svg
+            aria-hidden="true"
+            className="size-12 text-[#2187a8]"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm-5 13c-1.66 0-3 1.34-3 3v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-1.66-1.34-3-3-3h-1.08c-.46.73-1.12 1.32-1.92 1.71V19a2 2 0 1 1-4 0v-1.29c-.8-.39-1.46-.98-1.92-1.71H7z" />
+          </svg>
+        </div>
+
+        {/* Overlapping clipboard/list badge */}
+        <div className="absolute bottom-2 right-2 flex size-12 items-center justify-center rounded-2xl border border-[#e2e8f0] bg-white text-[#71839e] shadow-[0_4px_14px_rgba(15,23,42,0.08)]">
+          <svg
+            aria-hidden="true"
+            className="size-6 text-[#8699b0]"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <rect height="16" rx="2" width="12" x="6" y="4" />
+            <path d="M9 2h6v3H9z" />
+            <path d="M10 10h4M10 14h4" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Text */}
+      <h2 className="text-[24px] font-bold text-[#182238]">No Doctors Found</h2>
+      <p className="mt-3 max-w-[460px] text-[15px] leading-relaxed text-[#71839e]">
+        It looks like you haven&apos;t added any doctors to your clinic yet. Start by adding your first
+        specialist profile to show them on your website.
+      </p>
+
+      {/* Button */}
+      <Button
+        className="mt-7 h-11 rounded-xl bg-[#2187a8] px-6 text-[14px] font-bold text-white shadow-[0_6px_14px_rgba(33,135,168,0.2)] hover:bg-[#1a718c]"
+        icon={<span aria-hidden="true" className="text-lg leading-none font-bold">+</span>}
+        onClick={onAddDoctor}
+      >
+        Add Your First Doctor
+      </Button>
+
+      {/* Tip */}
+      <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#f0f4f8] px-4 py-2 text-[12px] font-medium text-[#71839e]">
+        <svg
+          aria-hidden="true"
+          className="size-3.5 shrink-0"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4M12 8h.01" />
+        </svg>
+        <span>Quick Tip: Profiles can be saved as drafts first</span>
+      </div>
+    </Card>
+  );
+}
+
 function AddDoctorModal({
   isOpen,
   onClose,
@@ -747,8 +906,9 @@ function AddDoctorModal({
 }
 
 function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
+  const navigate = useNavigate();
   const [doctors, setDoctors] = useState<AdminDoctor[]>(content.doctors);
-  const [selectedId, setSelectedId] = useState<string>(content.doctors[0]?.id || '');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [specialtyFilter, setSpecialtyFilter] = useState(content.controls.allSpecialties);
   const [statusFilter, setStatusFilter] = useState(content.controls.allStatuses);
@@ -792,8 +952,7 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
   const pageDoctors = filteredDoctors.slice(startIndex, startIndex + pageSize);
 
   // Currently selected doctor
-  const selectedDoctor =
-    doctors.find((d) => d.id === selectedId) || pageDoctors[0] || doctors[0];
+  const selectedDoctor = selectedId ? doctors.find((d) => d.id === selectedId) || null : null;
 
   const handleSaveDoctor = (updated: AdminDoctor) => {
     setDoctors((prev) => prev.map((doc) => (doc.id === updated.id ? updated : doc)));
@@ -802,8 +961,7 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
   const handleDeleteDoctor = (id: string) => {
     setDoctors((prev) => prev.filter((doc) => doc.id !== id));
     if (selectedId === id) {
-      const nextDoc = doctors.find((doc) => doc.id !== id);
-      if (nextDoc) setSelectedId(nextDoc.id);
+      setSelectedId(null);
     }
   };
 
@@ -834,14 +992,17 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
           <Button
             className="h-[46px] rounded-xl bg-[#2187a8] px-5 text-[14px] font-bold text-white shadow-[0_6px_14px_rgba(33,135,168,0.2)] hover:bg-[#1a718c]"
             icon={<span aria-hidden="true" className="text-lg leading-none font-bold">+</span>}
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => navigate('/admin/doctors/new')}
           >
             {content.controls.addLabel}
           </Button>
         </div>
       </header>
-
-      {/* Main 2-Column Grid */}
+      {/* Empty State: no doctors exist at all */}
+      {doctors.length === 0 ? (
+        <DoctorsEmptyState onAddDoctor={() => navigate('/admin/doctors/new')} />
+      ) : (
+      /* Main 2-Column Grid */
       <div className="mt-8 grid gap-7 2xl:grid-cols-[minmax(0,1fr)_480px] xl:grid-cols-[minmax(0,1fr)_440px]">
         {/* Left Column: Card containing Filters + Table + Pagination */}
         <Card className="flex flex-col overflow-hidden rounded-[28px] border-[#e1e8f0] bg-white p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
@@ -913,14 +1074,15 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
               </thead>
               <tbody className="divide-y divide-[#f0f4f8]">
                 {pageDoctors.map((doc) => {
-                  const isSelected = doc.id === selectedDoctor?.id;
+                  const isSelected = doc.id === selectedId;
                   return (
                     <tr
+                      aria-selected={isSelected}
                       className={`cursor-pointer transition-colors hover:bg-[#f8fbfd] ${
                         isSelected ? 'bg-[#f0f7fa]' : ''
                       }`}
                       key={doc.id}
-                      onClick={() => setSelectedId(doc.id)}
+                      onClick={() => setSelectedId(isSelected ? null : doc.id)}
                     >
                       {/* Doctor info */}
                       <td className="py-4 pr-4">
@@ -958,7 +1120,7 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
             </table>
           </div>
 
-          {/* Empty State */}
+          {/* Empty State (search/filter yielded no results) */}
           {filteredDoctors.length === 0 ? (
             <div className="grid min-h-[220px] place-items-center px-6 text-center">
               <div>
@@ -1013,19 +1175,19 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
           </div>
         </Card>
 
-        {/* Right Column: Doctor Detail & Edit Panel */}
+        {/* Right Column: Doctor Detail & Edit Panel OR No Selection State */}
         {selectedDoctor ? (
           <DoctorDetailPanel
             doctor={selectedDoctor}
+            onClose={() => setSelectedId(null)}
             onDelete={handleDeleteDoctor}
             onSave={handleSaveDoctor}
           />
         ) : (
-          <Card className="grid min-h-[480px] place-items-center p-6 text-center rounded-[28px] border-[#e1e8f0]">
-            <p className="text-[#71839e]">Select a specialist to edit their profile.</p>
-          </Card>
+          <NoDoctorSelectedPanel />
         )}
       </div>
+      )} {/* end doctors.length === 0 ternary */}
 
       <DoctorsFooter footer={content.footer} />
 
@@ -1084,7 +1246,7 @@ export function AdminDoctorsPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
-      <AdminSidebar activeLabel="Doctors" brand={data.brand} navigation={data.navigation} />
+      <AdminSidebar activeLabel="Doctor Management" brand={data.brand} navigation={data.navigation} />
       <DoctorsContent content={data} />
     </div>
   );

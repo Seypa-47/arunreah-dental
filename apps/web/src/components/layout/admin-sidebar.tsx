@@ -24,7 +24,7 @@ export type AdminIconName =
 type AdminNavigationItem = {
   icon: AdminNavIcon;
   label: string;
-  section?: 'appointments' | 'services';
+  section?: 'appointments' | 'services' | 'doctors';
 };
 
 type AdminSidebarProps = {
@@ -43,6 +43,8 @@ const routeForNavigation = (label: string) => {
   if (label === 'All Appointments') return '/admin/appointments';
   if (label === 'Services' || label === 'Service Management') return '/admin/services';
   if (label === 'Doctors' || label === 'Doctor Management') return '/admin/doctors';
+  if (label === 'Add New Doctor') return '/admin/doctors/new';
+  if (label === 'Specializations') return '/admin/doctors/specializations';
   return '#';
 };
 
@@ -87,9 +89,27 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
     (item) => item.section === 'services' && item.label !== 'Services' && item.label === activeLabel,
   );
   const [servicesExpanded, setServicesExpanded] = useState(hasActiveServiceItem);
-  const primaryNavigation = navigation.filter((item) => !item.section || item.label === 'Appointments' || item.label === 'Services');
+  const hasActiveDoctorItem =
+    activeLabel === 'Doctors' ||
+    activeLabel === 'Doctor Management' ||
+    activeLabel === 'Add New Doctor' ||
+    activeLabel === 'Specializations' ||
+    navigation.some(
+      (item) => item.section === 'doctors' && item.label === activeLabel,
+    );
+  const [doctorsExpanded, setDoctorsExpanded] = useState(hasActiveDoctorItem);
+  const primaryNavigation = navigation.filter(
+    (item) => !item.section || item.label === 'Appointments' || item.label === 'Services' || item.label === 'Doctors',
+  );
   const appointmentNavigation = navigation.filter((item) => item.section === 'appointments' && item.label !== 'Appointments');
   const serviceNavigation = navigation.filter((item) => item.section === 'services' && item.label !== 'Services');
+  const rawDoctorNav = navigation.filter((item) => item.section === 'doctors' && item.label !== 'Doctors');
+  const defaultDoctorNavigation: AdminNavigationItem[] = [
+    { icon: 'doctors', label: 'Doctor Management', section: 'doctors' },
+    { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' },
+    { icon: 'doctors', label: 'Specializations', section: 'doctors' },
+  ];
+  const doctorNavigation = rawDoctorNav.length > 0 ? rawDoctorNav : defaultDoctorNavigation;
 
   return (
     <aside className="flex w-full shrink-0 flex-col border-b border-[#e1e8f0] bg-white px-5 py-5 lg:min-h-screen lg:w-[302px] lg:border-b-0 lg:border-r lg:px-7 lg:py-7">
@@ -100,7 +120,8 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
         {primaryNavigation.map((item) => {
           const isActive =
             item.label === activeLabel ||
-            (item.label === 'Services' && (activeLabel === 'Services' || activeLabel === 'Service Management'));
+            (item.label === 'Services' && (activeLabel === 'Services' || activeLabel === 'Service Management')) ||
+            (item.label === 'Doctors' && (activeLabel === 'Doctors' || activeLabel === 'Doctor Management'));
           const href = routeForNavigation(item.label);
 
           if (item.label === 'Appointments') {
@@ -169,6 +190,56 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
                         <a
                           aria-current={isSubItemActive ? 'page' : undefined}
                           className={`flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-[14px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${isSubItemActive ? 'bg-[#2187a8] text-white shadow-[0_6px_12px_rgba(33,135,168,0.14)]' : 'text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]'}`}
+                          href={subItemHref}
+                          key={subItem.label}
+                          onClick={(event) => {
+                            if (subItemHref === '#') event.preventDefault();
+                          }}
+                        >
+                          <span className="min-w-0 flex-1 truncate">{subItem.label}</span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
+            );
+          }
+
+          if (item.label === 'Doctors') {
+            return (
+              <div className="col-span-2 sm:col-span-1 lg:col-auto" key={item.label}>
+                <button
+                  aria-expanded={doctorsExpanded}
+                  className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[14px] font-semibold transition hover:bg-[#f4f8fb] hover:text-[#2187a8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${
+                    hasActiveDoctorItem ? 'text-[#2187a8]' : 'text-[#71839e]'
+                  }`}
+                  onClick={() => setDoctorsExpanded((expanded) => !expanded)}
+                  type="button"
+                >
+                  <AdminIcon className="size-5 shrink-0" name={item.icon} />
+                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  <AdminIcon
+                    className={`size-4 transition ${doctorsExpanded ? 'rotate-180' : ''}`}
+                    name="chevronDown"
+                  />
+                </button>
+                {doctorsExpanded ? (
+                  <div className="mt-1 space-y-1 lg:ml-4">
+                    {doctorNavigation.map((subItem) => {
+                      const isSubItemActive =
+                        subItem.label === activeLabel ||
+                        (subItem.label === 'Doctor Management' && activeLabel === 'Doctors');
+                      const subItemHref = routeForNavigation(subItem.label);
+
+                      return (
+                        <a
+                          aria-current={isSubItemActive ? 'page' : undefined}
+                          className={`flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-[14px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${
+                            isSubItemActive
+                              ? 'bg-[#edf7fb] text-[#2187a8] font-bold'
+                              : 'text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]'
+                          }`}
                           href={subItemHref}
                           key={subItem.label}
                           onClick={(event) => {

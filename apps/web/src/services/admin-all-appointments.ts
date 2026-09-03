@@ -16,7 +16,7 @@ export type AdminAllAppointmentsContent = {
   empty: { description: string; title: string };
   footer: { copyright: string; encryptionLabel: string; sslLabel: string };
   header: { subtitle: string; title: string };
-  navigation: { icon: AdminNavIcon; label: string; section?: 'appointments' | 'services' }[];
+  navigation: { icon: AdminNavIcon; label: string; section?: 'appointments' | 'services' | 'doctors' }[];
   pagination: { nextLabel: string; previousLabel: string; summary: string };
   table: { actions: string; assignedDoctor: string; dateTime: string; patient: string; service: string; status: string };
 };
@@ -34,7 +34,7 @@ const adminAllAppointmentsContent: AdminAllAppointmentsContent = {
   empty: { description: 'Try a different search or filter selection.', title: 'No appointments found' },
   footer: { copyright: `© ${new Date().getFullYear()} Arunreah Dental Clinic. All rights reserved.`, encryptionLabel: '256-bit Encryption', sslLabel: 'SSL Secured' },
   header: { subtitle: 'View and manage all patient visits and schedules.', title: 'All Appointments' },
-  navigation: [{ icon: 'dashboard', label: 'Dashboard' }, { icon: 'appointments', label: 'Appointments', section: 'appointments' }, { icon: 'inbox', label: 'Inbox', section: 'appointments' }, { icon: 'calendar', label: 'Calendar', section: 'appointments' }, { icon: 'appointments', label: 'All Appointments', section: 'appointments' }, { icon: 'services', label: 'Services' }, { icon: 'doctors', label: 'Doctors' }, { icon: 'showcase', label: 'Showcase' }, { icon: 'clinicInfo', label: 'Clinic Info' }],
+  navigation: [{ icon: 'dashboard', label: 'Dashboard' }, { icon: 'appointments', label: 'Appointments', section: 'appointments' }, { icon: 'inbox', label: 'Inbox', section: 'appointments' }, { icon: 'calendar', label: 'Calendar', section: 'appointments' }, { icon: 'appointments', label: 'All Appointments', section: 'appointments' }, { icon: 'services', label: 'Services' }, { icon: 'doctors', label: 'Doctors' }, { icon: 'doctors', label: 'Doctor Management', section: 'doctors' }, { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' }, { icon: 'doctors', label: 'Specializations', section: 'doctors' }, { icon: 'showcase', label: 'Showcase' }, { icon: 'clinicInfo', label: 'Clinic Info' }],
   pagination: { nextLabel: 'Next page', previousLabel: 'Previous page', summary: 'Showing 1 to 5 of 42 appointments' },
   table: { actions: 'Actions', assignedDoctor: 'Assigned Doctor', dateTime: 'Date & Time', patient: 'Patient', service: 'Service', status: 'Status' },
 };
