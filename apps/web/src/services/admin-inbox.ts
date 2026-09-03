@@ -38,7 +38,7 @@ export type AdminInboxContent = {
   navigation: {
     icon: AdminNavIcon;
     label: string;
-    section?: 'appointments' | 'services';
+    section?: 'appointments' | 'services' | 'doctors';
   }[];
   pagination: {
     nextLabel: string;
@@ -107,6 +107,9 @@ const adminInboxContent: AdminInboxContent = {
     { icon: 'appointments', label: 'All Appointments', section: 'appointments' },
     { icon: 'services', label: 'Services' },
     { icon: 'doctors', label: 'Doctors' },
+    { icon: 'doctors', label: 'Doctor Management', section: 'doctors' },
+    { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' },
+    { icon: 'doctors', label: 'Specializations', section: 'doctors' },
     { icon: 'showcase', label: 'Showcase' },
     { icon: 'clinicInfo', label: 'Clinic Info' },
   ],
