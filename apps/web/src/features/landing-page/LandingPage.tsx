@@ -206,7 +206,7 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
   return (
     <section aria-label="Clinic branches" className="relative bg-[#f7fafc]">
       <div
-        className="hero-carousel flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="hero-carousel flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         onScroll={syncActiveHero}
         ref={carouselRef}
       >
@@ -303,7 +303,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
         </div>
 
         <div
-          className="no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 snap-x snap-mandatory scroll-smooth"
+          className="no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           onScroll={checkScroll}
           ref={scrollRef}
         >

@@ -58,7 +58,7 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
   };
 
   return (
-    <div className="min-h-screen bg-[#f7fafc] text-[#0c2243]">
+    <div className="min-h-screen overflow-x-hidden bg-[#f7fafc] text-[#0c2243]">
       <header className="sticky top-0 z-40 border-b border-[#edf2f7] bg-white/95 shadow-[0_1px_2px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-200">
         <div className="mx-auto flex h-[64px] w-full max-w-[1280px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link aria-label="Arunreah Dental Clinic home" className="shrink-0 leading-none" to="/">
