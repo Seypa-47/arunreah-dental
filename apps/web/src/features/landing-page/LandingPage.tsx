@@ -443,26 +443,17 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
             <AssetIcon className="h-3 w-[8px]" name="showcase-chevron.svg" />
           </Link>
         </div>
-        <div className="mx-auto grid max-w-[960px] gap-6 sm:grid-cols-2 md:grid-cols-3">
+        <div className="mx-auto flex flex-wrap justify-center gap-6">
           {showcase.map((item) => (
-            <Card
-              className="h-[354px] overflow-hidden rounded-lg border border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.14)]"
-              key={item.title}
-            >
-              <div className="flex h-full flex-col text-left">
-                <img
-                  alt={item.imageAlt}
-                  className="h-[246px] w-full shrink-0 bg-[#eaf2f6] object-cover object-center"
-                  src={item.imageUrl}
-                />
-                <div className="flex flex-1 flex-col justify-center px-4 py-3">
-                  <h3 className="line-clamp-2 text-[14px] font-semibold leading-5 text-[#0c2243]">
-                    {item.title}
-                  </h3>
-                </div>
-              </div>
-            </Card>
+            <article className="w-full max-w-[286px] sm:w-[286px]" key={item.title}>
+              <img alt={item.imageAlt} className="h-[256px] w-full rounded-t-2xl object-cover" src={item.imageUrl} />
+              <h3 className="mt-4 text-[18px] font-bold leading-6 text-white">{item.title}</h3>
+            </article>
           ))}
+        </div>
+        <div aria-hidden="true" className="mt-[35px] flex justify-center gap-3">
+          <span className="size-2.5 rounded-full bg-white" />
+          <span className="size-2.5 rounded-full bg-white/40" />
         </div>
       </div>
     </section>
