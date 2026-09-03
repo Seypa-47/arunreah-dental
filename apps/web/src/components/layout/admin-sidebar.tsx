@@ -44,7 +44,6 @@ const routeForNavigation = (label: string) => {
   if (label === 'Services' || label === 'Service Management') return '/admin/services';
   if (label === 'Doctors' || label === 'Doctor Management') return '/admin/doctors';
   if (label === 'Add New Doctor') return '/admin/doctors/new';
-  if (label === 'Specializations') return '/admin/doctors/specializations';
   if (label === 'Showcase') return '/admin/showcase';
   if (label === 'Clinic Info' || label === 'Clinic Settings') return '/admin/clinic-info';
   if (label === 'Branches / Locations') return '/admin/clinic-info/branches';
@@ -97,7 +96,6 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
     activeLabel === 'Doctors' ||
     activeLabel === 'Doctor Management' ||
     activeLabel === 'Add New Doctor' ||
-    activeLabel === 'Specializations' ||
     navigation.some(
       (item) => item.section === 'doctors' && item.label === activeLabel,
     );
@@ -121,11 +119,12 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
   );
   const appointmentNavigation = navigation.filter((item) => item.section === 'appointments' && item.label !== 'Appointments');
   const serviceNavigation = navigation.filter((item) => item.section === 'services' && item.label !== 'Services');
-  const rawDoctorNav = navigation.filter((item) => item.section === 'doctors' && item.label !== 'Doctors');
+  const rawDoctorNav = navigation.filter(
+    (item) => item.section === 'doctors' && item.label !== 'Doctors' && item.label !== 'Specializations',
+  );
   const defaultDoctorNavigation: AdminNavigationItem[] = [
     { icon: 'doctors', label: 'Doctor Management', section: 'doctors' },
     { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' },
-    { icon: 'doctors', label: 'Specializations', section: 'doctors' },
   ];
   const doctorNavigation = rawDoctorNav.length > 0 ? rawDoctorNav : defaultDoctorNavigation;
   const rawClinicNav = navigation.filter((item) => item.section === 'clinic' && item.label !== 'Clinic Info');
@@ -355,4 +354,3 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
     </aside>
   );
 }
-with him. We were traveling with him.
