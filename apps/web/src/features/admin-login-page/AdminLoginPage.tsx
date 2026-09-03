@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import type { AdminLoginContent } from '@/services/admin-auth';
 import { useAdminLoginMutation, useAdminLoginPageQuery } from './use-admin-login-page';
+import { getSafeAdminReturnPath } from '@/routes/admin-route-access';
 
 function UserIcon() {
   return (
@@ -56,14 +58,27 @@ function SecurityLockIcon() {
 
 function AdminLoginForm({ content }: { content: AdminLoginContent }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const location = useLocation();
+  const navigate = useNavigate();
   const loginMutation = useAdminLoginMutation();
   const hasError = loginMutation.isError;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    loginMutation.mutate({ password, username });
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          const returnPath =
+            typeof location.state === 'object' && location.state !== null && 'from' in location.state
+              ? getSafeAdminReturnPath(location.state.from)
+              : '/admin/dashboard';
+          navigate(returnPath, { replace: true });
+        },
+      },
+    );
   };
 
   return (
@@ -73,18 +88,19 @@ function AdminLoginForm({ content }: { content: AdminLoginContent }) {
         <p className="mt-2 text-[16px] leading-6 text-[#71839e]">{content.form.subtitle}</p>
 
         <div className="mt-7 space-y-5">
-          <label className="block" htmlFor="admin-username">
-            <span className="mb-2 block text-[15px] font-medium text-[#71839e]">{content.fields.username.label}</span>
+          <label className="block" htmlFor="admin-email">
+            <span className="mb-2 block text-[15px] font-medium text-[#71839e]">{content.fields.email.label}</span>
             <span className="flex h-[58px] items-center gap-3 rounded-xl border border-[#d9e3ee] px-4 text-[#97a8be] transition focus-within:border-[#2388a9] focus-within:ring-2 focus-within:ring-[#2388a9]/20">
               <UserIcon />
               <input
-                autoComplete="username"
+                autoComplete="email"
                 className="min-w-0 flex-1 bg-transparent text-[16px] text-[#1f2a40] outline-none placeholder:text-[#a9b7c9]"
-                id="admin-username"
-                onChange={(event) => setUsername(event.target.value)}
-                placeholder={content.fields.username.placeholder}
+                id="admin-email"
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder={content.fields.email.placeholder}
                 required
-                value={username}
+                type="email"
+                value={email}
               />
             </span>
           </label>

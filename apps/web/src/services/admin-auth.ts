@@ -10,7 +10,7 @@ export type AdminLoginContent = {
       label: string;
       placeholder: string;
     };
-    username: {
+    email: {
       label: string;
       placeholder: string;
     };
@@ -43,14 +43,14 @@ const adminLoginContent: AdminLoginContent = {
       label: 'Password',
       placeholder: 'Enter your password',
     },
-    username: {
-      label: 'Username or Email',
-      placeholder: 'Enter your username or email',
+    email: {
+      label: 'Email address',
+      placeholder: 'Enter your email address',
     },
   },
   footer: `© ${new Date().getFullYear()} Arunreah Dental Clinic. All rights reserved.`,
   form: {
-    errorMessage: 'Invalid username or password',
+    errorMessage: 'Invalid email or password',
     forgotPasswordLabel: 'Forgot password?',
     forgotPasswordUrl: 'mailto:info@arunreahclinic.com?subject=Admin%20password%20reset',
     submitLabel: 'Log In',
@@ -66,10 +66,4 @@ const adminLoginContent: AdminLoginContent = {
 
 export async function fetchAdminLoginContent(): Promise<AdminLoginContent> {
   return adminLoginContent;
-}
-
-export async function submitAdminLogin(_credentials: { password: string; username: string }): Promise<void> {
-  // Authentication will be connected to the clinic's admin API when it is available.
-  void _credentials;
-  throw new Error('ADMIN_LOGIN_UNAVAILABLE');
 }
