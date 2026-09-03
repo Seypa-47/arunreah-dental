@@ -40,7 +40,7 @@ export type AdminCalendarContent = {
   empty: { description: string; title: string };
   footer: { copyright: string; encryptionLabel: string; sslLabel: string };
   header: { subtitle: string; title: string };
-  navigation: { icon: AdminNavIcon; label: string; section?: 'appointments' }[];
+  navigation: { icon: AdminNavIcon; label: string; section?: 'appointments' | 'services' }[];
 };
 
 export type NewCalendarAppointment = {

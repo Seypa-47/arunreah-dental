@@ -16,7 +16,7 @@ export type AdminAllAppointmentsContent = {
   empty: { description: string; title: string };
   footer: { copyright: string; encryptionLabel: string; sslLabel: string };
   header: { subtitle: string; title: string };
-  navigation: { icon: AdminNavIcon; label: string; section?: 'appointments' }[];
+  navigation: { icon: AdminNavIcon; label: string; section?: 'appointments' | 'services' }[];
   pagination: { nextLabel: string; previousLabel: string; summary: string };
   table: { actions: string; assignedDoctor: string; dateTime: string; patient: string; service: string; status: string };
 };
