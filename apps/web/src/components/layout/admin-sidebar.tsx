@@ -46,6 +46,9 @@ const routeForNavigation = (label: string) => {
   if (label === 'Add New Doctor') return '/admin/doctors/new';
   if (label === 'Specializations') return '/admin/doctors/specializations';
   if (label === 'Showcase') return '/admin/showcase';
+  if (label === 'Clinic Info' || label === 'Clinic Settings') return '/admin/clinic-info';
+  if (label === 'Branches / Locations') return '/admin/clinic-info/branches';
+  if (label === 'Contact Settings') return '/admin/clinic-info/contact';
   return '#';
 };
 
@@ -99,8 +102,22 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
       (item) => item.section === 'doctors' && item.label === activeLabel,
     );
   const [doctorsExpanded, setDoctorsExpanded] = useState(hasActiveDoctorItem);
+  const hasActiveClinicItem =
+    activeLabel === 'Clinic Info' ||
+    activeLabel === 'Clinic Settings' ||
+    activeLabel === 'Branches / Locations' ||
+    activeLabel === 'Contact Settings' ||
+    navigation.some(
+      (item) => item.section === 'clinic' && item.label === activeLabel,
+    );
+  const [clinicInfoExpanded, setClinicInfoExpanded] = useState(hasActiveClinicItem);
   const primaryNavigation = navigation.filter(
-    (item) => !item.section || item.label === 'Appointments' || item.label === 'Services' || item.label === 'Doctors',
+    (item) =>
+      !item.section ||
+      item.label === 'Appointments' ||
+      item.label === 'Services' ||
+      item.label === 'Doctors' ||
+      item.label === 'Clinic Info',
   );
   const appointmentNavigation = navigation.filter((item) => item.section === 'appointments' && item.label !== 'Appointments');
   const serviceNavigation = navigation.filter((item) => item.section === 'services' && item.label !== 'Services');
@@ -111,6 +128,13 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
     { icon: 'doctors', label: 'Specializations', section: 'doctors' },
   ];
   const doctorNavigation = rawDoctorNav.length > 0 ? rawDoctorNav : defaultDoctorNavigation;
+  const rawClinicNav = navigation.filter((item) => item.section === 'clinic' && item.label !== 'Clinic Info');
+  const defaultClinicNavigation: AdminNavigationItem[] = [
+    { icon: 'clinicInfo', label: 'Clinic Settings', section: 'clinic' },
+    { icon: 'clinicInfo', label: 'Branches / Locations', section: 'clinic' },
+    { icon: 'clinicInfo', label: 'Contact Settings', section: 'clinic' },
+  ];
+  const clinicNavigation = rawClinicNav.length > 0 ? rawClinicNav : defaultClinicNavigation;
 
   return (
     <aside className="flex w-full shrink-0 flex-col border-b border-[#e1e8f0] bg-white px-5 py-5 lg:min-h-screen lg:w-[302px] lg:border-b-0 lg:border-r lg:px-7 lg:py-7">
@@ -231,6 +255,57 @@ export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarPro
                       const isSubItemActive =
                         subItem.label === activeLabel ||
                         (subItem.label === 'Doctor Management' && activeLabel === 'Doctors');
+                      const subItemHref = routeForNavigation(subItem.label);
+
+                      return (
+                        <a
+                          aria-current={isSubItemActive ? 'page' : undefined}
+                          className={`flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-[14px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${
+                            isSubItemActive
+                              ? 'bg-[#edf7fb] text-[#2187a8] font-bold'
+                              : 'text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]'
+                          }`}
+                          href={subItemHref}
+                          key={subItem.label}
+                          onClick={(event) => {
+                            if (subItemHref === '#') event.preventDefault();
+                          }}
+                        >
+                          <span className="min-w-0 flex-1 truncate">{subItem.label}</span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
+            );
+          }
+
+          if (item.label === 'Clinic Info') {
+            return (
+              <div className="col-span-2 sm:col-span-1 lg:col-auto" key={item.label}>
+                <button
+                  aria-expanded={clinicInfoExpanded}
+                  className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[14px] font-semibold transition hover:bg-[#f4f8fb] hover:text-[#2187a8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${
+                    hasActiveClinicItem ? 'text-[#2187a8]' : 'text-[#71839e]'
+                  }`}
+                  onClick={() => setClinicInfoExpanded((expanded) => !expanded)}
+                  type="button"
+                >
+                  <AdminIcon className="size-5 shrink-0" name={item.icon} />
+                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  <AdminIcon
+                    className={`size-4 transition ${clinicInfoExpanded ? 'rotate-180' : ''}`}
+                    name="chevronDown"
+                  />
+                </button>
+                {clinicInfoExpanded ? (
+                  <div className="mt-1 space-y-1 lg:ml-4">
+                    {clinicNavigation.map((subItem) => {
+                      const isSubItemActive =
+                        subItem.label === activeLabel ||
+                        (subItem.label === 'Clinic Settings' &&
+                          (activeLabel === 'Clinic Info' || activeLabel === 'Clinic Settings'));
                       const subItemHref = routeForNavigation(subItem.label);
 
                       return (
