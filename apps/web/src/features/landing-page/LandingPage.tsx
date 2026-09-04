@@ -249,8 +249,9 @@ function useSmoothCarousel<T>(items: T[]) {
   const checkScroll = useCallback(() => {
     if (scrollRef.current) {
       const { clientWidth, scrollLeft, scrollWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 10);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+      const maxScroll = Math.max(0, scrollWidth - clientWidth);
+      setCanScrollLeft(scrollLeft > 2);
+      setCanScrollRight(scrollLeft < maxScroll - 2);
     }
   }, []);
 
@@ -274,10 +275,16 @@ function useSmoothCarousel<T>(items: T[]) {
   const handleScroll = useCallback((direction: 'left' | 'right') => {
     if (scrollRef.current) {
       cancelMomentum();
+      const el = scrollRef.current;
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
       const scrollDistance = 310;
-      scrollRef.current.scrollBy({
+      const target = direction === 'left'
+        ? Math.max(0, el.scrollLeft - scrollDistance)
+        : Math.min(maxScroll, el.scrollLeft + scrollDistance);
+
+      el.scrollTo({
         behavior: 'smooth',
-        left: direction === 'left' ? -scrollDistance : scrollDistance,
+        left: target,
       });
     }
   }, [cancelMomentum]);
@@ -300,11 +307,26 @@ function useSmoothCarousel<T>(items: T[]) {
 
     const handleGlobalMouseMove = (e: MouseEvent) => {
       if (!isDragging.current || !scrollRef.current) return;
+      const el = scrollRef.current;
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+
       const dx = e.clientX - startX.current;
       if (Math.abs(dx) > 3) {
         hasMoved.current = true;
       }
-      scrollRef.current.scrollLeft = scrollStart.current - dx;
+
+      let target = scrollStart.current - dx;
+      if (target <= 0) {
+        target = 0;
+        startX.current = e.clientX;
+        scrollStart.current = 0;
+      } else if (target >= maxScroll) {
+        target = maxScroll;
+        startX.current = e.clientX;
+        scrollStart.current = maxScroll;
+      }
+
+      el.scrollLeft = target;
 
       const now = performance.now();
       const dt = now - lastTime.current;
@@ -336,8 +358,25 @@ function useSmoothCarousel<T>(items: T[]) {
             checkScroll();
             return;
           }
-          scrollRef.current.scrollLeft += currentVelocity;
-          currentVelocity *= 0.93;
+          const el = scrollRef.current;
+          const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+          const next = el.scrollLeft + currentVelocity;
+
+          if (next <= 0) {
+            el.scrollLeft = 0;
+            momentumRaf.current = null;
+            checkScroll();
+            return;
+          }
+          if (next >= maxScroll) {
+            el.scrollLeft = maxScroll;
+            momentumRaf.current = null;
+            checkScroll();
+            return;
+          }
+
+          el.scrollLeft = next;
+          currentVelocity *= 0.92;
           momentumRaf.current = requestAnimationFrame(glide);
         };
         momentumRaf.current = requestAnimationFrame(glide);
@@ -426,7 +465,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
         </div>
 
         <div
-          className={`no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+          className={`no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 select-none overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
             isDragging ? 'cursor-grabbing' : 'cursor-grab'
           }`}
           data-scroll-container
@@ -539,7 +578,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
         </div>
 
         <div
-          className={`no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+          className={`no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 select-none overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
             isDragging ? 'cursor-grabbing' : 'cursor-grab'
           }`}
           data-scroll-container
