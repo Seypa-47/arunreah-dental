@@ -1,10 +1,15 @@
-import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { AdminDoctorListQuery } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
 import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import type { AdminDoctor, AdminDoctorsContent, DoctorStatus } from '@/services/admin-doctors';
+import { toAdminDoctorDetail, type AdminDoctor, type AdminDoctorsContent, type DoctorStatus } from '@/services/admin-doctors';
+import { queryKeys } from '@/lib/query-keys';
 import { useAdminDoctorsPageQuery } from './use-admin-doctors-page';
+import { cmsApi } from '@/services/cms';
+import { invalidateCmsDomain } from '@/services/cms-cache';
 
 function StatusBadge({ status }: { status: DoctorStatus }) {
   const isPublished = status === 'published';
@@ -127,7 +132,7 @@ function DoctorDetailPanel({
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Sync form when selected doctor changes
-  useMemo(() => {
+  useEffect(() => {
     setFormData(doctor);
     setSaveSuccess(false);
   }, [doctor]);
@@ -237,7 +242,7 @@ function DoctorDetailPanel({
             ['content', 'Content'],
             ['expertise', 'Expertise'],
             ['education', 'Education'],
-            ['seo', 'SEO'],
+            ['seo', 'Publishing'],
           ] as const
         ).map(([tabKey, tabLabel]) => (
           <button
@@ -285,6 +290,25 @@ function DoctorDetailPanel({
                   type="text"
                   value={formData.roleTitle}
                 />
+              </label>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Doctor Name (Khmer) *</span>
+                <input className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]" onChange={(e) => handleFieldChange('nameKm', e.target.value)} required type="text" value={formData.nameKm ?? ''} />
+              </label>
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Role / Title (Khmer)</span>
+                <input className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]" onChange={(e) => handleFieldChange('roleTitleKm', e.target.value)} type="text" value={formData.roleTitleKm ?? ''} />
+              </label>
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Specialty (Khmer)</span>
+                <input className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]" onChange={(e) => handleFieldChange('specialtyKm', e.target.value)} type="text" value={formData.specialtyKm ?? ''} />
+              </label>
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Short Intro (Khmer)</span>
+                <textarea className="mt-1.5 min-h-[90px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]" onChange={(e) => handleFieldChange('shortIntroKm', e.target.value)} rows={3} value={formData.shortIntroKm ?? ''} />
               </label>
             </div>
 
@@ -395,7 +419,7 @@ function DoctorDetailPanel({
         )}
 
         {activeTab === 'content' && (
-          <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
                 Extended Bio / Biography
@@ -408,50 +432,38 @@ function DoctorDetailPanel({
                 value={formData.content || ''}
               />
             </label>
+            <label className="block">
+              <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Extended Bio / Biography (Khmer)</span>
+              <textarea className="mt-1.5 min-h-[180px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]" onChange={(e) => handleFieldChange('contentKm', e.target.value)} rows={6} value={formData.contentKm ?? ''} />
+            </label>
           </div>
         )}
 
         {activeTab === 'expertise' && (
           <div className="space-y-4">
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                Specialties & Key Procedures (comma separated)
-              </span>
-              <textarea
-                className="mt-1.5 min-h-[140px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                onChange={(e) =>
-                  handleFieldChange(
-                    'expertise',
-                    e.target.value.split(',').map((s) => s.trim()),
-                  )
-                }
-                placeholder="Dental Implantology, Guided Bone Regeneration, Sinus Lift..."
-                rows={5}
-                value={(formData.expertise || []).join(', ')}
-              />
-            </label>
+            <p className="text-sm text-[#71839e]">Ordered expertise items require both English and Khmer values.</p>
+            {(formData.expertiseItems ?? []).map((item, index) => (
+              <div className="grid gap-3 rounded-xl border border-[#e1e8f0] p-3 sm:grid-cols-[1fr_1fr_auto]" key={`${item.displayOrder}-${index}`}>
+                <input className="h-10 rounded-lg border border-[#dce5ef] px-3 text-sm" onChange={(e) => handleFieldChange('expertiseItems', (formData.expertiseItems ?? []).map((entry, itemIndex) => itemIndex === index ? { ...entry, titleEn: e.target.value } : entry))} placeholder="Expertise (English)" value={item.titleEn} />
+                <input className="h-10 rounded-lg border border-[#dce5ef] px-3 text-sm" onChange={(e) => handleFieldChange('expertiseItems', (formData.expertiseItems ?? []).map((entry, itemIndex) => itemIndex === index ? { ...entry, titleKm: e.target.value } : entry))} placeholder="Expertise (Khmer)" value={item.titleKm} />
+                <Button className="text-[#b91c1c]" onClick={() => handleFieldChange('expertiseItems', (formData.expertiseItems ?? []).filter((_, itemIndex) => itemIndex !== index))} type="button" variant="secondary">Remove</Button>
+              </div>
+            ))}
+            <Button onClick={() => handleFieldChange('expertiseItems', [...(formData.expertiseItems ?? []), { displayOrder: (formData.expertiseItems ?? []).length, titleEn: '', titleKm: '' }])} type="button" variant="secondary">Add expertise</Button>
           </div>
         )}
 
         {activeTab === 'education' && (
           <div className="space-y-4">
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                Degrees & Certifications (comma separated)
-              </span>
-              <textarea
-                className="mt-1.5 min-h-[140px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                onChange={(e) =>
-                  handleFieldChange(
-                    'education',
-                    e.target.value.split(',').map((s) => s.trim()),
-                  )
-                }
-                placeholder="Doctor of Dental Surgery, Fellowship in Implantology..."
-                rows={5}
-                value={(formData.education || []).join(', ')}
-              />
-            </label>
+            <p className="text-sm text-[#71839e]">Each qualification and institution is stored bilingually and in display order.</p>
+            {(formData.educationItems ?? []).map((item, index) => (
+              <div className="grid gap-2 rounded-xl border border-[#e1e8f0] p-3 sm:grid-cols-2" key={`${item.displayOrder}-${index}`}>
+                {(['qualificationEn', 'qualificationKm', 'institutionEn', 'institutionKm'] as const).map((field) => <input className="h-10 rounded-lg border border-[#dce5ef] px-3 text-sm" key={field} onChange={(e) => handleFieldChange('educationItems', (formData.educationItems ?? []).map((entry, itemIndex) => itemIndex === index ? { ...entry, [field]: e.target.value } : entry))} placeholder={field.replace(/([A-Z])/g, ' $1')} value={item[field]} />)}
+                <input className="h-10 rounded-lg border border-[#dce5ef] px-3 text-sm" onChange={(e) => handleFieldChange('educationItems', (formData.educationItems ?? []).map((entry, itemIndex) => itemIndex === index ? { ...entry, yearLabel: e.target.value || null } : entry))} placeholder="Year label (optional)" value={item.yearLabel ?? ''} />
+                <Button className="text-[#b91c1c]" onClick={() => handleFieldChange('educationItems', (formData.educationItems ?? []).filter((_, itemIndex) => itemIndex !== index))} type="button" variant="secondary">Remove</Button>
+              </div>
+            ))}
+            <Button onClick={() => handleFieldChange('educationItems', [...(formData.educationItems ?? []), { displayOrder: (formData.educationItems ?? []).length, institutionEn: '', institutionKm: '', qualificationEn: '', qualificationKm: '', yearLabel: null }])} type="button" variant="secondary">Add education</Button>
           </div>
         )}
 
@@ -459,29 +471,29 @@ function DoctorDetailPanel({
           <div className="space-y-4">
             <label className="block">
               <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                Meta Title
+                URL Slug
               </span>
               <input
                 className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                onChange={(e) =>
-                  handleFieldChange('seo', { ...formData.seo, metaTitle: e.target.value })
-                }
+                onChange={(e) => handleFieldChange('seo', { ...formData.seo, slug: e.target.value })}
                 type="text"
-                value={formData.seo?.metaTitle || ''}
+                value={formData.seo?.slug || ''}
               />
             </label>
             <label className="block">
               <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                Meta Description
+                Related Doctor IDs (maximum 3, comma separated)
               </span>
               <textarea
                 className="mt-1.5 min-h-[80px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                onChange={(e) =>
-                  handleFieldChange('seo', { ...formData.seo, metaDescription: e.target.value })
-                }
+                onChange={(e) => handleFieldChange('relatedDoctorIds', e.target.value.split(',').map((id) => id.trim()).filter(Boolean))}
                 rows={3}
-                value={formData.seo?.metaDescription || ''}
+                value={(formData.relatedDoctorIds ?? []).join(', ')}
               />
+            </label>
+            <label className="block">
+              <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Display order</span>
+              <input className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8]" min="0" onChange={(e) => handleFieldChange('displayOrder', Number(e.target.value) || 0)} type="number" value={formData.displayOrder ?? 0} />
             </label>
           </div>
         )}
@@ -905,16 +917,21 @@ function AddDoctorModal({
   );
 }
 
-function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
+type DoctorListState = Pick<AdminDoctorListQuery, 'page' | 'limit' | 'search' | 'status' | 'specialty' | 'sort' | 'order'>;
+
+function DoctorsContent({ content, listState, onListStateChange }: { content: AdminDoctorsContent; listState: DoctorListState; onListStateChange: (next: DoctorListState) => void }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [doctors, setDoctors] = useState<AdminDoctor[]>(content.doctors);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [specialtyFilter, setSpecialtyFilter] = useState(content.controls.allSpecialties);
-  const [statusFilter, setStatusFilter] = useState(content.controls.allStatuses);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const pageSize = 4;
+  const [actionError, setActionError] = useState<string | null>(null);
+  useEffect(() => { setDoctors(content.doctors); }, [content.doctors]);
+  const doctorDetailQuery = useQuery({
+    enabled: selectedId !== null,
+    queryFn: () => cmsApi.doctors.get(selectedId!),
+    queryKey: queryKeys.admin.doctor(selectedId ?? ''),
+  });
 
   // Extract unique specialties
   const specialties = useMemo(() => {
@@ -924,56 +941,47 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
     ];
   }, [content.controls.allSpecialties, doctors]);
 
-  // Filtered doctors list
-  const filteredDoctors = useMemo(() => {
-    return doctors.filter((doc) => {
-      const matchesSearch =
-        !searchQuery.trim() ||
-        `${doc.name} ${doc.roleTitle} ${doc.specialty}`
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-
-      const matchesSpecialty =
-        specialtyFilter === content.controls.allSpecialties || doc.specialty === specialtyFilter;
-
-      const matchesStatus =
-        statusFilter === content.controls.allStatuses ||
-        (statusFilter === 'Published' && doc.status === 'published') ||
-        (statusFilter === 'Draft' && doc.status === 'draft');
-
-      return matchesSearch && matchesSpecialty && matchesStatus;
-    });
-  }, [doctors, searchQuery, specialtyFilter, statusFilter, content.controls]);
-
-  // Pagination calculation
-  const totalPages = Math.max(1, Math.ceil(filteredDoctors.length / pageSize));
-  const effectivePage = Math.min(currentPage, totalPages);
-  const startIndex = (effectivePage - 1) * pageSize;
-  const pageDoctors = filteredDoctors.slice(startIndex, startIndex + pageSize);
+  const filteredDoctors = doctors;
+  const totalPages = Math.max(1, content.meta.totalPages);
+  const effectivePage = content.meta.page;
+  const startIndex = (effectivePage - 1) * content.meta.limit;
+  const pageDoctors = doctors;
 
   // Currently selected doctor
-  const selectedDoctor = selectedId ? doctors.find((d) => d.id === selectedId) || null : null;
+  const selectedDoctor = doctorDetailQuery.data ? toAdminDoctorDetail(doctorDetailQuery.data.doctor) : null;
 
-  const handleSaveDoctor = (updated: AdminDoctor) => {
-    setDoctors((prev) => prev.map((doc) => (doc.id === updated.id ? updated : doc)));
-  };
-
-  const handleDeleteDoctor = (id: string) => {
-    setDoctors((prev) => prev.filter((doc) => doc.id !== id));
-    if (selectedId === id) {
-      setSelectedId(null);
-    }
-  };
+  const updateMutation = useMutation({
+    mutationFn: (doctor: AdminDoctor) => cmsApi.doctors.update(doctor.id, {
+      status: doctor.status === 'published' ? 'PUBLISHED' : doctor.status === 'archived' ? 'ARCHIVED' : 'DRAFT', featured: doctor.featuredDoctor,
+      slug: doctor.seo?.slug, displayOrder: doctor.displayOrder ?? 0, nameEn: doctor.name, nameKm: doctor.nameKm ?? '', titleEn: doctor.roleTitle || null, titleKm: doctor.roleTitleKm || null, specialtyEn: doctor.specialty || null, specialtyKm: doctor.specialtyKm || null,
+      shortBioEn: doctor.shortIntro || null, shortBioKm: doctor.shortIntroKm || null, aboutEn: doctor.content || null, aboutKm: doctor.contentKm || null, photoKey: doctor.photoKey ?? null,
+      yearsExperience: Number.parseInt(doctor.yearsExp, 10) || null, successfulProcedures: Number.parseInt(doctor.procedures, 10) || null,
+      patientSatisfaction: Number.parseInt(doctor.satisfaction, 10) || null, phone: doctor.contactPhone || null,
+      expertise: doctor.expertiseItems?.map((item, displayOrder) => ({ ...item, displayOrder })) ?? [],
+      education: doctor.educationItems?.map((item, displayOrder) => ({ ...item, displayOrder })) ?? [],
+      relatedDoctorIds: doctor.relatedDoctorIds ?? [],
+    }),
+    onSuccess: () => { setActionError(null); void invalidateCmsDomain(queryClient, 'doctors'); },
+    onError: () => setActionError('Unable to save this doctor. Please check the form and try again.'),
+  });
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => cmsApi.doctors.delete(id),
+    onSuccess: () => { setSelectedId(null); setActionError(null); void invalidateCmsDomain(queryClient, 'doctors'); },
+    onError: (error: unknown) => setActionError(error instanceof Error && 'code' in error && error.code === 'DOCTOR_IN_USE' ? 'This doctor is used by appointment history. Unpublish the profile instead.' : 'Unable to delete this doctor.'),
+  });
+  const handleSaveDoctor = (updated: AdminDoctor) => updateMutation.mutate(updated);
+  const handleDeleteDoctor = (id: string) => deleteMutation.mutate(id);
 
   const handleAddDoctor = (newDoc: AdminDoctor) => {
     setDoctors((prev) => [newDoc, ...prev]);
     setSelectedId(newDoc.id);
-    setCurrentPage(1);
+    onListStateChange({ ...listState, page: 1 });
   };
 
   return (
     <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
       <div className="mx-auto max-w-[1440px] w-full">
+      {actionError ? <p className="mb-4 rounded-xl border border-[#fecaca] bg-[#fff1f2] p-3 text-sm text-[#b91c1c]" role="alert">{actionError}</p> : null}
       {/* Top Header */}
       <header className="flex flex-wrap items-end justify-between gap-5">
         <div>
@@ -1000,7 +1008,7 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
         </div>
       </header>
       {/* Empty State: no doctors exist at all */}
-      {doctors.length === 0 ? (
+      {content.meta.total === 0 && !listState.search && !listState.specialty && !listState.status ? (
         <DoctorsEmptyState onAddDoctor={() => navigate('/admin/doctors/new')} />
       ) : (
       /* Main 2-Column Grid */
@@ -1016,12 +1024,11 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
               <input
                 className="min-w-0 flex-1 bg-transparent text-[14px] text-[#182238] outline-none placeholder:text-[#a9b7c9]"
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
+                  onListStateChange({ ...listState, page: 1, search: e.target.value || undefined });
                 }}
                 placeholder={content.controls.searchPlaceholder}
                 type="search"
-                value={searchQuery}
+                value={listState.search ?? ''}
               />
             </label>
 
@@ -1031,10 +1038,9 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
               <select
                 className="cursor-pointer bg-transparent text-[14px] font-medium text-[#182238] outline-none"
                 onChange={(e) => {
-                  setSpecialtyFilter(e.target.value);
-                  setCurrentPage(1);
+                  onListStateChange({ ...listState, page: 1, specialty: e.target.value === content.controls.allSpecialties ? undefined : e.target.value });
                 }}
-                value={specialtyFilter}
+                value={listState.specialty ?? content.controls.allSpecialties}
               >
                 {specialties.map((spec) => (
                   <option key={spec} value={spec}>
@@ -1050,10 +1056,9 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
               <select
                 className="cursor-pointer bg-transparent text-[14px] font-medium text-[#182238] outline-none"
                 onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setCurrentPage(1);
+                  onListStateChange({ ...listState, page: 1, status: e.target.value === content.controls.allStatuses ? undefined : e.target.value.toUpperCase() as AdminDoctorListQuery['status'] });
                 }}
-                value={statusFilter}
+                value={listState.status ? `${listState.status[0]}${listState.status.slice(1).toLowerCase()}` : content.controls.allStatuses}
               >
                 <option value={content.controls.allStatuses}>{content.controls.allStatuses}</option>
                 <option value="Published">Published</option>
@@ -1135,43 +1140,30 @@ function DoctorsContent({ content }: { content: AdminDoctorsContent }) {
           <div className="mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-[#f0f4f8] pt-6 text-[13px] text-[#8a9bb2]">
             <span>
               Showing {filteredDoctors.length > 0 ? startIndex + 1 : 0} to{' '}
-              {Math.min(startIndex + pageSize, filteredDoctors.length)} of {doctors.length}{' '}
+              {startIndex + filteredDoctors.length} of {content.meta.total}{' '}
               specialists
             </span>
 
             <div className="flex items-center gap-1.5">
-              {Array.from({ length: totalPages }).map((_, index) => {
-                const pageNumber = index + 1;
-                const isActive = pageNumber === effectivePage;
-                return (
-                  <button
-                    aria-current={isActive ? 'page' : undefined}
-                    aria-label={`Page ${pageNumber}`}
-                    className={`grid size-8 place-items-center rounded-lg text-[13px] font-bold transition ${
-                      isActive
-                        ? 'bg-[#2187a8] text-white shadow-sm'
-                        : 'border border-[#dce5ef] bg-white text-[#71839e] hover:bg-[#f4f8fb]'
-                    }`}
-                    key={pageNumber}
-                    onClick={() => setCurrentPage(pageNumber)}
-                    type="button"
-                  >
-                    {pageNumber}
-                  </button>
-                );
-              })}
-
-              {totalPages > 1 && (
-                <button
-                  aria-label="Next page"
-                  className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#71839e] transition hover:bg-[#f4f8fb] disabled:pointer-events-none disabled:opacity-40"
-                  disabled={effectivePage >= totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  type="button"
-                >
-                  <AdminIcon className="size-3.5" name="chevronRight" />
-                </button>
-              )}
+              <button
+                aria-label="Previous page"
+                className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#71839e] transition hover:bg-[#f4f8fb] disabled:pointer-events-none disabled:opacity-40"
+                disabled={effectivePage <= 1}
+                onClick={() => onListStateChange({ ...listState, page: Math.max(1, effectivePage - 1) })}
+                type="button"
+              >
+                <AdminIcon className="size-3.5 rotate-180" name="chevronRight" />
+              </button>
+              <span className="px-2 font-semibold text-[#61738d]">Page {effectivePage} of {totalPages}</span>
+              <button
+                aria-label="Next page"
+                className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#71839e] transition hover:bg-[#f4f8fb] disabled:pointer-events-none disabled:opacity-40"
+                disabled={effectivePage >= totalPages}
+                onClick={() => onListStateChange({ ...listState, page: Math.min(totalPages, effectivePage + 1) })}
+                type="button"
+              >
+                <AdminIcon className="size-3.5" name="chevronRight" />
+              </button>
             </div>
           </div>
         </Card>
@@ -1236,7 +1228,8 @@ function DoctorsUnavailable({ onRetry }: { onRetry: () => void }) {
 }
 
 export function AdminDoctorsPage() {
-  const { data, isError, isLoading, refetch } = useAdminDoctorsPageQuery();
+  const [listState, setListState] = useState<DoctorListState>({ page: 1, limit: 20, sort: 'displayOrder', order: 'asc' });
+  const { data, isError, isLoading, refetch } = useAdminDoctorsPageQuery(listState);
 
   if (isLoading) {
     return <DoctorsSkeleton />;
@@ -1249,7 +1242,7 @@ export function AdminDoctorsPage() {
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
       <AdminSidebar activeLabel="Doctor Management" brand={data.brand} navigation={data.navigation} />
-      <DoctorsContent content={data} />
+      <DoctorsContent content={data} listState={listState} onListStateChange={setListState} />
     </div>
   );
 }

@@ -1,22 +1,41 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
+import type { AdminDoctorListQuery } from '@arunreah/shared';
+import { cmsApi, type AdminDoctorDetail, type AdminDoctorRecord, type CmsListMeta } from '@/services/cms';
+import { getPublicMediaUrl } from '@/services/media';
 
-export type DoctorStatus = 'published' | 'draft';
+export type DoctorStatus = 'published' | 'draft' | 'archived';
+
+export type DoctorExpertiseItem = { displayOrder: number; titleEn: string; titleKm: string };
+export type DoctorEducationItem = {
+  displayOrder: number;
+  institutionEn: string;
+  institutionKm: string;
+  qualificationEn: string;
+  qualificationKm: string;
+  yearLabel: string | null;
+};
 
 export type AdminDoctor = {
   avatarBgColor?: string;
   contactPhone: string;
   content?: string;
+  contentKm?: string;
   ctaButtonText: string;
   education?: string[];
+  educationItems?: DoctorEducationItem[];
   expertise?: string[];
+  expertiseItems?: DoctorExpertiseItem[];
   featuredDoctor: boolean;
   id: string;
   imageAlt?: string;
   imageUrl?: string;
+  photoKey?: string | null;
   initials?: string;
   name: string;
+  nameKm?: string;
   procedures: string;
   roleTitle: string;
+  roleTitleKm?: string;
   satisfaction: string;
   seo?: {
     canonicalUrl?: string;
@@ -25,6 +44,10 @@ export type AdminDoctor = {
     slug?: string;
   };
   shortIntro: string;
+  shortIntroKm?: string;
+  specialtyKm?: string;
+  relatedDoctorIds?: string[];
+  displayOrder?: number;
   showOnWebsite: boolean;
   specialty: string;
   status: DoctorStatus;
@@ -63,6 +86,7 @@ export type AdminDoctorsContent = {
     label: string;
     section?: 'appointments' | 'services' | 'doctors' | 'clinic';
   }[];
+  meta: CmsListMeta;
   table: {
     doctor: string;
     specialty: string;
@@ -107,6 +131,7 @@ const adminDoctorsContent: AdminDoctorsContent = {
     { icon: 'showcase', label: 'Showcase' },
     { icon: 'clinicInfo', label: 'Clinic Info' },
   ],
+  meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
   table: {
     doctor: 'DOCTOR',
     specialty: 'SPECIALTY / TITLE',
@@ -372,7 +397,31 @@ const adminDoctorsContent: AdminDoctorsContent = {
   ],
 };
 
-export async function fetchAdminDoctorsContent(): Promise<AdminDoctorsContent> {
-  return adminDoctorsContent;
+const statusForUi = (status: AdminDoctorRecord['status']): DoctorStatus =>
+  status === 'PUBLISHED' ? 'published' : status === 'ARCHIVED' ? 'archived' : 'draft';
+
+export function toAdminDoctor(doctor: AdminDoctorRecord): AdminDoctor {
+  return {
+    id: doctor.id, name: doctor.nameEn, nameKm: doctor.nameKm, roleTitle: doctor.titleEn ?? '', roleTitleKm: doctor.titleKm ?? '', specialty: doctor.specialtyEn ?? '', specialtyKm: doctor.specialtyKm ?? '', shortIntro: doctor.shortBioEn ?? '', shortIntroKm: doctor.shortBioKm ?? '', content: doctor.aboutEn ?? '', contentKm: doctor.aboutKm ?? '',
+    imageAlt: doctor.nameEn, imageUrl: getPublicMediaUrl(doctor.photoKey), photoKey: doctor.photoKey, contactPhone: doctor.phone ?? '', expertise: [], expertiseItems: [],
+    education: [], educationItems: [], relatedDoctorIds: [], procedures: doctor.successfulProcedures?.toString() ?? '', satisfaction: doctor.patientSatisfaction?.toString() ?? '', yearsExp: doctor.yearsExperience?.toString() ?? '',
+    featuredDoctor: doctor.featured, showOnWebsite: doctor.status === 'PUBLISHED', status: statusForUi(doctor.status), updatedAt: doctor.updatedAt, ctaButtonText: 'Book Now', seo: { slug: doctor.slug }, displayOrder: doctor.displayOrder,
+  };
 }
 
+export function toAdminDoctorDetail(doctor: AdminDoctorDetail): AdminDoctor {
+  const result = toAdminDoctor(doctor);
+  return {
+    ...result,
+    education: doctor.education.map((item) => item.qualificationEn),
+    educationItems: doctor.education.map(({ displayOrder, institutionEn, institutionKm, qualificationEn, qualificationKm, yearLabel }) => ({ displayOrder, institutionEn, institutionKm, qualificationEn, qualificationKm, yearLabel })),
+    expertise: doctor.expertise.map((item) => item.titleEn),
+    expertiseItems: doctor.expertise.map(({ displayOrder, titleEn, titleKm }) => ({ displayOrder, titleEn, titleKm })),
+    relatedDoctorIds: doctor.relatedDoctorIds,
+  };
+}
+
+export async function fetchAdminDoctorsContent(query: Partial<AdminDoctorListQuery> = {}): Promise<AdminDoctorsContent> {
+  const response = await cmsApi.doctors.list({ limit: 20, page: 1, ...query });
+  return { ...adminDoctorsContent, meta: response.meta, doctors: response.items.map(toAdminDoctor) };
+}

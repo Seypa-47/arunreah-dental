@@ -1,5 +1,7 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
 import { fetchAdminServicesContent, type AdminService } from '@/services/admin-services';
+import { cmsApi } from '@/services/cms';
+import { getPublicMediaUrl } from '@/services/media';
 
 export type BenefitPreview = {
   icon: 'check' | 'heart' | 'shield' | 'smile' | 'star' | 'utensils';
@@ -181,7 +183,22 @@ const adminServiceDetailLabels = {
 
 export async function fetchAdminServiceDetailContent(serviceId: string | undefined): Promise<AdminServiceDetailContent> {
   const servicesContent = await fetchAdminServicesContent();
-  const service = servicesContent.services.find((item) => item.id === serviceId) ?? servicesContent.services[0];
+  if (!serviceId) return { ...adminServiceDetailLabels, brand: servicesContent.brand, footer: servicesContent.footer, navigation: servicesContent.navigation, service: undefined };
+  const { service: detail } = await cmsApi.services.get(serviceId);
+  const service: AdminService = {
+    id: detail.id,
+    name: detail.nameEn,
+    category: detail.category ?? 'Uncategorized',
+    description: detail.summaryEn ?? detail.descriptionEn ?? '',
+    imageAlt: detail.nameEn,
+    imageUrl: getPublicMediaUrl(detail.imageKey) ?? '',
+    status: detail.status === 'PUBLISHED' ? 'published' : 'draft',
+    featured: detail.featured,
+    displayOnHomepage: detail.featured,
+    order: detail.displayOrder,
+    createdAt: detail.createdAt,
+    updatedAt: detail.updatedAt,
+  };
 
   return {
     ...adminServiceDetailLabels,

@@ -1,5 +1,6 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
 import type { AdminDoctor, DoctorStatus } from '@/services/admin-doctors';
+import { cmsApi } from '@/services/cms';
 
 export type NewDoctorFormState = {
   contactEmail: string;
@@ -7,6 +8,7 @@ export type NewDoctorFormState = {
   content: string;
   expertise: string[];
   name: string;
+  nameKm: string;
   photoUrl: string;
   procedures: string;
   roleTitle: string;
@@ -95,6 +97,33 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '') || `doctor-${Date.now()}`;
 
+  const response = await cmsApi.doctors.create({
+    slug: id,
+    status: formData.status === 'published' ? 'PUBLISHED' : 'DRAFT',
+    featured: false,
+    displayOrder: 0,
+    nameEn: formData.name,
+    nameKm: formData.nameKm,
+    titleEn: formData.roleTitle || null,
+    titleKm: null,
+    specialtyEn: formData.specialty || null,
+    specialtyKm: null,
+    shortBioEn: formData.shortIntro || null,
+    shortBioKm: null,
+    aboutEn: formData.content || null,
+    aboutKm: null,
+    photoKey: formData.photoUrl || null,
+    yearsExperience: Number.parseInt(formData.yearsExp, 10) || null,
+    successfulProcedures: Number.parseInt(formData.procedures, 10) || null,
+    patientSatisfaction: Number.parseInt(formData.satisfaction, 10) || null,
+    phone: formData.contactPhone || null,
+    // The current creation form collects English expertise only. Do not copy it
+    // into Khmer fields; it can be added through the bilingual editor later.
+    expertise: [],
+    education: [],
+    relatedDoctorIds: [],
+  });
+  const doctor = response.doctor;
   const createdDoctor: AdminDoctor = {
     contactPhone: formData.contactPhone || '+855 23 456 789',
     content: formData.content,
@@ -102,7 +131,7 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
     education: ['Doctor of Dental Surgery (DDS)'],
     expertise: formData.expertise,
     featuredDoctor: false,
-    id,
+    id: doctor.id,
     imageAlt: formData.name,
     imageUrl: formData.photoUrl || '/assets/landing/doctor-sreng-heng.jpg',
     initials: formData.name
@@ -128,7 +157,7 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
     shortIntro: formData.shortIntro,
     showOnWebsite: formData.showOnWebsite,
     specialty: formData.specialty,
-    status: formData.status,
+    status: doctor.status === 'PUBLISHED' ? 'published' : 'draft',
     updatedAt: new Date().toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
@@ -141,4 +170,3 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
 
   return createdDoctor;
 }
-

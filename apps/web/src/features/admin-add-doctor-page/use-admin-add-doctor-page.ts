@@ -4,6 +4,7 @@ import {
   saveNewDoctor,
   type NewDoctorFormState,
 } from '@/services/admin-add-doctor';
+import { invalidateCmsDomain } from '@/services/cms-cache';
 
 export function useAdminAddDoctorPageQuery() {
   return useQuery({
@@ -18,8 +19,7 @@ export function useCreateDoctorMutation() {
   return useMutation({
     mutationFn: (newDoctor: NewDoctorFormState) => saveNewDoctor(newDoctor),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin-doctors-page'] });
+      void invalidateCmsDomain(queryClient, 'doctors');
     },
   });
 }
-

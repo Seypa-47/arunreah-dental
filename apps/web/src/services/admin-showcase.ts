@@ -1,4 +1,7 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
+import type { AdminShowcaseListQuery } from '@arunreah/shared';
+import { cmsApi, type CmsListMeta } from '@/services/cms';
+import { getPublicMediaUrl } from '@/services/media';
 
 export type ShowcaseStatus = 'published' | 'draft' | 'hidden';
 
@@ -33,6 +36,7 @@ export type ShowcaseArticle = {
 
 export type AdminShowcaseContent = {
   articles: ShowcaseArticle[];
+  meta: CmsListMeta;
   brand: {
     logoAlt: string;
     logoUrl: string;
@@ -228,6 +232,7 @@ const adminShowcaseContent: AdminShowcaseContent = {
     { icon: 'showcase', label: 'Showcase' },
     { icon: 'clinicInfo', label: 'Clinic Info' },
   ],
+  meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
   table: {
     article: 'ARTICLE',
     category: 'CATEGORY',
@@ -239,6 +244,13 @@ const adminShowcaseContent: AdminShowcaseContent = {
   },
 };
 
-export async function fetchAdminShowcaseContent(): Promise<AdminShowcaseContent> {
-  return adminShowcaseContent;
+export async function fetchAdminShowcaseContent(
+  query: Partial<AdminShowcaseListQuery> = {},
+): Promise<AdminShowcaseContent> {
+  const response = await cmsApi.showcases.list({ limit: 20, page: 1, ...query });
+  return { ...adminShowcaseContent, meta: response.meta, articles: response.items.map((showcase) => ({
+    id: showcase.id, title: showcase.titleEn, category: (showcase.categoryEn as ShowcaseCategory) || 'Treatment', subtitle: showcase.summaryEn ?? '', imageAlt: showcase.titleEn, imageUrl: getPublicMediaUrl(showcase.coverImageKey) ?? '',
+    status: showcase.status === 'PUBLISHED' ? 'published' : showcase.status === 'ARCHIVED' ? 'hidden' : 'draft', homepageVisibility: showcase.showOnHomepage, order: showcase.displayOrder, lastUpdatedAuthor: 'Admin', lastUpdatedDate: showcase.updatedAt,
+    structure: { headline: showcase.titleEn, shortSummary: showcase.summaryEn ?? '', bodyContent: showcase.bodyEn ?? '', coverImage: getPublicMediaUrl(showcase.coverImageKey) ?? '', ctaButtonCount: 0, relatedCardsCount: 0, sectionBlocksCount: 0 },
+  })) };
 }

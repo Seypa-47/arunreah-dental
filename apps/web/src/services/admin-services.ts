@@ -1,4 +1,7 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
+import type { ServiceListQuery } from '@arunreah/shared';
+import { cmsApi, type CmsListMeta } from '@/services/cms';
+import { getPublicMediaUrl } from '@/services/media';
 
 export type AdminService = {
   category: string;
@@ -22,6 +25,7 @@ export type AdminServicesContent = {
   footer: { copyright: string; encryptionLabel: string; sslLabel: string };
   header: { subtitle: string; title: string };
   navigation: { icon: AdminNavIcon; label: string; section?: 'appointments' | 'services' | 'doctors' }[];
+  meta: CmsListMeta;
   services: AdminService[];
   table: { actions: string; category: string; service: string; status: string; updated: string };
 };
@@ -33,6 +37,7 @@ const adminServicesContent: AdminServicesContent = {
   footer: { copyright: `© ${new Date().getFullYear()} Arunreah Dental Clinic. All rights reserved.`, encryptionLabel: '256-bit Encryption', sslLabel: 'SSL Secured' },
   header: { subtitle: 'Add, edit and manage all services displayed on the website.', title: 'Service Management' },
   navigation: [{ icon: 'dashboard', label: 'Dashboard' }, { icon: 'appointments', label: 'Appointments', section: 'appointments' }, { icon: 'inbox', label: 'Inbox', section: 'appointments' }, { icon: 'calendar', label: 'Calendar', section: 'appointments' }, { icon: 'appointments', label: 'All Appointments', section: 'appointments' }, { icon: 'services', label: 'Services' }, { icon: 'doctors', label: 'Doctors' }, { icon: 'doctors', label: 'Doctor Management', section: 'doctors' }, { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' }, { icon: 'showcase', label: 'Showcase' }, { icon: 'clinicInfo', label: 'Clinic Info' }],
+  meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
   services: [
     { category: 'Restorative', createdAt: 'Oct 10, 2024', description: 'Permanent and natural-looking solution for replacing missing teeth with medical-grade titanium posts.', displayOnHomepage: true, featured: true, id: 'dental-implants', imageAlt: 'Dental implant treatment', imageUrl: '/assets/landing/service-implant.png', name: 'Dental Implants', order: 1, status: 'published', updatedAt: 'Oct 20, 2024' },
     { category: 'Cosmetic', createdAt: 'Oct 8, 2024', description: 'Professional laser teeth whitening service for a brighter, confident smile.', displayOnHomepage: true, featured: false, id: 'teeth-whitening', imageAlt: 'Teeth whitening', imageUrl: '/assets/landing/service-veneer.png', name: 'Teeth Whitening', order: 2, status: 'published', updatedAt: 'Oct 18, 2024' },
@@ -42,4 +47,11 @@ const adminServicesContent: AdminServicesContent = {
   table: { actions: 'Actions', category: 'Category', service: 'Service', status: 'Status', updated: 'Updated' },
 };
 
-export async function fetchAdminServicesContent(): Promise<AdminServicesContent> { return adminServicesContent; }
+export async function fetchAdminServicesContent(query: Partial<ServiceListQuery> = {}): Promise<AdminServicesContent> {
+  const response = await cmsApi.services.list({ limit: 20, page: 1, ...query });
+  return { ...adminServicesContent, meta: response.meta, services: response.items.map((service) => ({
+    id: service.id, name: service.nameEn, category: service.category ?? 'Uncategorized', description: service.summaryEn ?? service.descriptionEn ?? '',
+    imageAlt: service.nameEn, imageUrl: getPublicMediaUrl(service.imageKey) ?? '', status: service.status === 'PUBLISHED' ? 'published' : 'draft',
+    featured: service.featured, displayOnHomepage: service.featured, order: service.displayOrder, createdAt: service.createdAt, updatedAt: service.updatedAt,
+  })) };
+}

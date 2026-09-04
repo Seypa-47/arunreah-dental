@@ -1,4 +1,5 @@
 import { useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import type { AdminServiceDetailContent, BenefitPreview } from '@/services/admin-service-detail';
 import type { AdminService } from '@/services/admin-services';
 import { useAdminServiceDetailPageQuery } from './use-admin-service-detail-page';
+import { cmsApi } from '@/services/cms';
+import { invalidateCmsDomain } from '@/services/cms-cache';
 
 type EditableService = AdminService & {
   aboutContent: string;
@@ -650,6 +653,7 @@ function ChecklistCard({ checklist }: { checklist: AdminServiceDetailContent['ch
 }
 
 function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent & { service: AdminService } }) {
+  const queryClient = useQueryClient();
   const [service, setService] = useState<EditableService>(() => ({
     ...content.service,
     aboutContent: content.preview.aboutDescription,
@@ -678,6 +682,17 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
   }));
 
   const [notification, setNotification] = useState<string | undefined>();
+  const saveMutation = useMutation({
+    mutationFn: (status: 'DRAFT' | 'PUBLISHED') => cmsApi.services.update(content.service.id, {
+      status, slug: service.slug, nameEn: service.name, category: service.category || null, summaryEn: service.description || null,
+      descriptionEn: service.heroSummary || null, imageKey: service.imageUrl || null, featured: service.featured,
+      heroTitleEn: service.heroHeading || null, heroSummaryEn: service.heroSummary || null, heroImageKey: service.heroImageUrl || null,
+      aboutTitleEn: service.aboutTitle || null, aboutBodyEn: service.aboutContent || null, aboutImageKey: service.aboutImageUrl || null,
+      metaTitleEn: service.metaTitle || null, metaDescriptionEn: service.metaDescription || null,
+    }),
+    onSuccess: async () => { await invalidateCmsDomain(queryClient, 'services'); },
+    onError: () => showNotification('Unable to save this service. Please check the fields and try again.'),
+  });
   const previewHref = useMemo(() => `/services/${service.slug}`, [service.slug]);
 
   const showNotification = (message: string) => {
@@ -689,12 +704,12 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
 
   const handleSaveDraft = () => {
     setService((current) => ({ ...current, status: 'draft' }));
-    showNotification('Service draft saved successfully.');
+    saveMutation.mutate('DRAFT', { onSuccess: () => showNotification('Service draft saved successfully.') });
   };
 
   const handleUpdateService = () => {
     setService((current) => ({ ...current, status: 'published' }));
-    showNotification('Service updated and published successfully.');
+    saveMutation.mutate('PUBLISHED', { onSuccess: () => showNotification('Service updated and published successfully.') });
   };
 
   return (
@@ -844,4 +859,3 @@ export function AdminServiceDetailPage() {
     </div>
   );
 }
-
