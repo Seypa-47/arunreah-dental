@@ -71,9 +71,9 @@ export function GoogleSatelliteMap({
     : `https://maps.google.com/maps?q=${lat},${lng}&t=k&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
 
   return (
-    <Card className="mx-auto flex w-full max-w-[500px] flex-col overflow-hidden rounded-2xl border border-[#edf2f7] bg-white shadow-[0_4px_16px_rgba(15,23,42,0.04)] transition duration-200 hover:shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+    <Card className="flex w-full flex-col overflow-hidden rounded-2xl border border-[#edf2f7] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition duration-200 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]">
       {/* Google Maps Satellite Viewport */}
-      <div className="relative h-[250px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[270px]">
+      <div className="relative h-[260px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[280px]">
         <iframe
           allowFullScreen
           className="h-full w-full border-0"
