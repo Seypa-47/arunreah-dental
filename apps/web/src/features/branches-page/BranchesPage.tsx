@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -30,22 +30,19 @@ function ArrowIcon() {
   );
 }
 
-function DirectionIcon() {
+function DirectionIcon({ className = 'size-4' }: { className?: string }) {
   return (
-    <svg aria-hidden="true" className="size-[24px]" fill="none" viewBox="0 0 32 32">
-      <path
-        d="M5.55 11.75 11.2 9.2v17.18l-5.03 2.24A1.55 1.55 0 0 1 4 27.2V13.17c0-.62.37-1.18 1.55-1.42Z"
-        fill="currentColor"
-      />
-      <path
-        d="m12.95 9.1 6.1 2.02v17.2l-6.1-2.02V9.1ZM20.8 11.1l5.03-2.25A1.55 1.55 0 0 1 28 10.27V24.3c0 .62-.37 1.18-.94 1.43l-6.26 2.8V11.1Z"
-        fill="currentColor"
-      />
-      <path
-        d="M16 .45A7.35 7.35 0 0 0 8.65 7.8C8.65 13.3 16 20.75 16 20.75s7.35-7.45 7.35-12.95A7.35 7.35 0 0 0 16 .45Z"
-        fill="currentColor"
-      />
-      <circle cx="16" cy="7.8" fill="#3695B9" r="2.1" />
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <polygon points="3 11 22 2 13 21 11 13 3 11" />
     </svg>
   );
 }
@@ -55,7 +52,7 @@ function MetricLocationIcon() {
     <svg aria-hidden="true" className="size-[22px]" fill="none" viewBox="0 0 24 24">
       <path
         d="M12 21.2s7-5.95 7-11.75A6.86 6.86 0 0 0 12 2.5a6.86 6.86 0 0 0-7 6.95c0 5.8 7 11.75 7 11.75Z"
-        fill="#167fb0"
+        fill="#3695B9"
       />
       <circle cx="12" cy="9.45" fill="white" r="2.25" />
     </svg>
@@ -67,7 +64,7 @@ function HighlightLocationIcon() {
     <svg aria-hidden="true" className="size-[15px]" fill="none" viewBox="0 0 24 24">
       <path
         d="M12 21.2s7-5.95 7-11.75A6.86 6.86 0 0 0 12 2.5a6.86 6.86 0 0 0-7 6.95c0 5.8 7 11.75 7 11.75Z"
-        fill="#167fb0"
+        fill="#3695B9"
       />
       <circle cx="12" cy="9.45" fill="white" r="2.25" />
     </svg>
@@ -76,41 +73,6 @@ function HighlightLocationIcon() {
 
 function CalendarIcon({ className = 'size-[18px]' }: { className?: string }) {
   return <AssetIcon className={`${className} brightness-0 invert`} name="hero-calendar.svg" />;
-}
-
-function ActionLink({
-  children,
-  href,
-  icon,
-  primary = false,
-  variant,
-}: {
-  children: string;
-  href: string;
-  icon?: string;
-  primary?: boolean;
-  variant?: 'primary' | 'soft' | 'outline';
-}) {
-  const style = variant ?? (primary ? 'primary' : 'outline');
-  const styles = {
-    outline: 'border border-[#d8e6ee] bg-white text-[#3695b9] hover:-translate-y-0.5 hover:border-[#c4dfeb] hover:bg-[#f9fcfd]',
-    primary: 'bg-[#3695b9] text-white shadow-[0_10px_18px_rgba(54,149,185,0.20)] hover:-translate-y-0.5 hover:bg-[#2f8cad] hover:shadow-[0_12px_20px_rgba(54,149,185,0.24)]',
-    soft: 'bg-[#f1f6fa] text-[#3695b9] hover:-translate-y-0.5 hover:bg-[#e9f1f6]',
-  };
-
-  return (
-    <a
-      className={`inline-flex min-h-[54px] items-center justify-center gap-3 whitespace-nowrap rounded-full px-5 text-[15px] font-extrabold leading-5 transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9] ${styles[style]}`}
-      href={href}
-    >
-      {style === 'primary' ? (
-        <DirectionIcon />
-      ) : (
-        <img alt="" aria-hidden="true" className="size-[20px]" src={icon} />
-      )}
-      {children}
-    </a>
-  );
 }
 
 function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
@@ -214,73 +176,125 @@ function BranchCard({
   const phoneHref = `tel:${branch.phones[0]?.replaceAll(' ', '') ?? ''}`;
 
   return (
-    <Card className="grid overflow-hidden rounded-xl border-[#edf2f7] shadow-[0_2px_4px_rgba(15,23,42,0.04)] lg:h-[380px] lg:grid-cols-2">
-      <div className={`${flipped ? 'lg:order-2' : ''} p-6 sm:p-8`}>
-        <Badge className="gap-1.5 !bg-[#3695B9] px-3 py-1 text-[10px] !text-white">
-          <AssetIcon className="size-[10px] brightness-0 invert" name="branch-card-pin-alt.svg" />
-          {branch.badge}
-        </Badge>
-        <h3 className="mt-3 text-[22px] font-extrabold leading-7 text-[#005687] sm:text-[24px] sm:leading-8">
-          {branch.name}
-        </h3>
+    <Card className="group overflow-hidden rounded-2xl border-[#edf2f7] bg-white shadow-[0_4px_24px_rgba(15,23,42,0.06)] transition duration-300 hover:shadow-[0_12px_36px_rgba(15,23,42,0.10)] lg:grid lg:grid-cols-2">
+      <div className={`${flipped ? 'lg:order-2' : ''} flex flex-col justify-between p-6 sm:p-8 lg:p-9`}>
+        <div>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#edf7fb] px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#3695B9]">
+            <AssetIcon className="size-3" name="branch-card-pin-alt.svg" />
+            {branch.badge}
+          </span>
 
-        <dl className="mt-[30px] space-y-[18px] text-[14px] font-medium leading-6 text-[#6b7280]">
-          <div className="flex gap-4">
-            <dt>
-              <span className="sr-only">Address</span>
-              <AssetIcon className="mt-1 size-[18px]" name="branch-card-pin-alt.svg" />
-            </dt>
-            <dd className="max-w-[560px]">{branch.address}</dd>
-          </div>
-          <div className="flex gap-4">
-            <dt>
-              <span className="sr-only">Phone</span>
-              <AssetIcon className="mt-1 size-[18px]" name="branch-card-phone.svg" />
-            </dt>
-            <dd className="flex flex-wrap gap-x-8 gap-y-1 font-extrabold text-[#005687]">
-              {branch.phones.map((phone) => (
-                <a className="hover:text-[#3695B9] hover:underline" href={`tel:${phone.replaceAll(' ', '')}`} key={phone}>
-                  {phone}
-                </a>
-              ))}
-            </dd>
-          </div>
-          <div className="flex gap-4">
-            <dt>
-              <span className="sr-only">Opening hours</span>
-              <AssetIcon className="mt-1 size-[18px]" name="branch-card-clock.svg" />
-            </dt>
-            <dd>
-              <span className="mr-5 text-[#6b7280]">{branch.hoursDays}</span>
-              <span className="font-extrabold text-[#005687]">{branch.hoursTime}</span>
-            </dd>
-          </div>
-        </dl>
+          <h3 className="mt-3 text-[22px] font-extrabold leading-tight text-[#005687] sm:text-[24px]">
+            {branch.name}
+          </h3>
 
-        <div className="mt-[38px] grid gap-4 md:grid-cols-[185px_140px_225px]">
-          <ActionLink href={branch.directionsUrl} primary>
-            {branch.directionsLabel}
-          </ActionLink>
-          <ActionLink href={phoneHref} icon={asset('branch-card-phone.svg')} variant="soft">
-            {branch.phoneLabel}
-          </ActionLink>
-          <ActionLink href="/book-appointment" icon={asset('hero-calendar.svg')}>
+          <div className="mt-6 space-y-4 text-[14px]">
+            {/* Address */}
+            <div className="flex items-start gap-3.5">
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#edf7fb] text-[#3695B9]">
+                <AssetIcon className="size-4" name="branch-card-pin-alt.svg" />
+              </span>
+              <div className="pt-0.5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#94a3b8]">Address</p>
+                <p className="mt-0.5 font-medium leading-5 text-[#4b5563]">{branch.address}</p>
+              </div>
+            </div>
+
+            {/* Phone numbers */}
+            <div className="flex items-start gap-3.5">
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#edf7fb] text-[#3695B9]">
+                <AssetIcon className="size-4" name="branch-card-phone.svg" />
+              </span>
+              <div className="pt-0.5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#94a3b8]">Phone Numbers</p>
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-6 gap-y-1 font-bold text-[#005687]">
+                  {branch.phones.map((phone) => (
+                    <a
+                      className="transition hover:text-[#3695B9]"
+                      href={`tel:${phone.replaceAll(' ', '')}`}
+                      key={phone}
+                    >
+                      {phone}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Opening hours */}
+            <div className="flex items-start gap-3.5">
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#edf7fb] text-[#3695B9]">
+                <AssetIcon className="size-4" name="branch-card-clock.svg" />
+              </span>
+              <div className="pt-0.5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#94a3b8]">Working Hours</p>
+                <p className="mt-0.5 text-[14px] text-[#4b5563]">
+                  <span className="mr-3 font-medium">{branch.hoursDays}:</span>
+                  <span className="font-bold text-[#005687]">{branch.hoursTime}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-[#f1f5f9] pt-6">
+          <Link
+            className="inline-flex h-[44px] min-h-[44px] items-center justify-center gap-2 rounded-full bg-[#3695B9] px-6 text-[13px] font-bold text-white shadow-[0_6px_16px_rgba(54,149,185,0.22)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#2c84a5] hover:shadow-[0_8px_20px_rgba(54,149,185,0.28)]"
+            to="/book-appointment"
+          >
+            <CalendarIcon className="size-4" />
             {branch.bookingLabel}
-          </ActionLink>
+          </Link>
+          <a
+            className="inline-flex h-[44px] min-h-[44px] items-center justify-center gap-2 rounded-full border border-[#3695B9] bg-white px-5 text-[13px] font-bold text-[#3695B9] transition duration-200 hover:-translate-y-0.5 hover:bg-[#f0f9fa]"
+            href={phoneHref}
+          >
+            <AssetIcon className="size-4" name="branch-card-phone.svg" />
+            {branch.phoneLabel}
+          </a>
+          <a
+            className="inline-flex h-[44px] min-h-[44px] items-center justify-center gap-2 rounded-full bg-[#edf7fb] px-5 text-[13px] font-bold text-[#005687] transition duration-200 hover:-translate-y-0.5 hover:bg-[#dfeef5]"
+            href={branch.directionsUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <DirectionIcon className="size-3.5 text-[#3695B9]" />
+            {branch.directionsLabel}
+          </a>
         </div>
       </div>
-      <div className={`relative min-h-[320px] lg:min-h-full ${flipped ? 'lg:order-1' : ''}`}>
-        <img alt={branch.imageAlt} className="absolute inset-0 h-full w-full object-cover" src={branch.imageUrl} />
+
+      {/* Right Column: Photo with Sleek Map Badge */}
+      <div className={`relative min-h-[300px] overflow-hidden lg:min-h-full ${flipped ? 'lg:order-1' : ''}`}>
+        <img
+          alt={branch.imageAlt}
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          src={branch.imageUrl}
+        />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
         <a
-          className={`absolute bottom-[26px] left-[28px] inline-flex min-h-[58px] items-center overflow-hidden rounded-md bg-white text-[13px] font-extrabold text-[#005687] shadow-[0_12px_26px_rgba(15,23,42,0.14)] transition hover:text-[#3695B9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9] ${
-            flipped ? '' : 'lg:left-8'
-          }`}
+          className="group/map absolute bottom-5 left-5 inline-flex items-center gap-2.5 rounded-full bg-white/95 px-4 py-2.5 text-[12px] font-bold text-[#005687] shadow-[0_8px_20px_rgba(15,23,42,0.14)] backdrop-blur-md transition duration-200 hover:bg-[#3695B9] hover:text-white"
           href={branch.mapUrl}
+          rel="noopener noreferrer"
+          target="_blank"
         >
-          <span className="grid h-[58px] w-[58px] place-items-center bg-[#eef8fb]">
-            <AssetIcon className="size-[22px]" name="branch-card-pin-alt.svg" />
+          <span className="grid size-6 place-items-center rounded-full bg-[#edf7fb] text-[#3695B9] transition group-hover/map:bg-white/20 group-hover/map:text-white">
+            <AssetIcon className="size-3" name="branch-card-pin-alt.svg" />
           </span>
-          <span className="px-[22px]">{branch.mapLabel}</span>
+          <span>{branch.mapLabel}</span>
+          <svg
+            aria-hidden="true"
+            className="size-3.5 opacity-60 transition group-hover/map:translate-x-0.5 group-hover/map:opacity-100"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2.5"
+            viewBox="0 0 24 24"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
         </a>
       </div>
     </Card>
@@ -289,13 +303,13 @@ function BranchCard({
 
 function BranchesList({ content }: { content: BranchesPageContent }) {
   return (
-    <section className="bg-[#eef5f8] pb-[96px] pt-16">
+    <section className="bg-[#eef5f8] pb-14 pt-12 sm:pb-16 sm:pt-14">
       <SectionIntro
         description={content.sections.branchesDescription}
         eyebrow={content.sections.branchesEyebrow}
         title={content.sections.branchesTitle}
       />
-      <div className="mx-auto mt-[66px] grid w-full max-w-[1280px] gap-[62px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto mt-10 grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:px-8">
         {content.branches.map((branch, index) => (
           <BranchCard branch={branch} flipped={index % 2 === 1} key={branch.name} />
         ))}

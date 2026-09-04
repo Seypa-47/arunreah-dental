@@ -37,6 +37,32 @@ Cookies use `HttpOnly`, `SameSite=Lax`, `Path=/`, a seven-day expiry, and
 will be deployed as same-site HTTPS subdomains. If that changes, review cookie
 and CORS settings before deployment.
 
+## Frontend session integration
+
+The web app resolves the current session through `GET /api/auth/me` and keeps
+only the safe admin identity (`id`, `name`, `email`, and `role`) in React Query
+memory. It never stores a password or session token in local storage/session
+storage; the browser manages the HttpOnly cookie.
+
+`/admin/*` routes redirect signed-out visitors to `/admin/login`, then return
+them only to a safe admin path after a successful login. Navigation and route
+visibility mirror the role returned by `/api/auth/me`:
+
+- `RECEPTIONIST`: appointment operations.
+- `CMS_ADMIN`: CMS/content operations.
+- `SUPER_ADMIN`: both groups.
+
+These checks are UX only—the Worker RBAC middleware remains the authorization
+boundary and must still return `401`/`403` for direct API requests.
+
+For local browser testing, run the API and web app with the documented local
+origins. The temporary `workers.dev` staging Worker is cross-site relative to a
+future Pages domain, while the session cookie intentionally uses `SameSite=Lax`.
+Use same-site HTTPS custom subdomains for staging (for example,
+`admin.staging.example.com` and `api.staging.example.com`) before relying on
+browser cookie authentication there. Do not weaken the cookie policy or place
+session secrets in `VITE_*` variables to work around this.
+
 ## First super-admin bootstrap
 
 1. Apply migrations to the target environment.

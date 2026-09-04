@@ -11,6 +11,10 @@ pnpm dev
 
 Visit `http://localhost:5173` and `http://localhost:8787/api/health`.
 
+See [the frontend API foundation](frontend-api-foundation.md) for the public
+frontend environment value, health-client usage, and safe local/staging
+SUPER_ADMIN bootstrap instructions.
+
 ## Workspace commands
 
 Run all checks before submitting a pull request:

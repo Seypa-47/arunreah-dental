@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { AboutPage } from '@/features/about-page/AboutPage';
 import { AdminLoginPage } from '@/features/admin-login-page/AdminLoginPage';
 import { AdminInboxPage } from '@/features/admin-inbox-page/AdminInboxPage';
@@ -20,63 +21,68 @@ import { DoctorsPage } from '@/features/doctors-page/DoctorsPage';
 import { LandingPage } from '@/features/landing-page/LandingPage';
 import { ServiceDetailPage } from '@/features/service-detail-page/ServiceDetailPage';
 import { ServicesPage } from '@/features/services-page/ServicesPage';
+import { RedirectAuthenticatedAdmin, RequireAdminRoute } from '@/features/admin-auth/admin-route-guard';
+
+const protectedAdminRoute = (element: ReactNode) => (
+  <RequireAdminRoute>{element}</RequireAdminRoute>
+);
 
 export const router = createBrowserRouter([
   {
     path: '/admin/login',
-    element: <AdminLoginPage />,
+    element: <RedirectAuthenticatedAdmin><AdminLoginPage /></RedirectAuthenticatedAdmin>,
   },
   {
     path: '/admin/dashboard',
-    element: <AdminDashboardPage />,
+    element: protectedAdminRoute(<AdminDashboardPage />),
   },
   {
     path: '/admin/appointments/calendar',
-    element: <AdminCalendarPage />,
+    element: protectedAdminRoute(<AdminCalendarPage />),
   },
   {
     path: '/admin/appointments',
-    element: <AdminAllAppointmentsPage />,
+    element: protectedAdminRoute(<AdminAllAppointmentsPage />),
   },
   {
     path: '/admin/appointments/inbox',
-    element: <AdminInboxPage />,
+    element: protectedAdminRoute(<AdminInboxPage />),
   },
   {
     path: '/admin/services',
-    element: <AdminServicesPage />,
+    element: protectedAdminRoute(<AdminServicesPage />),
   },
   {
     path: '/admin/services/:serviceId/edit',
-    element: <AdminServiceDetailPage />,
+    element: protectedAdminRoute(<AdminServiceDetailPage />),
   },
   {
     path: '/admin/doctors/new',
-    element: <AdminAddDoctorPage />,
+    element: protectedAdminRoute(<AdminAddDoctorPage />),
   },
   {
     path: '/admin/doctors',
-    element: <AdminDoctorsPage />,
+    element: protectedAdminRoute(<AdminDoctorsPage />),
   },
   {
     path: '/admin/showcase/new',
-    element: <AdminAddShowcasePage />,
+    element: protectedAdminRoute(<AdminAddShowcasePage />),
   },
   {
     path: '/admin/showcase',
-    element: <AdminShowcasePage />,
+    element: protectedAdminRoute(<AdminShowcasePage />),
   },
   {
     path: '/admin/clinic-info',
-    element: <AdminClinicInfoPage initialTab="clinic" />,
+    element: protectedAdminRoute(<AdminClinicInfoPage initialTab="clinic" />),
   },
   {
     path: '/admin/clinic-info/branches',
-    element: <AdminClinicInfoPage initialTab="branches" />,
+    element: protectedAdminRoute(<AdminClinicInfoPage initialTab="branches" />),
   },
   {
     path: '/admin/clinic-info/contact',
-    element: <AdminClinicInfoPage initialTab="contact" />,
+    element: protectedAdminRoute(<AdminClinicInfoPage initialTab="contact" />),
   },
   {
     path: '/',
