@@ -102,20 +102,20 @@ function ServiceHero({ service }: { service: ServiceDetail }) {
   const navigate = useNavigate();
 
   return (
-    <section className="bg-white pb-[88px] pt-[64px]">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_520px] lg:items-center lg:px-8">
+    <section className="bg-white pb-10 pt-12">
+      <div className="mx-auto grid w-full max-w-[1280px] gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_480px] lg:items-center lg:px-8">
         <div>
-          <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[1px] text-[#3695b9]">{service.hero.eyebrow}</p>
-          <h1 className="mt-8 max-w-[620px] text-[44px] font-extrabold leading-[56px] text-[#005687] sm:text-[56px] sm:leading-[70px]">
+          <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{service.hero.eyebrow}</p>
+          <h1 className="mt-4 max-w-[620px] text-[30px] font-extrabold leading-9 text-[#005687] sm:text-[34px] sm:leading-10">
             {service.hero.title}
           </h1>
-          <p className="mt-5 max-w-[560px] text-[17px] font-medium leading-8 text-[#6b7280]">{service.hero.subtitle}</p>
-          <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-            <Button className="min-h-[54px] rounded-md px-8 text-[13px]" onClick={() => navigate('/book-appointment')}>
+          <p className="mt-3 max-w-[540px] text-[14px] font-normal leading-6 text-[#6b7280]">{service.hero.subtitle}</p>
+          <div className="mt-7 flex flex-col gap-4 sm:flex-row">
+            <Button className="min-h-[44px] rounded-full px-7 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.22)]" onClick={() => navigate('/book-appointment')}>
               {service.hero.appointmentLabel}
             </Button>
             <Button
-              className="min-h-[54px] rounded-md border border-[#d8e6ee] px-8 text-[13px] text-[#005687] shadow-none hover:border-[#c4dfeb]"
+              className="min-h-[44px] rounded-full border border-[#d8e6ee] px-7 text-[14px] font-bold text-[#005687] shadow-none hover:border-[#3695B9]"
               onClick={() => navigate('/contact')}
               variant="secondary"
             >
@@ -123,8 +123,8 @@ function ServiceHero({ service }: { service: ServiceDetail }) {
             </Button>
           </div>
         </div>
-        <div className="overflow-hidden rounded-[32px] border-[8px] border-[#d9edf4] bg-[#edf5f8] shadow-[0_18px_38px_rgba(15,23,42,0.16)]">
-          <img alt={service.hero.imageAlt} className="h-[420px] w-full object-cover" src={service.hero.imageUrl} />
+        <div className="overflow-hidden rounded-2xl border-[6px] border-[#d9edf4] bg-[#edf5f8] shadow-[0_12px_28px_rgba(15,23,42,0.12)]">
+          <img alt={service.hero.imageAlt} className="h-[340px] w-full object-cover" src={service.hero.imageUrl} />
         </div>
       </div>
     </section>
@@ -135,25 +135,25 @@ function GlanceCard({ glance }: { glance: ServiceDetail['glance'] }) {
   const navigate = useNavigate();
 
   return (
-    <Card className="rounded-2xl border-[#edf2f7] bg-white p-8 shadow-none">
-      <h2 className="flex items-center gap-3 text-[22px] font-extrabold leading-7 text-[#005687]">
-        <CalendarIcon className="size-[17px]" />
+    <Card className="rounded-xl border-[#edf2f7] bg-white p-6 shadow-none">
+      <h2 className="flex items-center gap-3 text-[18px] font-extrabold leading-6 text-[#005687]">
+        <CalendarIcon className="size-4" />
         {glance.title}
       </h2>
-      <div className="mt-7 space-y-6">
+      <div className="mt-5 space-y-4">
         {glance.items.map((item) => (
-          <div className="flex items-start gap-4" key={item.label}>
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9]">
-              <DetailIcon className="size-[16px]" name={item.icon} />
+          <div className="flex items-start gap-3.5" key={item.label}>
+            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695B9]">
+              <DetailIcon className="size-3.5" name={item.icon} />
             </span>
             <div>
-              <p className="text-[13px] font-extrabold leading-5 text-[#0c2243]">{item.label}</p>
-              <p className="text-[12px] font-medium leading-5 text-[#6b7280]">{item.description}</p>
+              <p className="text-[13px] font-bold leading-5 text-[#005687]">{item.label}</p>
+              <p className="text-[12px] font-normal leading-4 text-[#6b7280]">{item.description}</p>
             </div>
           </div>
         ))}
       </div>
-      <Button className="mt-8 min-h-[48px] w-full rounded-md text-[13px]" onClick={() => navigate('/book-appointment')}>
+      <Button className="mt-6 min-h-[44px] w-full rounded-full text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.22)]" onClick={() => navigate('/book-appointment')}>
         {glance.actionLabel}
       </Button>
     </Card>
@@ -162,16 +162,16 @@ function GlanceCard({ glance }: { glance: ServiceDetail['glance'] }) {
 
 function AboutService({ service }: { service: ServiceDetail }) {
   return (
-    <section className="bg-[#f7fafc] py-[84px]">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_420px] lg:px-8">
+    <section className="bg-[#f7fafc] py-12 sm:py-14">
+      <div className="mx-auto grid w-full max-w-[1280px] gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_380px] lg:px-8">
         <article>
-          <h2 className="text-[32px] font-extrabold leading-10 text-[#005687]">{service.about.title}</h2>
-          <div className="mt-7 space-y-5 text-[15px] font-medium leading-7 text-[#6b7280]">
+          <h2 className="text-[26px] font-extrabold leading-8 text-[#005687] sm:text-[28px]">{service.about.title}</h2>
+          <div className="mt-5 space-y-4 text-[14px] font-normal leading-6 text-[#6b7280]">
             {service.about.paragraphs.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
-          <img alt={service.about.imageAlt} className="mt-10 h-[335px] w-full rounded-md object-cover" src={service.about.imageUrl} />
+          <img alt={service.about.imageAlt} className="mt-8 h-[280px] w-full rounded-xl object-cover" src={service.about.imageUrl} />
         </article>
         <aside>
           <GlanceCard glance={service.glance} />
@@ -183,20 +183,20 @@ function AboutService({ service }: { service: ServiceDetail }) {
 
 function BenefitsSection({ benefits, title }: Pick<ServiceDetail, 'benefits'> & { title: string }) {
   return (
-    <section className="bg-white py-[82px] text-center">
+    <section className="bg-white py-12 text-center sm:py-14">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <h2 className="text-[32px] font-extrabold leading-10 text-[#005687]">Benefits of {title}</h2>
-        <p className="mx-auto mt-4 max-w-[620px] text-[13px] font-medium leading-6 text-[#6b7280]">
+        <h2 className="text-[26px] font-extrabold leading-8 text-[#005687] sm:text-[28px]">Benefits of {title}</h2>
+        <p className="mx-auto mt-2 max-w-[580px] text-[13px] font-normal leading-5 text-[#6b7280]">
           Discover why this treatment is trusted for improving oral health, comfort, and confidence.
         </p>
-        <div className="mt-[58px] grid gap-8 text-left sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-6 text-left sm:grid-cols-2 lg:grid-cols-3">
           {benefits.map((benefit) => (
-            <Card className="min-h-[198px] rounded-xl border-[#edf2f7] bg-white p-8 shadow-none" key={benefit.title}>
-              <span className="grid size-11 place-items-center rounded-lg bg-[#eef8fb] text-[#3695b9]">
-                <DetailIcon className="size-[18px]" name={benefit.icon} />
+            <Card className="min-h-[160px] rounded-xl border-[#edf2f7] bg-white p-6 shadow-none" key={benefit.title}>
+              <span className="grid size-10 place-items-center rounded-lg bg-[#eef8fb] text-[#3695B9]">
+                <DetailIcon className="size-4" name={benefit.icon} />
               </span>
-              <h3 className="mt-7 text-[16px] font-extrabold leading-6 text-[#0c2243]">{benefit.title}</h3>
-              <p className="mt-3 text-[13px] font-medium leading-6 text-[#6b7280]">{benefit.description}</p>
+              <h3 className="mt-4 text-[15px] font-bold leading-5 text-[#005687]">{benefit.title}</h3>
+              <p className="mt-2 text-[13px] font-normal leading-5 text-[#6b7280]">{benefit.description}</p>
             </Card>
           ))}
         </div>
@@ -207,36 +207,40 @@ function BenefitsSection({ benefits, title }: Pick<ServiceDetail, 'benefits'> & 
 
 function OtherServiceCard({ service }: { service: LandingService }) {
   return (
-    <Card className="rounded-xl border-[#edf2f7] bg-white p-5 shadow-none">
-      <img alt={service.imageAlt} className="h-[170px] w-full rounded-lg object-cover" src={service.imageUrl} />
-      <h3 className="mt-5 text-[16px] font-extrabold leading-6 text-[#0c2243]">{service.name}</h3>
-      <p className="mt-2 min-h-[54px] text-[12px] font-medium leading-5 text-[#6b7280]">{service.description}</p>
-      <Link
-        className="mt-5 inline-flex items-center gap-2 text-[12px] font-extrabold leading-4 text-[#3695b9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
-        to={`/services/${serviceSlug(service.name)}`}
-      >
-        View Service
-        <ArrowIcon />
-      </Link>
+    <Card className="flex h-[354px] flex-col overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
+      <img alt={service.imageAlt} className="h-[210px] w-full bg-[#eaf2f6] object-cover" src={service.imageUrl} />
+      <div className="flex flex-1 flex-col justify-between p-4">
+        <div>
+          <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{service.name}</h3>
+          <p className="mt-1 line-clamp-2 text-[12px] font-medium leading-[18px] text-[#6b7280]">{service.description}</p>
+        </div>
+        <Link
+          className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#3695B9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+          to={`/services/${serviceSlug(service.name)}`}
+        >
+          View Service
+          <ArrowIcon />
+        </Link>
+      </div>
     </Card>
   );
 }
 
 function OtherServices({ services }: { services: LandingService[] }) {
   return (
-    <section className="bg-[#f7fafc] py-[70px]">
+    <section className="bg-[#f7fafc] py-12 sm:py-14">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex items-end justify-between">
           <div>
-            <h2 className="text-[30px] font-extrabold leading-9 text-[#005687]">Explore Other Services</h2>
-            <p className="mt-3 text-[13px] font-medium leading-6 text-[#6b7280]">Complementary treatments to enhance your oral health.</p>
+            <h2 className="text-[26px] font-extrabold leading-8 text-[#005687] sm:text-[28px]">Explore Other Services</h2>
+            <p className="mt-1 text-[13px] font-normal leading-5 text-[#6b7280]">Complementary treatments to enhance your oral health.</p>
           </div>
-          <Link className="hidden text-[12px] font-extrabold text-[#3695b9] hover:text-[#005687] sm:inline-flex" to="/services">
-            View All Services
+          <Link className="hidden text-[13px] font-bold text-[#3695B9] hover:text-[#005687] sm:inline-flex" to="/services">
+            All Services
           </Link>
         </div>
-        <div className="mt-9 grid gap-8 md:grid-cols-3">
-          {services.map((service) => (
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {services.slice(0, 3).map((service) => (
             <OtherServiceCard key={service.name} service={service} />
           ))}
         </div>
@@ -312,11 +316,11 @@ function ServiceDetailEmpty() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No service</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">Service detail is unavailable</h1>
-        <p className="mt-3 text-[#62798b]">Please return to the services page and choose another treatment.</p>
+        <Badge>No content</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">Service detail is unavailable</h1>
+        <p className="mt-3 text-[#6b7280]">Please return to the services page and choose another treatment.</p>
         <Link
-          className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695b9] px-5 text-sm font-extrabold text-white hover:bg-[#2f8fb0]"
+          className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695B9] px-5 text-sm font-extrabold text-white hover:bg-[#2c84a5]"
           to="/services"
         >
           Back to Services
@@ -331,8 +335,8 @@ function ServiceDetailError({ onRetry }: { onRetry: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">We could not load this service</h1>
-        <p className="mt-3 text-[#62798b]">Try again to refresh the treatment information.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load this service</h1>
+        <p className="mt-3 text-[#6b7280]">Try again to refresh the treatment information.</p>
         <Button className="mt-6" onClick={onRetry} type="button">
           Retry
         </Button>
