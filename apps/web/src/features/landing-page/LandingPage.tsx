@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -249,6 +249,12 @@ function ServicesSection({ services }: { services: LandingService[] }) {
     }
   };
 
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [services]);
+
   const handleScroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const scrollDistance = 280;
@@ -392,32 +398,157 @@ function ServicesSection({ services }: { services: LandingService[] }) {
 }
 
 function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeftStart = useRef(0);
+  const hasMoved = useRef(false);
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { clientWidth, scrollLeft, scrollWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [doctors]);
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollDistance = 280;
+      scrollRef.current.scrollBy({
+        behavior: 'smooth',
+        left: direction === 'left' ? -scrollDistance : scrollDistance,
+      });
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    isDragging.current = true;
+    hasMoved.current = false;
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeftStart.current = scrollRef.current.scrollLeft;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !scrollRef.current) return;
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.2;
+    if (Math.abs(walk) > 5) {
+      hasMoved.current = true;
+    }
+    scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    isDragging.current = false;
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!scrollRef.current) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 5) {
+      scrollRef.current.scrollLeft += e.deltaY;
+    }
+  };
+
   return (
-    <section className="bg-[#f7fafc] pb-[48px] pt-[56px]" id="doctors">
-      <SectionHeader actionHref="/doctors" actionLabel="See All Doctors" title="Meet Our Specialists" />
-      <div className="mx-auto mt-[60px] grid w-full max-w-[1280px] gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-        {doctors.map((doctor) => (
-          <Card
-            className="h-[354px] overflow-hidden rounded-lg border-[#edf2f7] shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-            key={doctor.name}
-          >
+    <section className="bg-[#f7fafc] pb-[64px] pt-[56px]" id="doctors">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
+              Expert Team
+            </p>
+            <h2 className="text-[30px] font-extrabold leading-9 text-[#005687]">Meet Our Specialists</h2>
+          </div>
+          <div className="flex items-center gap-5">
             <Link
-              aria-label="View all doctors"
-              className="block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+              className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#3695B9] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:inline-flex"
               to="/doctors"
             >
-              <img
-                alt={doctor.imageAlt}
-                className="h-[256px] w-full bg-[#eaf2f6] object-cover object-top"
-                src={doctor.imageUrl}
-              />
-              <div className="flex h-[76px] flex-col justify-center px-4 py-3">
-                <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{doctor.name}</h3>
-                <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695B9]">{doctor.specialty}</p>
-              </div>
+              See All Doctors
+              <ArrowIcon />
             </Link>
-          </Card>
-        ))}
+            <div className="flex items-center gap-2">
+              <button
+                aria-label="Scroll specialists left"
+                className={`grid size-9 place-items-center rounded-full border transition duration-200 ${
+                  canScrollLeft
+                    ? 'border-[#3695B9] text-[#3695B9] hover:bg-[#f0f9fa]'
+                    : 'cursor-not-allowed border-[#e2e8f0] text-[#cbd5e1]'
+                }`}
+                disabled={!canScrollLeft}
+                onClick={() => handleScroll('left')}
+                type="button"
+              >
+                ‹
+              </button>
+              <button
+                aria-label="Scroll specialists right"
+                className={`grid size-9 place-items-center rounded-full transition duration-200 ${
+                  canScrollRight
+                    ? 'bg-[#3695B9] text-white shadow-sm hover:bg-[#2c84a5]'
+                    : 'cursor-not-allowed bg-[#e2e8f0] text-[#94a3b8]'
+                }`}
+                disabled={!canScrollRight}
+                onClick={() => handleScroll('right')}
+                type="button"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="no-scrollbar mt-6 flex cursor-grab gap-6 overflow-x-auto px-1.5 py-4 scroll-smooth active:cursor-grabbing select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          data-scroll-container
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseUpOrLeave}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUpOrLeave}
+          onScroll={checkScroll}
+          onWheel={handleWheel}
+          ref={scrollRef}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {doctors.map((doctor) => (
+            <Card
+              className="h-[354px] w-[286px] shrink-0 overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
+              key={doctor.name}
+            >
+              <Link
+                aria-label={`View profile for ${doctor.name}`}
+                className="block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+                onClick={(e) => {
+                  if (hasMoved.current) {
+                    e.preventDefault();
+                  }
+                }}
+                to={doctor.detail?.profileHref || '/doctors'}
+              >
+                <img
+                  alt={doctor.imageAlt}
+                  className="pointer-events-none h-[256px] w-full bg-[#eaf2f6] object-cover object-top"
+                  draggable={false}
+                  src={doctor.imageUrl}
+                />
+                <div className="flex h-[98px] flex-col justify-center px-4 py-3">
+                  <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{doctor.name}</h3>
+                  <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695B9]">{doctor.specialty}</p>
+                </div>
+              </Link>
+            </Card>
+          ))}
+        </div>
       </div>
     </section>
   );
