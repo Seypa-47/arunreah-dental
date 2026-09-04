@@ -50,7 +50,7 @@ function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
           src={doctor.imageUrl}
         />
         <div className="flex min-h-[174px] flex-col bg-white px-5 py-5">
-          <h2 className="text-[17px] font-extrabold leading-6 text-[#0c2243]">{doctor.name}</h2>
+          <h2 className="text-[17px] font-extrabold leading-6 text-[#005687]">{doctor.name}</h2>
           {doctor.credential ? (
             <p className="mt-3 text-[11px] font-extrabold uppercase leading-4 text-[#3695b9]">
               {doctor.credential}
@@ -115,9 +115,9 @@ function DoctorsPageEmpty() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No doctors</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">Doctor profiles are unavailable</h1>
-        <p className="mt-3 text-[#62798b]">Please check the content source and try again.</p>
+        <Badge>No content</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">Doctor profiles are unavailable</h1>
+        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
       </Card>
     </main>
   );
@@ -128,8 +128,8 @@ function DoctorsPageError({ onRetry }: { onRetry: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">We could not load the doctors page</h1>
-        <p className="mt-3 text-[#62798b]">Try again to refresh the doctor profiles.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the doctors page</h1>
+        <p className="mt-3 text-[#6b7280]">Try again to refresh the doctor profiles.</p>
         <Button className="mt-6" onClick={onRetry} type="button">
           Retry
         </Button>

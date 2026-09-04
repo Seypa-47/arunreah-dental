@@ -59,14 +59,14 @@ function ServiceCard({ service }: { service: LandingService }) {
         />
         <div className="flex flex-1 flex-col justify-between p-4">
           <div>
-            <h2 className="text-[15px] font-semibold leading-5 text-[#0c2243] transition-colors group-hover:text-[#3695b9]">
+            <h2 className="text-[15px] font-semibold leading-5 text-[#005687] transition-colors group-hover:text-[#3695B9]">
               {service.name}
             </h2>
             <p className="mt-2 text-[13px] font-medium leading-[20px] text-[#6b7280]">
               {service.description}
             </p>
           </div>
-          <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3695b9] transition group-hover:text-[#2187a8]">
+          <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3695B9] transition group-hover:text-[#005687]">
             Learn More
             <svg
               aria-hidden="true"
@@ -89,34 +89,36 @@ function ServiceCard({ service }: { service: LandingService }) {
 
 function ServicesGrid({ services }: { services: LandingService[] }) {
   return (
-    <section aria-label="Dental services" className="bg-white pb-[84px]">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 sm:grid-cols-2 lg:grid-cols-4 sm:px-6 lg:px-8">
-        {services.map((service) => (
-          <ServiceCard key={service.name} service={service} />
-        ))}
+    <section className="bg-white pb-[96px] pt-4">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {services.map((service) => (
+            <ServiceCard key={service.name} service={service} />
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
-function ConsultationCta({ cta }: { cta: ServicesPageContent['cta'] }) {
+function ServicesCta({ cta }: { cta: ServicesPageContent['cta'] }) {
   const navigate = useNavigate();
 
   return (
     <section className="bg-[#f7fafc] px-4 py-[88px] sm:px-6">
-      <Card className="mx-auto max-w-[960px] rounded-[22px] border-[#e5edf2] bg-white px-6 py-[56px] text-center shadow-[0_2px_6px_rgba(15,23,42,0.04)] sm:px-12">
+      <Card className="mx-auto max-w-[960px] rounded-[22px] border-[#edf2f7] bg-white px-6 py-[56px] text-center shadow-[0_2px_6px_rgba(15,23,42,0.04)] sm:px-12">
         <h2 className="text-[30px] font-extrabold leading-9 text-[#005687]">{cta.title}</h2>
         <p className="mx-auto mt-5 max-w-[680px] text-[18px] font-medium leading-8 text-[#6b7280]">{cta.description}</p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
-            className="min-h-[56px] w-full rounded-xl px-9 text-[15px] shadow-[0_16px_24px_rgba(58,167,200,0.24)] sm:w-auto"
+            className="min-h-[56px] w-full rounded-xl px-9 text-[15px] shadow-[0_10px_22px_rgba(54,149,185,0.22)] sm:w-auto"
             onClick={() => navigate('/book-appointment')}
             type="button"
           >
             {cta.consultationLabel}
           </Button>
           <Button
-            className="min-h-[56px] w-full rounded-xl border border-[#d8e6ee] px-9 text-[15px] text-[#3695b9] shadow-none hover:border-[#c4dfeb] sm:w-auto"
+            className="min-h-[56px] w-full rounded-xl border border-[#d8e6ee] px-9 text-[15px] text-[#3695B9] shadow-none hover:border-[#3695B9] sm:w-auto"
             onClick={() => navigate('/contact')}
             type="button"
             variant="secondary"
@@ -135,7 +137,7 @@ function ServicesPageView({ content }: { content: ServicesPageContent }) {
       <main>
         <ServicesHero hero={content.hero} />
         <ServicesGrid services={content.services} />
-        <ConsultationCta cta={content.cta} />
+        <ServicesCta cta={content.cta} />
       </main>
       <SiteFooter {...content.footer} />
     </SiteLayout>
@@ -146,16 +148,16 @@ function ServicesPageSkeleton() {
   return (
     <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
       <main aria-busy="true" aria-label="Loading services page" className="bg-white">
-        <section className="pb-[70px] pt-[96px]">
-          <div className="mx-auto max-w-[680px] px-4 text-center">
-            <div className="mx-auto h-12 w-72 animate-pulse rounded-full bg-[#d6ecf3]" />
-            <div className="mx-auto mt-5 h-16 w-full animate-pulse rounded bg-[#edf5f8]" />
-          </div>
+        <section className="px-4 py-[72px] text-center">
+          <div className="mx-auto h-12 w-72 animate-pulse rounded-full bg-[#d6ecf3]" />
+          <div className="mx-auto mt-5 h-16 w-full animate-pulse rounded bg-[#edf5f8]" />
         </section>
-        <section className="mx-auto grid max-w-[1280px] gap-6 px-4 pb-[84px] sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
-          {Array.from({ length: 8 }, (_, index) => (
-            <div className="h-[354px] animate-pulse rounded-lg bg-[#edf5f8]" key={index} />
-          ))}
+        <section className="pb-[96px]">
+          <div className="mx-auto grid max-w-[1280px] gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+            {Array.from({ length: 8 }, (_, index) => (
+              <div className="h-[354px] animate-pulse rounded-lg bg-[#edf5f8]" key={index} />
+            ))}
+          </div>
         </section>
       </main>
     </SiteLayout>
@@ -166,8 +168,8 @@ function ServicesPageEmpty() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No services</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">Service information is unavailable</h1>
+        <Badge>No content</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">Service information is unavailable</h1>
         <p className="mt-3 text-[#62798b]">Please check the content source and try again.</p>
       </Card>
     </main>
@@ -179,7 +181,7 @@ function ServicesPageError({ onRetry }: { onRetry: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">We could not load the services page</h1>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the services page</h1>
         <p className="mt-3 text-[#62798b]">Try again to refresh the service list.</p>
         <Button className="mt-6" onClick={onRetry} type="button">
           Retry

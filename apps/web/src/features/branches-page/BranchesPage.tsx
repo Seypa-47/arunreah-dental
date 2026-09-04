@@ -144,7 +144,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
                       <img alt="" aria-hidden="true" className="size-[14px]" src={item.iconUrl} />
                     )}
                   </span>
-                  <span className="text-[14px] font-extrabold leading-5 text-[#0c2243]">{item.label}</span>
+                  <span className="text-[14px] font-extrabold leading-5 text-[#005687]">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -167,13 +167,13 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
             </span>
             <div>
               <p className="text-[12px] font-medium leading-4 text-[#6b7280]">{metric.label}</p>
-              <p className="text-[16px] font-extrabold leading-5 text-[#0c2243]">{metric.title}</p>
+              <p className="text-[16px] font-extrabold leading-5 text-[#005687]">{metric.title}</p>
               <p className="text-[11px] font-medium leading-4 text-[#6b7280]">{metric.description}</p>
             </div>
           </div>
         ))}
         <Button
-          className="min-h-[62px] rounded-[14px] bg-[#3ca8c7] px-9 text-[16px] shadow-[0_10px_22px_rgba(58,167,200,0.20)] hover:bg-[#329abb]"
+          className="min-h-[62px] rounded-[14px] bg-[#3695B9] px-9 text-[16px] shadow-[0_10px_22px_rgba(54,149,185,0.20)] hover:bg-[#2c84a5]"
           icon={<CalendarIcon />}
           onClick={() => navigate('/book-appointment')}
         >
@@ -237,9 +237,9 @@ function BranchCard({
               <span className="sr-only">Phone</span>
               <AssetIcon className="mt-1 size-[18px]" name="branch-card-phone.svg" />
             </dt>
-            <dd className="flex flex-wrap gap-x-8 gap-y-1 font-extrabold text-[#0c2243]">
+            <dd className="flex flex-wrap gap-x-8 gap-y-1 font-extrabold text-[#005687]">
               {branch.phones.map((phone) => (
-                <a className="hover:text-[#3695b9] hover:underline" href={`tel:${phone.replaceAll(' ', '')}`} key={phone}>
+                <a className="hover:text-[#3695B9] hover:underline" href={`tel:${phone.replaceAll(' ', '')}`} key={phone}>
                   {phone}
                 </a>
               ))}
@@ -252,7 +252,7 @@ function BranchCard({
             </dt>
             <dd>
               <span className="mr-5 text-[#6b7280]">{branch.hoursDays}</span>
-              <span className="font-extrabold text-[#0c2243]">{branch.hoursTime}</span>
+              <span className="font-extrabold text-[#005687]">{branch.hoursTime}</span>
             </dd>
           </div>
         </dl>
@@ -272,7 +272,7 @@ function BranchCard({
       <div className={`relative min-h-[320px] lg:min-h-full ${flipped ? 'lg:order-1' : ''}`}>
         <img alt={branch.imageAlt} className="absolute inset-0 h-full w-full object-cover" src={branch.imageUrl} />
         <a
-          className={`absolute bottom-[26px] left-[28px] inline-flex min-h-[58px] items-center overflow-hidden rounded-md bg-white text-[13px] font-extrabold text-[#0c2243] shadow-[0_12px_26px_rgba(15,23,42,0.14)] transition hover:text-[#3695b9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9] ${
+          className={`absolute bottom-[26px] left-[28px] inline-flex min-h-[58px] items-center overflow-hidden rounded-md bg-white text-[13px] font-extrabold text-[#005687] shadow-[0_12px_26px_rgba(15,23,42,0.14)] transition hover:text-[#3695B9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9] ${
             flipped ? '' : 'lg:left-8'
           }`}
           href={branch.mapUrl}
@@ -317,7 +317,7 @@ function BenefitsSection({ content }: { content: BranchesPageContent }) {
             <span className="mx-auto grid size-[56px] place-items-center rounded-full bg-white shadow-[0_8px_16px_rgba(15,23,42,0.12)] ring-1 ring-[#e6eef3]">
               <img alt="" aria-hidden="true" className="max-h-[25px] max-w-[25px]" src={item.iconUrl} />
             </span>
-            <h3 className="mt-[30px] text-[18px] font-extrabold leading-6 text-[#0c2243]">{item.title}</h3>
+            <h3 className="mt-[30px] text-[18px] font-extrabold leading-6 text-[#005687]">{item.title}</h3>
             <p className="mx-auto mt-[13px] max-w-[230px] text-[16px] font-medium leading-6 text-[#6b7280]">
               {item.description}
             </p>
@@ -333,13 +333,13 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
 
   return (
     <section className="bg-white">
-      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-xl bg-gradient-to-r from-[#16a8b6] to-[#163a5a] px-6 py-11 text-white sm:px-16">
+      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-xl bg-gradient-to-r from-[#3695B9] to-[#005687] px-6 py-11 text-white sm:px-16">
         <img
           alt={cta.backgroundImageAlt}
           className="absolute inset-y-0 right-0 hidden h-full w-[48%] object-cover opacity-25 md:block"
           src={cta.backgroundImageUrl}
         />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#16a8b6] via-[#147d95]/90 to-[#163a5a]/95" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#3695B9]/95 to-[#005687]/95" />
         <div className="relative flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-7">
             <span className="grid size-[78px] shrink-0 place-items-center rounded-full bg-white/16">
@@ -352,7 +352,7 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
             </div>
           </div>
           <Button
-            className="min-h-[58px] rounded-full bg-white px-12 text-[15px] text-[#3695b9] shadow-none hover:bg-[#eef8fb] hover:text-[#2f8cad] focus-visible:outline-white"
+            className="min-h-[58px] rounded-full bg-white px-12 text-[15px] text-[#3695B9] shadow-none hover:bg-[#eef8fb] hover:text-[#005687] focus-visible:outline-white"
             onClick={() => navigate('/book-appointment')}
             variant="secondary"
           >
@@ -398,9 +398,9 @@ function BranchesPageEmpty() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No branches</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">Branch information is unavailable</h1>
-        <p className="mt-3 text-[#62798b]">Please check the content source and try again.</p>
+        <Badge>No content</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">Branch information is unavailable</h1>
+        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
       </Card>
     </main>
   );
@@ -411,8 +411,8 @@ function BranchesPageError({ onRetry }: { onRetry: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">We could not load the branches page</h1>
-        <p className="mt-3 text-[#62798b]">Try again to refresh the clinic locations.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the branches page</h1>
+        <p className="mt-3 text-[#6b7280]">Try again to refresh the clinic locations.</p>
         <Button className="mt-6" onClick={onRetry} type="button">
           Retry
         </Button>

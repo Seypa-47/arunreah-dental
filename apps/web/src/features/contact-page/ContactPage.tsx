@@ -86,7 +86,7 @@ function InfoBlock({ item, compact = false }: { compact?: boolean; item: Contact
       </span>
       <div>
         <p className="text-[12px] font-extrabold leading-4 text-[#3695b9]">{item.label}</p>
-        <p className={`whitespace-pre-line font-extrabold text-[#0c2243] ${compact ? 'text-[14px] leading-5' : 'text-[16px] leading-6'}`}>
+        <p className={`whitespace-pre-line font-extrabold text-[#005687] ${compact ? 'text-[14px] leading-5' : 'text-[16px] leading-6'}`}>
           {item.value}
         </p>
         {!compact && item.description !== item.value ? (
@@ -143,7 +143,7 @@ function ContactCards({ cards }: { cards: ContactPageContent['contactCards'] }) 
 }
 
 const fieldClass =
-  'min-h-[54px] w-full rounded-xl border border-[#d9e6ed] bg-[#f8fbfd] px-4 text-[14px] font-medium text-[#0c2243] outline-none transition placeholder:text-[#94a3b8] focus:border-[#3695b9] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]';
+  'min-h-[54px] w-full rounded-xl border border-[#d9e6ed] bg-[#f8fbfd] px-4 text-[14px] font-medium text-[#005687] outline-none transition placeholder:text-[#94a3b8] focus:border-[#3695B9] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]';
 
 function TextField({
   id,
@@ -256,8 +256,8 @@ function MapsSection({ maps }: { maps: ContactPageContent['maps'] }) {
         {maps.map((map) => (
           <article className="relative overflow-hidden rounded-sm" key={map.imageAlt}>
             <img alt={map.imageAlt} className="h-[360px] w-full object-cover" src={map.imageUrl} />
-            <span className="absolute left-1/2 top-[53%] inline-flex -translate-x-1/2 items-center gap-2 rounded-lg bg-white px-5 py-3 text-[13px] font-extrabold text-[#0c2243] shadow-[0_10px_22px_rgba(15,23,42,0.18)]">
-              <ContactIcon className="size-[14px] text-[#3695b9]" name="location" />
+            <span className="absolute left-1/2 top-[53%] inline-flex -translate-x-1/2 items-center gap-2 rounded-lg bg-white px-5 py-3 text-[13px] font-extrabold text-[#005687] shadow-[0_10px_22px_rgba(15,23,42,0.18)]">
+              <ContactIcon className="size-[14px] text-[#3695B9]" name="location" />
               {map.label}
             </span>
           </article>
@@ -301,9 +301,9 @@ function ContactPageEmpty() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No contact content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">Contact page content is unavailable</h1>
-        <p className="mt-3 text-[#62798b]">Please check the content source and try again.</p>
+        <Badge>No content</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">Contact page content is unavailable</h1>
+        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
       </Card>
     </main>
   );
@@ -314,8 +314,8 @@ function ContactPageError({ onRetry }: { onRetry: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">We could not load the contact page</h1>
-        <p className="mt-3 text-[#62798b]">Try again to refresh the contact information.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the contact page</h1>
+        <p className="mt-3 text-[#6b7280]">Try again to refresh the contact information.</p>
         <Button className="mt-6" onClick={onRetry} type="button">
           Retry
         </Button>

@@ -14,14 +14,14 @@ function FooterLinks({ group }: { group: LandingFooterLinkGroup }) {
             <li key={link.label}>
               {isInternal ? (
                 <Link
-                  className="text-[14px] font-normal leading-[22px] text-[#3c494c] underline hover:text-[#209cc2]"
+                  className="text-[14px] font-normal leading-[22px] text-[#6b7280] underline hover:text-[#3695B9]"
                   to={link.href}
                 >
                   {link.label}
                 </Link>
               ) : (
                 <a
-                  className="text-[14px] font-normal leading-[22px] text-[#3c494c] underline hover:text-[#209cc2]"
+                  className="text-[14px] font-normal leading-[22px] text-[#6b7280] underline hover:text-[#3695B9]"
                   href={link.href}
                 >
                   {link.label}
@@ -45,8 +45,8 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
             className="mb-4 h-auto w-[280px] max-w-full"
             src={asset('footer-logo-cropped.png')}
           />
-          <p className="mb-2 text-[14px] font-bold leading-[22px] text-[#3c494c]">{tagline}</p>
-          <p className="max-w-[285px] text-[12px] font-normal leading-[22px] text-[#3c494c]">{description}</p>
+          <p className="mb-2 text-[14px] font-bold leading-[22px] text-[#005687]">{tagline}</p>
+          <p className="max-w-[285px] text-[12px] font-normal leading-[22px] text-[#6b7280]">{description}</p>
           <div className="mt-6 flex gap-2">
             <a
               aria-label="Visit Arunreah Dental Clinic on Facebook"
@@ -69,12 +69,12 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
           </div>
         </div>
         <div className="lg:w-[220px] lg:pt-4">
-          <h2 className="mb-5 text-[20px] font-semibold leading-[26px] text-[#3695b9]">Our Branches</h2>
+          <h2 className="mb-5 text-[20px] font-semibold leading-[26px] text-[#3695B9]">Our Branches</h2>
           <ul className="space-y-3">
             {branchLinks.map((link) => (
-              <li className="flex items-center gap-4 text-[#3c494c]" key={link.label}>
+              <li className="flex items-center gap-4 text-[#6b7280]" key={link.label}>
                 <img alt="" aria-hidden="true" className="size-5 shrink-0" src={asset('branch-card-pin-alt.svg')} />
-                <Link className="text-[14px] font-normal leading-[22px] hover:text-[#209cc2]" to={link.href}>
+                <Link className="text-[14px] font-normal leading-[22px] hover:text-[#3695B9]" to={link.href}>
                   {link.label}
                 </Link>
               </li>

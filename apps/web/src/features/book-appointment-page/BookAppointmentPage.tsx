@@ -100,7 +100,7 @@ function ChevronIcon({ direction }: { direction: 'left' | 'right' }) {
 }
 
 const fieldClass =
-  'h-[54px] w-full rounded-xl border border-[#d9e4eb] bg-white px-12 text-[14px] font-semibold text-[#0c2243] outline-none transition placeholder:text-[#94a3b8] focus:border-[#3695b9] focus:ring-2 focus:ring-[#d9f0f7]';
+  'h-[54px] w-full rounded-xl border border-[#d9e4eb] bg-white px-12 text-[14px] font-semibold text-[#005687] outline-none transition placeholder:text-[#94a3b8] focus:border-[#3695b9] focus:ring-2 focus:ring-[#d9f0f7]';
 
 function FieldIcon({ name }: { name: IconName }) {
   return (
@@ -133,7 +133,7 @@ function SelectField({
       <div className="relative">
         <FieldIcon name={icon} />
         <select
-          className={`${fieldClass} appearance-none pr-11 text-[#0c2243]`}
+          className={`${fieldClass} appearance-none pr-11 text-[#005687]`}
           id={id}
           name={id}
           onChange={(event) => onChange(event.target.value)}
@@ -224,7 +224,7 @@ function AppointmentCalendar({
         <button aria-label="Previous month" className="text-[#94a3b8] transition hover:text-[#3695b9]" type="button">
           <ChevronIcon direction="left" />
         </button>
-        <h3 className="text-[16px] font-extrabold leading-6 text-[#0c2243]">{calendar.monthLabel}</h3>
+        <h3 className="text-[16px] font-extrabold leading-6 text-[#005687]">{calendar.monthLabel}</h3>
         <button aria-label="Next month" className="text-[#94a3b8] transition hover:text-[#3695b9]" type="button">
           <ChevronIcon direction="right" />
         </button>
@@ -272,7 +272,7 @@ function AvailableTimes({
 }) {
   return (
     <div>
-      <h3 className="mb-6 text-center text-[16px] font-extrabold leading-6 text-[#0c2243]">Available Time</h3>
+      <h3 className="mb-6 text-center text-[16px] font-extrabold leading-6 text-[#005687]">Available Time</h3>
       <div className="space-y-3">
         {times.map((time) => {
           const isSelected = time === selectedTime;
@@ -403,7 +403,7 @@ function SummaryRow({ icon, label, value }: { icon: IconName; label: string; val
     <div className="grid grid-cols-[24px_1fr_auto] items-center gap-5">
       <AppointmentIcon className="size-[17px] text-[#3695b9]" name={icon} />
       <span className="text-[15px] font-medium leading-5 text-[#6b7280]">{label}</span>
-      <span className="text-right text-[15px] font-extrabold leading-5 text-[#0c2243]">{value}</span>
+      <span className="text-right text-[15px] font-extrabold leading-5 text-[#005687]">{value}</span>
     </div>
   );
 }
@@ -430,7 +430,7 @@ function AppointmentSummary({
         <div className="grid grid-cols-[96px_1fr] gap-5">
           <img alt={branch.imageAlt} className="h-[96px] w-[96px] rounded-lg bg-[#e8e8f0] object-cover" src={branch.imageUrl} />
           <div>
-            <h3 className="text-[14px] font-extrabold leading-5 text-[#0c2243]">{branch.name}</h3>
+            <h3 className="text-[14px] font-extrabold leading-5 text-[#005687]">{branch.name}</h3>
             <p className="mt-1 text-[12px] font-medium leading-5 text-[#6b7280]">{branch.address}</p>
             <a
               className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-extrabold text-[#3695b9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
@@ -567,9 +567,9 @@ function BookAppointmentEmpty() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No appointment content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">Appointment information is unavailable</h1>
-        <p className="mt-3 text-[#62798b]">Please check the content source and try again.</p>
+        <Badge>No content</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">Appointment information is unavailable</h1>
+        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
       </Card>
     </main>
   );
@@ -580,8 +580,8 @@ function BookAppointmentError({ onRetry }: { onRetry: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">We could not load booking</h1>
-        <p className="mt-3 text-[#62798b]">Try again to refresh the appointment form.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load booking</h1>
+        <p className="mt-3 text-[#6b7280]">Try again to refresh the appointment form.</p>
         <Button className="mt-6" onClick={onRetry} type="button">
           Retry
         </Button>

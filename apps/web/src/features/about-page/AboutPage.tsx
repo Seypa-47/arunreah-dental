@@ -50,7 +50,7 @@ function StorySection({ stats, story }: Pick<AboutPageContent, 'stats' | 'story'
           />
           <div>
             <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[5px] text-[#3695b9]">{story.eyebrow}</p>
-            <h2 className="mt-3 text-[34px] font-extrabold leading-[42px] text-[#0c2243]">{story.title}</h2>
+            <h2 className="mt-3 text-[34px] font-extrabold leading-[42px] text-[#005687]">{story.title}</h2>
             <div className="mt-2 h-1 w-[88px] rounded-full bg-[#3695b9]" />
             <div className="mt-7 space-y-6 text-[16px] font-medium leading-8 text-[#6b7280]">
               {story.paragraphs.map((paragraph) => (
@@ -68,7 +68,7 @@ function StorySection({ stats, story }: Pick<AboutPageContent, 'stats' | 'story'
             >
               <img alt="" aria-hidden="true" className="size-5" src={stat.iconUrl} />
               <div>
-                <p className="text-[28px] font-extrabold leading-8 text-[#0c2243]">{stat.value}</p>
+                <p className="text-[28px] font-extrabold leading-8 text-[#005687]">{stat.value}</p>
                 <p className="mt-1 text-[11px] font-extrabold uppercase leading-4 text-[#6b7280]">{stat.label}</p>
               </div>
             </div>
@@ -129,7 +129,7 @@ function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences
               <span className="mx-auto grid size-12 place-items-center rounded-lg bg-white">
                 <img alt="" aria-hidden="true" className="max-h-6 max-w-6" src={item.iconUrl} />
               </span>
-              <h3 className="mt-6 text-[16px] font-extrabold leading-6 text-[#0c2243]">{item.title}</h3>
+              <h3 className="mt-6 text-[16px] font-extrabold leading-6 text-[#005687]">{item.title}</h3>
               <p className="mt-3 text-[13px] font-medium leading-5 text-[#6b7280]">{item.description}</p>
             </Card>
           ))}
@@ -164,7 +164,7 @@ function FacilitiesSection({ facilities }: Pick<AboutPageContent, 'facilities'>)
           {facilities.map((facility) => (
             <article key={facility.title}>
               <img alt={facility.imageAlt} className="h-[226px] w-full rounded-xl object-cover" src={facility.imageUrl} />
-              <h3 className="mt-6 text-[18px] font-extrabold leading-6 text-[#0c2243]">{facility.title}</h3>
+              <h3 className="mt-6 text-[18px] font-extrabold leading-6 text-[#005687]">{facility.title}</h3>
               <p className="mt-3 text-[14px] font-medium leading-6 text-[#6b7280]">{facility.description}</p>
             </article>
           ))}
@@ -212,8 +212,8 @@ function AboutPageEmpty() {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">About page content is unavailable</h1>
-        <p className="mt-3 text-[#62798b]">Please check the content source and try again.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">About page content is unavailable</h1>
+        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
       </Card>
     </main>
   );
@@ -224,8 +224,8 @@ function AboutPageError({ onRetry }: { onRetry: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">We could not load the about page</h1>
-        <p className="mt-3 text-[#62798b]">Try again to refresh the clinic story.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the about page</h1>
+        <p className="mt-3 text-[#6b7280]">Try again to refresh the clinic story.</p>
         <Button className="mt-6" onClick={onRetry} type="button">
           Retry
         </Button>

@@ -147,7 +147,7 @@ function GlanceCard({ glance }: { glance: ServiceDetail['glance'] }) {
               <DetailIcon className="size-[16px]" name={item.icon} />
             </span>
             <div>
-              <p className="text-[13px] font-extrabold leading-5 text-[#0c2243]">{item.label}</p>
+              <p className="text-[13px] font-extrabold leading-5 text-[#005687]">{item.label}</p>
               <p className="text-[12px] font-medium leading-5 text-[#6b7280]">{item.description}</p>
             </div>
           </div>
@@ -195,7 +195,7 @@ function BenefitsSection({ benefits, title }: Pick<ServiceDetail, 'benefits'> & 
               <span className="grid size-11 place-items-center rounded-lg bg-[#eef8fb] text-[#3695b9]">
                 <DetailIcon className="size-[18px]" name={benefit.icon} />
               </span>
-              <h3 className="mt-7 text-[16px] font-extrabold leading-6 text-[#0c2243]">{benefit.title}</h3>
+              <h3 className="mt-7 text-[16px] font-extrabold leading-6 text-[#005687]">{benefit.title}</h3>
               <p className="mt-3 text-[13px] font-medium leading-6 text-[#6b7280]">{benefit.description}</p>
             </Card>
           ))}
@@ -209,7 +209,7 @@ function OtherServiceCard({ service }: { service: LandingService }) {
   return (
     <Card className="rounded-xl border-[#edf2f7] bg-white p-5 shadow-none">
       <img alt={service.imageAlt} className="h-[170px] w-full rounded-lg object-cover" src={service.imageUrl} />
-      <h3 className="mt-5 text-[16px] font-extrabold leading-6 text-[#0c2243]">{service.name}</h3>
+      <h3 className="mt-5 text-[16px] font-extrabold leading-6 text-[#005687]">{service.name}</h3>
       <p className="mt-2 min-h-[54px] text-[12px] font-medium leading-5 text-[#6b7280]">{service.description}</p>
       <Link
         className="mt-5 inline-flex items-center gap-2 text-[12px] font-extrabold leading-4 text-[#3695b9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
@@ -312,11 +312,11 @@ function ServiceDetailEmpty() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No service</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">Service detail is unavailable</h1>
-        <p className="mt-3 text-[#62798b]">Please return to the services page and choose another treatment.</p>
+        <Badge>No content</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">Service detail is unavailable</h1>
+        <p className="mt-3 text-[#6b7280]">Please return to the services page and choose another treatment.</p>
         <Link
-          className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695b9] px-5 text-sm font-extrabold text-white hover:bg-[#2f8fb0]"
+          className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695B9] px-5 text-sm font-extrabold text-white hover:bg-[#2c84a5]"
           to="/services"
         >
           Back to Services
@@ -331,8 +331,8 @@ function ServiceDetailError({ onRetry }: { onRetry: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">We could not load this service</h1>
-        <p className="mt-3 text-[#62798b]">Try again to refresh the treatment information.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load this service</h1>
+        <p className="mt-3 text-[#6b7280]">Try again to refresh the treatment information.</p>
         <Button className="mt-6" onClick={onRetry} type="button">
           Retry
         </Button>

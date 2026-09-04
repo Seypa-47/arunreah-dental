@@ -98,7 +98,7 @@ function CertificationCard({
     <Card className="flex min-h-[78px] items-center gap-4 rounded-lg border-[#edf2f7] bg-white p-4 shadow-none">
       <EducationIcon index={index} />
       <div>
-        <h3 className="text-[13px] font-extrabold leading-5 text-[#0c2243]">{certification.title}</h3>
+        <h3 className="text-[13px] font-extrabold leading-5 text-[#005687]">{certification.title}</h3>
         <p className="text-[12px] font-medium leading-5 text-[#6b7280]">{certification.institution}</p>
       </div>
     </Card>
@@ -115,8 +115,8 @@ function OtherSpecialistCard({ doctor }: { doctor: LandingDoctor }) {
       >
         <img alt={doctor.imageAlt} className="h-[186px] w-full bg-[#edf5f8] object-cover object-top" src={doctor.imageUrl} />
         <div className="bg-white px-4 py-3">
-          <h3 className="text-[13px] font-extrabold leading-5 text-[#0c2243]">{doctor.name}</h3>
-          <p className="mt-1 text-[12px] font-semibold leading-4 text-[#3695b9]">{doctor.focus ?? doctor.specialty}</p>
+          <h3 className="text-[13px] font-extrabold leading-5 text-[#005687]">{doctor.name}</h3>
+          <p className="mt-1 text-[12px] font-semibold leading-4 text-[#3695B9]">{doctor.focus ?? doctor.specialty}</p>
         </div>
       </Link>
     </Card>
@@ -150,17 +150,17 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
         </div>
 
         <aside className="space-y-7">
-          <Card className="rounded-2xl border-[#e7eef2] bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
+          <Card className="rounded-2xl border-[#edf2f7] bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
             <h2 className="text-[20px] font-extrabold leading-7 text-[#005687]">Areas of Expertise</h2>
             <ExpertiseList items={doctor.detail.services} />
           </Card>
-          <Card className="rounded-2xl !border-transparent !bg-[#3695b9] p-6 text-white shadow-[0_12px_24px_rgba(54,149,185,0.20)]">
+          <Card className="rounded-2xl !border-transparent !bg-[#3695B9] p-6 text-white shadow-[0_12px_24px_rgba(54,149,185,0.20)]">
             <h2 className="text-[20px] font-extrabold leading-7">Schedule an Appointment</h2>
             <p className="mt-4 text-[13px] font-medium leading-5 text-white/75">
               Select a convenient time for your consultation with {doctor.name}.
             </p>
             <Button
-              className="mt-6 min-h-[42px] w-full rounded-lg bg-[#2fc0d2] text-[13px] font-extrabold hover:bg-[#26adbd]"
+              className="mt-6 min-h-[42px] w-full rounded-lg bg-white text-[13px] font-extrabold text-[#3695B9] hover:bg-[#eef8fb]"
               onClick={() => navigate('/book-appointment')}
             >
               Book Now
@@ -245,9 +245,15 @@ function DoctorDetailEmpty() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No profile</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">Doctor profile is unavailable</h1>
-        <p className="mt-3 text-[#62798b]">Please return to the doctors page and choose another profile.</p>
+        <Badge>No doctor</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">Doctor profile is unavailable</h1>
+        <p className="mt-3 text-[#6b7280]">Please return to the doctors page and choose another profile.</p>
+        <Link
+          className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695B9] px-5 text-sm font-extrabold text-white hover:bg-[#2c84a5]"
+          to="/doctors"
+        >
+          View All Doctors
+        </Link>
       </Card>
     </main>
   );
@@ -258,8 +264,8 @@ function DoctorDetailError({ onRetry }: { onRetry: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">We could not load this doctor profile</h1>
-        <p className="mt-3 text-[#62798b]">Try again to refresh the profile information.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load this doctor profile</h1>
+        <p className="mt-3 text-[#6b7280]">Try again to refresh the profile information.</p>
         <Button className="mt-6" onClick={onRetry}>
           Retry
         </Button>

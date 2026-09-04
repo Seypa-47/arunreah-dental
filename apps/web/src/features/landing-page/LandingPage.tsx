@@ -96,7 +96,7 @@ function SectionHeader({
       </div>
       {align === 'left' ? (
         <Link
-          className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#35a6c7] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2f9fbe] sm:inline-flex"
+          className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#3695B9] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:inline-flex"
           to={actionHref}
         >
           {actionLabel}
@@ -140,7 +140,7 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
             </div>
             <div className="flex items-center justify-center border-t border-white/20 bg-[#3695b9] px-[28.5px] py-[21px] md:border-r md:border-t-0">
               <Button
-                className="min-h-[50px] w-full max-w-[234px] rounded-xl border border-[#009fb2] text-[16px] font-bold text-[#3696b9]"
+                className="min-h-[50px] w-full max-w-[234px] rounded-xl border border-[#3695B9] text-[16px] font-bold text-[#3695B9]"
                 icon={<AssetIcon className="h-4 w-[14px]" name="hero-calendar.svg" />}
                 onClick={() => navigate('/book-appointment')}
                 variant="secondary"
@@ -300,7 +300,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
           </div>
           <div className="flex items-center gap-5">
             <Link
-              className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#35a6c7] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2f9fbe] sm:inline-flex"
+              className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#3695B9] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:inline-flex"
               to="/services"
             >
               See All Services
@@ -311,7 +311,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                 aria-label="Scroll services left"
                 className={`grid size-9 place-items-center rounded-full border transition duration-200 ${
                   canScrollLeft
-                    ? 'border-[#3695b9] text-[#3695b9] hover:bg-[#f0f9fa]'
+                    ? 'border-[#3695B9] text-[#3695B9] hover:bg-[#f0f9fa]'
                     : 'cursor-not-allowed border-[#e2e8f0] text-[#cbd5e1]'
                 }`}
                 disabled={!canScrollLeft}
@@ -324,7 +324,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                 aria-label="Scroll services right"
                 className={`grid size-9 place-items-center rounded-full transition duration-200 ${
                   canScrollRight
-                    ? 'bg-[#3695b9] text-white shadow-sm hover:bg-[#2e84a5]'
+                    ? 'bg-[#3695B9] text-white shadow-sm hover:bg-[#2c84a5]'
                     : 'cursor-not-allowed bg-[#e2e8f0] text-[#94a3b8]'
                 }`}
                 disabled={!canScrollRight}
@@ -376,8 +376,8 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                     src={service.imageUrl}
                   />
                   <div className="flex h-[108px] flex-col justify-center px-4 py-3">
-                    <h3 className="text-[14px] font-semibold leading-5 text-[#0c2243]">{service.name}</h3>
-                    <p className="mt-1 line-clamp-2 text-[12px] font-medium leading-[18px] text-[#3695b9]">
+                    <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{service.name}</h3>
+                    <p className="mt-1 line-clamp-2 text-[12px] font-medium leading-[18px] text-[#6b7280]">
                       {service.description}
                     </p>
                   </div>
@@ -412,8 +412,8 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
                 src={doctor.imageUrl}
               />
               <div className="flex h-[76px] flex-col justify-center px-4 py-3">
-                <h3 className="text-[14px] font-semibold leading-5 text-[#0c2243]">{doctor.name}</h3>
-                <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695b9]">{doctor.specialty}</p>
+                <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{doctor.name}</h3>
+                <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695B9]">{doctor.specialty}</p>
               </div>
             </Link>
           </Card>
@@ -433,7 +433,7 @@ function BranchesSection({ branches }: { branches: LandingBranch[] }) {
 
           return (
             <Card
-              className="grid min-h-[246px] overflow-hidden rounded-2xl border-[#f3f4f6] shadow-[0_1px_2px_rgba(0,0,0,0.05)] md:grid-cols-[345px_1fr]"
+              className="grid min-h-[246px] overflow-hidden rounded-2xl border-[#edf2f7] shadow-[0_1px_2px_rgba(0,0,0,0.05)] md:grid-cols-[345px_1fr]"
               key={branch.name}
             >
               <div className="p-6">
@@ -441,7 +441,7 @@ function BranchesSection({ branches }: { branches: LandingBranch[] }) {
                   <img alt="" aria-hidden="true" className="size-6" src={asset('branch-card-pin.svg')} />
                   {branch.name}
                 </h3>
-                <div className="space-y-4 border-b border-[#f3f4f6] pb-[18px]">
+                <div className="space-y-4 border-b border-[#edf2f7] pb-[18px]">
                   {branch.phones.map((phone) => (
                     <a
                       className="flex items-center gap-3 text-[14px] font-semibold leading-5 text-[#005687] hover:underline"
@@ -476,7 +476,7 @@ function BranchesSection({ branches }: { branches: LandingBranch[] }) {
 
 function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
   return (
-    <section className="mt-[33px] bg-[#3695b9] pb-[54px] pt-[59px] text-white" id="showcase">
+    <section className="mt-[33px] bg-[#3695B9] pb-[54px] pt-[59px] text-white" id="showcase">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="mb-[35px] flex items-end justify-between border-b border-white/30 pb-4">
           <div>
@@ -552,8 +552,8 @@ function LandingPageEmpty() {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">Landing page content is unavailable</h1>
-        <p className="mt-3 text-[#62798b]">Please check the content source and try again.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">Landing page content is unavailable</h1>
+        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
       </Card>
     </main>
   );
@@ -564,8 +564,8 @@ function LandingPageError({ onRetry }: { onRetry: () => void }) {
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
         <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#075a82]">We could not load the landing page</h1>
-        <p className="mt-3 text-[#62798b]">Try again to refresh the clinic content.</p>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the landing page</h1>
+        <p className="mt-3 text-[#6b7280]">Try again to refresh the clinic content.</p>
         <Button className="mt-6" onClick={onRetry}>
           Retry
         </Button>
