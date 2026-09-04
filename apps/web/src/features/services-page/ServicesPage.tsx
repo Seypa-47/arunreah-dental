@@ -26,15 +26,9 @@ function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
         <p className="mb-2 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
           Our Treatments
         </p>
-        <div className="relative mx-auto inline-block">
-          <h1 className="relative z-10 text-[30px] font-extrabold leading-9 text-[#005687] sm:text-[34px] sm:leading-10">
-            {hero.title}
-          </h1>
-          <span
-            aria-hidden="true"
-            className="absolute bottom-0 left-1/2 h-3 w-[140px] -translate-x-1/2 rounded-full bg-[#d9edf4]"
-          />
-        </div>
+        <h1 className="text-[30px] font-extrabold leading-9 text-[#005687] sm:text-[34px] sm:leading-10">
+          {hero.title}
+        </h1>
         <p className="mx-auto mt-4 max-w-[580px] text-[14px] font-normal leading-6 text-[#6b7280]">{hero.description}</p>
       </div>
     </section>
