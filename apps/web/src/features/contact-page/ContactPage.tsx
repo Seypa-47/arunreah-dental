@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import type { ContactPageContent } from '@/features/landing-page/types';
+import { GoogleSatelliteMap } from './GoogleSatelliteMap';
 import { useContactPageQuery } from './use-contact-page';
 
 const skeletonNavigation = [
@@ -252,16 +253,39 @@ function ContactForm({ form }: { form: ContactPageContent['form'] }) {
 function MapsSection({ maps }: { maps: ContactPageContent['maps'] }) {
   return (
     <section className="bg-[#f1f7fa] pb-16">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-        {maps.map((map) => (
-          <article className="relative overflow-hidden rounded-xl" key={map.imageAlt}>
-            <img alt={map.imageAlt} className="h-[280px] w-full object-cover" src={map.imageUrl} />
-            <span className="absolute left-1/2 top-[53%] inline-flex -translate-x-1/2 items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-[13px] font-extrabold text-[#005687] shadow-[0_10px_22px_rgba(15,23,42,0.18)]">
-              <ContactIcon className="size-[14px] text-[#3695B9]" name="location" />
-              {map.label}
-            </span>
-          </article>
-        ))}
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-8 lg:grid-cols-2">
+          {maps.map((map) => {
+            if (map.lat && map.lng) {
+              return (
+                <GoogleSatelliteMap
+                  address={map.address ?? map.label}
+                  badge={map.badge}
+                  directionsUrl={
+                    map.directionsUrl ??
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(map.name ?? map.label)}`
+                  }
+                  key={map.name ?? map.imageAlt}
+                  lat={map.lat}
+                  lng={map.lng}
+                  name={map.name ?? map.label}
+                  phone={map.phone}
+                  zoom={map.zoom ?? 17}
+                />
+              );
+            }
+
+            return (
+              <article className="relative overflow-hidden rounded-xl" key={map.imageAlt}>
+                <img alt={map.imageAlt} className="h-[280px] w-full object-cover" src={map.imageUrl} />
+                <span className="absolute left-1/2 top-[53%] inline-flex -translate-x-1/2 items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-[13px] font-extrabold text-[#005687] shadow-[0_10px_22px_rgba(15,23,42,0.18)]">
+                  <ContactIcon className="size-[14px] text-[#3695B9]" name="location" />
+                  {map.label}
+                </span>
+              </article>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
