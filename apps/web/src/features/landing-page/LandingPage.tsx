@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -232,67 +232,206 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
   );
 }
 
-function ServicesSection({ services }: { services: LandingService[] }) {
+function useSmoothCarousel<T>(items: T[]) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [isDraggingState, setIsDraggingState] = useState(false);
   const isDragging = useRef(false);
   const startX = useRef(0);
-  const scrollLeftStart = useRef(0);
+  const scrollStart = useRef(0);
   const hasMoved = useRef(false);
+  const lastX = useRef(0);
+  const lastTime = useRef(0);
+  const velocity = useRef(0);
+  const momentumRaf = useRef<number | null>(null);
+  const targetScroll = useRef<number | null>(null);
+  const wheelRaf = useRef<number | null>(null);
 
-  const checkScroll = () => {
+  const checkScroll = useCallback(() => {
     if (scrollRef.current) {
       const { clientWidth, scrollLeft, scrollWidth } = scrollRef.current;
       setCanScrollLeft(scrollLeft > 10);
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
     }
-  };
+  }, []);
 
   useEffect(() => {
     checkScroll();
     window.addEventListener('resize', checkScroll);
     return () => window.removeEventListener('resize', checkScroll);
-  }, [services]);
+  }, [items, checkScroll]);
 
-  const handleScroll = (direction: 'left' | 'right') => {
+  const stopAnimations = useCallback(() => {
+    if (momentumRaf.current !== null) {
+      cancelAnimationFrame(momentumRaf.current);
+      momentumRaf.current = null;
+    }
+    if (wheelRaf.current !== null) {
+      cancelAnimationFrame(wheelRaf.current);
+      wheelRaf.current = null;
+    }
+    targetScroll.current = null;
+  }, []);
+
+  useEffect(() => {
+    return () => stopAnimations();
+  }, [stopAnimations]);
+
+  const handleScroll = useCallback((direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const scrollDistance = 280;
+      stopAnimations();
+      const scrollDistance = 310;
       scrollRef.current.scrollBy({
         behavior: 'smooth',
         left: direction === 'left' ? -scrollDistance : scrollDistance,
       });
     }
-  };
+  }, [stopAnimations]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollRef.current) return;
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!scrollRef.current || e.button !== 0) return;
+    stopAnimations();
     isDragging.current = true;
+    setIsDraggingState(true);
     hasMoved.current = false;
-    startX.current = e.pageX - scrollRef.current.offsetLeft;
-    scrollLeftStart.current = scrollRef.current.scrollLeft;
-  };
+    startX.current = e.clientX;
+    lastX.current = e.clientX;
+    lastTime.current = performance.now();
+    scrollStart.current = scrollRef.current.scrollLeft;
+    velocity.current = 0;
+  }, [stopAnimations]);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current || !scrollRef.current) return;
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.2;
-    if (Math.abs(walk) > 5) {
-      hasMoved.current = true;
-    }
-    scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
-  };
+  useEffect(() => {
+    if (!isDraggingState) return;
 
-  const handleMouseUpOrLeave = () => {
-    isDragging.current = false;
-  };
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current || !scrollRef.current) return;
+      const dx = e.clientX - startX.current;
+      if (Math.abs(dx) > 4) {
+        hasMoved.current = true;
+      }
+      scrollRef.current.scrollLeft = scrollStart.current - dx;
 
-  const handleWheel = (e: React.WheelEvent) => {
+      const now = performance.now();
+      const dt = now - lastTime.current;
+      if (dt > 10) {
+        velocity.current = (e.clientX - lastX.current) / dt;
+        lastX.current = e.clientX;
+        lastTime.current = now;
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      setIsDraggingState(false);
+
+      if (hasMoved.current) {
+        setTimeout(() => {
+          hasMoved.current = false;
+        }, 80);
+      }
+
+      if (Math.abs(velocity.current) > 0.15 && scrollRef.current) {
+        let v = -velocity.current * 16;
+        const glide = () => {
+          if (!scrollRef.current || Math.abs(v) < 0.5) {
+            checkScroll();
+            momentumRaf.current = null;
+            return;
+          }
+          scrollRef.current.scrollLeft += v;
+          v *= 0.92;
+          momentumRaf.current = requestAnimationFrame(glide);
+        };
+        momentumRaf.current = requestAnimationFrame(glide);
+      }
+    };
+
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDraggingState, checkScroll]);
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
     if (!scrollRef.current) return;
-    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 5) {
-      scrollRef.current.scrollLeft += e.deltaY;
+
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      stopAnimations();
+      return;
     }
+
+    const container = scrollRef.current;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    const scrollingRight = e.deltaY > 0;
+    const canScroll = scrollingRight ? container.scrollLeft < maxScroll - 5 : container.scrollLeft > 5;
+
+    if (!canScroll) {
+      return;
+    }
+
+    if (momentumRaf.current !== null) {
+      cancelAnimationFrame(momentumRaf.current);
+      momentumRaf.current = null;
+    }
+
+    const currentTarget = targetScroll.current ?? container.scrollLeft;
+    targetScroll.current = Math.max(0, Math.min(maxScroll, currentTarget + e.deltaY * 1.5));
+
+    const animateWheel = () => {
+      if (!scrollRef.current || targetScroll.current === null) {
+        wheelRaf.current = null;
+        return;
+      }
+      const current = scrollRef.current.scrollLeft;
+      const diff = targetScroll.current - current;
+
+      if (Math.abs(diff) < 0.5) {
+        scrollRef.current.scrollLeft = targetScroll.current;
+        targetScroll.current = null;
+        wheelRaf.current = null;
+        checkScroll();
+        return;
+      }
+
+      scrollRef.current.scrollLeft = current + diff * 0.22;
+      wheelRaf.current = requestAnimationFrame(animateWheel);
+    };
+
+    if (wheelRaf.current === null) {
+      wheelRaf.current = requestAnimationFrame(animateWheel);
+    }
+  }, [checkScroll, stopAnimations]);
+
+  return {
+    scrollRef,
+    canScrollLeft,
+    canScrollRight,
+    isDragging: isDraggingState,
+    hasMoved,
+    handleScroll,
+    handleMouseDown,
+    handleWheel,
+    checkScroll,
   };
+}
+
+function ServicesSection({ services }: { services: LandingService[] }) {
+  const {
+    scrollRef,
+    canScrollLeft,
+    canScrollRight,
+    isDragging,
+    hasMoved,
+    handleScroll,
+    handleMouseDown,
+    handleWheel,
+    checkScroll,
+  } = useSmoothCarousel(services);
 
   return (
     <section className="mt-[55px] bg-white pb-[64px] pt-[64px]" id="services">
@@ -344,12 +483,11 @@ function ServicesSection({ services }: { services: LandingService[] }) {
         </div>
 
         <div
-          className="no-scrollbar mt-6 flex cursor-grab gap-6 overflow-x-auto px-1.5 py-4 scroll-smooth active:cursor-grabbing select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className={`no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 select-none touch-pan-y overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
           data-scroll-container
           onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseUpOrLeave}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUpOrLeave}
           onScroll={checkScroll}
           onWheel={handleWheel}
           ref={scrollRef}
@@ -398,66 +536,17 @@ function ServicesSection({ services }: { services: LandingService[] }) {
 }
 
 function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const isDragging = useRef(false);
-  const startX = useRef(0);
-  const scrollLeftStart = useRef(0);
-  const hasMoved = useRef(false);
-
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { clientWidth, scrollLeft, scrollWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 10);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
-
-  useEffect(() => {
-    checkScroll();
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, [doctors]);
-
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollDistance = 280;
-      scrollRef.current.scrollBy({
-        behavior: 'smooth',
-        left: direction === 'left' ? -scrollDistance : scrollDistance,
-      });
-    }
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollRef.current) return;
-    isDragging.current = true;
-    hasMoved.current = false;
-    startX.current = e.pageX - scrollRef.current.offsetLeft;
-    scrollLeftStart.current = scrollRef.current.scrollLeft;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current || !scrollRef.current) return;
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.2;
-    if (Math.abs(walk) > 5) {
-      hasMoved.current = true;
-    }
-    scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
-  };
-
-  const handleMouseUpOrLeave = () => {
-    isDragging.current = false;
-  };
-
-  const handleWheel = (e: React.WheelEvent) => {
-    if (!scrollRef.current) return;
-    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 5) {
-      scrollRef.current.scrollLeft += e.deltaY;
-    }
-  };
+  const {
+    scrollRef,
+    canScrollLeft,
+    canScrollRight,
+    isDragging,
+    hasMoved,
+    handleScroll,
+    handleMouseDown,
+    handleWheel,
+    checkScroll,
+  } = useSmoothCarousel(doctors);
 
   return (
     <section className="bg-[#f7fafc] pb-[64px] pt-[56px]" id="doctors">
@@ -509,12 +598,11 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
         </div>
 
         <div
-          className="no-scrollbar mt-6 flex cursor-grab gap-6 overflow-x-auto px-1.5 py-4 scroll-smooth active:cursor-grabbing select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className={`no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 select-none touch-pan-y overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
           data-scroll-container
           onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseUpOrLeave}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUpOrLeave}
           onScroll={checkScroll}
           onWheel={handleWheel}
           ref={scrollRef}
