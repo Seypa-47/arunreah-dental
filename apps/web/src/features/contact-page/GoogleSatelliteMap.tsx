@@ -30,7 +30,7 @@ export function GoogleSatelliteMap({
     : `https://maps.google.com/maps?q=${lat},${lng}&t=k&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
 
   return (
-    <Card className="flex flex-col overflow-hidden rounded-xl border border-[#edf2f7] bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition duration-200 hover:shadow-[0_6px_18px_rgba(15,23,42,0.08)]">
+    <Card className="mx-auto flex w-full max-w-[500px] flex-col overflow-hidden rounded-xl border border-[#edf2f7] bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition duration-200 hover:shadow-[0_6px_18px_rgba(15,23,42,0.08)]">
       {/* Compact Google Maps Satellite Viewport */}
       <div className="relative h-[215px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[230px]">
         <iframe

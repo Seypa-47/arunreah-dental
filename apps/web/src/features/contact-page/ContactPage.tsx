@@ -253,8 +253,8 @@ function ContactForm({ form }: { form: ContactPageContent['form'] }) {
 function MapsSection({ maps }: { maps: ContactPageContent['maps'] }) {
   return (
     <section className="bg-[#f1f7fa] pb-16">
-      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-2">
+      <div className="mx-auto max-w-[1040px] px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-6 lg:grid-cols-2">
           {maps.map((map) => {
             if (map.lat && map.lng) {
               return (
