@@ -317,15 +317,6 @@ function pageNavigation(navigation: LandingNavigationItem[]) {
   }));
 }
 
-function doctorByHref(profileHref: string) {
-  const doctor = doctorProfiles.find((profile) => profile.detail.profileHref === profileHref);
-
-  if (!doctor) {
-    throw new Error(`Doctor profile not found: ${profileHref}`);
-  }
-
-  return doctor;
-}
 
 function publicPageFooter() {
   const doctorsFooterServiceLinks = [
@@ -670,12 +661,7 @@ const landingPageContent: LandingPageContent = {
       name: 'Radiology',
     },
   ],
-  doctors: [
-    doctorByHref('/doctors/chho-sonthary'),
-    doctorByHref('/doctors/sreng-heng'),
-    doctorByHref('/doctors/yim-delux'),
-    doctorByHref('/doctors/chuong-kunthy'),
-  ],
+  doctors: doctorProfiles,
   branches: [
     {
       hours: 'Mon - Sun, 8:00 AM - 7:00 PM',
