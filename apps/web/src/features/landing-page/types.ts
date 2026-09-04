@@ -315,9 +315,18 @@ export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
     title: string;
   };
   maps: {
+    address?: string;
+    badge?: string;
+    directionsUrl?: string;
+    hours?: string;
     imageAlt: string;
     imageUrl: string;
     label: string;
+    lat?: number;
+    lng?: number;
+    name?: string;
+    phone?: string;
+    zoom?: number;
   }[];
 };
 

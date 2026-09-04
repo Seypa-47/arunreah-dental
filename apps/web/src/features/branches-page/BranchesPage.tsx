@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -97,34 +98,36 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
         </div>
       </div>
 
-      <Card className="relative z-10 mx-auto -mt-10 grid w-[calc(100%-32px)] max-w-[1280px] gap-4 rounded-xl border-[#edf2f7] px-6 py-5 shadow-[0_12px_28px_rgba(15,23,42,0.06)] sm:px-8 lg:grid-cols-[1fr_1fr_1fr_220px] lg:items-center">
-        {hero.metrics.map((metric) => (
-          <div
-            className="flex items-center gap-4 border-[#edf2f7] lg:border-r lg:last:border-r-0"
-            key={metric.title}
-          >
-            <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#eef8fb]">
-              {metric.title === 'Locations' ? (
-                <MetricLocationIcon />
-              ) : (
-                <img alt="" aria-hidden="true" className="size-[18px]" src={metric.iconUrl} />
-              )}
-            </span>
-            <div>
-              <p className="text-[11px] font-medium leading-4 text-[#6b7280]">{metric.label}</p>
-              <p className="text-[15px] font-extrabold leading-5 text-[#005687]">{metric.title}</p>
-              <p className="text-[11px] font-medium leading-4 text-[#6b7280]">{metric.description}</p>
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <Card className="relative z-10 -mt-10 grid w-full gap-4 rounded-xl border-[#edf2f7] bg-white px-6 py-5 shadow-[0_12px_28px_rgba(15,23,42,0.06)] sm:px-8 lg:grid-cols-[1fr_1fr_1fr_220px] lg:items-center">
+          {hero.metrics.map((metric) => (
+            <div
+              className="flex items-center gap-4 border-[#edf2f7] lg:border-r lg:last:border-r-0"
+              key={metric.title}
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#eef8fb]">
+                {metric.title === 'Locations' ? (
+                  <MetricLocationIcon />
+                ) : (
+                  <img alt="" aria-hidden="true" className="size-[18px]" src={metric.iconUrl} />
+                )}
+              </span>
+              <div>
+                <p className="text-[11px] font-medium leading-4 text-[#6b7280]">{metric.label}</p>
+                <p className="text-[15px] font-extrabold leading-5 text-[#005687]">{metric.title}</p>
+                <p className="text-[11px] font-medium leading-4 text-[#6b7280]">{metric.description}</p>
+              </div>
             </div>
-          </div>
-        ))}
-        <Button
-          className="min-h-[46px] rounded-full bg-[#3695B9] px-7 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.20)] hover:bg-[#2c84a5]"
-          icon={<CalendarIcon />}
-          onClick={() => navigate('/book-appointment')}
-        >
-          {hero.appointmentLabel}
-        </Button>
-      </Card>
+          ))}
+          <Button
+            className="min-h-[46px] rounded-full bg-[#3695B9] px-7 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.20)] hover:bg-[#2c84a5]"
+            icon={<CalendarIcon />}
+            onClick={() => navigate('/book-appointment')}
+          >
+            {hero.appointmentLabel}
+          </Button>
+        </Card>
+      </div>
     </section>
   );
 }
@@ -149,6 +152,11 @@ function SectionIntro({
   );
 }
 
+const branchCoordinates: Record<string, { lat: number; lng: number }> = {
+  'Arunreah Dental Clinic - TTP': { lat: 11.53982, lng: 104.91421 },
+  'Arunreah Dental Clinic - Psa Chas': { lat: 11.57351, lng: 104.92552 },
+};
+
 function BranchCard({
   branch,
   flipped,
@@ -156,10 +164,16 @@ function BranchCard({
   branch: BranchesPageContent['branches'][number];
   flipped: boolean;
 }) {
+  const [viewMode, setViewMode] = useState<'photo' | 'satellite'>('photo');
   const phoneHref = `tel:${branch.phones[0]?.replaceAll(' ', '') ?? ''}`;
+  const coords = branchCoordinates[branch.name] ?? { lat: 11.53982, lng: 104.91421 };
+  const apiKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined)?.trim();
+  const embedUrl = apiKey
+    ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${coords.lat},${coords.lng}&maptype=satellite&zoom=17`
+    : `https://maps.google.com/maps?q=${coords.lat},${coords.lng}&t=k&z=17&ie=UTF8&iwloc=&output=embed`;
 
   return (
-    <Card className="grid overflow-hidden rounded-2xl border-[#edf2f7] bg-white shadow-[0_2px_8px_rgba(15,23,42,0.05)] lg:h-[380px] lg:grid-cols-2">
+    <Card className="grid overflow-hidden rounded-2xl border-[#edf2f7] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition duration-200 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)] lg:h-[390px] lg:grid-cols-2">
       <div className={`${flipped ? 'lg:order-2' : ''} flex flex-col justify-between p-6 sm:p-8`}>
         <div>
           <Badge className="gap-1.5 !bg-[#3695B9] px-3 py-1 text-[10px] !text-white">
@@ -231,18 +245,53 @@ function BranchCard({
         </div>
       </div>
 
-      <div className={`relative min-h-[300px] lg:min-h-full ${flipped ? 'lg:order-1' : ''}`}>
-        <img alt={branch.imageAlt} className="absolute inset-0 h-full w-full object-cover" src={branch.imageUrl} />
+      <div className={`relative min-h-[300px] bg-[#eaf2f6] lg:min-h-full ${flipped ? 'lg:order-1' : ''}`}>
+        {viewMode === 'photo' ? (
+          <img alt={branch.imageAlt} className="absolute inset-0 h-full w-full object-cover" src={branch.imageUrl} />
+        ) : (
+          <iframe
+            allowFullScreen
+            className="absolute inset-0 h-full w-full border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            src={embedUrl}
+            title={`Google Maps Satellite - ${branch.name}`}
+          />
+        )}
+
+        {/* View Mode Toggle: Clinic Photo / Google Satellite */}
+        <div className="absolute right-4 top-4 z-10 flex items-center rounded-full border border-[#edf2f7] bg-white/95 p-1 shadow-[0_2px_8px_rgba(15,23,42,0.12)] backdrop-blur">
+          <button
+            className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${
+              viewMode === 'photo' ? 'bg-[#3695B9] text-white shadow-sm' : 'text-[#6b7280] hover:text-[#005687]'
+            }`}
+            onClick={() => setViewMode('photo')}
+            type="button"
+          >
+            Photo
+          </button>
+          <button
+            className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${
+              viewMode === 'satellite' ? 'bg-[#3695B9] text-white shadow-sm' : 'text-[#6b7280] hover:text-[#005687]'
+            }`}
+            onClick={() => setViewMode('satellite')}
+            type="button"
+          >
+            Satellite Map
+          </button>
+        </div>
+
+        {/* Floating Google Maps Link Button */}
         <a
-          className="group/map absolute bottom-6 left-6 inline-flex h-[46px] items-center overflow-hidden rounded-xl bg-white shadow-[0_8px_24px_rgba(15,23,42,0.12)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,23,42,0.16)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
+          className="group/map absolute bottom-5 left-5 z-10 inline-flex h-[42px] items-center overflow-hidden rounded-full bg-white shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
           href={branch.mapUrl}
           rel="noopener noreferrer"
           target="_blank"
         >
-          <span className="grid h-[46px] w-[46px] place-items-center bg-[#edf7fb] transition-colors group-hover/map:bg-[#3695B9]">
-            <AssetIcon className="size-[18px] transition group-hover/map:brightness-0 group-hover/map:invert" name="branch-card-pin-alt.svg" />
+          <span className="grid h-[42px] w-[42px] place-items-center bg-[#edf7fb] transition-colors group-hover/map:bg-[#3695B9]">
+            <AssetIcon className="size-[16px] transition group-hover/map:brightness-0 group-hover/map:invert" name="branch-card-pin-alt.svg" />
           </span>
-          <span className="px-4 text-[13px] font-bold text-[#005687] transition-colors group-hover/map:text-[#3695B9]">
+          <span className="px-4 text-[12.5px] font-bold text-[#005687] transition-colors group-hover/map:text-[#3695B9]">
             {branch.mapLabel}
           </span>
         </a>
@@ -297,7 +346,8 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
 
   return (
     <section className="bg-white pb-14 pt-4 sm:pb-16">
-      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl bg-gradient-to-r from-[#3695B9] to-[#005687] px-6 py-9 text-white sm:px-12">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#3695B9] to-[#005687] px-6 py-9 text-white sm:px-12">
         <img
           alt={cta.backgroundImageAlt}
           className="absolute inset-y-0 right-0 hidden h-full w-[48%] object-cover opacity-25 md:block"
@@ -324,6 +374,7 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
             <ArrowIcon />
           </Button>
         </div>
+      </div>
       </div>
     </section>
   );

@@ -317,15 +317,6 @@ function pageNavigation(navigation: LandingNavigationItem[]) {
   }));
 }
 
-function doctorByHref(profileHref: string) {
-  const doctor = doctorProfiles.find((profile) => profile.detail.profileHref === profileHref);
-
-  if (!doctor) {
-    throw new Error(`Doctor profile not found: ${profileHref}`);
-  }
-
-  return doctor;
-}
 
 function publicPageFooter() {
   const doctorsFooterServiceLinks = [
@@ -670,12 +661,7 @@ const landingPageContent: LandingPageContent = {
       name: 'Radiology',
     },
   ],
-  doctors: [
-    doctorByHref('/doctors/chho-sonthary'),
-    doctorByHref('/doctors/sreng-heng'),
-    doctorByHref('/doctors/yim-delux'),
-    doctorByHref('/doctors/chuong-kunthy'),
-  ],
+  doctors: doctorProfiles,
   branches: [
     {
       hours: 'Mon - Sun, 8:00 AM - 7:00 PM',
@@ -1099,14 +1085,32 @@ export async function fetchContactPage(): Promise<ContactPageContent> {
     },
     maps: [
       {
-        imageAlt: 'Map preview for Arunreah Dental Toul Tompoung Branch',
+        address: '#123, Street 155, Sangkat Toul Tompoung I, Khan Chamkarmon, Phnom Penh',
+        badge: 'Toul Tompoung Branch',
+        directionsUrl: 'https://www.google.com/maps/search/?api=1&query=Arunreah%20Dental%20Clinic%20Toul%20Tompoung',
+        hours: 'Mon - Sun: 8:00 AM - 7:00 PM',
+        imageAlt: 'Google Maps Satellite view for Arunreah Dental Toul Tompoung Branch',
         imageUrl: '/assets/landing/contact-map.svg',
-        label: 'Arunreah Dental',
+        label: 'Arunreah Dental - Toul Tompoung',
+        lat: 11.53982,
+        lng: 104.91421,
+        name: 'Arunreah Dental Clinic - Toul Tompoung',
+        phone: '098 701 302 / 012 964 200',
+        zoom: 17,
       },
       {
-        imageAlt: 'Map preview for Arunreah Dental Psa Chas Branch',
+        address: '#45, Street 13, Sangkat Wat Phnom, Khan Daun Penh, Phnom Penh',
+        badge: 'Psa Chas Branch',
+        directionsUrl: 'https://www.google.com/maps/search/?api=1&query=Arunreah%20Dental%20Clinic%20Psa%20Chas',
+        hours: 'Mon - Sun: 8:00 AM - 7:00 PM',
+        imageAlt: 'Google Maps Satellite view for Arunreah Dental Psa Chas Branch',
         imageUrl: '/assets/landing/contact-map.svg',
-        label: 'Arunreah Dental',
+        label: 'Arunreah Dental - Psa Chas',
+        lat: 11.57351,
+        lng: 104.92552,
+        name: 'Arunreah Dental Clinic - Psa Chas',
+        phone: '069 978 997 / 061 978 997',
+        zoom: 17,
       },
     ],
     navigation: pageNavigation(landingPageContent.navigation),

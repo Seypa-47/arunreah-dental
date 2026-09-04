@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -232,61 +232,188 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
   );
 }
 
-function ServicesSection({ services }: { services: LandingService[] }) {
+function useSmoothCarousel<T>(items: T[]) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [isDraggingState, setIsDraggingState] = useState(false);
   const isDragging = useRef(false);
   const startX = useRef(0);
-  const scrollLeftStart = useRef(0);
+  const scrollStart = useRef(0);
   const hasMoved = useRef(false);
+  const lastX = useRef(0);
+  const lastTime = useRef(0);
+  const velocity = useRef(0);
+  const momentumRaf = useRef<number | null>(null);
 
-  const checkScroll = () => {
+  const checkScroll = useCallback(() => {
     if (scrollRef.current) {
       const { clientWidth, scrollLeft, scrollWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 10);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+      const maxScroll = Math.max(0, scrollWidth - clientWidth);
+      setCanScrollLeft(scrollLeft > 2);
+      setCanScrollRight(scrollLeft < maxScroll - 2);
     }
-  };
+  }, []);
 
-  const handleScroll = (direction: 'left' | 'right') => {
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [items, checkScroll]);
+
+  const cancelMomentum = useCallback(() => {
+    if (momentumRaf.current !== null) {
+      cancelAnimationFrame(momentumRaf.current);
+      momentumRaf.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => cancelMomentum();
+  }, [cancelMomentum]);
+
+  const handleScroll = useCallback((direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const scrollDistance = 280;
-      scrollRef.current.scrollBy({
+      cancelMomentum();
+      const el = scrollRef.current;
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+      const scrollDistance = 310;
+      const target = direction === 'left'
+        ? Math.max(0, el.scrollLeft - scrollDistance)
+        : Math.min(maxScroll, el.scrollLeft + scrollDistance);
+
+      el.scrollTo({
         behavior: 'smooth',
-        left: direction === 'left' ? -scrollDistance : scrollDistance,
+        left: target,
       });
     }
-  };
+  }, [cancelMomentum]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollRef.current) return;
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!scrollRef.current || e.button !== 0) return;
+    cancelMomentum();
     isDragging.current = true;
+    setIsDraggingState(true);
     hasMoved.current = false;
-    startX.current = e.pageX - scrollRef.current.offsetLeft;
-    scrollLeftStart.current = scrollRef.current.scrollLeft;
-  };
+    startX.current = e.clientX;
+    lastX.current = e.clientX;
+    lastTime.current = performance.now();
+    scrollStart.current = scrollRef.current.scrollLeft;
+    velocity.current = 0;
+  }, [cancelMomentum]);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current || !scrollRef.current) return;
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.2;
-    if (Math.abs(walk) > 5) {
-      hasMoved.current = true;
-    }
-    scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
-  };
+  useEffect(() => {
+    if (!isDraggingState) return;
 
-  const handleMouseUpOrLeave = () => {
-    isDragging.current = false;
-  };
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current || !scrollRef.current) return;
+      const el = scrollRef.current;
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
 
-  const handleWheel = (e: React.WheelEvent) => {
-    if (!scrollRef.current) return;
-    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 5) {
-      scrollRef.current.scrollLeft += e.deltaY;
-    }
+      const dx = e.clientX - startX.current;
+      if (Math.abs(dx) > 3) {
+        hasMoved.current = true;
+      }
+
+      let target = scrollStart.current - dx;
+      if (target <= 0) {
+        target = 0;
+        startX.current = e.clientX;
+        scrollStart.current = 0;
+      } else if (target >= maxScroll) {
+        target = maxScroll;
+        startX.current = e.clientX;
+        scrollStart.current = maxScroll;
+      }
+
+      el.scrollLeft = target;
+
+      const now = performance.now();
+      const dt = now - lastTime.current;
+      if (dt > 8) {
+        velocity.current = (e.clientX - lastX.current) / dt;
+        lastX.current = e.clientX;
+        lastTime.current = now;
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (!isDragging.current || !scrollRef.current) return;
+      isDragging.current = false;
+      setIsDraggingState(false);
+
+      if (hasMoved.current) {
+        setTimeout(() => {
+          hasMoved.current = false;
+        }, 80);
+      }
+
+      const now = performance.now();
+      const timeSinceMove = now - lastTime.current;
+      if (timeSinceMove < 60 && Math.abs(velocity.current) > 0.15) {
+        let currentVelocity = -velocity.current * 14;
+        const glide = () => {
+          if (!scrollRef.current || Math.abs(currentVelocity) < 0.5) {
+            momentumRaf.current = null;
+            checkScroll();
+            return;
+          }
+          const el = scrollRef.current;
+          const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+          const next = el.scrollLeft + currentVelocity;
+
+          if (next <= 0) {
+            el.scrollLeft = 0;
+            momentumRaf.current = null;
+            checkScroll();
+            return;
+          }
+          if (next >= maxScroll) {
+            el.scrollLeft = maxScroll;
+            momentumRaf.current = null;
+            checkScroll();
+            return;
+          }
+
+          el.scrollLeft = next;
+          currentVelocity *= 0.92;
+          momentumRaf.current = requestAnimationFrame(glide);
+        };
+        momentumRaf.current = requestAnimationFrame(glide);
+      }
+    };
+
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDraggingState, checkScroll]);
+
+  return {
+    scrollRef,
+    canScrollLeft,
+    canScrollRight,
+    isDragging: isDraggingState,
+    hasMoved,
+    handleScroll,
+    handleMouseDown,
+    checkScroll,
   };
+}
+
+function ServicesSection({ services }: { services: LandingService[] }) {
+  const {
+    scrollRef,
+    canScrollLeft,
+    canScrollRight,
+    isDragging,
+    hasMoved,
+    handleScroll,
+    handleMouseDown,
+    checkScroll,
+  } = useSmoothCarousel(services);
 
   return (
     <section className="mt-[55px] bg-white pb-[64px] pt-[64px]" id="services">
@@ -338,14 +465,12 @@ function ServicesSection({ services }: { services: LandingService[] }) {
         </div>
 
         <div
-          className="no-scrollbar mt-6 flex cursor-grab gap-6 overflow-x-auto px-1.5 py-4 scroll-smooth active:cursor-grabbing select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className={`no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 select-none overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
           data-scroll-container
           onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseUpOrLeave}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUpOrLeave}
           onScroll={checkScroll}
-          onWheel={handleWheel}
           ref={scrollRef}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
@@ -355,7 +480,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
 
             return (
               <Card
-                className="h-[354px] w-[286px] shrink-0 overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
+                className="h-[354px] w-[286px] shrink-0 overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-shadow duration-200 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
                 id={id}
                 key={service.name}
               >
@@ -392,32 +517,105 @@ function ServicesSection({ services }: { services: LandingService[] }) {
 }
 
 function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
+  const {
+    scrollRef,
+    canScrollLeft,
+    canScrollRight,
+    isDragging,
+    hasMoved,
+    handleScroll,
+    handleMouseDown,
+    checkScroll,
+  } = useSmoothCarousel(doctors);
+
   return (
-    <section className="bg-[#f7fafc] pb-[48px] pt-[56px]" id="doctors">
-      <SectionHeader actionHref="/doctors" actionLabel="See All Doctors" title="Meet Our Specialists" />
-      <div className="mx-auto mt-[60px] grid w-full max-w-[1280px] gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-        {doctors.map((doctor) => (
-          <Card
-            className="h-[354px] overflow-hidden rounded-lg border-[#edf2f7] shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-            key={doctor.name}
-          >
+    <section className="bg-[#f7fafc] pb-[64px] pt-[56px]" id="doctors">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
+              Expert Team
+            </p>
+            <h2 className="text-[30px] font-extrabold leading-9 text-[#005687]">Meet Our Specialists</h2>
+          </div>
+          <div className="flex items-center gap-5">
             <Link
-              aria-label="View all doctors"
-              className="block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+              className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#3695B9] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:inline-flex"
               to="/doctors"
             >
-              <img
-                alt={doctor.imageAlt}
-                className="h-[256px] w-full bg-[#eaf2f6] object-cover object-top"
-                src={doctor.imageUrl}
-              />
-              <div className="flex h-[76px] flex-col justify-center px-4 py-3">
-                <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{doctor.name}</h3>
-                <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695B9]">{doctor.specialty}</p>
-              </div>
+              See All Doctors
+              <ArrowIcon />
             </Link>
-          </Card>
-        ))}
+            <div className="flex items-center gap-2">
+              <button
+                aria-label="Scroll specialists left"
+                className={`grid size-9 place-items-center rounded-full border transition duration-200 ${
+                  canScrollLeft
+                    ? 'border-[#3695B9] text-[#3695B9] hover:bg-[#f0f9fa]'
+                    : 'cursor-not-allowed border-[#e2e8f0] text-[#cbd5e1]'
+                }`}
+                disabled={!canScrollLeft}
+                onClick={() => handleScroll('left')}
+                type="button"
+              >
+                ‹
+              </button>
+              <button
+                aria-label="Scroll specialists right"
+                className={`grid size-9 place-items-center rounded-full transition duration-200 ${
+                  canScrollRight
+                    ? 'bg-[#3695B9] text-white shadow-sm hover:bg-[#2c84a5]'
+                    : 'cursor-not-allowed bg-[#e2e8f0] text-[#94a3b8]'
+                }`}
+                disabled={!canScrollRight}
+                onClick={() => handleScroll('right')}
+                type="button"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className={`no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 select-none overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
+          data-scroll-container
+          onMouseDown={handleMouseDown}
+          onScroll={checkScroll}
+          ref={scrollRef}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {doctors.map((doctor) => (
+            <Card
+              className="h-[354px] w-[286px] shrink-0 overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-shadow duration-200 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
+              key={doctor.name}
+            >
+              <Link
+                aria-label={`View profile for ${doctor.name}`}
+                className="block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+                onClick={(e) => {
+                  if (hasMoved.current) {
+                    e.preventDefault();
+                  }
+                }}
+                to={doctor.detail?.profileHref || '/doctors'}
+              >
+                <img
+                  alt={doctor.imageAlt}
+                  className="pointer-events-none h-[256px] w-full bg-[#eaf2f6] object-cover object-top"
+                  draggable={false}
+                  src={doctor.imageUrl}
+                />
+                <div className="flex h-[98px] flex-col justify-center px-4 py-3">
+                  <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{doctor.name}</h3>
+                  <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695B9]">{doctor.specialty}</p>
+                </div>
+              </Link>
+            </Card>
+          ))}
+        </div>
       </div>
     </section>
   );

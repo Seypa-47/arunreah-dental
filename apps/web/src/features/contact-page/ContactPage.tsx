@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import type { ContactPageContent } from '@/features/landing-page/types';
+import { GoogleSatelliteMap } from './GoogleSatelliteMap';
 import { useContactPageQuery } from './use-contact-page';
 
 const skeletonNavigation = [
@@ -205,46 +206,48 @@ function ContactForm({ form }: { form: ContactPageContent['form'] }) {
 
   return (
     <section className="bg-[#f1f7fa] pb-12">
-      <Card className="mx-auto w-[calc(100%-32px)] max-w-[1280px] rounded-2xl border-[#edf2f7] p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)] sm:p-8 lg:p-10">
-        <h2 className="text-[24px] font-extrabold leading-8 text-[#005687] sm:text-[26px]">{form.title}</h2>
-        <form className="mt-7 grid gap-x-6 gap-y-5" onSubmit={handleSubmit}>
-          <div className="grid gap-5 lg:grid-cols-2">
-            <TextField id="fullName" label={form.fields.fullName} placeholder={form.placeholders.fullName} />
-            <TextField id="phone" label={form.fields.phone} placeholder={form.placeholders.phone} type="tel" />
-            <TextField id="email" label={form.fields.email} placeholder={form.placeholders.email} type="email" />
-            <SelectField
-              id="preferredBranch"
-              label={form.fields.preferredBranch}
-              options={form.branches}
-              placeholder={form.placeholders.preferredBranch}
-            />
-            <SelectField id="service" label={form.fields.service} options={form.services} placeholder={form.placeholders.service} />
-            <TextField id="preferredDate" label={form.fields.preferredDate} placeholder={form.placeholders.preferredDate} type="date" />
-          </div>
-          <SelectField id="preferredTime" label={form.fields.preferredTime} options={form.times} placeholder={form.placeholders.preferredTime} />
-          <div>
-            <label className="mb-1.5 block text-[12px] font-extrabold leading-4 text-[#005687]" htmlFor="message">
-              {form.fields.message}
-            </label>
-            <textarea
-              aria-describedby="message-count"
-              className={`${fieldClass} min-h-[110px] resize-none py-3`}
-              id="message"
-              maxLength={form.messageLimit}
-              name="message"
-              onChange={(event) => setMessage(event.target.value)}
-              placeholder={form.placeholders.message}
-              value={message}
-            />
-            <p className="mt-1.5 text-right text-[12px] font-semibold text-[#94a3b8]" id="message-count">
-              {message.length}/{form.messageLimit}
-            </p>
-          </div>
-          <Button className="mx-auto mt-2 min-h-[46px] w-full max-w-[360px] rounded-full text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.22)]" icon={<SendIcon />} type="submit">
-            {form.submitLabel}
-          </Button>
-        </form>
-      </Card>
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <Card className="w-full rounded-2xl border-[#edf2f7] bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)] sm:p-8 lg:p-10">
+          <h2 className="text-[24px] font-extrabold leading-8 text-[#005687] sm:text-[26px]">{form.title}</h2>
+          <form className="mt-7 grid gap-x-6 gap-y-5" onSubmit={handleSubmit}>
+            <div className="grid gap-5 lg:grid-cols-2">
+              <TextField id="fullName" label={form.fields.fullName} placeholder={form.placeholders.fullName} />
+              <TextField id="phone" label={form.fields.phone} placeholder={form.placeholders.phone} type="tel" />
+              <TextField id="email" label={form.fields.email} placeholder={form.placeholders.email} type="email" />
+              <SelectField
+                id="preferredBranch"
+                label={form.fields.preferredBranch}
+                options={form.branches}
+                placeholder={form.placeholders.preferredBranch}
+              />
+              <SelectField id="service" label={form.fields.service} options={form.services} placeholder={form.placeholders.service} />
+              <TextField id="preferredDate" label={form.fields.preferredDate} placeholder={form.placeholders.preferredDate} type="date" />
+            </div>
+            <SelectField id="preferredTime" label={form.fields.preferredTime} options={form.times} placeholder={form.placeholders.preferredTime} />
+            <div>
+              <label className="mb-1.5 block text-[12px] font-extrabold leading-4 text-[#005687]" htmlFor="message">
+                {form.fields.message}
+              </label>
+              <textarea
+                aria-describedby="message-count"
+                className={`${fieldClass} min-h-[110px] resize-none py-3`}
+                id="message"
+                maxLength={form.messageLimit}
+                name="message"
+                onChange={(event) => setMessage(event.target.value)}
+                placeholder={form.placeholders.message}
+                value={message}
+              />
+              <p className="mt-1.5 text-right text-[12px] font-semibold text-[#94a3b8]" id="message-count">
+                {message.length}/{form.messageLimit}
+              </p>
+            </div>
+            <Button className="mx-auto mt-2 min-h-[46px] w-full max-w-[360px] rounded-full text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.22)]" icon={<SendIcon />} type="submit">
+              {form.submitLabel}
+            </Button>
+          </form>
+        </Card>
+      </div>
     </section>
   );
 }
@@ -252,16 +255,40 @@ function ContactForm({ form }: { form: ContactPageContent['form'] }) {
 function MapsSection({ maps }: { maps: ContactPageContent['maps'] }) {
   return (
     <section className="bg-[#f1f7fa] pb-16">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-        {maps.map((map) => (
-          <article className="relative overflow-hidden rounded-xl" key={map.imageAlt}>
-            <img alt={map.imageAlt} className="h-[280px] w-full object-cover" src={map.imageUrl} />
-            <span className="absolute left-1/2 top-[53%] inline-flex -translate-x-1/2 items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-[13px] font-extrabold text-[#005687] shadow-[0_10px_22px_rgba(15,23,42,0.18)]">
-              <ContactIcon className="size-[14px] text-[#3695B9]" name="location" />
-              {map.label}
-            </span>
-          </article>
-        ))}
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
+          {maps.map((map) => {
+            if (map.lat && map.lng) {
+              return (
+                <GoogleSatelliteMap
+                  address={map.address ?? map.label}
+                  badge={map.badge}
+                  directionsUrl={
+                    map.directionsUrl ??
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(map.name ?? map.label)}`
+                  }
+                  hours={map.hours}
+                  key={map.name ?? map.imageAlt}
+                  lat={map.lat}
+                  lng={map.lng}
+                  name={map.name ?? map.label}
+                  phone={map.phone}
+                  zoom={map.zoom ?? 17}
+                />
+              );
+            }
+
+            return (
+              <article className="relative overflow-hidden rounded-xl" key={map.imageAlt}>
+                <img alt={map.imageAlt} className="h-[280px] w-full object-cover" src={map.imageUrl} />
+                <span className="absolute left-1/2 top-[53%] inline-flex -translate-x-1/2 items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-[13px] font-extrabold text-[#005687] shadow-[0_10px_22px_rgba(15,23,42,0.18)]">
+                  <ContactIcon className="size-[14px] text-[#3695B9]" name="location" />
+                  {map.label}
+                </span>
+              </article>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
