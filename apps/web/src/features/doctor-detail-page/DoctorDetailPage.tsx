@@ -40,29 +40,29 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
   const navigate = useNavigate();
 
   return (
-    <section className="bg-white pb-[58px] pt-[52px]">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-[390px_1fr] lg:items-center lg:px-8">
+    <section className="bg-white pb-10 pt-12">
+      <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-[360px_1fr] lg:items-center lg:px-8">
         <div className="overflow-hidden rounded-2xl border border-[#edf2f7] bg-[#edf5f8] shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
-          <img alt={doctor.imageAlt} className="h-[448px] w-full object-cover object-top" src={doctor.imageUrl} />
+          <img alt={doctor.imageAlt} className="h-[380px] w-full object-cover object-top" src={doctor.imageUrl} />
         </div>
         <div>
-          <p className="text-[12px] font-extrabold uppercase leading-5 tracking-[0.6px] text-[#3695b9]">
+          <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
             {doctor.detail.roleTitle}
           </p>
-          <h1 className="mt-3 text-[34px] font-extrabold leading-[42px] text-[#005687] sm:text-[42px] sm:leading-[50px]">
+          <h1 className="mt-3 text-[30px] font-extrabold leading-9 text-[#005687] sm:text-[34px] sm:leading-10">
             {doctor.name}
           </h1>
-          <p className="mt-3 max-w-[520px] text-[16px] font-medium leading-7 text-[#6b7280]">{doctor.detail.heroSummary}</p>
-          <div className="mt-5 grid gap-4 border-y border-[#edf2f7] py-6 sm:grid-cols-3">
+          <p className="mt-3 max-w-[520px] text-[14px] font-normal leading-6 text-[#6b7280]">{doctor.detail.heroSummary}</p>
+          <div className="mt-5 grid gap-4 border-y border-[#edf2f7] py-5 sm:grid-cols-3">
             {doctor.detail.stats.map((stat) => (
               <div key={stat.label}>
-                <p className="text-[26px] font-extrabold leading-8 text-[#3695b9]">{stat.value}</p>
-                <p className="mt-1 text-[12px] font-semibold leading-4 text-[#6b7280]">{stat.label}</p>
+                <p className="text-[24px] font-extrabold leading-7 text-[#3695B9]">{stat.value}</p>
+                <p className="mt-0.5 text-[11px] font-semibold leading-4 text-[#6b7280]">{stat.label}</p>
               </div>
             ))}
           </div>
           <Button
-            className="mt-6 min-h-[44px] rounded-md bg-[#3695b9] px-6 text-[14px] font-extrabold shadow-[0_8px_16px_rgba(54,149,185,0.18)] hover:bg-[#2f8fb0]"
+            className="mt-6 min-h-[44px] rounded-full bg-[#3695B9] px-7 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.22)] hover:bg-[#2c84a5]"
             icon={<CalendarIcon />}
             onClick={() => navigate('/book-appointment')}
           >
@@ -79,7 +79,7 @@ function ExpertiseList({ items }: { items: string[] }) {
     <ul className="mt-4 space-y-2.5">
       {items.map((item) => (
         <li className="flex items-start gap-3 text-[14px] font-medium leading-6 text-[#6b7280]" key={item}>
-          <span aria-hidden="true" className="mt-2 size-2 shrink-0 rounded-full bg-[#3695b9]" />
+          <span aria-hidden="true" className="mt-2 size-2 shrink-0 rounded-full bg-[#3695B9]" />
           {item}
         </li>
       ))}
@@ -95,7 +95,7 @@ function CertificationCard({
   index: number;
 }) {
   return (
-    <Card className="flex min-h-[78px] items-center gap-4 rounded-lg border-[#edf2f7] bg-white p-4 shadow-none">
+    <Card className="flex min-h-[72px] items-center gap-4 rounded-lg border-[#edf2f7] bg-white p-4 shadow-none">
       <EducationIcon index={index} />
       <div>
         <h3 className="text-[13px] font-extrabold leading-5 text-[#005687]">{certification.title}</h3>
@@ -107,16 +107,16 @@ function CertificationCard({
 
 function OtherSpecialistCard({ doctor }: { doctor: LandingDoctor }) {
   return (
-    <Card className="overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]">
+    <Card className="overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
       <Link
         aria-label={`View profile for ${doctor.name}`}
         className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
         to={doctor.detail.profileHref}
       >
-        <img alt={doctor.imageAlt} className="h-[186px] w-full bg-[#edf5f8] object-cover object-top" src={doctor.imageUrl} />
-        <div className="bg-white px-4 py-3">
-          <h3 className="text-[13px] font-extrabold leading-5 text-[#005687]">{doctor.name}</h3>
-          <p className="mt-1 text-[12px] font-semibold leading-4 text-[#3695B9]">{doctor.focus ?? doctor.specialty}</p>
+        <img alt={doctor.imageAlt} className="h-[210px] w-full bg-[#edf5f8] object-cover object-top" src={doctor.imageUrl} />
+        <div className="bg-white p-4">
+          <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{doctor.name}</h3>
+          <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695B9]">{doctor.focus ?? doctor.specialty}</p>
         </div>
       </Link>
     </Card>
@@ -127,21 +127,21 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
   const navigate = useNavigate();
 
   return (
-    <section className="bg-[#f7fafc] pb-[62px] pt-[54px]">
+    <section className="bg-[#f7fafc] py-12 sm:py-14">
       <div className="mx-auto grid w-full max-w-[1280px] gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_310px] lg:px-8">
         <div>
           <section>
-            <h2 className="text-[26px] font-extrabold leading-8 text-[#005687]">About the Doctor</h2>
-            <div className="mt-6 space-y-5 text-[15px] font-medium leading-7 text-[#6b7280]">
+            <h2 className="text-[24px] font-extrabold leading-8 text-[#005687] sm:text-[26px]">About the Doctor</h2>
+            <div className="mt-5 space-y-4 text-[14px] font-normal leading-6 text-[#6b7280]">
               {doctor.detail.about.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>
           </section>
 
-          <section className="mt-12">
-            <h2 className="text-[26px] font-extrabold leading-8 text-[#005687]">Education & Certifications</h2>
-            <div className="mt-7 grid gap-5 sm:grid-cols-2">
+          <section className="mt-10">
+            <h2 className="text-[24px] font-extrabold leading-8 text-[#005687] sm:text-[26px]">Education & Certifications</h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {doctor.detail.certifications.map((certification, index) => (
                 <CertificationCard certification={certification} index={index} key={certification.title} />
               ))}
@@ -149,24 +149,24 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
           </section>
         </div>
 
-        <aside className="space-y-7">
-          <Card className="rounded-2xl border-[#edf2f7] bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
-            <h2 className="text-[20px] font-extrabold leading-7 text-[#005687]">Areas of Expertise</h2>
+        <aside className="space-y-6">
+          <Card className="rounded-xl border-[#edf2f7] bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
+            <h2 className="text-[18px] font-extrabold leading-6 text-[#005687]">Areas of Expertise</h2>
             <ExpertiseList items={doctor.detail.services} />
           </Card>
-          <Card className="rounded-2xl !border-transparent !bg-[#3695B9] p-6 text-white shadow-[0_12px_24px_rgba(54,149,185,0.20)]">
-            <h2 className="text-[20px] font-extrabold leading-7">Schedule an Appointment</h2>
-            <p className="mt-4 text-[13px] font-medium leading-5 text-white/75">
+          <Card className="rounded-xl !border-transparent !bg-[#3695B9] p-5 text-white shadow-[0_12px_24px_rgba(54,149,185,0.20)]">
+            <h2 className="text-[18px] font-extrabold leading-6">Schedule an Appointment</h2>
+            <p className="mt-3 text-[13px] font-normal leading-5 text-white/80">
               Select a convenient time for your consultation with {doctor.name}.
             </p>
             <Button
-              className="mt-6 min-h-[42px] w-full rounded-lg bg-white text-[13px] font-extrabold text-[#3695B9] hover:bg-[#eef8fb]"
+              className="mt-5 min-h-[42px] w-full rounded-full bg-white text-[13px] font-bold text-[#3695B9] shadow-none hover:bg-[#eef8fb]"
               onClick={() => navigate('/book-appointment')}
             >
               Book Now
             </Button>
             <a
-              className="mt-5 flex items-center justify-center gap-2 text-[13px] font-bold leading-5 text-white/85 hover:underline"
+              className="mt-4 flex items-center justify-center gap-2 text-[13px] font-bold leading-5 text-white/85 hover:underline"
               href="tel:+85523456789"
             >
               <PhoneIcon />
@@ -185,18 +185,18 @@ function OtherSpecialists({ doctors }: { doctors: LandingDoctor[] }) {
   }
 
   return (
-    <section className="bg-[#f7fafc] pb-[78px] pt-[54px]">
+    <section className="bg-white py-12 sm:py-14">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-[28px] font-extrabold leading-9 text-[#005687]">Other Specialists</h2>
-            <p className="mt-3 text-[15px] font-medium leading-6 text-[#6b7280]">
+            <h2 className="text-[26px] font-extrabold leading-8 text-[#005687] sm:text-[28px]">Other Specialists</h2>
+            <p className="mt-1 text-[13px] font-normal leading-5 text-[#6b7280]">
               Meet our team of highly qualified dental experts.
             </p>
           </div>
-          <div className="hidden gap-3 sm:flex" aria-hidden="true">
-            <span className="grid size-9 place-items-center rounded-full border border-[#3695b9] text-[#3695b9]">&lsaquo;</span>
-            <span className="grid size-9 place-items-center rounded-full bg-[#3695b9] text-white">&rsaquo;</span>
+          <div className="hidden gap-2 sm:flex" aria-hidden="true">
+            <span className="grid size-8 place-items-center rounded-full border border-[#3695B9] text-[#3695B9]">&lsaquo;</span>
+            <span className="grid size-8 place-items-center rounded-full bg-[#3695B9] text-white">&rsaquo;</span>
           </div>
         </div>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

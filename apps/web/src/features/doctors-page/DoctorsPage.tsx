@@ -23,12 +23,15 @@ function CalendarIcon() {
 
 function DoctorsHero({ hero }: { hero: DoctorsPageContent['hero'] }) {
   return (
-    <section className="bg-[#f7fafc] pb-[60px] pt-[96px] text-center">
+    <section className="bg-[#f7fafc] pb-8 pt-12 text-center">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <h1 className="text-[34px] font-extrabold leading-[42px] text-[#3695b9] sm:text-[42px] sm:leading-[50px]">
+        <p className="mb-2 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
+          Our Medical Team
+        </p>
+        <h1 className="text-[30px] font-extrabold leading-9 text-[#005687] sm:text-[34px] sm:leading-10">
           {hero.title}
         </h1>
-        <p className="mx-auto mt-5 max-w-[650px] text-[17px] font-medium leading-7 text-[#6b7280]">
+        <p className="mx-auto mt-3 max-w-[580px] text-[14px] font-normal leading-6 text-[#6b7280]">
           {hero.description}
         </p>
       </div>
@@ -38,7 +41,7 @@ function DoctorsHero({ hero }: { hero: DoctorsPageContent['hero'] }) {
 
 function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
   return (
-    <Card className="overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgba(15,23,42,0.08)]">
+    <Card className="overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(15,23,42,0.08)]">
       <Link
         aria-label={`View profile for ${doctor.name}`}
         className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
@@ -46,18 +49,18 @@ function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
       >
         <img
           alt={doctor.imageAlt}
-          className="h-[300px] w-full bg-[#edf5f8] object-cover object-top"
+          className="h-[256px] w-full bg-[#edf5f8] object-cover object-top"
           src={doctor.imageUrl}
         />
-        <div className="flex min-h-[174px] flex-col bg-white px-5 py-5">
-          <h2 className="text-[17px] font-extrabold leading-6 text-[#005687]">{doctor.name}</h2>
-          {doctor.credential ? (
-            <p className="mt-3 text-[11px] font-extrabold uppercase leading-4 text-[#3695b9]">
-              {doctor.credential}
-            </p>
-          ) : null}
-          <p className="mt-2 text-[14px] font-medium leading-5 text-[#6b7280]">{doctor.focus ?? doctor.specialty}</p>
-          <span className="mt-auto inline-flex min-h-[38px] items-center justify-center gap-2 rounded-md border-2 border-[#3695b9] px-3 text-center text-[11px] font-extrabold leading-4 text-[#3695b9]">
+        <div className="flex min-h-[148px] flex-col bg-white p-4">
+          <h2 className="text-[15px] font-bold leading-5 text-[#005687]">{doctor.name}</h2>
+          <p className="mt-1 text-[12px] font-semibold leading-4 text-[#3695B9]">
+            {doctor.credential ?? doctor.specialty}
+          </p>
+          <p className="mt-2 line-clamp-2 text-[13px] font-normal leading-5 text-[#6b7280]">
+            {doctor.focus ?? doctor.specialty}
+          </p>
+          <span className="mt-3 inline-flex min-h-[36px] items-center justify-center gap-2 rounded-full border border-[#3695B9] px-4 text-center text-[12px] font-bold leading-4 text-[#3695B9] transition hover:bg-[#3695B9] hover:text-white">
             <CalendarIcon />
             {doctor.bookingLabel ?? `Book with ${doctor.name}`}
           </span>
@@ -69,7 +72,7 @@ function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
 
 function DoctorsGrid({ doctors }: { doctors: LandingDoctor[] }) {
   return (
-    <section aria-label="Doctor profiles" className="bg-[#f7fafc] pb-[86px]">
+    <section aria-label="Doctor profiles" className="bg-[#f7fafc] pb-16">
       <div className="mx-auto grid w-full max-w-[1280px] gap-x-6 gap-y-12 px-4 sm:px-6 md:grid-cols-2 lg:grid-cols-3 lg:px-8 xl:grid-cols-4">
         {doctors.map((doctor) => (
           <DoctorCard doctor={doctor} key={doctor.detail.profileHref} />

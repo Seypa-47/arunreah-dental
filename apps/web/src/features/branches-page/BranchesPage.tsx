@@ -118,33 +118,33 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
 
   return (
     <section className="relative bg-[#eef5f8] pb-0">
-      <div className="relative min-h-[505px] overflow-hidden bg-white">
+      <div className="relative min-h-[380px] overflow-hidden bg-white sm:min-h-[420px]">
         <img
           alt={hero.backgroundImageAlt}
           className="absolute inset-0 h-full w-full object-cover object-center opacity-75"
           src={hero.backgroundImageUrl}
         />
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-white via-white/88 to-white/12" />
-        <div className="relative mx-auto flex min-h-[505px] w-full max-w-[1280px] items-center px-4 sm:px-6 lg:px-8">
-          <div className="max-w-[520px] pt-4">
-            <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[5px] text-[#3695b9]">
+        <div className="relative mx-auto flex min-h-[380px] w-full max-w-[1280px] items-center px-4 sm:min-h-[420px] sm:px-6 lg:px-8">
+          <div className="max-w-[520px] py-8">
+            <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
               {hero.eyebrow}
             </p>
-            <h1 className="mt-6 text-[46px] font-extrabold leading-[54px] text-[#3695b9] sm:text-[58px] sm:leading-[66px]">
+            <h1 className="mt-4 text-[30px] font-extrabold leading-9 text-[#005687] sm:text-[34px] sm:leading-10">
               {hero.title}
             </h1>
-            <p className="mt-4 max-w-[420px] text-[19px] font-medium leading-8 text-[#6b7280]">{hero.subtitle}</p>
-            <div className="mt-5 flex flex-wrap gap-7">
+            <p className="mt-3 max-w-[460px] text-[14px] font-normal leading-6 text-[#6b7280]">{hero.subtitle}</p>
+            <div className="mt-5 flex flex-wrap gap-6">
               {hero.highlights.map((item) => (
                 <div className="flex items-center gap-3" key={item.label}>
-                  <span className="grid size-[36px] place-items-center rounded-full bg-[#eef8fb]">
+                  <span className="grid size-8 place-items-center rounded-full bg-[#eef8fb]">
                     {item.label === '2 Modern Clinics' ? (
                       <HighlightLocationIcon />
                     ) : (
-                      <img alt="" aria-hidden="true" className="size-[14px]" src={item.iconUrl} />
+                      <img alt="" aria-hidden="true" className="size-3.5" src={item.iconUrl} />
                     )}
                   </span>
-                  <span className="text-[14px] font-extrabold leading-5 text-[#005687]">{item.label}</span>
+                  <span className="text-[13px] font-bold leading-5 text-[#005687]">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -152,28 +152,28 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
         </div>
       </div>
 
-      <Card className="relative z-10 mx-auto -mt-[64px] grid w-[calc(100%-32px)] max-w-[1280px] gap-5 rounded-xl border-[#edf2f7] px-6 py-7 shadow-[0_16px_38px_rgba(15,23,42,0.08)] sm:px-8 lg:grid-cols-[1fr_1fr_1fr_240px] lg:items-center">
+      <Card className="relative z-10 mx-auto -mt-10 grid w-[calc(100%-32px)] max-w-[1280px] gap-4 rounded-xl border-[#edf2f7] px-6 py-5 shadow-[0_12px_28px_rgba(15,23,42,0.06)] sm:px-8 lg:grid-cols-[1fr_1fr_1fr_220px] lg:items-center">
         {hero.metrics.map((metric) => (
           <div
-            className="flex items-center gap-5 border-[#edf2f7] lg:border-r lg:last:border-r-0"
+            className="flex items-center gap-4 border-[#edf2f7] lg:border-r lg:last:border-r-0"
             key={metric.title}
           >
-            <span className="grid size-[45px] shrink-0 place-items-center rounded-md bg-[#eef8fb]">
+            <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#eef8fb]">
               {metric.title === 'Locations' ? (
                 <MetricLocationIcon />
               ) : (
-                <img alt="" aria-hidden="true" className="size-[19px]" src={metric.iconUrl} />
+                <img alt="" aria-hidden="true" className="size-[18px]" src={metric.iconUrl} />
               )}
             </span>
             <div>
-              <p className="text-[12px] font-medium leading-4 text-[#6b7280]">{metric.label}</p>
-              <p className="text-[16px] font-extrabold leading-5 text-[#005687]">{metric.title}</p>
+              <p className="text-[11px] font-medium leading-4 text-[#6b7280]">{metric.label}</p>
+              <p className="text-[15px] font-extrabold leading-5 text-[#005687]">{metric.title}</p>
               <p className="text-[11px] font-medium leading-4 text-[#6b7280]">{metric.description}</p>
             </div>
           </div>
         ))}
         <Button
-          className="min-h-[62px] rounded-[14px] bg-[#3695B9] px-9 text-[16px] shadow-[0_10px_22px_rgba(54,149,185,0.20)] hover:bg-[#2c84a5]"
+          className="min-h-[46px] rounded-full bg-[#3695B9] px-7 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.20)] hover:bg-[#2c84a5]"
           icon={<CalendarIcon />}
           onClick={() => navigate('/book-appointment')}
         >
@@ -195,11 +195,11 @@ function SectionIntro({
 }) {
   return (
     <div className="mx-auto max-w-[720px] px-4 text-center sm:px-6">
-      <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[4px] text-[#3695b9]">{eyebrow}</p>
-      <h2 className="mt-5 text-[34px] font-extrabold leading-[42px] text-[#005687] sm:text-[40px] sm:leading-[48px]">
+      <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{eyebrow}</p>
+      <h2 className="mt-3 text-[26px] font-extrabold leading-8 text-[#005687] sm:text-[30px] sm:leading-9">
         {title}
       </h2>
-      {description ? <p className="mt-6 text-[14px] font-medium leading-6 text-[#6b7280]">{description}</p> : null}
+      {description ? <p className="mt-3 text-[14px] font-normal leading-6 text-[#6b7280]">{description}</p> : null}
     </div>
   );
 }
@@ -214,13 +214,13 @@ function BranchCard({
   const phoneHref = `tel:${branch.phones[0]?.replaceAll(' ', '') ?? ''}`;
 
   return (
-    <Card className="grid overflow-hidden rounded-xl border-[#edf2f7] shadow-[0_2px_4px_rgba(15,23,42,0.04)] lg:h-[402px] lg:grid-cols-2">
-      <div className={`${flipped ? 'lg:order-2' : ''} px-6 py-8 sm:px-[46px] sm:py-[42px]`}>
-        <Badge className="gap-1.5 !bg-[#3695b9] px-3 py-1 text-[10px] !text-white">
+    <Card className="grid overflow-hidden rounded-xl border-[#edf2f7] shadow-[0_2px_4px_rgba(15,23,42,0.04)] lg:h-[380px] lg:grid-cols-2">
+      <div className={`${flipped ? 'lg:order-2' : ''} p-6 sm:p-8`}>
+        <Badge className="gap-1.5 !bg-[#3695B9] px-3 py-1 text-[10px] !text-white">
           <AssetIcon className="size-[10px] brightness-0 invert" name="branch-card-pin-alt.svg" />
           {branch.badge}
         </Badge>
-        <h3 className="mt-[18px] text-[27px] font-extrabold leading-9 text-[#005687] sm:text-[32px] sm:leading-10">
+        <h3 className="mt-3 text-[22px] font-extrabold leading-7 text-[#005687] sm:text-[24px] sm:leading-8">
           {branch.name}
         </h3>
 
@@ -306,19 +306,19 @@ function BranchesList({ content }: { content: BranchesPageContent }) {
 
 function BenefitsSection({ content }: { content: BranchesPageContent }) {
   return (
-    <section className="bg-white py-[96px]">
+    <section className="bg-white py-12 sm:py-14">
       <SectionIntro eyebrow={content.sections.benefitsEyebrow} title={content.sections.benefitsTitle} />
-      <div className="mx-auto mt-[70px] grid w-full max-w-[1280px] gap-8 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+      <div className="mx-auto mt-10 grid w-full max-w-[1280px] gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         {content.benefits.map((item) => (
           <Card
-            className="min-h-[226px] rounded-xl !border-transparent !bg-[#f7fafc] px-8 py-[30px] text-center shadow-none transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
+            className="min-h-[180px] rounded-xl !border-transparent !bg-[#f7fafc] px-6 py-6 text-center shadow-none transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(15,23,42,0.06)]"
             key={item.title}
           >
-            <span className="mx-auto grid size-[56px] place-items-center rounded-full bg-white shadow-[0_8px_16px_rgba(15,23,42,0.12)] ring-1 ring-[#e6eef3]">
-              <img alt="" aria-hidden="true" className="max-h-[25px] max-w-[25px]" src={item.iconUrl} />
+            <span className="mx-auto grid size-12 place-items-center rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)] ring-1 ring-[#e6eef3]">
+              <img alt="" aria-hidden="true" className="max-h-5 max-w-5" src={item.iconUrl} />
             </span>
-            <h3 className="mt-[30px] text-[18px] font-extrabold leading-6 text-[#005687]">{item.title}</h3>
-            <p className="mx-auto mt-[13px] max-w-[230px] text-[16px] font-medium leading-6 text-[#6b7280]">
+            <h3 className="mt-4 text-[15px] font-bold leading-5 text-[#005687]">{item.title}</h3>
+            <p className="mx-auto mt-2 max-w-[220px] text-[13px] font-normal leading-5 text-[#6b7280]">
               {item.description}
             </p>
           </Card>
@@ -332,27 +332,27 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
   const navigate = useNavigate();
 
   return (
-    <section className="bg-white">
-      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-xl bg-gradient-to-r from-[#3695B9] to-[#005687] px-6 py-11 text-white sm:px-16">
+    <section className="bg-white pb-14 pt-4 sm:pb-16">
+      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl bg-gradient-to-r from-[#3695B9] to-[#005687] px-6 py-9 text-white sm:px-12">
         <img
           alt={cta.backgroundImageAlt}
           className="absolute inset-y-0 right-0 hidden h-full w-[48%] object-cover opacity-25 md:block"
           src={cta.backgroundImageUrl}
         />
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#3695B9]/95 to-[#005687]/95" />
-        <div className="relative flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-7">
-            <span className="grid size-[78px] shrink-0 place-items-center rounded-full bg-white/16">
-              <AssetIcon className="size-[28px] brightness-0 invert" name="hero-calendar.svg" />
+        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-6">
+            <span className="grid size-14 shrink-0 place-items-center rounded-full bg-white/16">
+              <AssetIcon className="size-6 brightness-0 invert" name="hero-calendar.svg" />
             </span>
             <div>
-              <p className="text-[13px] font-bold leading-5 text-white/70">{cta.eyebrow}</p>
-              <h2 className="text-[30px] font-extrabold leading-9">{cta.title}</h2>
-              <p className="mt-1 text-[13px] font-medium leading-5 text-white/70">{cta.subtitle}</p>
+              <p className="text-[12px] font-bold uppercase leading-4 tracking-wider text-white/75">{cta.eyebrow}</p>
+              <h2 className="mt-1 text-[24px] font-extrabold leading-8 sm:text-[26px]">{cta.title}</h2>
+              <p className="mt-1 text-[13px] font-normal leading-5 text-white/80">{cta.subtitle}</p>
             </div>
           </div>
           <Button
-            className="min-h-[58px] rounded-full bg-white px-12 text-[15px] text-[#3695B9] shadow-none hover:bg-[#eef8fb] hover:text-[#005687] focus-visible:outline-white"
+            className="min-h-[46px] rounded-full bg-white px-8 text-[14px] font-bold text-[#3695B9] shadow-none hover:bg-[#eef8fb] hover:text-[#005687] focus-visible:outline-white"
             onClick={() => navigate('/book-appointment')}
             variant="secondary"
           >

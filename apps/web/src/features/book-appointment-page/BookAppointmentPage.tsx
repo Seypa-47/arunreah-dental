@@ -100,11 +100,11 @@ function ChevronIcon({ direction }: { direction: 'left' | 'right' }) {
 }
 
 const fieldClass =
-  'h-[54px] w-full rounded-xl border border-[#d9e4eb] bg-white px-12 text-[14px] font-semibold text-[#005687] outline-none transition placeholder:text-[#94a3b8] focus:border-[#3695b9] focus:ring-2 focus:ring-[#d9f0f7]';
+  'h-[46px] w-full rounded-lg border border-[#d9e4eb] bg-white px-11 text-[14px] font-medium text-[#005687] outline-none transition placeholder:text-[#94a3b8] focus:border-[#3695b9] focus:ring-2 focus:ring-[#d9f0f7]';
 
 function FieldIcon({ name }: { name: IconName }) {
   return (
-    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
+    <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]">
       <AppointmentIcon className="size-[18px]" name={name} />
     </span>
   );
@@ -127,7 +127,7 @@ function SelectField({
 }) {
   return (
     <div>
-      <label className="mb-3 block text-[13px] font-extrabold leading-4 text-[#005687]" htmlFor={id}>
+      <label className="mb-2 block text-[13px] font-bold leading-4 text-[#005687]" htmlFor={id}>
         {label}
       </label>
       <div className="relative">
@@ -145,7 +145,7 @@ function SelectField({
             </option>
           ))}
         </select>
-        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
+        <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]">
           <ChevronIcon direction="right" />
         </span>
       </div>
@@ -168,7 +168,7 @@ function TextField({
 }) {
   return (
     <div>
-      <label className="mb-3 block text-[13px] font-extrabold leading-4 text-[#005687]" htmlFor={id}>
+      <label className="mb-2 block text-[13px] font-bold leading-4 text-[#005687]" htmlFor={id}>
         {label}
       </label>
       <div className="relative">
@@ -181,11 +181,11 @@ function TextField({
 
 function SectionTitle({ number, title }: { number: string; title: string }) {
   return (
-    <div className="flex items-center gap-4">
-      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#3695b9] text-[15px] font-extrabold text-white">
+    <div className="flex items-center gap-3.5">
+      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#3695b9] text-[14px] font-bold text-white">
         {number}
       </span>
-      <h2 className="text-[22px] font-extrabold leading-7 text-[#005687]">{title}</h2>
+      <h2 className="text-[20px] font-extrabold leading-7 text-[#005687] sm:text-[22px]">{title}</h2>
     </div>
   );
 }
@@ -199,10 +199,10 @@ function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] })
         src={hero.backgroundImageUrl}
       />
       <div aria-hidden="true" className="absolute inset-0 bg-[#3695b9]/90" />
-      <div className="relative mx-auto flex min-h-[300px] w-full max-w-[1280px] items-center px-4 pb-12 pt-12 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex min-h-[220px] w-full max-w-[1280px] items-center px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
         <div className="max-w-[600px]">
-          <h1 className="text-[42px] font-extrabold leading-[52px] text-white">{hero.title}</h1>
-          <p className="mt-5 max-w-[520px] text-[18px] font-medium leading-8 text-white/85">{hero.subtitle}</p>
+          <h1 className="text-[30px] font-extrabold leading-tight text-white sm:text-[34px] sm:leading-10">{hero.title}</h1>
+          <p className="mt-2.5 max-w-[520px] text-[14px] font-normal leading-6 text-white/90">{hero.subtitle}</p>
         </div>
       </div>
     </section>
@@ -220,18 +220,18 @@ function AppointmentCalendar({
 }) {
   return (
     <div>
-      <div className="mb-7 flex items-center justify-between">
+      <div className="mb-5 flex items-center justify-between">
         <button aria-label="Previous month" className="text-[#94a3b8] transition hover:text-[#3695b9]" type="button">
           <ChevronIcon direction="left" />
         </button>
-        <h3 className="text-[16px] font-extrabold leading-6 text-[#005687]">{calendar.monthLabel}</h3>
+        <h3 className="text-[15px] font-extrabold leading-6 text-[#005687]">{calendar.monthLabel}</h3>
         <button aria-label="Next month" className="text-[#94a3b8] transition hover:text-[#3695b9]" type="button">
           <ChevronIcon direction="right" />
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-y-5 text-center">
+      <div className="grid grid-cols-7 gap-y-3.5 text-center">
         {calendar.weekdays.map((day) => (
-          <span className="text-[12px] font-extrabold leading-4 text-[#6b7280]" key={day}>
+          <span className="text-[12px] font-bold leading-4 text-[#6b7280]" key={day}>
             {day}
           </span>
         ))}
@@ -240,7 +240,7 @@ function AppointmentCalendar({
           return (
             <button
               aria-pressed={isSelected}
-              className={`mx-auto grid size-9 place-items-center rounded-full text-[13px] font-extrabold transition ${
+              className={`mx-auto grid size-8 place-items-center rounded-full text-[13px] font-bold transition ${
                 isSelected
                   ? 'bg-[#3695b9] text-white'
                   : date.muted
@@ -272,16 +272,16 @@ function AvailableTimes({
 }) {
   return (
     <div>
-      <h3 className="mb-6 text-center text-[16px] font-extrabold leading-6 text-[#005687]">Available Time</h3>
-      <div className="space-y-3">
+      <h3 className="mb-5 text-center text-[15px] font-extrabold leading-6 text-[#005687]">Available Time</h3>
+      <div className="space-y-2.5">
         {times.map((time) => {
           const isSelected = time === selectedTime;
           return (
             <button
               aria-pressed={isSelected}
-              className={`h-[50px] w-full rounded-lg border text-[15px] font-extrabold transition ${
+              className={`h-[42px] w-full rounded-lg border text-[13px] font-bold transition ${
                 isSelected
-                  ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-[0_12px_22px_rgba(54,149,185,0.2)]'
+                  ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-[0_8px_16px_rgba(54,149,185,0.2)]'
                   : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
               }`}
               key={time}
@@ -327,11 +327,11 @@ function AppointmentForm({
   };
 
   return (
-    <Card className="rounded-xl border-[#edf2f7] px-6 py-10 shadow-[0_18px_40px_rgba(15,23,42,0.08)] sm:px-10 lg:px-[44px]">
-      <form className="space-y-[54px]" onSubmit={handleSubmit}>
+    <Card className="rounded-2xl border-[#edf2f7] p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] sm:p-8">
+      <form className="space-y-8 sm:space-y-10" onSubmit={handleSubmit}>
         <section>
           <SectionTitle number="1" title="Appointment Details" />
-          <div className="mt-9 space-y-7">
+          <div className="mt-6 space-y-5">
             <SelectField
               icon="location"
               id="branch"
@@ -361,7 +361,7 @@ function AppointmentForm({
 
         <section>
           <SectionTitle number="2" title="Choose Date & Time" />
-          <div className="mt-9 grid gap-12 lg:grid-cols-[1fr_360px]">
+          <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_320px]">
             <AppointmentCalendar calendar={content.calendar} onSelectDate={onSelectDate} selectedDate={selectedDate} />
             <AvailableTimes onSelectTime={onSelectTime} selectedTime={selectedTime} times={content.times} />
           </div>
@@ -369,7 +369,7 @@ function AppointmentForm({
 
         <section>
           <SectionTitle number="3" title="Your Information" />
-          <div className="mt-9 grid gap-7 md:grid-cols-2">
+          <div className="mt-6 grid gap-5 md:grid-cols-2">
             <TextField icon="user" id="fullName" label={content.form.fields.fullName} placeholder={content.form.placeholders.fullName} />
             <TextField
               icon="phone"
@@ -389,8 +389,8 @@ function AppointmentForm({
           </div>
         </section>
 
-        <Button className="min-h-[64px] rounded-lg bg-[#3695b9] px-10 text-[17px] shadow-[0_14px_28px_rgba(54,149,185,0.25)] hover:bg-[#2f8fb0]">
-          <AppointmentIcon className="size-[18px]" name="calendar" />
+        <Button className="h-[46px] min-h-[46px] rounded-full bg-[#3695b9] px-8 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.24)] hover:bg-[#2f8fb0]">
+          <AppointmentIcon className="size-[16px]" name="calendar" />
           {content.form.submitLabel}
         </Button>
       </form>
@@ -400,10 +400,10 @@ function AppointmentForm({
 
 function SummaryRow({ icon, label, value }: { icon: IconName; label: string; value: string }) {
   return (
-    <div className="grid grid-cols-[24px_1fr_auto] items-center gap-5">
-      <AppointmentIcon className="size-[17px] text-[#3695b9]" name={icon} />
-      <span className="text-[15px] font-medium leading-5 text-[#6b7280]">{label}</span>
-      <span className="text-right text-[15px] font-extrabold leading-5 text-[#005687]">{value}</span>
+    <div className="grid grid-cols-[20px_1fr_auto] items-center gap-4">
+      <AppointmentIcon className="size-[15px] text-[#3695b9]" name={icon} />
+      <span className="text-[13px] font-medium leading-5 text-[#6b7280]">{label}</span>
+      <span className="text-right text-[13px] font-bold leading-5 text-[#005687]">{value}</span>
     </div>
   );
 }
@@ -424,16 +424,16 @@ function AppointmentSummary({
   selectedTime: string;
 }) {
   return (
-    <Card className="sticky top-20 rounded-xl border-[#edf2f7] px-7 py-8 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
-      <h2 className="text-[22px] font-extrabold leading-7 text-[#005687]">{content.summary.title}</h2>
-      <div className="mt-7 rounded-xl bg-[#edf7fb] p-4">
-        <div className="grid grid-cols-[96px_1fr] gap-5">
-          <img alt={branch.imageAlt} className="h-[96px] w-[96px] rounded-lg bg-[#e8e8f0] object-cover" src={branch.imageUrl} />
+    <Card className="sticky top-20 rounded-2xl border-[#edf2f7] p-6 shadow-[0_10px_28px_rgba(15,23,42,0.06)]">
+      <h2 className="text-[18px] font-extrabold leading-6 text-[#005687] sm:text-[20px]">{content.summary.title}</h2>
+      <div className="mt-5 rounded-xl bg-[#edf7fb] p-3.5">
+        <div className="grid grid-cols-[80px_1fr] gap-4">
+          <img alt={branch.imageAlt} className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0] object-cover" src={branch.imageUrl} />
           <div>
-            <h3 className="text-[14px] font-extrabold leading-5 text-[#005687]">{branch.name}</h3>
-            <p className="mt-1 text-[12px] font-medium leading-5 text-[#6b7280]">{branch.address}</p>
+            <h3 className="text-[13px] font-bold leading-5 text-[#005687]">{branch.name}</h3>
+            <p className="mt-1 text-[12px] font-normal leading-4 text-[#6b7280]">{branch.address}</p>
             <a
-              className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-extrabold text-[#3695b9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
+              className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-[#3695b9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
               href={branch.mapUrl}
             >
               <AppointmentIcon className="size-[13px]" name="location" />
@@ -443,7 +443,7 @@ function AppointmentSummary({
         </div>
       </div>
 
-      <div className="mt-8 space-y-7">
+      <div className="mt-6 space-y-4">
         <SummaryRow icon="service" label="Service" value={selectedServiceName} />
         <SummaryRow icon="doctor" label="Doctor" value={selectedDoctorName} />
         <SummaryRow icon="calendar" label="Date" value={selectedDateLabel} />
@@ -451,14 +451,14 @@ function AppointmentSummary({
         <SummaryRow icon="hourglass" label="Duration" value={content.summary.duration} />
       </div>
 
-      <div className="mt-8 rounded-xl border border-[#d7e7ef] bg-[#f4fbfd] p-6">
-        <h3 className="flex items-center gap-2 text-[14px] font-extrabold leading-5 text-[#3695b9]">
-          <AppointmentIcon className="size-[16px]" name="doctor" />
+      <div className="mt-6 rounded-xl border border-[#d7e7ef] bg-[#f4fbfd] p-5">
+        <h3 className="flex items-center gap-2 text-[13px] font-bold leading-5 text-[#3695b9]">
+          <AppointmentIcon className="size-[15px]" name="doctor" />
           Important Information
         </h3>
-        <ul className="mt-5 space-y-5">
+        <ul className="mt-3.5 space-y-3">
           {content.information.map((item) => (
-            <li className="flex gap-4 text-[13px] font-medium leading-5 text-[#6b7280]" key={item}>
+            <li className="flex gap-3 text-[12px] font-medium leading-5 text-[#6b7280]" key={item}>
               <AppointmentIcon className="mt-0.5 size-[13px] shrink-0 text-[#3695b9]" name="check" />
               <span>{item}</span>
             </li>
@@ -466,16 +466,16 @@ function AppointmentSummary({
         </ul>
       </div>
 
-      <div className="mt-8 border-t border-[#edf2f5] pt-8">
-        <h3 className="text-[18px] font-extrabold leading-6 text-[#005687]">{content.help.title}</h3>
-        <p className="mt-2 text-[13px] font-medium leading-5 text-[#6b7280]">{content.help.subtitle}</p>
-        <div className="mt-5 space-y-3 text-[14px] font-extrabold leading-5 text-[#3695b9]">
-          <a className="flex items-center gap-3 hover:text-[#005687]" href={`tel:${content.help.phone.replaceAll(/[^0-9+]/g, '')}`}>
-            <AppointmentIcon className="size-[16px]" name="phone" />
+      <div className="mt-6 border-t border-[#edf2f5] pt-6">
+        <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{content.help.title}</h3>
+        <p className="mt-1 text-[12px] font-medium leading-5 text-[#6b7280]">{content.help.subtitle}</p>
+        <div className="mt-4 space-y-2.5 text-[13px] font-bold leading-5 text-[#3695b9]">
+          <a className="flex items-center gap-2.5 hover:text-[#005687]" href={`tel:${content.help.phone.replaceAll(/[^0-9+]/g, '')}`}>
+            <AppointmentIcon className="size-[15px]" name="phone" />
             {content.help.phone}
           </a>
-          <a className="flex items-center gap-3 hover:text-[#005687]" href={`mailto:${content.help.email}`}>
-            <AppointmentIcon className="size-[16px]" name="email" />
+          <a className="flex items-center gap-2.5 hover:text-[#005687]" href={`mailto:${content.help.email}`}>
+            <AppointmentIcon className="size-[15px]" name="email" />
             {content.help.email}
           </a>
         </div>
@@ -520,7 +520,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main className="bg-[#f2f7fa]">
         <AppointmentHero hero={content.hero} />
-        <section className="relative z-10 mx-auto grid w-full max-w-[1280px] gap-8 px-4 pb-[94px] sm:px-6 lg:-mt-[28px] lg:grid-cols-[1fr_390px] lg:px-8">
+        <section className="relative z-10 mx-auto grid w-full max-w-[1280px] gap-8 px-4 pb-14 sm:px-6 sm:pb-16 lg:-mt-[28px] lg:grid-cols-[1fr_390px] lg:px-8">
           <AppointmentForm
             content={content}
             onSelectBranch={setSelectedBranch}
@@ -553,10 +553,10 @@ function BookAppointmentSkeleton() {
   return (
     <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
       <main aria-busy="true" aria-label="Loading appointment page" className="bg-[#f2f7fa]">
-        <section className="h-[300px] animate-pulse bg-[#238eb4]" />
-        <section className="relative z-10 mx-auto grid max-w-[1280px] gap-8 px-4 pb-[94px] sm:px-6 lg:-mt-[28px] lg:grid-cols-[1fr_390px] lg:px-8">
-          <div className="h-[1020px] animate-pulse rounded-xl bg-white" />
-          <div className="h-[645px] animate-pulse rounded-xl bg-white" />
+        <section className="h-[220px] animate-pulse bg-[#238eb4]" />
+        <section className="relative z-10 mx-auto grid max-w-[1280px] gap-8 px-4 pb-14 sm:px-6 sm:pb-16 lg:-mt-[28px] lg:grid-cols-[1fr_390px] lg:px-8">
+          <div className="h-[800px] animate-pulse rounded-2xl bg-white" />
+          <div className="h-[520px] animate-pulse rounded-2xl bg-white" />
         </section>
       </main>
     </SiteLayout>
