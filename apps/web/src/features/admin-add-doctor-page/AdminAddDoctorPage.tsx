@@ -1,4 +1,5 @@
 import { useState, useRef, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import {
   useCreateDoctorMutation,
 } from './use-admin-add-doctor-page';
 import type { NewDoctorFormState } from '@/services/admin-add-doctor';
+import { uploadMedia } from '@/services/media';
 
 export function AdminAddDoctorPage() {
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ export function AdminAddDoctorPage() {
 
   // Form states
   const [name, setName] = useState('');
+  const [nameKm, setNameKm] = useState('');
   const [roleTitle, setRoleTitle] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [yearsExp, setYearsExp] = useState('');
@@ -45,17 +48,10 @@ export function AdminAddDoctorPage() {
   // UI state
   const [isSaved, setIsSaved] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const photoUpload = useMutation({ mutationFn: (file: File) => uploadMedia('doctors', file), onError: () => setErrors((previous) => ({ ...previous, photo: 'Image upload failed. Use a JPEG, PNG, or WEBP image under 5 MB.' })) });
 
   const handlePhotoSelect = (file: File) => {
-    if (file.size > 2 * 1024 * 1024) {
-      alert('File size exceeds 2MB limit. Please choose a smaller image.');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPhotoPreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    photoUpload.mutate(file, { onSuccess: (media) => { setErrors((previous) => ({ ...previous, photo: '' })); setPhotoPreview(media.key); } });
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -91,6 +87,7 @@ export function AdminAddDoctorPage() {
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!name.trim()) newErrors.name = 'Full name is required';
+    if (!nameKm.trim()) newErrors.nameKm = 'Khmer full name is required';
     if (!roleTitle.trim()) newErrors.roleTitle = 'Position/Title is required';
     if (!specialty.trim()) newErrors.specialty = 'Specialization is required';
     if (!yearsExp.trim()) newErrors.yearsExp = 'Experience is required';
@@ -112,6 +109,7 @@ export function AdminAddDoctorPage() {
       content,
       expertise: expertiseList,
       name,
+      nameKm,
       photoUrl: photoPreview || '',
       procedures: procedures || '0',
       roleTitle,
@@ -323,6 +321,27 @@ export function AdminAddDoctorPage() {
                       />
                       {errors.name && (
                         <p className="mt-1 text-[12px] text-[#ef4444]">{errors.name}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-[13px] font-bold text-[#182238]">
+                        Full Name (Khmer) <span className="text-[#ef4444]">*</span>
+                      </label>
+                      <input
+                        className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
+                          errors.nameKm ? 'border-[#ef4444]' : 'border-[#dce5ef]'
+                        }`}
+                        onChange={(e) => {
+                          setNameKm(e.target.value);
+                          if (errors.nameKm) setErrors((prev) => ({ ...prev, nameKm: '' }));
+                        }}
+                        placeholder="បញ្ចូលឈ្មោះជាភាសាខ្មែរ"
+                        type="text"
+                        value={nameKm}
+                      />
+                      {errors.nameKm && (
+                        <p className="mt-1 text-[12px] text-[#ef4444]">{errors.nameKm}</p>
                       )}
                     </div>
 
@@ -831,4 +850,3 @@ export function AdminAddDoctorPage() {
     </div>
   );
 }
-

@@ -27,13 +27,17 @@ export const queryKeys = {
     appointment: (id: string) => ['admin', 'appointments', id] as const,
     branches: (filters: Record<string, string | number | boolean | undefined> = {}) =>
       ['admin', 'branches', filters] as const,
+    branch: (id: string) => ['admin', 'branches', id] as const,
     clinic: () => ['admin', 'clinic'] as const,
     contact: () => ['admin', 'contact'] as const,
     doctors: (filters: Record<string, string | number | boolean | undefined> = {}) =>
       ['admin', 'doctors', filters] as const,
+    doctor: (id: string) => ['admin', 'doctors', id] as const,
     services: (filters: Record<string, string | number | boolean | undefined> = {}) =>
       ['admin', 'services', filters] as const,
+    service: (id: string) => ['admin', 'services', id] as const,
     showcases: (filters: Record<string, string | number | boolean | undefined> = {}) =>
       ['admin', 'showcases', filters] as const,
+    showcase: (id: string) => ['admin', 'showcases', id] as const,
   },
 } as const;

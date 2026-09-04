@@ -7,6 +7,7 @@ import { AdminDashboardPage } from '@/features/admin-dashboard-page/AdminDashboa
 import { AdminCalendarPage } from '@/features/admin-calendar-page/AdminCalendarPage';
 import { AdminAllAppointmentsPage } from '@/features/admin-all-appointments-page/AdminAllAppointmentsPage';
 import { AdminServiceDetailPage } from '@/features/admin-service-detail-page/AdminServiceDetailPage';
+import { AdminServiceCreatePage } from '@/features/admin-service-create-page/AdminServiceCreatePage';
 import { AdminServicesPage } from '@/features/admin-services-page/AdminServicesPage';
 import { AdminDoctorsPage } from '@/features/admin-doctors-page/AdminDoctorsPage';
 import { AdminAddDoctorPage } from '@/features/admin-add-doctor-page/AdminAddDoctorPage';
@@ -51,6 +52,10 @@ export const router = createBrowserRouter([
   {
     path: '/admin/services',
     element: protectedAdminRoute(<AdminServicesPage />),
+  },
+  {
+    path: '/admin/services/new',
+    element: protectedAdminRoute(<AdminServiceCreatePage />),
   },
   {
     path: '/admin/services/:serviceId/edit',

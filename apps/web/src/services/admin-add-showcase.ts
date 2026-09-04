@@ -1,5 +1,6 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
 import type { ShowcaseArticle, ShowcaseCategory, ShowcaseStatus } from '@/services/admin-showcase';
+import { cmsApi } from '@/services/cms';
 
 export type SectionBlock = {
   content: string;
@@ -32,6 +33,7 @@ export type NewShowcaseFormState = {
   slug: string;
   status: ShowcaseStatus;
   title: string;
+  titleKm: string;
 };
 
 export type AdminAddShowcaseContent = {
@@ -130,10 +132,32 @@ export async function saveShowcaseArticle(
 ): Promise<ShowcaseArticle> {
   const id = formData.slug.trim() || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `showcase-${Date.now()}`;
 
+  const response = await cmsApi.showcases.create({
+    slug: id,
+    status: formData.status === 'published' ? 'PUBLISHED' : 'DRAFT',
+    showOnHomepage: formData.homepageVisibility,
+    displayOrder: formData.displayOrder || 0,
+    titleEn: formData.title,
+    titleKm: formData.titleKm,
+    categoryEn: formData.category || null,
+    categoryKm: null,
+    summaryEn: formData.shortSummary || null,
+    summaryKm: null,
+    bodyEn: formData.bodyContent || null,
+    bodyKm: null,
+    coverImageKey: formData.coverImageUrl || null,
+    metaTitleEn: formData.metaTitle || null,
+    metaTitleKm: null,
+    metaDescriptionEn: formData.metaDescription || null,
+    metaDescriptionKm: null,
+    sections: formData.sectionBlocks.map((section, displayOrder) => ({ sectionType: 'TEXT' as const, headingEn: section.title || null, headingKm: null, bodyEn: section.content || null, bodyKm: null, imageKey: null, displayOrder })),
+    relatedShowcaseIds: formData.relatedShowcaseIds,
+  });
+  const showcase = response.showcase;
   const article: ShowcaseArticle = {
     category: (formData.category as ShowcaseCategory) || 'Treatment',
     homepageVisibility: formData.homepageVisibility,
-    id,
+    id: showcase.id,
     imageAlt: formData.title,
     imageUrl: formData.coverImageUrl || '/assets/landing/showcase-room.png',
     lastUpdatedAuthor: 'Admin',
@@ -143,7 +167,7 @@ export async function saveShowcaseArticle(
       year: 'numeric',
     }),
     order: formData.displayOrder || 1,
-    status: formData.status,
+    status: showcase.status === 'PUBLISHED' ? 'published' : 'draft',
     structure: {
       bodyContent: formData.bodyContent,
       coverImage: formData.coverImageUrl || '/assets/landing/showcase-room.png',
@@ -159,4 +183,3 @@ export async function saveShowcaseArticle(
 
   return article;
 }
-

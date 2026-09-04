@@ -8,11 +8,12 @@ import {
   type ClinicGeneralInfo,
   type ContactSettings,
 } from '@/services/admin-clinic-info';
+import { invalidateCmsDomain, invalidateCmsSettings } from '@/services/cms-cache';
 
 export function useAdminClinicInfoPageQuery() {
   return useQuery({
     queryFn: fetchAdminClinicInfoContent,
-    queryKey: ['admin-clinic-info-page'],
+    queryKey: ['admin', 'clinic-info-page'],
   });
 }
 
@@ -22,7 +23,8 @@ export function useUpdateClinicInfoMutation() {
   return useMutation({
     mutationFn: (info: ClinicGeneralInfo) => saveClinicInfo(info),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin-clinic-info-page'] });
+      void invalidateCmsSettings(queryClient, 'clinic');
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'clinic-info-page'] });
     },
   });
 }
@@ -33,7 +35,8 @@ export function useUpdateBranchMutation() {
   return useMutation({
     mutationFn: (branch: ClinicBranch) => saveBranch(branch),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin-clinic-info-page'] });
+      void invalidateCmsDomain(queryClient, 'branches');
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'clinic-info-page'] });
     },
   });
 }
@@ -44,8 +47,8 @@ export function useUpdateContactSettingsMutation() {
   return useMutation({
     mutationFn: (settings: ContactSettings) => saveContactSettings(settings),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin-clinic-info-page'] });
+      void invalidateCmsSettings(queryClient, 'contact');
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'clinic-info-page'] });
     },
   });
 }
-

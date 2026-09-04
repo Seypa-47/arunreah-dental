@@ -1,4 +1,6 @@
-import { useState, useMemo, useRef, type ChangeEvent } from 'react';
+import { useState, useEffect, useMemo, useRef, type ChangeEvent, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { AdminBranchListQuery, CreateBranchInput } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
 import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
@@ -14,6 +16,12 @@ import type {
   ClinicGeneralInfo,
   ContactSettings,
 } from '@/services/admin-clinic-info';
+import { toClinicBranch } from '@/services/admin-clinic-info';
+import { cmsApi } from '@/services/cms';
+import { ApiClientError } from '@/lib/api';
+import { invalidateCmsDomain } from '@/services/cms-cache';
+import { queryKeys } from '@/lib/query-keys';
+import { getPublicMediaUrl, uploadMedia } from '@/services/media';
 
 function ToggleSwitch({
   checked,
@@ -46,104 +54,215 @@ function ToggleSwitch({
   );
 }
 
+type NewBranchForm = Pick<CreateBranchInput, 'addressEn' | 'addressKm' | 'nameEn' | 'nameKm' | 'phone' | 'slug'>;
+type BranchListState = Pick<AdminBranchListQuery, 'limit' | 'order' | 'page' | 'search' | 'sort' | 'status'>;
+
+const emptyNewBranchForm: NewBranchForm = {
+  addressEn: '',
+  addressKm: '',
+  nameEn: '',
+  nameKm: '',
+  phone: '',
+  slug: '',
+};
+
+function CreateBranchModal({
+  isPending,
+  onClose,
+  onSubmit,
+  open,
+}: {
+  isPending: boolean;
+  onClose: () => void;
+  onSubmit: (input: NewBranchForm) => void;
+  open: boolean;
+}) {
+  const [form, setForm] = useState<NewBranchForm>(emptyNewBranchForm);
+
+  useEffect(() => {
+    if (!open) setForm(emptyNewBranchForm);
+  }, [open]);
+
+  if (!open) return null;
+
+  const update = (field: keyof NewBranchForm, value: string) => setForm((previous) => ({ ...previous, [field]: value }));
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    onSubmit(form);
+  };
+
+  return (
+    <div aria-modal="true" className="fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-4" role="dialog">
+      <form className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl" onSubmit={submit}>
+        <div className="flex items-center justify-between border-b border-[#edf2f7] pb-4">
+          <div>
+            <h2 className="text-xl font-bold text-[#182238]">Create Branch</h2>
+            <p className="mt-1 text-sm text-[#71839e]">English and Khmer identity and address are both required.</p>
+          </div>
+          <button aria-label="Close create branch dialog" className="text-xl text-[#71839e]" disabled={isPending} onClick={onClose} type="button">×</button>
+        </div>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          {([
+            ['slug', 'Slug'],
+            ['nameEn', 'Branch name (English)'],
+            ['nameKm', 'Branch name (Khmer)'],
+            ['phone', 'Primary phone'],
+          ] as const).map(([field, label]) => (
+            <label className="block" key={field}>
+              <span className="text-[13px] font-bold text-[#182238]">{label}</span>
+              <input className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm outline-none focus:border-[#2187a8]" onChange={(event) => update(field, event.target.value)} required type="text" value={form[field]} />
+            </label>
+          ))}
+          <label className="block sm:col-span-2">
+            <span className="text-[13px] font-bold text-[#182238]">Address (English)</span>
+            <textarea className="mt-1.5 min-h-20 w-full rounded-xl border border-[#dce5ef] p-3 text-sm outline-none focus:border-[#2187a8]" onChange={(event) => update('addressEn', event.target.value)} required value={form.addressEn} />
+          </label>
+          <label className="block sm:col-span-2">
+            <span className="text-[13px] font-bold text-[#182238]">Address (Khmer)</span>
+            <textarea className="mt-1.5 min-h-20 w-full rounded-xl border border-[#dce5ef] p-3 text-sm outline-none focus:border-[#2187a8]" onChange={(event) => update('addressKm', event.target.value)} required value={form.addressKm} />
+          </label>
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button disabled={isPending} onClick={onClose} type="button" variant="secondary">Cancel</Button>
+          <Button className="bg-[#2187a8] text-white" disabled={isPending} type="submit">{isPending ? 'Creating…' : 'Create draft branch'}</Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export function AdminClinicInfoPage({
   initialTab = 'clinic',
 }: {
   initialTab?: 'clinic' | 'branches' | 'contact';
 }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'clinic' | 'branches' | 'contact'>(initialTab);
   const { data, isLoading } = useAdminClinicInfoPageQuery();
+  const [branchListState, setBranchListState] = useState<BranchListState>({
+    limit: 20,
+    order: 'asc',
+    page: 1,
+    sort: 'displayOrder',
+  });
+  const branchListQuery = useQuery({
+    enabled: activeTab === 'branches',
+    queryFn: () => cmsApi.branches.list(branchListState),
+    queryKey: queryKeys.admin.branches(branchListState),
+  });
 
   const updateInfoMutation = useUpdateClinicInfoMutation();
   const updateBranchMutation = useUpdateBranchMutation();
   const updateContactMutation = useUpdateContactSettingsMutation();
+  const [isCreateBranchOpen, setIsCreateBranchOpen] = useState(false);
+  const createBranchMutation = useMutation({
+    mutationFn: (input: NewBranchForm) => cmsApi.branches.create({
+      ...input,
+      status: 'DRAFT',
+      featured: false,
+      displayOrder: 0,
+      acceptsAppointments: false,
+      showOnBranchesPage: false,
+      showOnHomepage: false,
+      includeInHomepageHero: false,
+    }),
+    onSuccess: (response) => {
+      const branch = toClinicBranch(response.branch);
+      setBranches((previous) => [branch, ...previous]);
+      setSelectedBranchId(branch.id);
+      setIsCreateBranchOpen(false);
+      void invalidateCmsDomain(queryClient, 'branches');
+      showToast('New branch created as a draft. Complete its details and save.');
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof ApiClientError && error.status === 409
+        ? 'That branch slug is already in use. Choose a different URL slug.'
+        : 'Unable to create a new branch. Please check the required bilingual fields and try again.';
+      showToast(message);
+    },
+  });
+  const deleteBranchMutation = useMutation({
+    mutationFn: (id: string) => cmsApi.branches.delete(id),
+    onSuccess: (_result, id) => {
+      setBranches((previous) => previous.filter((branch) => branch.id !== id));
+      setSelectedBranchId('');
+      void invalidateCmsDomain(queryClient, 'branches');
+      showToast('Branch deleted successfully.');
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof ApiClientError && error.status === 409
+        ? 'This branch is referenced by appointment history. Deactivate or unpublish it instead.'
+        : 'Unable to delete this branch. Please try again.';
+      showToast(message);
+    },
+  });
 
   // Tab 1 state: Clinic Information
   const [generalInfo, setGeneralInfo] = useState<ClinicGeneralInfo>({
-    clinicName: 'Arunreah Dental Clinic',
-    days: 'Mon - Sun',
-    email: 'info@arunreahdental.com',
-    endTime: '07:00 PM',
-    faviconUrl: '/assets/landing/footer-logo-cropped.png',
-    logoUrl: '/assets/landing/footer-logo-cropped.png',
-    shortDescription:
-      'Providing medical luxury dental care with a focus on precision, comfort, and professional excellence.',
-    startTime: '08:00 AM',
-    tagline: 'Healthy smiles for a better life.',
-    website: 'https://arunreahdental.com',
+    clinicNameEn: '',
+    clinicNameKm: '',
+    taglineEn: '',
+    taglineKm: '',
+    shortAboutEn: '',
+    shortAboutKm: '',
+    logoKey: '',
+    yearsExperience: '',
+    successfulCases: '',
+    patientSatisfaction: '',
   });
 
   // Tab 2 state: Branches
   const [branches, setBranches] = useState<ClinicBranch[]>([]);
   const [selectedBranchId, setSelectedBranchId] = useState<string>('toul-tompoung');
-  const [branchSearch, setBranchSearch] = useState('');
-  const [branchStatusFilter, setBranchStatusFilter] = useState('All');
 
   // Tab 3 state: Contact Settings
   const [contactSettings, setContactSettings] = useState<ContactSettings>({
-    backupChannel: 'Telegram',
-    contactFormErrorText: 'Something went wrong. Please try again later.',
-    contactFormSectionTitle: 'Send Us a Message',
-    contactFormSubmitLabel: 'Send Message',
-    contactFormSuccessText: 'Thank you! Your message has been sent successfully.',
-    contactPageShortDesc:
-      "We'd love to hear from you. Reach out to us for appointments, inquiries, or any questions about our dental care services.",
-    emailCardTitle: 'Email',
-    enableContactForm: true,
-    enableEmailNotifications: true,
-    enableTelegramNotifications: true,
-    eyebrow: 'GET IN TOUCH',
-    facebookUrl: 'https://facebook.com/arunreahdental',
-    googleMapsEmbed: 'https://maps.app.goo.gl/abc123xyz',
-    heading: 'Contact Arunreah Dental Clinic',
-    instagramUrl: 'https://instagram.com/arunreah.dental',
-    mainEmail: 'info@arunreahdental.com',
-    mainPhone: '069 978 997',
-    openingHoursCardTitle: 'Opening Hours',
-    phoneCardTitle: 'Phone',
-    recipientEmail: 'info@arunreahdental.com',
-    secondaryPhone: '061 978 997',
-    showBranchQuickLinks: true,
-    showMapOnContactPage: true,
-    socialCardTitle: 'Social',
-    supportEmail: 'support@arunreahdental.com',
-    supportNote:
-      'Our team is available Monday to Sunday, 8:00 AM - 7:00 PM. We usually respond within business hours.',
-    telegramLink: 'https://t.me/arunreahdental',
-    websiteDomain: 'https://arunreahdental.com',
+    primaryPhone: '',
+    secondaryPhone: '',
+    primaryEmail: '',
+    businessHoursEn: '',
+    businessHoursKm: '',
+    mainGoogleMapsUrl: '',
+    facebookUrl: '',
+    telegramUrl: '',
+    instagramUrl: '',
   });
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Sync initial query data
-  useMemo(() => {
+  useEffect(() => {
     if (data) {
       setGeneralInfo(data.generalInfo);
-      setBranches(data.branches);
       setContactSettings(data.contactSettings);
-      if (data.branches[0] && !selectedBranchId) {
-        setSelectedBranchId(data.branches[0].id);
+      if (activeTab !== 'branches') {
+        setBranches(data.branches);
+        setSelectedBranchId((current) => current || data.branches[0]?.id || '');
       }
     }
-  }, [data, selectedBranchId]);
+  }, [activeTab, data]);
+
+  useEffect(() => {
+    if (!branchListQuery.data) return;
+    const mappedBranches = branchListQuery.data.items.map(toClinicBranch);
+    setBranches(mappedBranches);
+    setSelectedBranchId((current) => current && mappedBranches.some((branch) => branch.id === current)
+      ? current
+      : mappedBranches[0]?.id || '');
+  }, [branchListQuery.data]);
 
   const selectedBranch = useMemo(() => {
     return branches.find((b) => b.id === selectedBranchId) || branches[0] || null;
   }, [branches, selectedBranchId]);
 
-  const filteredBranches = useMemo(() => {
-    return branches.filter((b) => {
-      const matchesSearch =
-        !branchSearch.trim() ||
-        `${b.name} ${b.address} ${b.city} ${b.phone1}`
-          .toLowerCase()
-          .includes(branchSearch.toLowerCase());
-      const matchesStatus =
-        branchStatusFilter === 'All' || b.status === branchStatusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [branches, branchSearch, branchStatusFilter]);
+  const updateBranch = (id: string, patch: Partial<ClinicBranch>) => {
+    setBranches((previous) => previous.map((branch) => branch.id === id ? { ...branch, ...patch } : branch));
+  };
+
+  const filteredBranches = branches;
+
+  const branchStatusLabel = (status: ClinicBranch['status']) => status.charAt(0) + status.slice(1).toLowerCase();
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -154,14 +273,32 @@ export function AdminClinicInfoPage({
     if (activeTab === 'clinic') {
       updateInfoMutation.mutate(generalInfo, {
         onSuccess: () => showToast('Clinic Information saved successfully!'),
+        onError: (error: unknown) => {
+          const message = error instanceof ApiClientError && error.status === 403
+            ? 'You do not have permission to update clinic information.'
+            : 'Unable to save clinic information. Please review the required English and Khmer fields.';
+          showToast(message);
+        },
       });
     } else if (activeTab === 'branches' && selectedBranch) {
       updateBranchMutation.mutate(selectedBranch, {
         onSuccess: () => showToast('Branch details saved successfully!'),
+        onError: (error: unknown) => {
+          const message = error instanceof ApiClientError && error.status === 409
+            ? 'That branch slug is already in use. Choose a different URL slug.'
+            : 'Unable to save branch details. Please review the fields and try again.';
+          showToast(message);
+        },
       });
     } else if (activeTab === 'contact') {
       updateContactMutation.mutate(contactSettings, {
         onSuccess: () => showToast('Contact settings saved successfully!'),
+        onError: (error: unknown) => {
+          const message = error instanceof ApiClientError && error.status === 403
+            ? 'You do not have permission to update contact settings.'
+            : 'Unable to save contact settings. Please review the phone, email, and URL values.';
+          showToast(message);
+        },
       });
     }
   };
@@ -175,16 +312,15 @@ export function AdminClinicInfoPage({
 
   // Upload refs
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const faviconInputRef = useRef<HTMLInputElement>(null);
   const heroImageInputRef = useRef<HTMLInputElement>(null);
   const branchPhotoInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageSelect = (file: File, callback: (url: string) => void) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) callback(e.target.result as string);
-    };
-    reader.readAsDataURL(file);
+  const imageUpload = useMutation({
+    mutationFn: ({ category, file }: { category: 'branches' | 'clinic'; file: File }) => uploadMedia(category, file),
+    onError: () => showToast('Image upload failed. Use a JPEG, PNG, or WEBP image under 5 MB.'),
+  });
+  const uploadImage = (file: File, callback: (key: string) => void, category: 'branches' | 'clinic') => {
+    imageUpload.mutate({ category, file }, { onSuccess: (media) => callback(media.key) });
   };
 
   const activeSidebarLabel =
@@ -316,28 +452,28 @@ export function AdminClinicInfoPage({
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <label className="block text-[13px] font-bold text-[#182238]">
-                        Clinic Name <span className="text-[#ef4444]">*</span>
+                        Clinic Name (English) <span className="text-[#ef4444]">*</span>
                       </label>
                       <input
                         className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
                         onChange={(e) =>
-                          setGeneralInfo((prev) => ({ ...prev, clinicName: e.target.value }))
+                          setGeneralInfo((prev) => ({ ...prev, clinicNameEn: e.target.value }))
                         }
                         type="text"
-                        value={generalInfo.clinicName}
+                        value={generalInfo.clinicNameEn}
                       />
                     </div>
                     <div>
                       <label className="block text-[13px] font-bold text-[#182238]">
-                        Tagline / Slogan
+                        Clinic Name (Khmer) <span className="text-[#ef4444]">*</span>
                       </label>
                       <input
                         className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
                         onChange={(e) =>
-                          setGeneralInfo((prev) => ({ ...prev, tagline: e.target.value }))
+                          setGeneralInfo((prev) => ({ ...prev, clinicNameKm: e.target.value }))
                         }
                         type="text"
-                        value={generalInfo.tagline}
+                        value={generalInfo.clinicNameKm}
                       />
                     </div>
                   </div>
@@ -346,50 +482,59 @@ export function AdminClinicInfoPage({
                   <div>
                     <div className="flex items-center justify-between">
                       <label className="block text-[13px] font-bold text-[#182238]">
-                        Short Description <span className="text-[#ef4444]">*</span>
+                        Short About (English)
                       </label>
                       <span className="text-[11px] text-[#8a9bb2]">
-                        {generalInfo.shortDescription.length}/160
+                        {generalInfo.shortAboutEn.length}/5000
                       </span>
                     </div>
                     <textarea
                       className="mt-1.5 h-24 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-3.5 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-                      maxLength={160}
+                      maxLength={5000}
                       onChange={(e) =>
-                        setGeneralInfo((prev) => ({ ...prev, shortDescription: e.target.value }))
+                        setGeneralInfo((prev) => ({ ...prev, shortAboutEn: e.target.value }))
                       }
-                      value={generalInfo.shortDescription}
+                      value={generalInfo.shortAboutEn}
                     />
                   </div>
 
-                  {/* Email & Website */}
+                  {/* Khmer and bilingual tagline fields supported by the clinic settings contract. */}
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label className="block text-[13px] font-bold text-[#182238]">Email</label>
+                      <label className="block text-[13px] font-bold text-[#182238]">Short About (Khmer)</label>
                       <input
                         className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
                         onChange={(e) =>
-                          setGeneralInfo((prev) => ({ ...prev, email: e.target.value }))
+                          setGeneralInfo((prev) => ({ ...prev, shortAboutKm: e.target.value }))
                         }
-                        type="email"
-                        value={generalInfo.email}
+                        type="text"
+                        value={generalInfo.shortAboutKm}
                       />
                     </div>
                     <div>
-                      <label className="block text-[13px] font-bold text-[#182238]">Website</label>
+                      <label className="block text-[13px] font-bold text-[#182238]">Tagline (English)</label>
                       <input
                         className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
                         onChange={(e) =>
-                          setGeneralInfo((prev) => ({ ...prev, website: e.target.value }))
+                          setGeneralInfo((prev) => ({ ...prev, taglineEn: e.target.value }))
                         }
-                        type="url"
-                        value={generalInfo.website}
+                        type="text"
+                        value={generalInfo.taglineEn}
                       />
                     </div>
                   </div>
 
-                  {/* Logo & Favicon Upload Dropzones */}
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-[13px] font-bold text-[#182238]">Tagline (Khmer)</label>
+                    <input
+                      className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      onChange={(e) => setGeneralInfo((prev) => ({ ...prev, taglineKm: e.target.value }))}
+                      type="text"
+                      value={generalInfo.taglineKm}
+                    />
+                  </div>
+
+                  <div>
                     {/* Logo Dropzone */}
                     <div>
                       <label className="block text-[13px] font-bold text-[#182238]">
@@ -404,9 +549,8 @@ export function AdminClinicInfoPage({
                           className="sr-only"
                           onChange={(e: ChangeEvent<HTMLInputElement>) => {
                             if (e.target.files?.[0])
-                              handleImageSelect(e.target.files[0], (url) =>
-                                setGeneralInfo((p) => ({ ...p, logoUrl: url })),
-                              );
+                              uploadImage(e.target.files[0], (key) =>
+                                setGeneralInfo((p) => ({ ...p, logoKey: key })), 'clinic');
                           }}
                           ref={logoInputRef}
                           type="file"
@@ -419,35 +563,12 @@ export function AdminClinicInfoPage({
                         </p>
                         <p className="text-[11px] text-[#9badc5]">PNG, JPG or WEBP (Max. 2MB)</p>
                       </div>
-                    </div>
-
-                    {/* Favicon Dropzone */}
-                    <div>
-                      <label className="block text-[13px] font-bold text-[#182238]">Favicon</label>
-                      <div
-                        className="group mt-1.5 flex h-32 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#b8d6e7] bg-[#f8fbfe] p-4 text-center transition hover:border-[#2187a8]"
-                        onClick={() => faviconInputRef.current?.click()}
-                      >
-                        <input
-                          accept="image/*"
-                          className="sr-only"
-                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                            if (e.target.files?.[0])
-                              handleImageSelect(e.target.files[0], (url) =>
-                                setGeneralInfo((p) => ({ ...p, faviconUrl: url })),
-                              );
-                          }}
-                          ref={faviconInputRef}
-                          type="file"
-                        />
-                        <svg className="size-6 text-[#2187a8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                        </svg>
-                        <p className="mt-2 text-[12.5px] text-[#71839e]">
-                          <span className="font-bold text-[#182238]">Click to upload</span>
-                        </p>
-                        <p className="text-[11px] text-[#9badc5]">PNG, JPG or WEBP (Max. 1MB)</p>
-                      </div>
+                      {generalInfo.logoKey && (
+                        <div className="mt-3 flex items-center gap-3 rounded-xl border border-[#e1e8f0] p-2">
+                          {getPublicMediaUrl(generalInfo.logoKey) && <img alt="Current clinic logo" className="size-10 rounded-lg object-contain" src={getPublicMediaUrl(generalInfo.logoKey)!} />}
+                          <span className="min-w-0 truncate text-xs text-[#71839e]">{generalInfo.logoKey}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -455,40 +576,26 @@ export function AdminClinicInfoPage({
 
               {/* Card 2: Business Hours */}
               <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
-                <h2 className="text-[18px] font-bold text-[#182238]">Business Hours</h2>
+                <h2 className="text-[18px] font-bold text-[#182238]">Clinic Statistics</h2>
 
                 <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
                   <div>
-                    <label className="block text-[13px] font-bold text-[#182238]">Days</label>
+                    <label className="block text-[13px] font-bold text-[#182238]">Years of Experience</label>
                     <div className="relative mt-1.5">
-                      <select
-                        className="h-11 w-full appearance-none rounded-xl border border-[#dce5ef] bg-white px-3.5 pr-8 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-                        onChange={(e) =>
-                          setGeneralInfo((prev) => ({ ...prev, days: e.target.value }))
-                        }
-                        value={generalInfo.days}
-                      >
-                        <option value="Mon - Sun">Mon - Sun</option>
-                        <option value="Mon - Fri">Mon - Fri</option>
-                        <option value="Mon - Sat">Mon - Sat</option>
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-[#8a9bb2]">
-                        ⌄
-                      </div>
+                      <input className="h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]" min="0" onChange={(e) => setGeneralInfo((prev) => ({ ...prev, yearsExperience: e.target.value }))} type="number" value={generalInfo.yearsExperience} />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[13px] font-bold text-[#182238]">Time</label>
+                    <label className="block text-[13px] font-bold text-[#182238]">Cases and Satisfaction</label>
                     <div className="mt-1.5 flex items-center gap-2">
                       <div className="relative flex-1">
                         <input
                           className="h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[13.5px] text-[#182238] outline-none focus:border-[#2187a8]"
                           onChange={(e) =>
-                            setGeneralInfo((prev) => ({ ...prev, startTime: e.target.value }))
+                            setGeneralInfo((prev) => ({ ...prev, successfulCases: e.target.value }))
                           }
-                          type="text"
-                          value={generalInfo.startTime}
+                          min="0" type="number" value={generalInfo.successfulCases}
                         />
                         <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-[#8a9bb2]">
                           🕒
@@ -499,10 +606,9 @@ export function AdminClinicInfoPage({
                         <input
                           className="h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[13.5px] text-[#182238] outline-none focus:border-[#2187a8]"
                           onChange={(e) =>
-                            setGeneralInfo((prev) => ({ ...prev, endTime: e.target.value }))
+                            setGeneralInfo((prev) => ({ ...prev, patientSatisfaction: e.target.value }))
                           }
-                          type="text"
-                          value={generalInfo.endTime}
+                          max="100" min="0" type="number" value={generalInfo.patientSatisfaction}
                         />
                         <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-[#8a9bb2]">
                           🕒
@@ -527,7 +633,10 @@ export function AdminClinicInfoPage({
                   <Button
                     className="h-10 rounded-xl bg-[#2187a8] px-4 text-[13.5px] font-bold text-white shadow-xs hover:bg-[#1a718c]"
                     icon={<span className="text-base font-bold">+</span>}
-                    onClick={() => handleTabChange('branches')}
+                    onClick={() => {
+                      setIsCreateBranchOpen(true);
+                      handleTabChange('branches');
+                    }}
                   >
                     Add New Branch
                   </Button>
@@ -615,37 +724,8 @@ export function AdminClinicInfoPage({
                   <Button
                     className="h-10 rounded-xl bg-[#2187a8] px-4 text-[13.5px] font-bold text-white shadow-xs hover:bg-[#1a718c]"
                     icon={<span className="text-base font-bold">+</span>}
-                    onClick={() => {
-                      const newId = `branch-${Date.now()}`;
-                      const newBranch: ClinicBranch = {
-                        address: 'Address details...',
-                        badge: 'City Branch',
-                        city: 'Phnom Penh',
-                        closingTime: '07:00 PM',
-                        enableBookButton: true,
-                        enableCallButton: true,
-                        enableDirectionsButton: true,
-                        googleMapsLink: 'https://maps.google.com',
-                        heroHeadline: 'New Branch',
-                        heroImage: '/assets/landing/hero-clinic.png',
-                        heroSubtitle: 'New branch subtitle',
-                        id: newId,
-                        includeInHeroCarousel: true,
-                        locationLabel: 'NEW BRANCH',
-                        name: 'New Branch Location',
-                        openingDays: 'Mon - Sun',
-                        openingTime: '08:00 AM',
-                        phone1: '+855 23 000 000',
-                        phone2: '',
-                        photo: '/assets/landing/branches-clinic.png',
-                        showOnBranchesPage: true,
-                        showOnHomepageSection: true,
-                        status: 'Active',
-                        summary: 'Branch summary description.',
-                      };
-                      setBranches((prev) => [newBranch, ...prev]);
-                      setSelectedBranchId(newId);
-                    }}
+                    disabled={createBranchMutation.isPending}
+                    onClick={() => setIsCreateBranchOpen(true)}
                   >
                     Add New Branch
                   </Button>
@@ -657,21 +737,57 @@ export function AdminClinicInfoPage({
                     <AdminIcon className="size-3.5 text-[#9badc5]" name="search" />
                     <input
                       className="w-full bg-transparent text-[#182238] outline-none placeholder:text-[#a9b7c9]"
-                      onChange={(e) => setBranchSearch(e.target.value)}
+                      onChange={(e) => setBranchListState((previous) => ({
+                        ...previous,
+                        page: 1,
+                        search: e.target.value || undefined,
+                      }))}
                       placeholder="Search branches..."
                       type="search"
-                      value={branchSearch}
+                      value={branchListState.search ?? ''}
                     />
                   </label>
                   <select
                     className="h-10 rounded-xl border border-[#dce5ef] bg-white px-3 text-[13px] text-[#71839e] outline-none"
-                    onChange={(e) => setBranchStatusFilter(e.target.value)}
-                    value={branchStatusFilter}
+                    onChange={(e) => setBranchListState((previous) => ({
+                      ...previous,
+                      page: 1,
+                      status: e.target.value === 'ALL' ? undefined : e.target.value as AdminBranchListQuery['status'],
+                    }))}
+                    value={branchListState.status ?? 'ALL'}
                   >
-                    <option value="All">All Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
+                    <option value="ALL">All Status</option>
+                    <option value="PUBLISHED">Published</option>
+                    <option value="DRAFT">Draft</option>
+                    <option value="ARCHIVED">Archived</option>
                   </select>
+                  <select
+                    aria-label="Sort branches"
+                    className="h-10 rounded-xl border border-[#dce5ef] bg-white px-3 text-[13px] text-[#71839e] outline-none"
+                    onChange={(e) => setBranchListState((previous) => ({
+                      ...previous,
+                      page: 1,
+                      sort: e.target.value as AdminBranchListQuery['sort'],
+                    }))}
+                    value={branchListState.sort}
+                  >
+                    <option value="displayOrder">Display order</option>
+                    <option value="name">Name</option>
+                    <option value="createdAt">Created date</option>
+                    <option value="updatedAt">Updated date</option>
+                  </select>
+                  <button
+                    aria-label={`Sort ${branchListState.order === 'asc' ? 'descending' : 'ascending'}`}
+                    className="h-10 rounded-xl border border-[#dce5ef] bg-white px-3 text-[13px] font-bold text-[#71839e] hover:bg-[#f8fafc]"
+                    onClick={() => setBranchListState((previous) => ({
+                      ...previous,
+                      order: previous.order === 'asc' ? 'desc' : 'asc',
+                      page: 1,
+                    }))}
+                    type="button"
+                  >
+                    {branchListState.order === 'asc' ? '↑' : '↓'}
+                  </button>
                 </div>
 
                 {/* Branch Cards List */}
@@ -704,7 +820,7 @@ export function AdminClinicInfoPage({
                         <img
                           alt={b.name}
                           className="size-20 shrink-0 rounded-xl object-cover shadow-xs"
-                          src={b.photo}
+                          src={getPublicMediaUrl(b.photo) ?? '/assets/landing/branch-card-clinic.png'}
                         />
 
                         {/* Details */}
@@ -720,8 +836,16 @@ export function AdminClinicInfoPage({
                             >
                               {b.badge}
                             </span>
-                            <span className="ml-auto inline-flex items-center rounded-md bg-[#f0fdf4] px-2 py-0.5 text-[11px] font-bold text-[#16a34a]">
-                              Active
+                            <span
+                              className={`ml-auto inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold ${
+                                b.status === 'PUBLISHED'
+                                  ? 'bg-[#f0fdf4] text-[#16a34a]'
+                                  : b.status === 'ARCHIVED'
+                                  ? 'bg-[#f1f5f9] text-[#64748b]'
+                                  : 'bg-[#fffbeb] text-[#b45309]'
+                              }`}
+                            >
+                              {branchStatusLabel(b.status)}
                             </span>
                           </div>
 
@@ -737,15 +861,44 @@ export function AdminClinicInfoPage({
                       </div>
                     );
                   })}
+                  {branchListQuery.isLoading && (
+                    <p className="rounded-xl border border-dashed border-[#dce5ef] p-5 text-center text-sm text-[#71839e]">Loading branches…</p>
+                  )}
+                  {branchListQuery.isError && (
+                    <div className="rounded-xl border border-[#fecaca] bg-[#fff7f7] p-4 text-sm text-[#b91c1c]">
+                      Unable to load branches. <button className="font-bold underline" onClick={() => void branchListQuery.refetch()} type="button">Try again</button>
+                    </div>
+                  )}
+                  {!branchListQuery.isLoading && !branchListQuery.isError && filteredBranches.length === 0 && (
+                    <p className="rounded-xl border border-dashed border-[#dce5ef] p-5 text-center text-sm text-[#71839e]">No branches match these filters.</p>
+                  )}
                 </div>
 
                 {/* Pagination */}
                 <div className="mt-6 flex items-center justify-between border-t border-[#f0f4f8] pt-4 text-[13px] text-[#71839e]">
-                  <span>Showing 1 to {filteredBranches.length} of {filteredBranches.length} branches</span>
+                  <span>
+                    Showing {filteredBranches.length > 0 ? ((branchListQuery.data?.meta.page ?? 1) - 1) * (branchListQuery.data?.meta.limit ?? 20) + 1 : 0}
+                    {' '}to {((branchListQuery.data?.meta.page ?? 1) - 1) * (branchListQuery.data?.meta.limit ?? 20) + filteredBranches.length}
+                    {' '}of {branchListQuery.data?.meta.total ?? 0} branches
+                  </span>
                   <div className="flex items-center gap-1.5">
-                    <button className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#8a9bb2]" type="button">‹</button>
-                    <span className="grid size-8 place-items-center rounded-lg border border-[#2187a8] bg-[#edf7fb] font-bold text-[#2187a8]">1</span>
-                    <button className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#8a9bb2]" type="button">›</button>
+                    <button
+                      aria-label="Previous page"
+                      className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#8a9bb2] disabled:opacity-40"
+                      disabled={(branchListQuery.data?.meta.page ?? 1) <= 1}
+                      onClick={() => setBranchListState((previous) => ({ ...previous, page: Math.max(1, (branchListQuery.data?.meta.page ?? 1) - 1) }))}
+                      type="button"
+                    >‹</button>
+                    <span className="rounded-lg border border-[#2187a8] bg-[#edf7fb] px-2 py-1 font-bold text-[#2187a8]">
+                      Page {branchListQuery.data?.meta.page ?? 1} of {Math.max(1, branchListQuery.data?.meta.totalPages ?? 0)}
+                    </span>
+                    <button
+                      aria-label="Next page"
+                      className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#8a9bb2] disabled:opacity-40"
+                      disabled={(branchListQuery.data?.meta.page ?? 1) >= Math.max(1, branchListQuery.data?.meta.totalPages ?? 0)}
+                      onClick={() => setBranchListState((previous) => ({ ...previous, page: Math.min(Math.max(1, branchListQuery.data?.meta.totalPages ?? 0), (branchListQuery.data?.meta.page ?? 1) + 1) }))}
+                      type="button"
+                    >›</button>
                   </div>
                 </div>
               </Card>
@@ -758,21 +911,36 @@ export function AdminClinicInfoPage({
                   {/* Card Header with Status Toggle */}
                   <div className="flex items-center justify-between border-b border-[#f0f4f8] pb-4">
                     <h2 className="text-[18px] font-bold text-[#182238]">Edit Branch</h2>
-                    <div className="flex items-center gap-2 text-[13px] font-bold text-[#182238]">
+                    <div className="flex items-center gap-4 text-[13px] font-bold text-[#182238]">
+                      <Button
+                        className="border border-[#fecaca] bg-white px-3 text-xs text-[#b91c1c] hover:bg-[#fff1f2]"
+                        disabled={deleteBranchMutation.isPending}
+                        onClick={() => {
+                          if (window.confirm(`Delete ${selectedBranch.name}? This cannot be undone.`)) {
+                            deleteBranchMutation.mutate(selectedBranch.id);
+                          }
+                        }}
+                        type="button"
+                        variant="secondary"
+                      >
+                        {deleteBranchMutation.isPending ? 'Deleting…' : 'Delete'}
+                      </Button>
+                      <div className="flex items-center gap-2">
                       <span>Status</span>
                       <ToggleSwitch
-                        checked={selectedBranch.status === 'Active'}
+                        checked={selectedBranch.status === 'PUBLISHED'}
                         onChange={(checked) =>
                           setBranches((prev) =>
                             prev.map((b) =>
                               b.id === selectedBranch.id
-                                ? { ...b, status: checked ? 'Active' : 'Inactive' }
+                                ? { ...b, status: checked ? 'PUBLISHED' : 'DRAFT' }
                                 : b,
                             ),
                           )
                         }
                       />
-                      <span className="text-[#16a34a]">{selectedBranch.status}</span>
+                      <span className={selectedBranch.status === 'PUBLISHED' ? 'text-[#16a34a]' : 'text-[#b45309]'}>{branchStatusLabel(selectedBranch.status)}</span>
+                      </div>
                     </div>
                   </div>
 
@@ -793,13 +961,22 @@ export function AdminClinicInfoPage({
                               setBranches((prev) =>
                                 prev.map((b) =>
                                   b.id === selectedBranch.id
-                                    ? { ...b, badge: e.target.value as 'Main Branch' | 'City Branch' }
+                                    ? { ...b, badge: e.target.value }
                                     : b,
                                 ),
                               )
                             }
                             type="text"
                             value={selectedBranch.badge}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[12.5px] font-bold text-[#182238]">Badge (Khmer)</label>
+                          <input
+                            className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
+                            onChange={(e) => updateBranch(selectedBranch.id, { badgeKm: e.target.value })}
+                            type="text"
+                            value={selectedBranch.badgeKm}
                           />
                         </div>
                         <div>
@@ -819,6 +996,41 @@ export function AdminClinicInfoPage({
                             value={selectedBranch.name}
                           />
                         </div>
+                        <div>
+                          <label className="block text-[12.5px] font-bold text-[#182238]">
+                            Branch Name (Khmer) <span className="text-[#ef4444]">*</span>
+                          </label>
+                          <input
+                            className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
+                            onChange={(e) => updateBranch(selectedBranch.id, { nameKm: e.target.value })}
+                            required
+                            type="text"
+                            value={selectedBranch.nameKm}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <label className="block text-[12.5px] font-bold text-[#182238]">
+                          URL slug
+                          <input
+                            className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] font-normal outline-none focus:border-[#2187a8]"
+                            onChange={(e) => updateBranch(selectedBranch.id, { slug: e.target.value.toLowerCase() })}
+                            pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+                            type="text"
+                            value={selectedBranch.slug}
+                          />
+                        </label>
+                        <label className="block text-[12.5px] font-bold text-[#182238]">
+                          Display order
+                          <input
+                            className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] font-normal outline-none focus:border-[#2187a8]"
+                            min="0"
+                            onChange={(e) => updateBranch(selectedBranch.id, { displayOrder: Number(e.target.value) || 0 })}
+                            type="number"
+                            value={selectedBranch.displayOrder}
+                          />
+                        </label>
                       </div>
 
                       <div>
@@ -835,6 +1047,17 @@ export function AdminClinicInfoPage({
                             )
                           }
                           value={selectedBranch.address}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[12.5px] font-bold text-[#182238]">
+                          Address (Khmer) <span className="text-[#ef4444]">*</span>
+                        </label>
+                        <textarea
+                          className="mt-1 h-16 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] outline-none focus:border-[#2187a8]"
+                          onChange={(e) => updateBranch(selectedBranch.id, { addressKm: e.target.value })}
+                          required
+                          value={selectedBranch.addressKm}
                         />
                       </div>
 
@@ -964,6 +1187,35 @@ export function AdminClinicInfoPage({
                           />
                         </div>
                       </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <label className="block text-[12px] font-bold text-[#182238]">
+                          Opening Days (Khmer)
+                          <input
+                            className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13px] font-normal outline-none"
+                            onChange={(e) => updateBranch(selectedBranch.id, { openingDaysKm: e.target.value })}
+                            type="text"
+                            value={selectedBranch.openingDaysKm}
+                          />
+                        </label>
+                        <label className="block text-[12px] font-bold text-[#182238]">
+                          Opening hours (English)
+                          <input
+                            className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13px] font-normal outline-none"
+                            onChange={(e) => updateBranch(selectedBranch.id, { openingHours: e.target.value })}
+                            type="text"
+                            value={selectedBranch.openingHours}
+                          />
+                        </label>
+                        <label className="block text-[12px] font-bold text-[#182238] sm:col-span-2">
+                          Opening hours (Khmer)
+                          <input
+                            className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13px] font-normal outline-none"
+                            onChange={(e) => updateBranch(selectedBranch.id, { openingHoursKm: e.target.value })}
+                            type="text"
+                            value={selectedBranch.openingHoursKm}
+                          />
+                        </label>
+                      </div>
                     </div>
 
                     {/* Section 3: Website Display Options */}
@@ -986,6 +1238,13 @@ export function AdminClinicInfoPage({
                             }
                           />
                           <span className="text-[#182238]">Show on Branches Page</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <ToggleSwitch
+                            checked={selectedBranch.featured}
+                            onChange={(checked) => updateBranch(selectedBranch.id, { featured: checked })}
+                          />
+                          <span className="text-[#182238]">Featured branch</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <ToggleSwitch
@@ -1015,19 +1274,6 @@ export function AdminClinicInfoPage({
                         </div>
                         <div className="flex items-center gap-3">
                           <ToggleSwitch
-                            checked={selectedBranch.enableCallButton}
-                            onChange={(checked) =>
-                              setBranches((prev) =>
-                                prev.map((b) =>
-                                  b.id === selectedBranch.id ? { ...b, enableCallButton: checked } : b,
-                                ),
-                              )
-                            }
-                          />
-                          <span className="text-[#182238]">Enable &ldquo;Call Now&rdquo; button</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <ToggleSwitch
                             checked={selectedBranch.includeInHeroCarousel}
                             onChange={(checked) =>
                               setBranches((prev) =>
@@ -1038,19 +1284,6 @@ export function AdminClinicInfoPage({
                             }
                           />
                           <span className="text-[#182238]">Include in Homepage Hero Carousel</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <ToggleSwitch
-                            checked={selectedBranch.enableDirectionsButton}
-                            onChange={(checked) =>
-                              setBranches((prev) =>
-                                prev.map((b) =>
-                                  b.id === selectedBranch.id ? { ...b, enableDirectionsButton: checked } : b,
-                                ),
-                              )
-                            }
-                          />
-                          <span className="text-[#182238]">Enable &ldquo;Get Directions&rdquo; button</span>
                         </div>
                       </div>
                     </div>
@@ -1080,6 +1313,35 @@ export function AdminClinicInfoPage({
                             value={selectedBranch.heroHeadline}
                           />
                         </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <label className="block text-[12.5px] font-bold text-[#182238]">
+                            Hero CTA label (English)
+                            <input
+                              className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] font-normal outline-none focus:border-[#2187a8]"
+                              onChange={(e) => updateBranch(selectedBranch.id, { heroCtaLabel: e.target.value })}
+                              type="text"
+                              value={selectedBranch.heroCtaLabel}
+                            />
+                          </label>
+                          <label className="block text-[12.5px] font-bold text-[#182238]">
+                            Hero CTA label (Khmer)
+                            <input
+                              className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] font-normal outline-none focus:border-[#2187a8]"
+                              onChange={(e) => updateBranch(selectedBranch.id, { heroCtaLabelKm: e.target.value })}
+                              type="text"
+                              value={selectedBranch.heroCtaLabelKm}
+                            />
+                          </label>
+                        </div>
+                        <div>
+                          <label className="block text-[12.5px] font-bold text-[#182238]">Hero Headline (Khmer)</label>
+                          <input
+                            className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
+                            onChange={(e) => updateBranch(selectedBranch.id, { heroHeadlineKm: e.target.value })}
+                            type="text"
+                            value={selectedBranch.heroHeadlineKm}
+                          />
+                        </div>
 
                         <div>
                           <label className="block text-[12.5px] font-bold text-[#182238]">
@@ -1095,6 +1357,14 @@ export function AdminClinicInfoPage({
                               )
                             }
                             value={selectedBranch.heroSubtitle}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[12.5px] font-bold text-[#182238]">Short Hero Text / Subtitle (Khmer)</label>
+                          <textarea
+                            className="mt-1 h-14 w-full resize-none rounded-xl border border-[#dce5ef] p-2.5 text-[13px] outline-none focus:border-[#2187a8]"
+                            onChange={(e) => updateBranch(selectedBranch.id, { heroSubtitleKm: e.target.value })}
+                            value={selectedBranch.heroSubtitleKm}
                           />
                         </div>
 
@@ -1116,6 +1386,15 @@ export function AdminClinicInfoPage({
                               value={selectedBranch.locationLabel}
                             />
                           </div>
+                          <div>
+                            <label className="block text-[12.5px] font-bold text-[#182238]">Short Location Label (Khmer)</label>
+                            <input
+                              className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
+                              onChange={(e) => updateBranch(selectedBranch.id, { locationLabelKm: e.target.value })}
+                              type="text"
+                              value={selectedBranch.locationLabelKm}
+                            />
+                          </div>
 
                           <div>
                             <label className="block text-[12.5px] font-bold text-[#182238]">Hero Image</label>
@@ -1123,20 +1402,19 @@ export function AdminClinicInfoPage({
                               <img
                                 alt="Hero"
                                 className="size-12 rounded-xl object-cover"
-                                src={selectedBranch.heroImage}
+                                src={getPublicMediaUrl(selectedBranch.heroImage) ?? '/assets/landing/hero-clinic.png'}
                               />
                               <input
                                 accept="image/*"
                                 className="sr-only"
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                                   if (e.target.files?.[0])
-                                    handleImageSelect(e.target.files[0], (url) =>
+                                    uploadImage(e.target.files[0], (url) =>
                                       setBranches((prev) =>
                                         prev.map((b) =>
                                           b.id === selectedBranch.id ? { ...b, heroImage: url } : b,
                                         ),
-                                      ),
-                                    );
+                                      ), 'branches');
                                 }}
                                 ref={heroImageInputRef}
                                 type="file"
@@ -1168,20 +1446,19 @@ export function AdminClinicInfoPage({
                             <img
                               alt="Branch Photo"
                               className="size-12 rounded-xl object-cover"
-                              src={selectedBranch.photo}
+                              src={getPublicMediaUrl(selectedBranch.photo) ?? '/assets/landing/branch-card-clinic.png'}
                             />
                             <input
                               accept="image/*"
                               className="sr-only"
                               onChange={(e: ChangeEvent<HTMLInputElement>) => {
                                 if (e.target.files?.[0])
-                                  handleImageSelect(e.target.files[0], (url) =>
+                                  uploadImage(e.target.files[0], (url) =>
                                     setBranches((prev) =>
                                       prev.map((b) =>
                                         b.id === selectedBranch.id ? { ...b, photo: url } : b,
                                       ),
-                                    ),
-                                  );
+                                    ), 'branches');
                               }}
                               ref={branchPhotoInputRef}
                               type="file"
@@ -1218,6 +1495,18 @@ export function AdminClinicInfoPage({
                             value={selectedBranch.summary}
                           />
                         </div>
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <label className="block text-[12.5px] font-bold text-[#182238]">Short Branch Summary / Notes (Khmer)</label>
+                            <span className="text-[11px] text-[#8a9bb2]">{selectedBranch.summaryKm.length}/2000</span>
+                          </div>
+                          <textarea
+                            className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-2.5 text-[12.5px] leading-relaxed outline-none focus:border-[#2187a8]"
+                            maxLength={2000}
+                            onChange={(e) => updateBranch(selectedBranch.id, { summaryKm: e.target.value })}
+                            value={selectedBranch.summaryKm}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1246,9 +1535,9 @@ export function AdminClinicInfoPage({
                       <label className="block text-[12.5px] font-bold text-[#182238]">Main Phone Number</label>
                       <input
                         className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, mainPhone: e.target.value }))}
+                        onChange={(e) => setContactSettings((p) => ({ ...p, primaryPhone: e.target.value }))}
                         type="text"
-                        value={contactSettings.mainPhone}
+                      value={contactSettings.primaryPhone}
                       />
                     </div>
                     <div>
@@ -1264,18 +1553,9 @@ export function AdminClinicInfoPage({
                       <label className="block text-[12.5px] font-bold text-[#182238]">Main Email Address</label>
                       <input
                         className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, mainEmail: e.target.value }))}
+                        onChange={(e) => setContactSettings((p) => ({ ...p, primaryEmail: e.target.value }))}
                         type="email"
-                        value={contactSettings.mainEmail}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">Support / Inquiry Email</label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, supportEmail: e.target.value }))}
-                        type="email"
-                        value={contactSettings.supportEmail}
+                      value={contactSettings.primaryEmail}
                       />
                     </div>
                   </div>
@@ -1301,9 +1581,9 @@ export function AdminClinicInfoPage({
                       <label className="block text-[12.5px] font-bold text-[#182238]">Telegram Link</label>
                       <input
                         className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, telegramLink: e.target.value }))}
+                        onChange={(e) => setContactSettings((p) => ({ ...p, telegramUrl: e.target.value }))}
                         type="url"
-                        value={contactSettings.telegramLink}
+                      value={contactSettings.telegramUrl}
                       />
                     </div>
                     <div>
@@ -1316,257 +1596,38 @@ export function AdminClinicInfoPage({
                       />
                     </div>
                     <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">Website URL / Domain</label>
+                      <label className="block text-[12.5px] font-bold text-[#182238]">Main Google Maps URL</label>
                       <input
                         className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, websiteDomain: e.target.value }))}
+                        onChange={(e) => setContactSettings((p) => ({ ...p, mainGoogleMapsUrl: e.target.value }))}
                         type="url"
-                        value={contactSettings.websiteDomain}
+                      value={contactSettings.mainGoogleMapsUrl}
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* 3 Inquiry Form Routing */}
-                <div className="space-y-4 border-t border-[#f0f4f8] pt-5">
-                  <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
-                    <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">3</span>
-                    Inquiry Form Routing
-                  </h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">Recipient Email for Contact Form</label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, recipientEmail: e.target.value }))}
-                        type="email"
-                        value={contactSettings.recipientEmail}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">Backup Notification Channel</label>
-                      <select
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[13px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, backupChannel: e.target.value }))}
-                        value={contactSettings.backupChannel}
-                      >
-                        <option value="Telegram">Telegram</option>
-                        <option value="WhatsApp">WhatsApp</option>
-                        <option value="SMS">SMS</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-2 text-[13px]">
-                    <div className="flex items-center gap-3">
-                      <ToggleSwitch
-                        checked={contactSettings.enableContactForm}
-                        onChange={(checked) => setContactSettings((p) => ({ ...p, enableContactForm: checked }))}
-                      />
-                      <span className="text-[#182238]">Enable Contact Form on Website</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <ToggleSwitch
-                        checked={contactSettings.enableEmailNotifications}
-                        onChange={(checked) => setContactSettings((p) => ({ ...p, enableEmailNotifications: checked }))}
-                      />
-                      <span className="text-[#182238]">Enable Email Notifications</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <ToggleSwitch
-                        checked={contactSettings.enableTelegramNotifications}
-                        onChange={(checked) => setContactSettings((p) => ({ ...p, enableTelegramNotifications: checked }))}
-                      />
-                      <span className="text-[#182238]">Enable Telegram Notifications</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4 Office Hours Summary */}
-                <div className="space-y-3 border-t border-[#f0f4f8] pt-5">
-                  <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
-                    <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">4</span>
-                    Office Hours Summary
-                  </h3>
-                  <div>
-                    <label className="block text-[12.5px] font-bold text-[#182238]">Contact Page Support Note</label>
-                    <textarea
-                      className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]"
-                      onChange={(e) => setContactSettings((p) => ({ ...p, supportNote: e.target.value }))}
-                      value={contactSettings.supportNote}
-                    />
-                  </div>
-                </div>
               </div>
             </Card>
 
-            {/* Right Card: Contact Page Content */}
             <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
-              <h2 className="text-[18px] font-bold text-[#182238]">Contact Page Content</h2>
-
-              <div className="mt-6 space-y-6">
-                {/* 1 Section Heading */}
-                <div className="space-y-4">
-                  <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
-                    <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">1</span>
-                    Section Heading
-                  </h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">Eyebrow Label</label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, eyebrow: e.target.value }))}
-                        type="text"
-                        value={contactSettings.eyebrow}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">Main Heading</label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, heading: e.target.value }))}
-                        type="text"
-                        value={contactSettings.heading}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[12.5px] font-bold text-[#182238]">Short Description</label>
-                    <textarea
-                      className="mt-1 h-16 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]"
-                      onChange={(e) => setContactSettings((p) => ({ ...p, contactPageShortDesc: e.target.value }))}
-                      value={contactSettings.contactPageShortDesc}
-                    />
-                  </div>
+              <h2 className="text-[18px] font-bold text-[#182238]">Business Hours &amp; Location</h2>
+              <div className="mt-6 space-y-5">
+                <div>
+                  <label className="block text-[12.5px] font-bold text-[#182238]">Business Hours (English)</label>
+                  <textarea className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]" maxLength={1000} onChange={(e) => setContactSettings((p) => ({ ...p, businessHoursEn: e.target.value }))} value={contactSettings.businessHoursEn} />
                 </div>
-
-                {/* 2 Contact Info Block Labels */}
-                <div className="space-y-4 border-t border-[#f0f4f8] pt-5">
-                  <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
-                    <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">2</span>
-                    Contact Info Block Labels
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    <div>
-                      <label className="block text-[11px] font-bold text-[#182238]">Phone Card Title</label>
-                      <input
-                        className="mt-1 h-9 w-full rounded-lg border border-[#dce5ef] px-2.5 text-[12.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, phoneCardTitle: e.target.value }))}
-                        type="text"
-                        value={contactSettings.phoneCardTitle}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-[#182238]">Email Card Title</label>
-                      <input
-                        className="mt-1 h-9 w-full rounded-lg border border-[#dce5ef] px-2.5 text-[12.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, emailCardTitle: e.target.value }))}
-                        type="text"
-                        value={contactSettings.emailCardTitle}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-[#182238]">Social Card Title</label>
-                      <input
-                        className="mt-1 h-9 w-full rounded-lg border border-[#dce5ef] px-2.5 text-[12.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, socialCardTitle: e.target.value }))}
-                        type="text"
-                        value={contactSettings.socialCardTitle}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-[#182238]">Opening Hours Title</label>
-                      <input
-                        className="mt-1 h-9 w-full rounded-lg border border-[#dce5ef] px-2.5 text-[12.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, openingHoursCardTitle: e.target.value }))}
-                        type="text"
-                        value={contactSettings.openingHoursCardTitle}
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <label className="block text-[12.5px] font-bold text-[#182238]">Business Hours (Khmer)</label>
+                  <textarea className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]" maxLength={1000} onChange={(e) => setContactSettings((p) => ({ ...p, businessHoursKm: e.target.value }))} value={contactSettings.businessHoursKm} />
                 </div>
-
-                {/* 3 Map & Location Settings */}
-                <div className="space-y-4 border-t border-[#f0f4f8] pt-5">
-                  <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
-                    <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">3</span>
-                    Map & Location Settings
-                  </h3>
-                  <div>
-                    <label className="block text-[12.5px] font-bold text-[#182238]">Main Google Maps Embed / Link</label>
-                    <input
-                      className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                      onChange={(e) => setContactSettings((p) => ({ ...p, googleMapsEmbed: e.target.value }))}
-                      type="url"
-                      value={contactSettings.googleMapsEmbed}
-                    />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-6 pt-1 text-[13px]">
-                    <div className="flex items-center gap-3">
-                      <ToggleSwitch
-                        checked={contactSettings.showMapOnContactPage}
-                        onChange={(checked) => setContactSettings((p) => ({ ...p, showMapOnContactPage: checked }))}
-                      />
-                      <span className="text-[#182238]">Show map on Contact Page</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <ToggleSwitch
-                        checked={contactSettings.showBranchQuickLinks}
-                        onChange={(checked) => setContactSettings((p) => ({ ...p, showBranchQuickLinks: checked }))}
-                      />
-                      <span className="text-[#182238]">Show branch quick links</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4 Contact Form Labels */}
-                <div className="space-y-4 border-t border-[#f0f4f8] pt-5">
-                  <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
-                    <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">4</span>
-                    Contact Form Labels
-                  </h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-[12px] font-bold text-[#182238]">Form Section Title</label>
-                      <input
-                        className="mt-1 h-9 w-full rounded-lg border border-[#dce5ef] px-3 text-[13px] outline-none"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, contactFormSectionTitle: e.target.value }))}
-                        type="text"
-                        value={contactSettings.contactFormSectionTitle}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[12px] font-bold text-[#182238]">Submit Button Label</label>
-                      <input
-                        className="mt-1 h-9 w-full rounded-lg border border-[#dce5ef] px-3 text-[13px] outline-none"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, contactFormSubmitLabel: e.target.value }))}
-                        type="text"
-                        value={contactSettings.contactFormSubmitLabel}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[12px] font-bold text-[#182238]">Success Message Text</label>
-                      <input
-                        className="mt-1 h-9 w-full rounded-lg border border-[#dce5ef] px-3 text-[13px] outline-none"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, contactFormSuccessText: e.target.value }))}
-                        type="text"
-                        value={contactSettings.contactFormSuccessText}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[12px] font-bold text-[#182238]">Error Message Text</label>
-                      <input
-                        className="mt-1 h-9 w-full rounded-lg border border-[#dce5ef] px-3 text-[13px] outline-none"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, contactFormErrorText: e.target.value }))}
-                        type="text"
-                        value={contactSettings.contactFormErrorText}
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <label className="block text-[12.5px] font-bold text-[#182238]">Main Google Maps URL</label>
+                  <input className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]" onChange={(e) => setContactSettings((p) => ({ ...p, mainGoogleMapsUrl: e.target.value }))} type="url" value={contactSettings.mainGoogleMapsUrl} />
                 </div>
               </div>
             </Card>
+
           </div>
         )}
 
@@ -1593,6 +1654,12 @@ export function AdminClinicInfoPage({
         </div>
         </div>
       </main>
+      <CreateBranchModal
+        isPending={createBranchMutation.isPending}
+        onClose={() => setIsCreateBranchOpen(false)}
+        onSubmit={(input) => createBranchMutation.mutate(input)}
+        open={isCreateBranchOpen}
+      />
     </div>
   );
 }

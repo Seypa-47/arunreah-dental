@@ -4,6 +4,7 @@ import {
   saveShowcaseArticle,
   type NewShowcaseFormState,
 } from '@/services/admin-add-showcase';
+import { invalidateCmsDomain } from '@/services/cms-cache';
 
 export function useAdminAddShowcasePageQuery() {
   return useQuery({
@@ -18,8 +19,7 @@ export function useCreateShowcaseArticleMutation() {
   return useMutation({
     mutationFn: (formData: NewShowcaseFormState) => saveShowcaseArticle(formData),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin-showcase-page'] });
+      void invalidateCmsDomain(queryClient, 'showcases');
     },
   });
 }
-

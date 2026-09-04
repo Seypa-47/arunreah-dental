@@ -1,4 +1,6 @@
-import { useState, useMemo, type ChangeEvent, type FormEvent } from 'react';
+import { useState, useMemo, useEffect, type ChangeEvent, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { AdminShowcaseListQuery, UpdateShowcaseInput } from '@arunreah/shared';
 import { Link, useNavigate } from 'react-router-dom';
 import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
@@ -9,6 +11,9 @@ import type {
   ShowcaseCategory,
   ShowcaseStatus,
 } from '@/services/admin-showcase';
+import { cmsApi, type AdminShowcaseDetail } from '@/services/cms';
+import { invalidateCmsDomain } from '@/services/cms-cache';
+import { queryKeys } from '@/lib/query-keys';
 
 function StatusBadge({ status }: { status: ShowcaseStatus }) {
   if (status === 'published') {
@@ -244,61 +249,100 @@ function ShowcaseErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+type ShowcaseListState = Pick<
+  AdminShowcaseListQuery,
+  'page' | 'limit' | 'search' | 'status' | 'showOnHomepage' | 'category' | 'sort' | 'order'
+>;
+
 export function AdminShowcasePage() {
   const navigate = useNavigate();
-  const { data, isError, isLoading, refetch } = useAdminShowcasePageQuery();
+  const queryClient = useQueryClient();
+  const [listState, setListState] = useState<ShowcaseListState>({
+    page: 1,
+    limit: 20,
+    sort: 'displayOrder',
+    order: 'asc',
+  });
+  const { data, isError, isLoading, refetch } = useAdminShowcasePageQuery(listState);
 
   const [articles, setArticles] = useState<ShowcaseArticle[]>([]);
   const [selectedId, setSelectedId] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('All');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Edit selected text states
   const [isEditingSelected, setIsEditingSelected] = useState(false);
   const [editTitle, setEditTitle] = useState('');
+  const [editTitleKm, setEditTitleKm] = useState('');
+  const [editSlug, setEditSlug] = useState('');
   const [editHeadline, setEditHeadline] = useState('');
   const [editSummary, setEditSummary] = useState('');
+  const [editSummaryKm, setEditSummaryKm] = useState('');
   const [editBody, setEditBody] = useState('');
+  const [editBodyKm, setEditBodyKm] = useState('');
+  const [editCategoryKm, setEditCategoryKm] = useState('');
+  const [editMetaTitle, setEditMetaTitle] = useState('');
+  const [editMetaTitleKm, setEditMetaTitleKm] = useState('');
+  const [editMetaDescription, setEditMetaDescription] = useState('');
+  const [editMetaDescriptionKm, setEditMetaDescriptionKm] = useState('');
+  const [editCoverImageKey, setEditCoverImageKey] = useState<string | null>(null);
+  const [editSections, setEditSections] = useState<AdminShowcaseDetail['sections']>([]);
+  const [editRelatedIds, setEditRelatedIds] = useState<string[]>([]);
+  const [editDisplayOrder, setEditDisplayOrder] = useState(0);
+  const [editHomepage, setEditHomepage] = useState(false);
   const [editBlocksCount, setEditBlocksCount] = useState<number>(5);
   const [editCtaCount, setEditCtaCount] = useState<number>(2);
   const [editRelatedCount, setEditRelatedCount] = useState<number>(3);
   const [editCategory, setEditCategory] = useState<ShowcaseCategory>('Treatment');
   const [editStatus, setEditStatus] = useState<ShowcaseStatus>('published');
   const [editSavedToast, setEditSavedToast] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const showcaseDetailQuery = useQuery({
+    enabled: selectedId.length > 0,
+    queryFn: () => cmsApi.showcases.get(selectedId),
+    queryKey: queryKeys.admin.showcase(selectedId),
+  });
 
   // Sync articles when data loads
-  useMemo(() => {
-    if (data?.articles && articles.length === 0) {
+  useEffect(() => {
+    if (data?.articles) {
       setArticles(data.articles);
-      if (data.articles[0]) {
+      if (data.articles[0] && !selectedId) {
         setSelectedId(data.articles[0].id);
       }
     }
-  }, [data?.articles, articles.length]);
+  }, [data?.articles, selectedId]);
 
-  const filteredArticles = useMemo(() => {
-    return articles.filter((article) => {
-      const matchesSearch =
-        !searchQuery.trim() ||
-        `${article.title} ${article.subtitle} ${article.category}`
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        categoryFilter === 'All' || article.category === categoryFilter;
+  const updateMutation = useMutation({
+    mutationFn: ({ article, patch }: { article: ShowcaseArticle; patch: UpdateShowcaseInput }) => cmsApi.showcases.update(article.id, patch),
+    onSuccess: () => { setActionError(null); void invalidateCmsDomain(queryClient, 'showcases'); },
+    onError: () => setActionError('Unable to save this showcase article. Please check the form and try again.'),
+  });
 
-      return matchesSearch && matchesCategory;
-    });
-  }, [articles, searchQuery, categoryFilter]);
+  const filteredArticles = articles;
+  const totalPages = Math.max(1, data?.meta.totalPages ?? 0);
+  const effectivePage = data?.meta.page ?? 1;
+  const startIndex = (effectivePage - 1) * (data?.meta.limit ?? listState.limit);
 
   const selectedArticle = useMemo(() => {
     return articles.find((a) => a.id === selectedId) || articles[0] || null;
   }, [articles, selectedId]);
 
+  useEffect(() => {
+    const showcase = showcaseDetailQuery.data?.showcase;
+    if (!showcase || !isEditingSelected) return;
+    setEditTitle(showcase.titleEn); setEditTitleKm(showcase.titleKm); setEditSlug(showcase.slug);
+    setEditHeadline(showcase.titleEn); setEditSummary(showcase.summaryEn ?? ''); setEditSummaryKm(showcase.summaryKm ?? '');
+    setEditBody(showcase.bodyEn ?? ''); setEditBodyKm(showcase.bodyKm ?? ''); setEditCategory((showcase.categoryEn as ShowcaseCategory) || 'Treatment'); setEditCategoryKm(showcase.categoryKm ?? '');
+    setEditMetaTitle(showcase.metaTitleEn ?? ''); setEditMetaTitleKm(showcase.metaTitleKm ?? ''); setEditMetaDescription(showcase.metaDescriptionEn ?? ''); setEditMetaDescriptionKm(showcase.metaDescriptionKm ?? '');
+    setEditCoverImageKey(showcase.coverImageKey); setEditSections(showcase.sections); setEditRelatedIds(showcase.relatedShowcaseIds); setEditDisplayOrder(showcase.displayOrder); setEditHomepage(showcase.showOnHomepage);
+  }, [isEditingSelected, showcaseDetailQuery.data]);
+
   const startEditing = (articleToEdit?: ShowcaseArticle) => {
     const target = articleToEdit || selectedArticle;
     if (!target) return;
     setEditTitle(target.title);
+    setEditTitleKm('');
+    setEditSlug('');
     setEditHeadline(target.structure.headline || target.title);
     setEditSummary(target.structure.shortSummary || target.subtitle);
     setEditBody(target.structure.bodyContent);
@@ -312,34 +356,23 @@ export function AdminShowcasePage() {
 
   const handleSaveEditing = () => {
     if (!selectedArticle) return;
-    const updated: ShowcaseArticle = {
-      ...selectedArticle,
-      category: editCategory,
-      status: editStatus,
-      structure: {
-        ...selectedArticle.structure,
-        bodyContent: editBody.trim(),
-        ctaButtonCount: Number(editCtaCount) || 1,
-        headline: editHeadline.trim() || editTitle.trim(),
-        relatedCardsCount: Number(editRelatedCount) || 1,
-        sectionBlocksCount: Number(editBlocksCount) || 1,
-        shortSummary: editSummary.trim(),
+    updateMutation.mutate({ article: selectedArticle, patch: {
+      slug: editSlug, status: editStatus === 'published' ? 'PUBLISHED' : editStatus === 'hidden' ? 'ARCHIVED' : 'DRAFT', showOnHomepage: editHomepage, displayOrder: editDisplayOrder,
+      titleEn: editTitle, titleKm: editTitleKm, categoryEn: editCategory || null, categoryKm: editCategoryKm || null, summaryEn: editSummary || null, summaryKm: editSummaryKm || null,
+      bodyEn: editBody || null, bodyKm: editBodyKm || null, coverImageKey: editCoverImageKey, metaTitleEn: editMetaTitle || null, metaTitleKm: editMetaTitleKm || null,
+      metaDescriptionEn: editMetaDescription || null, metaDescriptionKm: editMetaDescriptionKm || null, sections: editSections.map((section, displayOrder) => ({ ...section, displayOrder })), relatedShowcaseIds: editRelatedIds,
+    } }, {
+      onSuccess: () => {
+        setIsEditingSelected(false);
+        setEditSavedToast(true);
+        setTimeout(() => setEditSavedToast(false), 2500);
       },
-      subtitle: editSummary.trim().slice(0, 35) + '...',
-      title: editTitle.trim() || selectedArticle.title,
-    };
-    setArticles((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
-    setIsEditingSelected(false);
-    setEditSavedToast(true);
-    setTimeout(() => setEditSavedToast(false), 2500);
+    });
   };
 
   const handleToggleVisibility = (id: string, newVisibility: boolean) => {
-    setArticles((prev) =>
-      prev.map((a) =>
-        a.id === id ? { ...a, homepageVisibility: newVisibility } : a,
-      ),
-    );
+    const article = articles.find((item) => item.id === id);
+    if (article) updateMutation.mutate({ article, patch: { showOnHomepage: newVisibility } });
   };
 
   const handleAddArticle = (newArticle: ShowcaseArticle) => {
@@ -362,6 +395,7 @@ export function AdminShowcasePage() {
       {/* Main Content Area */}
       <main className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
         <div className="mx-auto max-w-[1440px] w-full">
+        {actionError ? <p className="mb-4 rounded-xl border border-[#fecaca] bg-[#fff1f2] p-3 text-sm text-[#b91c1c]" role="alert">{actionError}</p> : null}
         {/* Breadcrumb & Header */}
         <div>
           <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[14px]">
@@ -403,10 +437,14 @@ export function AdminShowcasePage() {
               <AdminIcon className="size-4 shrink-0 text-[#9badc5]" name="search" />
               <input
                 className="min-w-0 flex-1 bg-transparent text-[14px] text-[#182238] outline-none placeholder:text-[#a9b7c9]"
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setListState((previous) => ({
+                  ...previous,
+                  page: 1,
+                  search: e.target.value || undefined,
+                }))}
                 placeholder={data.controls.searchPlaceholder}
                 type="search"
-                value={searchQuery}
+                value={listState.search ?? ''}
               />
             </label>
 
@@ -414,8 +452,12 @@ export function AdminShowcasePage() {
             <label className="flex h-11 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[#71839e] shadow-xs focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#d9f0f7]">
               <select
                 className="cursor-pointer bg-transparent text-[14px] font-medium text-[#182238] outline-none"
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                value={categoryFilter}
+                onChange={(e) => setListState((previous) => ({
+                  ...previous,
+                  page: 1,
+                  category: e.target.value === 'All' ? undefined : e.target.value,
+                }))}
+                value={listState.category ?? 'All'}
               >
                 <option value="All">All</option>
                 {data.controls.categories.map((cat) => (
@@ -423,6 +465,41 @@ export function AdminShowcasePage() {
                     {cat}
                   </option>
                 ))}
+              </select>
+            </label>
+
+            <label className="flex h-11 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[#71839e] shadow-xs focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#d9f0f7]">
+              <span className="sr-only">Filter by publication status</span>
+              <select
+                className="cursor-pointer bg-transparent text-[14px] font-medium text-[#182238] outline-none"
+                onChange={(e) => setListState((previous) => ({
+                  ...previous,
+                  page: 1,
+                  status: e.target.value === 'ALL' ? undefined : e.target.value as AdminShowcaseListQuery['status'],
+                }))}
+                value={listState.status ?? 'ALL'}
+              >
+                <option value="ALL">All statuses</option>
+                <option value="PUBLISHED">Published</option>
+                <option value="DRAFT">Draft</option>
+                <option value="ARCHIVED">Archived</option>
+              </select>
+            </label>
+
+            <label className="flex h-11 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[#71839e] shadow-xs focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#d9f0f7]">
+              <span className="sr-only">Filter by homepage visibility</span>
+              <select
+                className="cursor-pointer bg-transparent text-[14px] font-medium text-[#182238] outline-none"
+                onChange={(e) => setListState((previous) => ({
+                  ...previous,
+                  page: 1,
+                  showOnHomepage: e.target.value === 'ALL' ? undefined : e.target.value === 'true',
+                }))}
+                value={listState.showOnHomepage === undefined ? 'ALL' : String(listState.showOnHomepage)}
+              >
+                <option value="ALL">All visibility</option>
+                <option value="true">Homepage visible</option>
+                <option value="false">Homepage hidden</option>
               </select>
             </label>
           </div>
@@ -583,13 +660,19 @@ export function AdminShowcasePage() {
                 <div>
                   <h3 className="text-lg font-bold text-[#182238]">No showcase articles found</h3>
                   <p className="mt-1.5 text-[14px] text-[#71839e]">
-                    Try adjusting your search query or category filter.
+                    Try adjusting your search query or filters.
                   </p>
                   <Button
                     className="mt-4 border border-[#dce5ef] bg-white text-[#71839e]"
                     onClick={() => {
-                      setSearchQuery('');
-                      setCategoryFilter('All');
+                      setListState((previous) => ({
+                        ...previous,
+                        page: 1,
+                        search: undefined,
+                        category: undefined,
+                        status: undefined,
+                        showOnHomepage: undefined,
+                      }));
                     }}
                     variant="secondary"
                   >
@@ -598,6 +681,33 @@ export function AdminShowcasePage() {
                 </div>
               </div>
             )}
+
+            <div className="mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-[#f0f4f8] pt-6 text-[13px] text-[#8a9bb2]">
+              <span>
+                Showing {filteredArticles.length > 0 ? startIndex + 1 : 0} to {startIndex + filteredArticles.length} of {data.meta.total} articles
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  aria-label="Previous page"
+                  className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#71839e] transition hover:bg-[#f4f8fb] disabled:pointer-events-none disabled:opacity-40"
+                  disabled={effectivePage <= 1}
+                  onClick={() => setListState((previous) => ({ ...previous, page: Math.max(1, effectivePage - 1) }))}
+                  type="button"
+                >
+                  <AdminIcon className="size-3.5 rotate-180" name="chevronRight" />
+                </button>
+                <span className="px-2 font-semibold text-[#61738d]">Page {effectivePage} of {totalPages}</span>
+                <button
+                  aria-label="Next page"
+                  className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#71839e] transition hover:bg-[#f4f8fb] disabled:pointer-events-none disabled:opacity-40"
+                  disabled={effectivePage >= totalPages}
+                  onClick={() => setListState((previous) => ({ ...previous, page: Math.min(totalPages, effectivePage + 1) }))}
+                  type="button"
+                >
+                  <AdminIcon className="size-3.5" name="chevronRight" />
+                </button>
+              </div>
+            </div>
           </Card>
 
           {/* Right Column: Selected Article Structure Panel */}
@@ -660,6 +770,15 @@ export function AdminShowcasePage() {
                       value={editTitle}
                     />
                   </div>
+                  <div>
+                    <label className="block text-[12.5px] font-bold text-[#182238]">Article Title (Khmer) <span className="text-[#ef4444]">*</span></label>
+                    <input className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]" onChange={(e) => setEditTitleKm(e.target.value)} value={editTitleKm} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="block text-[12.5px] font-bold text-[#182238]">Slug<input className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13px] font-normal" onChange={(e) => setEditSlug(e.target.value)} value={editSlug} /></label>
+                    <label className="block text-[12.5px] font-bold text-[#182238]">Display order<input className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13px] font-normal" min="0" onChange={(e) => setEditDisplayOrder(Number(e.target.value) || 0)} type="number" value={editDisplayOrder} /></label>
+                  </div>
+                  <label className="block text-[12.5px] font-bold text-[#182238]">Cover image key<input className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13px] font-normal" onChange={(e) => setEditCoverImageKey(e.target.value || null)} value={editCoverImageKey ?? ''} /></label>
 
                   {/* Headline */}
                   <div>
@@ -689,6 +808,10 @@ export function AdminShowcasePage() {
                       value={editSummary}
                     />
                   </div>
+                  <div>
+                    <label className="block text-[12.5px] font-bold text-[#182238]">Short Summary (Khmer)</label>
+                    <textarea className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-2.5 text-[13px]" onChange={(e) => setEditSummaryKm(e.target.value)} value={editSummaryKm} />
+                  </div>
 
                   {/* Body Content */}
                   <div>
@@ -700,6 +823,10 @@ export function AdminShowcasePage() {
                       onChange={(e) => setEditBody(e.target.value)}
                       value={editBody}
                     />
+                  </div>
+                  <div>
+                    <label className="block text-[12.5px] font-bold text-[#182238]">Body Content (Khmer)</label>
+                    <textarea className="mt-1 h-28 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-2.5 text-[13px]" onChange={(e) => setEditBodyKm(e.target.value)} value={editBodyKm} />
                   </div>
 
                   {/* Structure Metrics */}
@@ -752,6 +879,10 @@ export function AdminShowcasePage() {
                       </select>
                     </div>
                     <div>
+                      <label className="block text-[11.5px] font-bold text-[#182238]">Category (Khmer)</label>
+                      <input className="mt-1 h-9 w-full rounded-lg border border-[#dce5ef] bg-white px-2 text-[12.5px]" onChange={(e) => setEditCategoryKm(e.target.value)} value={editCategoryKm} />
+                    </div>
+                    <div>
                       <label className="block text-[11.5px] font-bold text-[#182238]">Status</label>
                       <select
                         className="mt-1 h-9 w-full rounded-lg border border-[#dce5ef] bg-white px-2 text-[12.5px] text-[#182238] outline-none focus:border-[#2187a8]"
@@ -763,6 +894,21 @@ export function AdminShowcasePage() {
                         <option value="hidden">Hidden</option>
                       </select>
                     </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-[#edf2f7] p-3 text-[12.5px] font-bold text-[#182238]">
+                    Show on Homepage <ToggleSwitch checked={editHomepage} onChange={setEditHomepage} />
+                  </div>
+                  <label className="block text-[12.5px] font-bold text-[#182238]">Related showcase IDs (maximum 3, comma separated)<textarea className="mt-1 h-16 w-full rounded-lg border border-[#dce5ef] p-2 text-[13px] font-normal" onChange={(e) => setEditRelatedIds(e.target.value.split(',').map((id) => id.trim()).filter(Boolean))} value={editRelatedIds.join(', ')} /></label>
+                  <div className="space-y-2">
+                    <span className="text-[12.5px] font-bold text-[#182238]">Ordered sections</span>
+                    {editSections.map((section, index) => <div className="grid gap-2 rounded-lg border border-[#edf2f7] p-2" key={`${section.displayOrder}-${index}`}><input className="h-9 rounded border border-[#dce5ef] px-2 text-xs" onChange={(e) => setEditSections((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, headingEn: e.target.value } : item))} placeholder="Heading (English)" value={section.headingEn ?? ''} /><input className="h-9 rounded border border-[#dce5ef] px-2 text-xs" onChange={(e) => setEditSections((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, headingKm: e.target.value } : item))} placeholder="Heading (Khmer)" value={section.headingKm ?? ''} /><textarea className="h-14 rounded border border-[#dce5ef] p-2 text-xs" onChange={(e) => setEditSections((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, bodyEn: e.target.value } : item))} placeholder="Body (English)" value={section.bodyEn ?? ''} /><textarea className="h-14 rounded border border-[#dce5ef] p-2 text-xs" onChange={(e) => setEditSections((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, bodyKm: e.target.value } : item))} placeholder="Body (Khmer)" value={section.bodyKm ?? ''} /><Button onClick={() => setEditSections((items) => items.filter((_, itemIndex) => itemIndex !== index))} type="button" variant="secondary">Remove section</Button></div>)}
+                    <Button onClick={() => setEditSections((items) => [...items, { sectionType: 'TEXT', headingEn: null, headingKm: null, bodyEn: null, bodyKm: null, imageKey: null, displayOrder: items.length }])} type="button" variant="secondary">Add section</Button>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <input className="h-9 rounded-lg border border-[#dce5ef] px-2 text-xs" onChange={(e) => setEditMetaTitle(e.target.value)} placeholder="Meta title (English)" value={editMetaTitle} />
+                    <input className="h-9 rounded-lg border border-[#dce5ef] px-2 text-xs" onChange={(e) => setEditMetaTitleKm(e.target.value)} placeholder="Meta title (Khmer)" value={editMetaTitleKm} />
+                    <textarea className="h-14 rounded-lg border border-[#dce5ef] p-2 text-xs" onChange={(e) => setEditMetaDescription(e.target.value)} placeholder="Meta description (English)" value={editMetaDescription} />
+                    <textarea className="h-14 rounded-lg border border-[#dce5ef] p-2 text-xs" onChange={(e) => setEditMetaDescriptionKm(e.target.value)} placeholder="Meta description (Khmer)" value={editMetaDescriptionKm} />
                   </div>
 
                   {/* Action buttons */}

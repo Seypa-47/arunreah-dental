@@ -1,4 +1,5 @@
 import { useState, useRef, useId, type ChangeEvent } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import type {
   SectionBlock,
 } from '@/services/admin-add-showcase';
 import type { ShowcaseCategory, ShowcaseStatus } from '@/services/admin-showcase';
+import { uploadMedia } from '@/services/media';
 
 function ToggleSwitch({
   checked,
@@ -55,6 +57,7 @@ export function AdminAddShowcasePage() {
 
   // Form states
   const [title, setTitle] = useState('');
+  const [titleKm, setTitleKm] = useState('');
   const [slug, setSlug] = useState('');
   const [isSlugCustomized, setIsSlugCustomized] = useState(false);
   const [category, setCategory] = useState<ShowcaseCategory | ''>('');
@@ -111,16 +114,9 @@ export function AdminAddShowcasePage() {
     setSlug(val);
   };
 
+  const photoUpload = useMutation({ mutationFn: (file: File) => uploadMedia('showcases', file) });
   const handlePhotoSelect = (file: File) => {
-    if (file.size > 2 * 1024 * 1024) {
-      alert('File size exceeds 2MB limit. Please choose a smaller image.');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setCoverImageUrl(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    photoUpload.mutate(file, { onSuccess: (media) => setCoverImageUrl(media.key) });
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -166,6 +162,7 @@ export function AdminAddShowcasePage() {
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!title.trim()) newErrors.title = 'Showcase title is required';
+    if (!titleKm.trim()) newErrors.titleKm = 'Khmer showcase title is required';
     if (!slug.trim()) newErrors.slug = 'Slug / URL is required';
     if (!category) newErrors.category = 'Category is required';
     if (!headline.trim()) newErrors.headline = 'Headline is required';
@@ -202,6 +199,7 @@ export function AdminAddShowcasePage() {
       slug,
       status: chosenStatus || status,
       title,
+      titleKm,
     };
 
     createMutation.mutate(payload, {
@@ -344,6 +342,25 @@ export function AdminAddShowcasePage() {
                       <p className="mt-1 text-[12px] text-[#ef4444]">{errors.slug}</p>
                     )}
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-bold text-[#182238]">
+                    Showcase Title (Khmer) <span className="text-[#ef4444]">*</span>
+                  </label>
+                  <input
+                    className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
+                      errors.titleKm ? 'border-[#ef4444]' : 'border-[#dce5ef]'
+                    }`}
+                    onChange={(e) => {
+                      setTitleKm(e.target.value);
+                      if (errors.titleKm) setErrors((previous) => ({ ...previous, titleKm: '' }));
+                    }}
+                    placeholder="បញ្ចូលចំណងជើងជាភាសាខ្មែរ"
+                    type="text"
+                    value={titleKm}
+                  />
+                  {errors.titleKm ? <p className="mt-1 text-[12px] text-[#ef4444]">{errors.titleKm}</p> : null}
                 </div>
 
                 {/* Row: Category & Status */}
