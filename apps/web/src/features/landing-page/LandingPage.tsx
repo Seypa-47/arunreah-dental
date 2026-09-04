@@ -244,9 +244,6 @@ function useSmoothCarousel<T>(items: T[]) {
   const lastX = useRef(0);
   const lastTime = useRef(0);
   const velocity = useRef(0);
-  const momentumRaf = useRef<number | null>(null);
-  const targetScroll = useRef<number | null>(null);
-  const wheelRaf = useRef<number | null>(null);
 
   const checkScroll = useCallback(() => {
     if (scrollRef.current) {
@@ -262,36 +259,68 @@ function useSmoothCarousel<T>(items: T[]) {
     return () => window.removeEventListener('resize', checkScroll);
   }, [items, checkScroll]);
 
-  const stopAnimations = useCallback(() => {
-    if (momentumRaf.current !== null) {
-      cancelAnimationFrame(momentumRaf.current);
-      momentumRaf.current = null;
-    }
-    if (wheelRaf.current !== null) {
-      cancelAnimationFrame(wheelRaf.current);
-      wheelRaf.current = null;
-    }
-    targetScroll.current = null;
-  }, []);
-
-  useEffect(() => {
-    return () => stopAnimations();
-  }, [stopAnimations]);
-
   const handleScroll = useCallback((direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      stopAnimations();
       const scrollDistance = 310;
       scrollRef.current.scrollBy({
         behavior: 'smooth',
         left: direction === 'left' ? -scrollDistance : scrollDistance,
       });
     }
-  }, [stopAnimations]);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let wheelDebounce: ReturnType<typeof setTimeout> | null = null;
+    let accumulatedDelta = 0;
+
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        return;
+      }
+
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 0) return;
+
+      const isScrollingRight = e.deltaY > 0;
+      const canScrollHorizontally = isScrollingRight
+        ? el.scrollLeft < maxScroll - 5
+        : el.scrollLeft > 5;
+
+      if (canScrollHorizontally) {
+        e.preventDefault();
+        accumulatedDelta += e.deltaY;
+
+        if (wheelDebounce) clearTimeout(wheelDebounce);
+
+        wheelDebounce = setTimeout(() => {
+          const cardStep = 310;
+          const direction = accumulatedDelta > 0 ? 1 : -1;
+          const current = el.scrollLeft;
+          const target = direction > 0
+            ? Math.floor((current + cardStep) / cardStep) * cardStep
+            : Math.ceil((current - cardStep) / cardStep) * cardStep;
+
+          el.scrollTo({
+            behavior: 'smooth',
+            left: Math.max(0, Math.min(maxScroll, target)),
+          });
+          accumulatedDelta = 0;
+        }, 30);
+      }
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+      if (wheelDebounce) clearTimeout(wheelDebounce);
+    };
+  }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!scrollRef.current || e.button !== 0) return;
-    stopAnimations();
     isDragging.current = true;
     setIsDraggingState(true);
     hasMoved.current = false;
@@ -300,7 +329,7 @@ function useSmoothCarousel<T>(items: T[]) {
     lastTime.current = performance.now();
     scrollStart.current = scrollRef.current.scrollLeft;
     velocity.current = 0;
-  }, [stopAnimations]);
+  }, []);
 
   useEffect(() => {
     if (!isDraggingState) return;
@@ -323,7 +352,7 @@ function useSmoothCarousel<T>(items: T[]) {
     };
 
     const handleGlobalMouseUp = () => {
-      if (!isDragging.current) return;
+      if (!isDragging.current || !scrollRef.current) return;
       isDragging.current = false;
       setIsDraggingState(false);
 
@@ -333,20 +362,28 @@ function useSmoothCarousel<T>(items: T[]) {
         }, 80);
       }
 
-      if (Math.abs(velocity.current) > 0.15 && scrollRef.current) {
-        let v = -velocity.current * 16;
-        const glide = () => {
-          if (!scrollRef.current || Math.abs(v) < 0.5) {
-            checkScroll();
-            momentumRaf.current = null;
-            return;
-          }
-          scrollRef.current.scrollLeft += v;
-          v *= 0.92;
-          momentumRaf.current = requestAnimationFrame(glide);
-        };
-        momentumRaf.current = requestAnimationFrame(glide);
+      const el = scrollRef.current;
+      const cardStep = 310;
+      const currentScroll = el.scrollLeft;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      const now = performance.now();
+      const timeSinceMove = now - lastTime.current;
+      const effectiveVelocity = timeSinceMove > 80 ? 0 : velocity.current;
+
+      let targetIndex = Math.round(currentScroll / cardStep);
+      if (effectiveVelocity < -0.2) {
+        targetIndex = Math.ceil((currentScroll + 40) / cardStep);
+      } else if (effectiveVelocity > 0.2) {
+        targetIndex = Math.floor((currentScroll - 40) / cardStep);
       }
+
+      const maxIndex = Math.ceil(maxScroll / cardStep);
+      targetIndex = Math.max(0, Math.min(maxIndex, targetIndex));
+
+      el.scrollTo({
+        behavior: 'smooth',
+        left: Math.min(targetIndex * cardStep, maxScroll),
+      });
     };
 
     window.addEventListener('mousemove', handleGlobalMouseMove);
@@ -355,57 +392,7 @@ function useSmoothCarousel<T>(items: T[]) {
       window.removeEventListener('mousemove', handleGlobalMouseMove);
       window.removeEventListener('mouseup', handleGlobalMouseUp);
     };
-  }, [isDraggingState, checkScroll]);
-
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    if (!scrollRef.current) return;
-
-    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-      stopAnimations();
-      return;
-    }
-
-    const container = scrollRef.current;
-    const maxScroll = container.scrollWidth - container.clientWidth;
-    const scrollingRight = e.deltaY > 0;
-    const canScroll = scrollingRight ? container.scrollLeft < maxScroll - 5 : container.scrollLeft > 5;
-
-    if (!canScroll) {
-      return;
-    }
-
-    if (momentumRaf.current !== null) {
-      cancelAnimationFrame(momentumRaf.current);
-      momentumRaf.current = null;
-    }
-
-    const currentTarget = targetScroll.current ?? container.scrollLeft;
-    targetScroll.current = Math.max(0, Math.min(maxScroll, currentTarget + e.deltaY * 1.5));
-
-    const animateWheel = () => {
-      if (!scrollRef.current || targetScroll.current === null) {
-        wheelRaf.current = null;
-        return;
-      }
-      const current = scrollRef.current.scrollLeft;
-      const diff = targetScroll.current - current;
-
-      if (Math.abs(diff) < 0.5) {
-        scrollRef.current.scrollLeft = targetScroll.current;
-        targetScroll.current = null;
-        wheelRaf.current = null;
-        checkScroll();
-        return;
-      }
-
-      scrollRef.current.scrollLeft = current + diff * 0.22;
-      wheelRaf.current = requestAnimationFrame(animateWheel);
-    };
-
-    if (wheelRaf.current === null) {
-      wheelRaf.current = requestAnimationFrame(animateWheel);
-    }
-  }, [checkScroll, stopAnimations]);
+  }, [isDraggingState]);
 
   return {
     scrollRef,
@@ -415,7 +402,6 @@ function useSmoothCarousel<T>(items: T[]) {
     hasMoved,
     handleScroll,
     handleMouseDown,
-    handleWheel,
     checkScroll,
   };
 }
@@ -429,7 +415,6 @@ function ServicesSection({ services }: { services: LandingService[] }) {
     hasMoved,
     handleScroll,
     handleMouseDown,
-    handleWheel,
     checkScroll,
   } = useSmoothCarousel(services);
 
@@ -484,12 +469,11 @@ function ServicesSection({ services }: { services: LandingService[] }) {
 
         <div
           className={`no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 select-none touch-pan-y overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
-            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+            isDragging ? 'cursor-grabbing snap-none' : 'cursor-grab scroll-smooth snap-x snap-mandatory'
           }`}
           data-scroll-container
           onMouseDown={handleMouseDown}
           onScroll={checkScroll}
-          onWheel={handleWheel}
           ref={scrollRef}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
@@ -499,7 +483,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
 
             return (
               <Card
-                className="h-[354px] w-[286px] shrink-0 overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
+                className="h-[354px] w-[286px] shrink-0 snap-start snap-always overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-shadow duration-200 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
                 id={id}
                 key={service.name}
               >
@@ -544,7 +528,6 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
     hasMoved,
     handleScroll,
     handleMouseDown,
-    handleWheel,
     checkScroll,
   } = useSmoothCarousel(doctors);
 
@@ -599,18 +582,17 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
 
         <div
           className={`no-scrollbar mt-6 flex gap-6 overflow-x-auto px-1.5 py-4 select-none touch-pan-y overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
-            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+            isDragging ? 'cursor-grabbing snap-none' : 'cursor-grab scroll-smooth snap-x snap-mandatory'
           }`}
           data-scroll-container
           onMouseDown={handleMouseDown}
           onScroll={checkScroll}
-          onWheel={handleWheel}
           ref={scrollRef}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {doctors.map((doctor) => (
             <Card
-              className="h-[354px] w-[286px] shrink-0 overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
+              className="h-[354px] w-[286px] shrink-0 snap-start snap-always overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-shadow duration-200 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]"
               key={doctor.name}
             >
               <Link
