@@ -265,6 +265,7 @@ function MapsSection({ maps }: { maps: ContactPageContent['maps'] }) {
                     map.directionsUrl ??
                     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(map.name ?? map.label)}`
                   }
+                  hours={map.hours}
                   key={map.name ?? map.imageAlt}
                   lat={map.lat}
                   lng={map.lng}

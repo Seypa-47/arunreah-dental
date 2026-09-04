@@ -318,6 +318,7 @@ export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
     address?: string;
     badge?: string;
     directionsUrl?: string;
+    hours?: string;
     imageAlt: string;
     imageUrl: string;
     label: string;
