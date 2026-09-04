@@ -31,8 +31,8 @@ export function GoogleSatelliteMap({
 
   return (
     <Card className="mx-auto flex w-full max-w-[500px] flex-col overflow-hidden rounded-xl border border-[#edf2f7] bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition duration-200 hover:shadow-[0_6px_18px_rgba(15,23,42,0.08)]">
-      {/* Well-Proportioned Google Maps Satellite Viewport */}
-      <div className="relative h-[245px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[260px]">
+      {/* Generous Height Google Maps Satellite Viewport */}
+      <div className="relative h-[300px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[330px]">
         <iframe
           allowFullScreen
           className="h-full w-full border-0"
