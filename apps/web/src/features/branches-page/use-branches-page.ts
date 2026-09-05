@@ -10,9 +10,14 @@ export function useBranchesPageQuery() {
   return useQuery({
     queryFn: async () => {
       const response = await getPublicBranches(language);
+      const chrome = publicBranchesChrome();
+      const publicBranches = response.branches;
+      const primaryBranch = publicBranches[0];
+      const appointmentBranches = publicBranches.filter((branch) => branch.acceptsAppointments);
+
       return {
-        ...publicBranchesChrome(),
-        branches: response.branches.map((branch) => ({
+        ...chrome,
+        branches: publicBranches.map((branch) => ({
           address: branch.address,
           badge: branch.badge ?? branch.name,
           bookingLabel: branch.heroCtaLabel ?? 'Book at this Branch',
@@ -28,6 +33,32 @@ export function useBranchesPageQuery() {
           phoneLabel: 'Call Now',
           phones: [branch.phone, branch.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
         })),
+        cta: {
+          ...chrome.cta,
+          backgroundImageAlt: primaryBranch?.name ?? '',
+          backgroundImageUrl: getPublicMediaUrl(primaryBranch?.heroImageKey) ?? '',
+        },
+        hero: {
+          ...chrome.hero,
+          backgroundImageAlt: primaryBranch?.name ?? '',
+          backgroundImageUrl: getPublicMediaUrl(primaryBranch?.heroImageKey) ?? '',
+          eyebrow: primaryBranch?.badge ?? '',
+          metrics: [
+            {
+              description: `${publicBranches.length} published clinic location${publicBranches.length === 1 ? '' : 's'}`,
+              iconUrl: '',
+              label: 'Locations',
+              title: String(publicBranches.length),
+            },
+            {
+              description: 'available to receive appointment requests',
+              iconUrl: '',
+              label: 'Appointments',
+              title: String(appointmentBranches.length),
+            },
+          ],
+          subtitle: primaryBranch?.heroSupportingText ?? chrome.hero.subtitle,
+        },
       };
     },
     queryKey: queryKeys.public.branches(language),
