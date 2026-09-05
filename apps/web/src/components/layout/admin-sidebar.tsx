@@ -51,6 +51,7 @@ const routeForNavigation = (label: string) => {
   if (label === 'Clinic Info' || label === 'Clinic Settings') return '/admin/clinic-info';
   if (label === 'Branches / Locations') return '/admin/clinic-info/branches';
   if (label === 'Contact Settings') return '/admin/clinic-info/contact';
+  if (label === 'Admin Management') return '/admin/admins';
   return '#';
 };
 
