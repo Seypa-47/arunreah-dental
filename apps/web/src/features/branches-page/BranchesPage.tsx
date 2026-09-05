@@ -318,6 +318,8 @@ function BranchesList({ content }: { content: BranchesPageContent }) {
 }
 
 function BenefitsSection({ content }: { content: BranchesPageContent }) {
+  if (content.benefits.length === 0) return null;
+
   return (
     <section className="bg-white py-12 sm:py-14">
       <SectionIntro eyebrow={content.sections.benefitsEyebrow} title={content.sections.benefitsTitle} />
@@ -437,14 +439,7 @@ function BranchesPageError({ onRetry }: { onRetry: () => void }) {
 }
 
 function hasBranchesContent(content: BranchesPageContent | undefined): content is BranchesPageContent {
-  return Boolean(
-    content &&
-      content.navigation.length > 0 &&
-      content.hero.title &&
-      content.hero.metrics.length > 0 &&
-      content.branches.length > 0 &&
-      content.benefits.length > 0,
-  );
+  return Boolean(content && content.navigation.length > 0 && content.hero.title && content.branches.length > 0);
 }
 
 export function BranchesPage() {
