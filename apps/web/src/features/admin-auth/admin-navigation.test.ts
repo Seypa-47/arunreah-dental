@@ -11,6 +11,7 @@ describe('role-based admin navigation', () => {
     expect(labels).toContain('Inbox');
     expect(labels).not.toContain('Services');
     expect(labels).not.toContain('Clinic Info');
+    expect(labels).not.toContain('Admin Management');
   });
 
   it('limits CMS admins to content operations', () => {
@@ -20,12 +21,14 @@ describe('role-based admin navigation', () => {
     expect(labels).toContain('Showcase');
     expect(labels).not.toContain('Appointments');
     expect(labels).not.toContain('Inbox');
+    expect(labels).not.toContain('Admin Management');
   });
 
   it('gives super admins both navigation groups and hides unimplemented calendar navigation', () => {
     const labels = labelsFor('SUPER_ADMIN');
     expect(labels).toContain('Appointments');
     expect(labels).toContain('Services');
+    expect(labels).toContain('Admin Management');
     expect(labels).not.toContain('Calendar');
   });
 });

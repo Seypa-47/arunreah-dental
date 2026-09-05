@@ -7,6 +7,7 @@ const cmsPathPrefixes = [
   '/admin/showcase',
   '/admin/clinic-info',
 ] as const;
+const adminManagementPathPrefix = '/admin/admins';
 
 export function canAccessAdminPath(role: AdminRole, pathname: string): boolean {
   if (pathname === '/admin/dashboard') return true;
@@ -15,6 +16,8 @@ export function canAccessAdminPath(role: AdminRole, pathname: string): boolean {
   if (pathname.startsWith(appointmentPathPrefix)) {
     return role === 'RECEPTIONIST' || role === 'SUPER_ADMIN';
   }
+
+  if (pathname.startsWith(adminManagementPathPrefix)) return role === 'SUPER_ADMIN';
 
   if (cmsPathPrefixes.some((prefix) => pathname.startsWith(prefix))) {
     return role === 'CMS_ADMIN' || role === 'SUPER_ADMIN';

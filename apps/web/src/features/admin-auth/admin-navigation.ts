@@ -27,8 +27,10 @@ const cmsNavigation: AdminNavigationItem[] = [
   { icon: 'clinicInfo', label: 'Contact Settings', section: 'clinic' },
 ];
 
+const adminManagementNavigation: AdminNavigationItem = { icon: 'clinicInfo', label: 'Admin Management' };
+
 export function getAdminNavigation(role: AdminRole): AdminNavigationItem[] {
   if (role === 'RECEPTIONIST') return [dashboard, ...appointmentNavigation];
   if (role === 'CMS_ADMIN') return [dashboard, ...cmsNavigation];
-  return [dashboard, ...appointmentNavigation, ...cmsNavigation];
+  return [dashboard, ...appointmentNavigation, ...cmsNavigation, adminManagementNavigation];
 }

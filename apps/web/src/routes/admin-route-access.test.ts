@@ -11,6 +11,9 @@ describe('admin route access', () => {
 
     expect(canAccessAdminPath('SUPER_ADMIN', '/admin/services')).toBe(true);
     expect(canAccessAdminPath('SUPER_ADMIN', '/admin/appointments/inbox')).toBe(true);
+    expect(canAccessAdminPath('SUPER_ADMIN', '/admin/admins')).toBe(true);
+    expect(canAccessAdminPath('CMS_ADMIN', '/admin/admins')).toBe(false);
+    expect(canAccessAdminPath('RECEPTIONIST', '/admin/admins')).toBe(false);
   });
 
   it('allows the dashboard to all authenticated roles but keeps calendar unavailable', () => {
