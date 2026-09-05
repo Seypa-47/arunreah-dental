@@ -1,4 +1,5 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -6,6 +7,10 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import type { BookAppointmentPageContent } from '@/features/landing-page/types';
 import { useBookAppointmentPageQuery } from './use-book-appointment-page';
+import { ApiClientError } from '@/lib/api';
+import { env } from '@/config/env';
+import { createPublicAppointment } from '@/services/public-content';
+import { TurnstileWidget } from './turnstile-widget';
 
 const skeletonNavigation = [
   { href: '/', label: 'Home' },
@@ -159,12 +164,16 @@ function TextField({
   label,
   placeholder,
   type = 'text',
+  value,
+  onChange,
 }: {
   icon: IconName;
   id: string;
   label: string;
   placeholder: string;
   type?: 'email' | 'tel' | 'text';
+  value: string;
+  onChange: (value: string) => void;
 }) {
   return (
     <div>
@@ -173,7 +182,7 @@ function TextField({
       </label>
       <div className="relative">
         <FieldIcon name={icon} />
-        <input className={fieldClass} id={id} name={id} placeholder={placeholder} type={type} />
+        <input className={fieldClass} id={id} name={id} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} type={type} value={value} />
       </div>
     </div>
   );
@@ -309,6 +318,11 @@ function AppointmentForm({
   selectedDoctor,
   selectedService,
   selectedTime,
+  onSubmit,
+  onTurnstileToken,
+  isSubmitting,
+  submissionError,
+  turnstileResetSignal,
 }: {
   content: BookAppointmentPageContent;
   onSelectBranch: (value: string) => void;
@@ -321,9 +335,19 @@ function AppointmentForm({
   selectedDoctor: string;
   selectedService: string;
   selectedTime: string;
+  onSubmit: (values: { patientName: string; phone: string; email: string; notes: string }) => void;
+  onTurnstileToken: (token: string | null) => void;
+  isSubmitting: boolean;
+  submissionError: string | null;
+  turnstileResetSignal: number;
 }) {
+  const [patientName, setPatientName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [notes, setNotes] = useState('');
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    onSubmit({ patientName, phone, email, notes });
   };
 
   return (
@@ -337,7 +361,7 @@ function AppointmentForm({
               id="branch"
               label="Select Branch"
               onChange={onSelectBranch}
-              options={content.branches.map((branch) => ({ name: branch.name, value: branch.name }))}
+              options={content.branches.map((branch) => ({ name: branch.name, value: branch.id ?? '' }))}
               value={selectedBranch}
             />
             <SelectField
@@ -370,13 +394,15 @@ function AppointmentForm({
         <section>
           <SectionTitle number="3" title="Your Information" />
           <div className="mt-6 grid gap-5 md:grid-cols-2">
-            <TextField icon="user" id="fullName" label={content.form.fields.fullName} placeholder={content.form.placeholders.fullName} />
+            <TextField icon="user" id="fullName" label={content.form.fields.fullName} onChange={setPatientName} placeholder={content.form.placeholders.fullName} value={patientName} />
             <TextField
               icon="phone"
               id="phone"
               label={content.form.fields.phone}
               placeholder={content.form.placeholders.phone}
               type="tel"
+              value={phone}
+              onChange={setPhone}
             />
             <TextField
               icon="email"
@@ -384,14 +410,18 @@ function AppointmentForm({
               label={content.form.fields.email}
               placeholder={content.form.placeholders.email}
               type="email"
+              value={email}
+              onChange={setEmail}
             />
-            <TextField icon="notes" id="notes" label={content.form.fields.notes} placeholder={content.form.placeholders.notes} />
+            <TextField icon="notes" id="notes" label={content.form.fields.notes} onChange={setNotes} placeholder={content.form.placeholders.notes} value={notes} />
           </div>
         </section>
 
-        <Button className="h-[46px] min-h-[46px] rounded-full bg-[#3695b9] px-8 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.24)] hover:bg-[#2f8fb0]">
+        <TurnstileWidget onToken={onTurnstileToken} resetSignal={turnstileResetSignal} />
+        {submissionError ? <p className="text-sm font-medium text-[#9d4d18]" role="alert">{submissionError}</p> : null}
+        <Button className="h-[46px] min-h-[46px] rounded-full bg-[#3695b9] px-8 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.24)] hover:bg-[#2f8fb0]" disabled={isSubmitting}>
           <AppointmentIcon className="size-[16px]" name="calendar" />
-          {content.form.submitLabel}
+          {isSubmitting ? 'Sending request…' : 'Send Appointment Request'}
         </Button>
       </form>
     </Card>
@@ -428,7 +458,7 @@ function AppointmentSummary({
       <h2 className="text-[18px] font-extrabold leading-6 text-[#005687] sm:text-[20px]">{content.summary.title}</h2>
       <div className="mt-5 rounded-xl bg-[#edf7fb] p-3.5">
         <div className="grid grid-cols-[80px_1fr] gap-4">
-          <img alt={branch.imageAlt} className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0] object-cover" src={branch.imageUrl} />
+          {branch.imageUrl ? <img alt={branch.imageAlt} className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0] object-cover" src={branch.imageUrl} /> : <div aria-hidden="true" className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0]" />}
           <div>
             <h3 className="text-[13px] font-bold leading-5 text-[#005687]">{branch.name}</h3>
             <p className="mt-1 text-[12px] font-normal leading-4 text-[#6b7280]">{branch.address}</p>
@@ -470,14 +500,14 @@ function AppointmentSummary({
         <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{content.help.title}</h3>
         <p className="mt-1 text-[12px] font-medium leading-5 text-[#6b7280]">{content.help.subtitle}</p>
         <div className="mt-4 space-y-2.5 text-[13px] font-bold leading-5 text-[#3695b9]">
-          <a className="flex items-center gap-2.5 hover:text-[#005687]" href={`tel:${content.help.phone.replaceAll(/[^0-9+]/g, '')}`}>
+          {content.help.phone ? <a className="flex items-center gap-2.5 hover:text-[#005687]" href={`tel:${content.help.phone.replaceAll(/[^0-9+]/g, '')}`}>
             <AppointmentIcon className="size-[15px]" name="phone" />
             {content.help.phone}
-          </a>
-          <a className="flex items-center gap-2.5 hover:text-[#005687]" href={`mailto:${content.help.email}`}>
+          </a> : null}
+          {content.help.email ? <a className="flex items-center gap-2.5 hover:text-[#005687]" href={`mailto:${content.help.email}`}>
             <AppointmentIcon className="size-[15px]" name="email" />
             {content.help.email}
-          </a>
+          </a> : null}
         </div>
       </div>
     </Card>
@@ -499,14 +529,24 @@ function dateLabel(content: BookAppointmentPageContent, selectedDate: string) {
 }
 
 function BookAppointmentView({ content }: { content: BookAppointmentPageContent }) {
-  const [selectedBranch, setSelectedBranch] = useState(content.branches[0]?.name ?? '');
+  const [selectedBranch, setSelectedBranch] = useState(content.branches[0]?.id ?? '');
   const [selectedService, setSelectedService] = useState(content.servicesList[0]?.value ?? '');
   const [selectedDoctor, setSelectedDoctor] = useState(content.doctors[0]?.value ?? '');
   const [selectedDate, setSelectedDate] = useState(content.calendar.selectedDateKey);
   const [selectedTime, setSelectedTime] = useState(content.times[2] ?? content.times[0] ?? '');
+  const idempotencyKey = useRef(crypto.randomUUID());
+  const [acknowledgement, setAcknowledgement] = useState<{ reference: string; status: string; message: string } | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileError, setTurnstileError] = useState<string | null>(null);
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
+  const submitMutation = useMutation({ mutationFn: (input: Parameters<typeof createPublicAppointment>[0]) => createPublicAppointment(input) });
+  const handleTurnstileToken = useCallback((token: string | null) => {
+    setTurnstileToken(token);
+    if (token) setTurnstileError(null);
+  }, []);
 
   const branch = useMemo(
-    () => content.branches.find((item) => item.name === selectedBranch) ?? content.branches[0],
+    () => content.branches.find((item) => item.id === selectedBranch) ?? content.branches[0],
     [content.branches, selectedBranch],
   );
   const service = content.servicesList.find((item) => item.value === selectedService);
@@ -515,6 +555,35 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
   if (!branch || !service || !doctor) {
     return <BookAppointmentEmpty />;
   }
+
+  const submit = (values: { patientName: string; phone: string; email: string; notes: string }) => {
+    if (env.turnstileSiteKey && !turnstileToken) {
+      setTurnstileError('Please complete the verification challenge before sending your request.');
+      return;
+    }
+    setTurnstileError(null);
+    void submitMutation.mutateAsync({
+      ...values,
+      branchId: selectedBranch,
+      doctorId: selectedDoctor || null,
+      idempotencyKey: idempotencyKey.current,
+      notes: values.notes.trim() || null,
+      preferredDate: selectedDate,
+      preferredTime: selectedTime,
+      serviceId: selectedService,
+      turnstileToken: turnstileToken ?? undefined,
+    }).then((response) => {
+      setAcknowledgement(response);
+      idempotencyKey.current = crypto.randomUUID();
+    }).catch(() => undefined).finally(() => setTurnstileResetSignal((value) => value + 1));
+  };
+
+  const requestError = submitMutation.error instanceof ApiClientError
+    ? submitMutation.error.status === 429
+      ? 'Too many requests. Please wait a moment and try again.'
+      : submitMutation.error.message
+    : null;
+  const submissionError = turnstileError ?? requestError;
 
   return (
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
@@ -533,6 +602,11 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
             selectedDoctor={selectedDoctor}
             selectedService={selectedService}
             selectedTime={selectedTime}
+            isSubmitting={submitMutation.isPending}
+            onSubmit={submit}
+            onTurnstileToken={handleTurnstileToken}
+            submissionError={submissionError}
+            turnstileResetSignal={turnstileResetSignal}
           />
           <AppointmentSummary
             branch={branch}
@@ -543,6 +617,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
             selectedTime={selectedTime}
           />
         </section>
+        {acknowledgement ? <section className="mx-auto max-w-[1280px] px-4 pb-10 sm:px-6 lg:px-8"><Card className="border-[#b9e2ee] bg-[#f4fbfd] p-5"><p className="font-bold text-[#005687]">Appointment request received</p><p className="mt-1 text-sm text-[#62798b]">{acknowledgement.message}</p><p className="mt-1 text-sm text-[#62798b]">Reference: {acknowledgement.reference}. Status: {acknowledgement.status}.</p></Card></section> : null}
       </main>
       <SiteFooter {...content.footer} />
     </SiteLayout>

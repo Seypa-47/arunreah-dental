@@ -13,6 +13,7 @@ type DoctorRecord = NonNullable<Awaited<ReturnType<typeof repository.findDoctorB
 function localize(doctor: DoctorRecord, language: DoctorLanguage) {
   const isKhmer = language === 'km';
   return {
+    id: doctor.id,
     slug: doctor.slug,
     name: isKhmer ? doctor.nameKm : doctor.nameEn,
     title: isKhmer ? doctor.roleKm : doctor.roleEn,

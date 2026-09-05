@@ -23,6 +23,7 @@ export type LandingService = {
   imageUrl: string;
   khmerName?: string;
   name: string;
+  slug?: string;
 };
 
 export type LandingDoctor = {
@@ -68,6 +69,7 @@ export type LandingBranch = {
 export type LandingShowcase = {
   imageAlt: string;
   imageUrl: string;
+  slug?: string;
   title: string;
 };
 
@@ -159,6 +161,7 @@ export type BranchesPageContent = Pick<LandingPageContent, 'actions' | 'footer' 
   }[];
   branches: {
     address: string;
+    id?: string;
     badge: string;
     bookingLabel: string;
     directionsLabel: string;
@@ -333,6 +336,7 @@ export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
 export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
   branches: {
     address: string;
+    id?: string;
     imageAlt: string;
     imageUrl: string;
     mapLabel: string;

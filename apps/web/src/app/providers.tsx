@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 import { AdminSessionProvider } from '@/features/admin-auth/session-provider';
+import { PublicLanguageProvider } from '@/features/public-content/public-language-provider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,7 +17,7 @@ const queryClient = new QueryClient({
 export function AppProviders({ children }: PropsWithChildren) {
   return (
     <QueryClientProvider client={queryClient}>
-      <AdminSessionProvider>{children}</AdminSessionProvider>
+      <PublicLanguageProvider><AdminSessionProvider>{children}</AdminSessionProvider></PublicLanguageProvider>
     </QueryClientProvider>
   );
 }

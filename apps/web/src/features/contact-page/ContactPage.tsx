@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -63,14 +63,6 @@ function ContactIcon({ className = 'size-[18px]', name }: { className?: string; 
       viewBox="0 0 24 24"
     >
       {iconPath[name]}
-    </svg>
-  );
-}
-
-function SendIcon() {
-  return (
-    <svg aria-hidden="true" className="size-[15px]" fill="currentColor" viewBox="0 0 20 20">
-      <path d="M17.82 2.18a1 1 0 0 0-1.05-.23L2.92 7.4a1 1 0 0 0 .02 1.87l5.28 1.98 1.98 5.28a1 1 0 0 0 1.87.02l5.45-13.85a1 1 0 0 0-.23-1.05ZM9.05 10.3 5.9 9.12l7.1-2.8-3.95 3.98Zm1.55 1.55 3.98-3.95-2.8 7.1-1.18-3.15Z" />
     </svg>
   );
 }
@@ -143,109 +135,16 @@ function ContactCards({ cards }: { cards: ContactPageContent['contactCards'] }) 
   );
 }
 
-const fieldClass =
-  'min-h-[46px] h-[46px] w-full rounded-lg border border-[#d9e6ed] bg-[#f8fbfd] px-4 text-[14px] font-medium text-[#005687] outline-none transition placeholder:text-[#94a3b8] focus:border-[#3695B9] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]';
-
-function TextField({
-  id,
-  label,
-  placeholder,
-  type = 'text',
-}: {
-  id: string;
-  label: string;
-  placeholder: string;
-  type?: 'date' | 'email' | 'tel' | 'text';
-}) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-[12px] font-extrabold leading-4 text-[#005687]" htmlFor={id}>
-        {label}
-      </label>
-      <input className={fieldClass} id={id} name={id} placeholder={placeholder} type={type} />
-    </div>
-  );
-}
-
-function SelectField({
-  id,
-  label,
-  options,
-  placeholder,
-}: {
-  id: string;
-  label: string;
-  options: string[];
-  placeholder: string;
-}) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-[12px] font-extrabold leading-4 text-[#005687]" htmlFor={id}>
-        {label}
-      </label>
-      <select className={`${fieldClass} appearance-none`} defaultValue="" id={id} name={id}>
-        <option disabled value="">
-          {placeholder}
-        </option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
 function ContactForm({ form }: { form: ContactPageContent['form'] }) {
-  const [message, setMessage] = useState('');
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-  };
-
   return (
     <section className="bg-[#f1f7fa] pb-12">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <Card className="w-full rounded-2xl border-[#edf2f7] bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)] sm:p-8 lg:p-10">
+        <Card className="w-full rounded-2xl border-[#edf2f7] bg-white p-6 text-center shadow-[0_8px_24px_rgba(15,23,42,0.04)] sm:p-8 lg:p-10">
           <h2 className="text-[24px] font-extrabold leading-8 text-[#005687] sm:text-[26px]">{form.title}</h2>
-          <form className="mt-7 grid gap-x-6 gap-y-5" onSubmit={handleSubmit}>
-            <div className="grid gap-5 lg:grid-cols-2">
-              <TextField id="fullName" label={form.fields.fullName} placeholder={form.placeholders.fullName} />
-              <TextField id="phone" label={form.fields.phone} placeholder={form.placeholders.phone} type="tel" />
-              <TextField id="email" label={form.fields.email} placeholder={form.placeholders.email} type="email" />
-              <SelectField
-                id="preferredBranch"
-                label={form.fields.preferredBranch}
-                options={form.branches}
-                placeholder={form.placeholders.preferredBranch}
-              />
-              <SelectField id="service" label={form.fields.service} options={form.services} placeholder={form.placeholders.service} />
-              <TextField id="preferredDate" label={form.fields.preferredDate} placeholder={form.placeholders.preferredDate} type="date" />
-            </div>
-            <SelectField id="preferredTime" label={form.fields.preferredTime} options={form.times} placeholder={form.placeholders.preferredTime} />
-            <div>
-              <label className="mb-1.5 block text-[12px] font-extrabold leading-4 text-[#005687]" htmlFor="message">
-                {form.fields.message}
-              </label>
-              <textarea
-                aria-describedby="message-count"
-                className={`${fieldClass} min-h-[110px] resize-none py-3`}
-                id="message"
-                maxLength={form.messageLimit}
-                name="message"
-                onChange={(event) => setMessage(event.target.value)}
-                placeholder={form.placeholders.message}
-                value={message}
-              />
-              <p className="mt-1.5 text-right text-[12px] font-semibold text-[#94a3b8]" id="message-count">
-                {message.length}/{form.messageLimit}
-              </p>
-            </div>
-            <Button className="mx-auto mt-2 min-h-[46px] w-full max-w-[360px] rounded-full text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.22)]" icon={<SendIcon />} type="submit">
-              {form.submitLabel}
-            </Button>
-          </form>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#62798b]">Use our appointment request form to choose your preferred service, branch, date, and time. The clinic will review your request before confirming it.</p>
+          <Link className="mt-6 inline-flex min-h-[46px] items-center rounded-full bg-[#3695B9] px-8 text-sm font-bold text-white shadow-[0_8px_18px_rgba(54,149,185,0.22)] hover:bg-[#2c84a5]" to="/book-appointment">
+            Book an appointment request
+          </Link>
         </Card>
       </div>
     </section>
@@ -279,8 +178,8 @@ function MapsSection({ maps }: { maps: ContactPageContent['maps'] }) {
             }
 
             return (
-              <article className="relative overflow-hidden rounded-xl" key={map.imageAlt}>
-                <img alt={map.imageAlt} className="h-[280px] w-full object-cover" src={map.imageUrl} />
+              <article className="relative overflow-hidden rounded-xl bg-[#eaf2f6]" key={map.imageAlt}>
+                {map.imageUrl ? <img alt={map.imageAlt} className="h-[280px] w-full object-cover" src={map.imageUrl} /> : <div aria-hidden="true" className="h-[280px]" />}
                 <span className="absolute left-1/2 top-[53%] inline-flex -translate-x-1/2 items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-[13px] font-extrabold text-[#005687] shadow-[0_10px_22px_rgba(15,23,42,0.18)]">
                   <ContactIcon className="size-[14px] text-[#3695B9]" name="location" />
                   {map.label}

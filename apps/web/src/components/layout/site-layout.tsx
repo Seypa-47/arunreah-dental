@@ -1,6 +1,11 @@
-import { useEffect, useState, type PropsWithChildren } from 'react';
+import { useEffect, type PropsWithChildren } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { LandingNavigationItem, LandingService } from '@/features/landing-page/types';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { queryKeys } from '@/lib/query-keys';
+import { getPublicClinic } from '@/services/public-content';
+import { getPublicMediaUrl } from '@/services/media';
 
 const asset = (name: string) => `/assets/landing/${name}`;
 const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
@@ -15,10 +20,11 @@ type SiteLayoutProps = PropsWithChildren<{
 }>;
 
 export function SiteLayout({ actions, children, navigation, services = [] }: SiteLayoutProps) {
-  const [activeLanguage, setActiveLanguage] = useState<'en' | 'km'>('en');
+  const { language: activeLanguage, setLanguage } = usePublicLanguage();
+  const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic() });
   const { hash, pathname } = useLocation();
   const navigate = useNavigate();
-  const serviceHref = (name: string) => `/services/${serviceSlug(name)}`;
+  const serviceHref = (service: Pick<LandingService, 'name' | 'slug'>) => `/services/${service.slug ?? serviceSlug(service.name)}`;
 
   useEffect(() => {
     if (!hash) {
@@ -55,18 +61,16 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
 
     return false;
   };
+  const clinic = clinicQuery.data;
+  const clinicName = activeLanguage === 'km' ? clinic?.clinicNameKm : clinic?.clinicNameEn;
+  const logoUrl = getPublicMediaUrl(clinic?.logoKey);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#f7fafc] text-[#005687]">
       <header className="sticky top-0 z-40 border-b border-[#edf2f7] bg-white/95 shadow-[0_1px_2px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-200">
         <div className="mx-auto flex h-[64px] w-full max-w-[1280px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link aria-label="Arunreah Dental Clinic home" className="shrink-0 leading-none" to="/">
-            <span className="block text-[20px] font-extrabold uppercase leading-5 tracking-[-0.25px] text-[#3695B9]">
-              Arunreah
-            </span>
-            <span className="block text-[10px] font-bold uppercase leading-[15px] tracking-[1px] text-[#005687]">
-              Dental Clinic
-            </span>
+            {logoUrl ? <img alt={clinicName ?? 'Arunreah Dental Clinic'} className="h-10 max-w-[180px] object-contain object-left" src={logoUrl} /> : <span className="block text-[20px] font-extrabold uppercase leading-5 tracking-[-0.25px] text-[#3695B9]">{clinicName ?? 'Arunreah Dental Clinic'}</span>}
           </Link>
 
           <nav aria-label="Primary navigation" className="hidden items-center gap-7 lg:flex">
@@ -117,7 +121,7 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
                       <Link
                         className="block rounded-xl px-4 py-2.5 text-[14px] font-medium leading-5 text-[#6b7280] transition-colors duration-150 hover:bg-[#f0f9fa] hover:text-[#3695B9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
                         key={service.name}
-                        to={serviceHref(service.name)}
+                        to={serviceHref(service)}
                       >
                         {service.name}
                       </Link>
@@ -154,7 +158,7 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
                 className={`size-[30px] overflow-hidden rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2f9fbe] ${
                   activeLanguage === 'km' ? 'opacity-100' : 'opacity-50'
                 }`}
-                onClick={() => setActiveLanguage('km')}
+                onClick={() => setLanguage('km')}
                 type="button"
               >
                 <img alt="" className="size-full object-cover" src={asset('flag-kh.png')} />
@@ -167,7 +171,7 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
                 className={`size-[30px] overflow-hidden rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2f9fbe] ${
                   activeLanguage === 'en' ? 'opacity-100' : 'opacity-50'
                 }`}
-                onClick={() => setActiveLanguage('en')}
+                onClick={() => setLanguage('en')}
                 type="button"
               >
                 <img alt="" className="size-full object-cover" src={asset('flag-en.png')} />

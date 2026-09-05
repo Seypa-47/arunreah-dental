@@ -257,7 +257,7 @@ describe('service API routes', () => {
     expect(list.status).toBe(200);
     await expect(list.json()).resolves.toMatchObject({
       success: true,
-      data: { services: [{ slug: 'dental-implants', name: 'ដាំធ្មេញ' }] },
+      data: { services: [{ id: 'service-1', slug: 'dental-implants', name: 'ដាំធ្មេញ' }] },
     });
     const detail = await app.request(
       'http://localhost/api/public/services/dental-implants?lang=en',

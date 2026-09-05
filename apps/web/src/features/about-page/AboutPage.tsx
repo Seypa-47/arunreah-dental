@@ -27,7 +27,7 @@ function ArrowIcon() {
 function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
   return (
     <section className="relative grid min-h-[300px] place-items-center overflow-hidden py-14 text-center text-white sm:py-16">
-      <img alt={hero.imageAlt} className="absolute inset-0 h-full w-full object-cover object-center" src={hero.imageUrl} />
+      {hero.imageUrl ? <img alt={hero.imageAlt} className="absolute inset-0 h-full w-full object-cover object-center" src={hero.imageUrl} /> : <div aria-hidden="true" className="absolute inset-0 bg-[#3695B9]" />}
       <div aria-hidden="true" className="absolute inset-0 bg-[#08283a]/55" />
       <div className="relative mx-auto w-full max-w-[780px] px-4">
         <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[4px] text-white/85">{hero.eyebrow}</p>
@@ -43,11 +43,7 @@ function StorySection({ stats, story }: Pick<AboutPageContent, 'stats' | 'story'
     <section className="bg-white py-12 sm:py-14">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-10 lg:grid-cols-[480px_1fr]">
-          <img
-            alt={story.imageAlt}
-            className="h-[340px] w-full rounded-2xl object-cover shadow-[0_12px_28px_rgba(15,23,42,0.08)]"
-            src={story.imageUrl}
-          />
+          {story.imageUrl ? <img alt={story.imageAlt} className="h-[340px] w-full rounded-2xl object-cover shadow-[0_12px_28px_rgba(15,23,42,0.08)]" src={story.imageUrl} /> : null}
           <div>
             <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{story.eyebrow}</p>
             <h2 className="mt-2 text-[26px] font-extrabold leading-8 text-[#005687] sm:text-[30px] sm:leading-9">{story.title}</h2>
@@ -83,6 +79,7 @@ function VisionMissionSection({
   mission,
   vision,
 }: Pick<AboutPageContent, 'mission' | 'vision'>) {
+  if (!mission.title && !vision.title) return null;
   return (
     <section className="grid lg:grid-cols-2">
       <article className="bg-[#3695B9] px-4 py-12 text-white sm:px-10 lg:py-14 lg:pl-[calc((100vw-1280px)/2)]">
@@ -118,6 +115,7 @@ function VisionMissionSection({
 }
 
 function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences'>) {
+  if (differences.length === 0) return null;
   return (
     <section className="bg-white py-12 text-center sm:py-14">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
@@ -140,6 +138,7 @@ function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences
 }
 
 function FacilitiesSection({ facilities }: Pick<AboutPageContent, 'facilities'>) {
+  if (facilities.length === 0) return null;
   return (
     <section className="bg-[#f7fafc] py-12 sm:py-14">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
@@ -240,9 +239,7 @@ function hasAboutContent(content: AboutPageContent | undefined): content is Abou
       content.navigation.length > 0 &&
       content.hero.title &&
       content.story.paragraphs.length > 0 &&
-      content.stats.length > 0 &&
-      content.differences.length > 0 &&
-      content.facilities.length > 0,
+      content.stats.length > 0,
   );
 }
 

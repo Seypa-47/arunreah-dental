@@ -21,10 +21,6 @@ function CalendarIcon() {
   return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
 }
 
-function PhoneIcon() {
-  return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-phone.svg')} />;
-}
-
 function EducationIcon({ index }: { index: number }) {
   const icons = ['service-icon-general.svg', 'service-icon-implant.svg', 'service-icon-orthodontic.svg', 'service-icon-root-canal.svg'];
   const icon = icons[index % icons.length] ?? 'service-icon-general.svg';
@@ -43,7 +39,7 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
     <section className="bg-white pb-10 pt-12">
       <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-[360px_1fr] lg:items-center lg:px-8">
         <div className="overflow-hidden rounded-2xl border border-[#edf2f7] bg-[#edf5f8] shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
-          <img alt={doctor.imageAlt} className="h-[380px] w-full object-cover object-top" src={doctor.imageUrl} />
+          {doctor.imageUrl ? <img alt={doctor.imageAlt} className="h-[380px] w-full object-cover object-top" src={doctor.imageUrl} /> : <div aria-hidden="true" className="h-[380px] w-full" />}
         </div>
         <div>
           <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
@@ -113,7 +109,7 @@ function OtherSpecialistCard({ doctor }: { doctor: LandingDoctor }) {
         className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
         to={doctor.detail.profileHref}
       >
-        <img alt={doctor.imageAlt} className="h-[210px] w-full bg-[#edf5f8] object-cover object-top" src={doctor.imageUrl} />
+        {doctor.imageUrl ? <img alt={doctor.imageAlt} className="h-[210px] w-full bg-[#edf5f8] object-cover object-top" src={doctor.imageUrl} /> : <div aria-hidden="true" className="h-[210px] w-full bg-[#edf5f8]" />}
         <div className="bg-white p-4">
           <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{doctor.name}</h3>
           <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695B9]">{doctor.focus ?? doctor.specialty}</p>
@@ -165,13 +161,6 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
             >
               Book Now
             </Button>
-            <a
-              className="mt-4 flex items-center justify-center gap-2 text-[13px] font-bold leading-5 text-white/85 hover:underline"
-              href="tel:+85523456789"
-            >
-              <PhoneIcon />
-              +855 23 456 789
-            </a>
           </Card>
         </aside>
       </div>

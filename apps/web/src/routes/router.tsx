@@ -22,6 +22,9 @@ import { DoctorsPage } from '@/features/doctors-page/DoctorsPage';
 import { LandingPage } from '@/features/landing-page/LandingPage';
 import { ServiceDetailPage } from '@/features/service-detail-page/ServiceDetailPage';
 import { ServicesPage } from '@/features/services-page/ServicesPage';
+import { ShowcasesPage } from '@/features/showcases-page/ShowcasesPage';
+import { ShowcaseDetailPage } from '@/features/showcase-detail-page/ShowcaseDetailPage';
+import { PublicNotFoundPage } from '@/features/public-content/PublicNotFoundPage';
 import { RedirectAuthenticatedAdmin, RequireAdminRoute } from '@/features/admin-auth/admin-route-guard';
 
 const protectedAdminRoute = (element: ReactNode) => (
@@ -118,6 +121,14 @@ export const router = createBrowserRouter([
     element: <BranchesPage />,
   },
   {
+    path: '/showcases',
+    element: <ShowcasesPage />,
+  },
+  {
+    path: '/showcases/:showcaseSlug',
+    element: <ShowcaseDetailPage />,
+  },
+  {
     path: '/contact',
     element: <ContactPage />,
   },
@@ -127,6 +138,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <LandingPage />,
+    element: <PublicNotFoundPage />,
   },
 ]);

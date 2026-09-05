@@ -235,7 +235,7 @@ describe('branch API routes', () => {
     expect(listResponse.headers.get('Cache-Control')).toBe('public, max-age=300');
     await expect(listResponse.json()).resolves.toMatchObject({
       success: true,
-      data: { branches: [{ slug: 'main-branch', name: 'សាខាចម្បង' }] },
+      data: { branches: [{ id: 'branch-1', slug: 'main-branch', name: 'សាខាចម្បង' }] },
     });
 
     const detailResponse = await app.request(

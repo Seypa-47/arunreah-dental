@@ -47,11 +47,7 @@ function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
         className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
         to={doctor.detail.profileHref}
       >
-        <img
-          alt={doctor.imageAlt}
-          className="h-[256px] w-full bg-[#edf5f8] object-cover object-top"
-          src={doctor.imageUrl}
-        />
+        {doctor.imageUrl ? <img alt={doctor.imageAlt} className="h-[256px] w-full bg-[#edf5f8] object-cover object-top" src={doctor.imageUrl} /> : <div aria-hidden="true" className="h-[256px] w-full bg-[#edf5f8]" />}
         <div className="flex min-h-[148px] flex-col bg-white p-4">
           <h2 className="text-[15px] font-bold leading-5 text-[#005687]">{doctor.name}</h2>
           <p className="mt-1 text-[12px] font-semibold leading-4 text-[#3695B9]">
