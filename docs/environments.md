@@ -17,6 +17,8 @@ Copy `apps/web/.env.example` to `apps/web/.env.local`.
 
 ```text
 VITE_API_BASE_URL=http://localhost:8787
+VITE_MEDIA_PUBLIC_BASE_URL=https://media.example.com
+VITE_TURNSTILE_SITE_KEY=0x0000000000000000000000000000000AA
 ```
 
 Every `VITE_*` value is embedded in the browser bundle. Never add tokens,
@@ -34,8 +36,6 @@ TURNSTILE_SECRET_KEY
 RESEND_API_KEY
 TELEGRAM_BOT_TOKEN
 ```
-
-No real secret is required for the current health-check-only foundation.
 
 Public appointment requests require `TURNSTILE_SECRET_KEY` in staging and
 production. Set it with `wrangler secret put TURNSTILE_SECRET_KEY --env staging`
@@ -82,6 +82,17 @@ stable URL returned after CMS media uploads. Configure it to the HTTPS origin of
 the R2 custom domain for each environment, without a trailing slash. It is
 empty locally because Wrangler's local R2 simulation has no public custom
 domain. Do not use the R2 API endpoint or credentials as this value.
+
+## Staging browser-admin prerequisite
+
+Cookie-authenticated admin requests require a same-site HTTPS frontend and API
+origin in staging and production. Configure the exact deployed frontend origin
+in `CORS_ALLOWED_ORIGINS`; the temporary `workers.dev` API URL and an unrelated
+Pages domain are not a substitute for this setup. Keep `SameSite=Lax` and do
+not use a wildcard origin with credentialed requests.
+
+See [the staging release runbook](staging-release.md) for the exact migration,
+secret, R2 media, smoke-test, and rollback sequence.
 
 ## Cloudflare placeholders
 
