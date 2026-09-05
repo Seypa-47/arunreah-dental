@@ -5,6 +5,8 @@ export const queryKeys = {
   },
   dashboard: () => ['admin', 'dashboard'] as const,
   public: {
+    landing: (language: 'en' | 'km') => ['public', 'landing', language] as const,
+    bookingOptions: (language: 'en' | 'km') => ['public', 'booking-options', language] as const,
     branches: (language: 'en' | 'km') => ['public', 'branches', language] as const,
     branch: (slug: string, language: 'en' | 'km') =>
       ['public', 'branches', slug, language] as const,

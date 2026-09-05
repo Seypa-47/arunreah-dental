@@ -175,6 +175,7 @@ export const adminBranchReadSchema = z.object({
 });
 
 export const publicBranchReadSchema = z.object({
+  id: z.string(),
   slug: z.string(),
   name: z.string(),
   badge: z.string().nullable(),

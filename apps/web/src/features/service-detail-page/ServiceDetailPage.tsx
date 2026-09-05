@@ -124,7 +124,7 @@ function ServiceHero({ service }: { service: ServiceDetail }) {
           </div>
         </div>
         <div className="overflow-hidden rounded-2xl border-[6px] border-[#d9edf4] bg-[#edf5f8] shadow-[0_12px_28px_rgba(15,23,42,0.12)]">
-          <img alt={service.hero.imageAlt} className="h-[340px] w-full object-cover" src={service.hero.imageUrl} />
+          {service.hero.imageUrl ? <img alt={service.hero.imageAlt} className="h-[340px] w-full object-cover" src={service.hero.imageUrl} /> : <div aria-hidden="true" className="h-[340px] w-full" />}
         </div>
       </div>
     </section>
@@ -171,7 +171,7 @@ function AboutService({ service }: { service: ServiceDetail }) {
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
-          <img alt={service.about.imageAlt} className="mt-8 h-[280px] w-full rounded-xl object-cover" src={service.about.imageUrl} />
+          {service.about.imageUrl ? <img alt={service.about.imageAlt} className="mt-8 h-[280px] w-full rounded-xl object-cover" src={service.about.imageUrl} /> : null}
         </article>
         <aside>
           <GlanceCard glance={service.glance} />
@@ -208,7 +208,7 @@ function BenefitsSection({ benefits, title }: Pick<ServiceDetail, 'benefits'> & 
 function OtherServiceCard({ service }: { service: LandingService }) {
   return (
     <Card className="flex h-[354px] flex-col overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
-      <img alt={service.imageAlt} className="h-[210px] w-full bg-[#eaf2f6] object-cover" src={service.imageUrl} />
+      {service.imageUrl ? <img alt={service.imageAlt} className="h-[210px] w-full bg-[#eaf2f6] object-cover" src={service.imageUrl} /> : <div aria-hidden="true" className="h-[210px] w-full bg-[#eaf2f6]" />}
       <div className="flex flex-1 flex-col justify-between p-4">
         <div>
           <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{service.name}</h3>

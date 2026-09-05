@@ -12,6 +12,7 @@ const local = (
   s: NonNullable<Awaited<ReturnType<typeof repo.findServiceById>>>,
   lang: ServiceLanguage,
 ) => ({
+  id: s.id,
   slug: s.slug,
   name: lang === 'km' ? s.nameKm : s.nameEn,
   shortDescription: lang === 'km' ? s.summaryKm : s.summaryEn,

@@ -229,7 +229,7 @@ describe('doctor API routes', () => {
     expect(list.status).toBe(200);
     await expect(list.json()).resolves.toMatchObject({
       success: true,
-      data: { doctors: [{ name: 'វេជ្ជបណ្ឌិត ស្រេង ហេង' }] },
+      data: { doctors: [{ id: 'doctor-1', name: 'វេជ្ជបណ្ឌិត ស្រេង ហេង' }] },
     });
     const detail = await app.request(
       'http://localhost/api/public/doctors/sreng-heng?lang=en',

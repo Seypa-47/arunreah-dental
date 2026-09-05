@@ -247,7 +247,7 @@ function BranchCard({
 
       <div className={`relative min-h-[300px] bg-[#eaf2f6] lg:min-h-full ${flipped ? 'lg:order-1' : ''}`}>
         {viewMode === 'photo' ? (
-          <img alt={branch.imageAlt} className="absolute inset-0 h-full w-full object-cover" src={branch.imageUrl} />
+          branch.imageUrl ? <img alt={branch.imageAlt} className="absolute inset-0 h-full w-full object-cover" src={branch.imageUrl} /> : <div aria-hidden="true" className="absolute inset-0 bg-[#eaf2f6]" />
         ) : (
           <iframe
             allowFullScreen

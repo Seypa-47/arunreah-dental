@@ -71,6 +71,7 @@ function toPublicBranch(branch: BranchRecord, language: PublicBranchLanguage): P
   const includeHero = branch.includeInHomepageHero;
 
   return {
+    id: branch.id,
     slug: branch.slug,
     name: isKhmer ? branch.nameKm : branch.nameEn,
     badge: isKhmer ? branch.badgeKm : branch.badgeEn,

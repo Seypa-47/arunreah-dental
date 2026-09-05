@@ -14,4 +14,7 @@ export const env = {
   get apiBaseUrl() {
     return readPublicEnv('VITE_API_BASE_URL');
   },
+  get turnstileSiteKey() {
+    return import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim() || undefined;
+  },
 } as const;

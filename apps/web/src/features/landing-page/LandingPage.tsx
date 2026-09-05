@@ -115,7 +115,7 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
       <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-10 pt-5 sm:px-6 md:h-[610px] md:px-8 md:pb-0">
         <div className="relative h-full">
           <div className="relative h-[340px] overflow-hidden rounded-[32px] bg-[#dfe9ee] shadow-[0_14px_28px_rgba(15,23,42,0.10)] md:absolute md:inset-x-0 md:top-4 md:h-[510px]">
-            <img alt={hero.imageAlt} className="h-full w-full object-cover object-center" src={hero.imageUrl} />
+            {hero.imageUrl ? <img alt={hero.imageAlt} className="h-full w-full object-cover object-center" src={hero.imageUrl} /> : <div aria-hidden="true" className="h-full w-full bg-[#dfe9ee]" />}
             <div
               aria-hidden="true"
               className="absolute inset-0 rounded-[32px] bg-gradient-to-t from-black/20 to-transparent"
@@ -494,12 +494,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                   }}
                   to={`/services/${slug}`}
                 >
-                  <img
-                    alt={service.imageAlt}
-                    className="pointer-events-none h-[246px] w-full bg-[#eaf2f6] object-cover object-center"
-                    draggable={false}
-                    src={service.imageUrl}
-                  />
+                  {service.imageUrl ? <img alt={service.imageAlt} className="pointer-events-none h-[246px] w-full bg-[#eaf2f6] object-cover object-center" draggable={false} src={service.imageUrl} /> : <div aria-hidden="true" className="h-[246px] w-full bg-[#eaf2f6]" />}
                   <div className="flex h-[108px] flex-col justify-center px-4 py-3">
                     <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{service.name}</h3>
                     <p className="mt-1 line-clamp-2 text-[12px] font-medium leading-[18px] text-[#6b7280]">
@@ -602,12 +597,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
                 }}
                 to={doctor.detail?.profileHref || '/doctors'}
               >
-                <img
-                  alt={doctor.imageAlt}
-                  className="pointer-events-none h-[256px] w-full bg-[#eaf2f6] object-cover object-top"
-                  draggable={false}
-                  src={doctor.imageUrl}
-                />
+                {doctor.imageUrl ? <img alt={doctor.imageAlt} className="pointer-events-none h-[256px] w-full bg-[#eaf2f6] object-cover object-top" draggable={false} src={doctor.imageUrl} /> : <div aria-hidden="true" className="h-[256px] w-full bg-[#eaf2f6]" />}
                 <div className="flex h-[98px] flex-col justify-center px-4 py-3">
                   <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{doctor.name}</h3>
                   <p className="mt-1 text-[12px] font-medium leading-4 text-[#3695B9]">{doctor.specialty}</p>
@@ -659,11 +649,7 @@ function BranchesSection({ branches }: { branches: LandingBranch[] }) {
                   </span>
                 </p>
               </div>
-              <img
-                alt={branch.imageAlt}
-                className="h-[245px] w-full bg-[#e5e7eb] object-cover md:h-full"
-                src={branch.imageUrl}
-              />
+              {branch.imageUrl ? <img alt={branch.imageAlt} className="h-[245px] w-full bg-[#e5e7eb] object-cover md:h-full" src={branch.imageUrl} /> : <div aria-hidden="true" className="h-[245px] w-full bg-[#e5e7eb] md:h-full" />}
             </Card>
           );
         })}
@@ -683,7 +669,7 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
           </div>
           <Link
             className="hidden items-center gap-2 text-[16px] font-semibold leading-6 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:inline-flex"
-            to="/admin/showcase"
+            to="/showcases"
           >
             View Show Cases
             <AssetIcon className="h-3 w-[8px]" name="showcase-chevron.svg" />
@@ -691,9 +677,22 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
         </div>
         <div className="mx-auto flex flex-wrap justify-center gap-6">
           {showcase.map((item) => (
-            <article className="w-full max-w-[286px] sm:w-[286px]" key={item.title}>
-              <img alt={item.imageAlt} className="h-[256px] w-full rounded-t-2xl object-cover" src={item.imageUrl} />
-              <h3 className="mt-4 text-[18px] font-bold leading-6 text-white">{item.title}</h3>
+            <article className="w-full max-w-[286px] sm:w-[286px]" key={item.slug ?? item.title}>
+              {item.slug ? (
+                <Link
+                  aria-label={`View ${item.title}`}
+                  className="group block focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                  to={`/showcases/${item.slug}`}
+                >
+                  {item.imageUrl ? <img alt={item.imageAlt} className="h-[256px] w-full rounded-t-2xl object-cover" src={item.imageUrl} /> : <div aria-hidden="true" className="h-[256px] w-full rounded-t-2xl bg-[#267d9e]" />}
+                  <h3 className="mt-4 text-[18px] font-bold leading-6 text-white group-hover:underline">{item.title}</h3>
+                </Link>
+              ) : (
+                <>
+                  {item.imageUrl ? <img alt={item.imageAlt} className="h-[256px] w-full rounded-t-2xl object-cover" src={item.imageUrl} /> : <div aria-hidden="true" className="h-[256px] w-full rounded-t-2xl bg-[#267d9e]" />}
+                  <h3 className="mt-4 text-[18px] font-bold leading-6 text-white">{item.title}</h3>
+                </>
+              )}
             </article>
           ))}
         </div>

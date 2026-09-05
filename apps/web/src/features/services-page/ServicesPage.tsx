@@ -37,7 +37,7 @@ function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
 
 function ServiceCard({ service }: { service: LandingService }) {
   const id = serviceId(service.name);
-  const slug = serviceSlug(service.name);
+  const slug = service.slug ?? serviceSlug(service.name);
 
   return (
     <Card
@@ -49,11 +49,7 @@ function ServiceCard({ service }: { service: LandingService }) {
         className="flex h-full flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
         to={`/services/${slug}`}
       >
-        <img
-          alt={service.imageAlt}
-          className="h-[210px] w-full bg-[#eaf2f6] object-cover object-center"
-          src={service.imageUrl}
-        />
+        {service.imageUrl ? <img alt={service.imageAlt} className="h-[210px] w-full bg-[#eaf2f6] object-cover object-center" src={service.imageUrl} /> : <div aria-hidden="true" className="h-[210px] w-full bg-[#eaf2f6]" />}
         <div className="flex flex-1 flex-col justify-between p-4">
           <div>
             <h2 className="text-[14px] font-semibold leading-5 text-[#005687] transition-colors group-hover:text-[#3695B9]">
