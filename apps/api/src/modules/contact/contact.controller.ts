@@ -11,6 +11,7 @@ import type { AppEnv } from '../../types/env';
 
 export async function getPublicContactController(context: Context<AppEnv>) {
   const contact = await getPublicContactSettings(createDbClient(context.env.DB));
+  context.header('Cache-Control', 'public, max-age=300');
   return context.json(successResponse({ contact }));
 }
 

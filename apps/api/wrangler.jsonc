@@ -28,9 +28,15 @@
       "name": "arunreah-api-staging",
       "vars": {
         "APP_ENV": "staging",
-        "CORS_ALLOWED_ORIGINS": "http://localhost:5173",
+        "CORS_ALLOWED_ORIGINS": "https://staging.mekhla.digital",
         "MEDIA_PUBLIC_BASE_URL": "https://pub-0dae1b4d79d0465fa30f0366829841b4.r2.dev",
       },
+      "routes": [
+        {
+          "pattern": "api.staging.mekhla.digital",
+          "custom_domain": true,
+        },
+      ],
       "d1_databases": [
         {
           "binding": "DB",

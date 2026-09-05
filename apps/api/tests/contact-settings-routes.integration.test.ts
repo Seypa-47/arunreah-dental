@@ -118,6 +118,7 @@ describe('contact settings API routes', () => {
     const response = await app.request('http://localhost/api/public/contact', undefined, testBindings);
 
     expect(response.status).toBe(200);
+    expect(response.headers.get('Cache-Control')).toBe('public, max-age=300');
     await expect(response.json()).resolves.toEqual({
       success: true,
       data: {

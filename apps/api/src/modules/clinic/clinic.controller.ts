@@ -12,6 +12,7 @@ import type { Context } from 'hono';
 
 export async function getPublicClinicController(context: Context<AppEnv>) {
   const clinic = await getPublicClinicSettings(createDbClient(context.env.DB));
+  context.header('Cache-Control', 'public, max-age=300');
   return context.json(successResponse({ clinic }));
 }
 

@@ -1,8 +1,7 @@
 # Arunreah Dental Clinic Website & CMS
 
-A bilingual English/Khmer dental clinic website and private CMS. This repository
-contains the engineering foundation only; product pages, CMS workflows,
-authentication, data tables, and business APIs have not been implemented.
+A bilingual English/Khmer dental clinic website and private CMS with public
+content, appointment requests, role-aware administration, and media support.
 
 ## Architecture
 
@@ -80,7 +79,9 @@ pnpm format:check
 in `VITE_*` variables. `apps/api/.dev.vars` is reserved for local Worker
 secrets and is not committed. See [environment documentation](docs/environments.md).
 Admin authentication and role-based access are documented in
-[authentication.md](docs/authentication.md).
+[authentication.md](docs/authentication.md). See the
+[staging and release runbook](docs/staging-release.md) before deploying remote
+resources.
 
 ## Environments
 
