@@ -15,8 +15,8 @@ if (password.length < 12) {
 }
 
 const salt = randomBytes(16);
-const hash = pbkdf2Sync(password, salt, 600_000, 32, 'sha256');
-const passwordHash = `PBKDF2-SHA256$600000$${salt.toString('base64url')}$${hash.toString('base64url')}`;
+const hash = pbkdf2Sync(password, salt, 100_000, 32, 'sha256');
+const passwordHash = `PBKDF2-SHA256$100000$${salt.toString('base64url')}$${hash.toString('base64url')}`;
 const quote = (value) => `'${value.replaceAll("'", "''")}'`;
 
 console.log(
