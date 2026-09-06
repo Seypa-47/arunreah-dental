@@ -1,5 +1,6 @@
 const passwordHashAlgorithm = 'PBKDF2-SHA256';
-const passwordHashIterations = 600_000;
+// Cloudflare Workers Web Crypto supports PBKDF2 up to 100,000 iterations.
+const passwordHashIterations = 100_000;
 const passwordHashBytes = 32;
 
 const textEncoder = new TextEncoder();
