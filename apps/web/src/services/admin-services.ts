@@ -10,11 +10,14 @@ export type AdminService = {
   displayOnHomepage: boolean;
   featured: boolean;
   id: string;
+  slug?: string;
   imageAlt: string;
   imageUrl: string;
   name: string;
+  nameKm: string;
   order: number;
-  status: 'draft' | 'published';
+  descriptionKm: string;
+  status: 'draft' | 'published' | 'archived';
   updatedAt: string;
 };
 
@@ -39,10 +42,10 @@ const adminServicesContent: AdminServicesContent = {
   navigation: [{ icon: 'dashboard', label: 'Dashboard' }, { icon: 'appointments', label: 'Appointments', section: 'appointments' }, { icon: 'inbox', label: 'Inbox', section: 'appointments' }, { icon: 'calendar', label: 'Calendar', section: 'appointments' }, { icon: 'appointments', label: 'All Appointments', section: 'appointments' }, { icon: 'services', label: 'Services' }, { icon: 'doctors', label: 'Doctors' }, { icon: 'doctors', label: 'Doctor Management', section: 'doctors' }, { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' }, { icon: 'showcase', label: 'Showcase' }, { icon: 'clinicInfo', label: 'Clinic Info' }],
   meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
   services: [
-    { category: 'Restorative', createdAt: 'Oct 10, 2024', description: 'Permanent and natural-looking solution for replacing missing teeth with medical-grade titanium posts.', displayOnHomepage: true, featured: true, id: 'dental-implants', imageAlt: 'Dental implant treatment', imageUrl: '/assets/landing/service-implant.png', name: 'Dental Implants', order: 1, status: 'published', updatedAt: 'Oct 20, 2024' },
-    { category: 'Cosmetic', createdAt: 'Oct 8, 2024', description: 'Professional laser teeth whitening service for a brighter, confident smile.', displayOnHomepage: true, featured: false, id: 'teeth-whitening', imageAlt: 'Teeth whitening', imageUrl: '/assets/landing/service-veneer.png', name: 'Teeth Whitening', order: 2, status: 'published', updatedAt: 'Oct 18, 2024' },
-    { category: 'Preventative', createdAt: 'Oct 4, 2024', description: 'Deep cleaning and plaque removal for healthy gums and teeth.', displayOnHomepage: true, featured: false, id: 'routine-cleaning', imageAlt: 'Routine dental cleaning', imageUrl: '/assets/landing/service-general.png', name: 'Routine Cleaning', order: 3, status: 'published', updatedAt: 'Oct 15, 2024' },
-    { category: 'Specialty', createdAt: 'Oct 1, 2024', description: 'Metal and clear braces for all ages, with personalised treatment planning.', displayOnHomepage: false, featured: false, id: 'orthodontics', imageAlt: 'Orthodontic braces', imageUrl: '/assets/landing/service-orthodontic.png', name: 'Orthodontics', order: 4, status: 'draft', updatedAt: 'Oct 10, 2024' },
+    { category: 'Restorative', createdAt: 'Oct 10, 2024', description: 'Permanent and natural-looking solution for replacing missing teeth with medical-grade titanium posts.', descriptionKm: '', displayOnHomepage: true, featured: true, id: 'dental-implants', imageAlt: 'Dental implant treatment', imageUrl: '/assets/landing/service-implant.png', name: 'Dental Implants', nameKm: '', order: 1, status: 'published', updatedAt: 'Oct 20, 2024' },
+    { category: 'Cosmetic', createdAt: 'Oct 8, 2024', description: 'Professional laser teeth whitening service for a brighter, confident smile.', descriptionKm: '', displayOnHomepage: true, featured: false, id: 'teeth-whitening', imageAlt: 'Teeth whitening', imageUrl: '/assets/landing/service-veneer.png', name: 'Teeth Whitening', nameKm: '', order: 2, status: 'published', updatedAt: 'Oct 18, 2024' },
+    { category: 'Preventative', createdAt: 'Oct 4, 2024', description: 'Deep cleaning and plaque removal for healthy gums and teeth.', descriptionKm: '', displayOnHomepage: true, featured: false, id: 'routine-cleaning', imageAlt: 'Routine dental cleaning', imageUrl: '/assets/landing/service-general.png', name: 'Routine Cleaning', nameKm: '', order: 3, status: 'published', updatedAt: 'Oct 15, 2024' },
+    { category: 'Specialty', createdAt: 'Oct 1, 2024', description: 'Metal and clear braces for all ages, with personalised treatment planning.', descriptionKm: '', displayOnHomepage: false, featured: false, id: 'orthodontics', imageAlt: 'Orthodontic braces', imageUrl: '/assets/landing/service-orthodontic.png', name: 'Orthodontics', nameKm: '', order: 4, status: 'draft', updatedAt: 'Oct 10, 2024' },
   ],
   table: { actions: 'Actions', category: 'Category', service: 'Service', status: 'Status', updated: 'Updated' },
 };
@@ -50,8 +53,8 @@ const adminServicesContent: AdminServicesContent = {
 export async function fetchAdminServicesContent(query: Partial<ServiceListQuery> = {}): Promise<AdminServicesContent> {
   const response = await cmsApi.services.list({ limit: 20, page: 1, ...query });
   return { ...adminServicesContent, meta: response.meta, services: response.items.map((service) => ({
-    id: service.id, name: service.nameEn, category: service.category ?? 'Uncategorized', description: service.summaryEn ?? service.descriptionEn ?? '',
-    imageAlt: service.nameEn, imageUrl: getPublicMediaUrl(service.imageKey) ?? '', status: service.status === 'PUBLISHED' ? 'published' : 'draft',
+    id: service.id, slug: service.slug, name: service.nameEn, nameKm: service.nameKm, category: service.category ?? 'Uncategorized', description: service.summaryEn ?? service.descriptionEn ?? '', descriptionKm: service.summaryKm ?? service.descriptionKm ?? '',
+    imageAlt: service.nameEn, imageUrl: getPublicMediaUrl(service.imageKey) ?? '', status: service.status === 'PUBLISHED' ? 'published' : service.status === 'ARCHIVED' ? 'archived' : 'draft',
     featured: service.featured, displayOnHomepage: service.featured, order: service.displayOrder, createdAt: service.createdAt, updatedAt: service.updatedAt,
   })) };
 }

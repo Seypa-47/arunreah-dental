@@ -25,6 +25,8 @@ const cmsNavigation: AdminNavigationItem[] = [
   { icon: 'clinicInfo', label: 'Clinic Settings', section: 'clinic' },
   { icon: 'clinicInfo', label: 'Branches / Locations', section: 'clinic' },
   { icon: 'clinicInfo', label: 'Contact Settings', section: 'clinic' },
+  { icon: 'clinicInfo', label: 'Page Media', section: 'clinic' },
+  { icon: 'clinicInfo', label: 'About Timeline', section: 'clinic' },
 ];
 
 const adminManagementNavigation: AdminNavigationItem = { icon: 'clinicInfo', label: 'Admin Management' };

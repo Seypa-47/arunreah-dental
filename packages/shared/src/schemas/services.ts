@@ -1,5 +1,14 @@
 import { z } from 'zod';
 export const serviceStatusValues = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
+export const serviceDetailPresentationValues = [
+  'STANDARD',
+  'JOURNEY',
+  'CARE_MENU',
+  'CLINICAL_SCOPE',
+  'IMAGING_GUIDE',
+  'PROBLEM_TO_CARE',
+  'FAMILY_CARE',
+] as const;
 const text = (n: number) => z.string().trim().max(n).nullable().optional();
 const slug = z
   .string()
@@ -14,6 +23,15 @@ const benefit = z.object({
   descriptionEn: text(1000),
   descriptionKm: text(1000),
   icon: text(100),
+  displayOrder: z.number().int().min(0).max(1000000).default(0),
+});
+const detailSection = z.object({
+  sectionType: z.enum(['TEXT', 'IMAGE']).default('TEXT'),
+  headingEn: text(300),
+  headingKm: text(300),
+  bodyEn: text(10000),
+  bodyKm: text(10000),
+  imageKey: text(1024),
   displayOrder: z.number().int().min(0).max(1000000).default(0),
 });
 const fields = {
@@ -49,6 +67,11 @@ const fields = {
   visitsKm: text(300),
   consultationEn: text(300),
   consultationKm: text(300),
+  editorialLabelEn: text(160),
+  editorialLabelKm: text(160),
+  editorialTitleEn: text(300),
+  editorialTitleKm: text(300),
+  detailPresentation: z.enum(serviceDetailPresentationValues).default('STANDARD'),
   ctaTitleEn: text(300),
   ctaTitleKm: text(300),
   ctaDescriptionEn: text(2000),
@@ -66,6 +89,7 @@ export const createServiceSchema = z
   .object({
     ...fields,
     benefits: z.array(benefit).max(6).default([]),
+    detailSections: z.array(detailSection).max(16).default([]),
     relatedServiceIds: z.array(z.string().min(1)).max(3).default([]),
   })
   .strict();
@@ -78,6 +102,7 @@ export const updateServiceSchema = z
       ]),
     ),
     benefits: z.array(benefit).max(6).optional(),
+    detailSections: z.array(detailSection).max(16).optional(),
     relatedServiceIds: z.array(z.string().min(1)).max(3).optional(),
   })
   .strict()

@@ -1,8 +1,10 @@
+import { AdminListDate, AdminListEmpty, AdminListPagination, AdminPublicationStatus } from '@/components/admin/admin-list';
+import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminDoctorListQuery } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
-import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
+import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toAdminDoctorDetail, type AdminDoctor, type AdminDoctorsContent, type DoctorStatus } from '@/services/admin-doctors';
@@ -11,20 +13,7 @@ import { useAdminDoctorsPageQuery } from './use-admin-doctors-page';
 import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 
-function StatusBadge({ status }: { status: DoctorStatus }) {
-  const isPublished = status === 'published';
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
-        isPublished
-          ? 'border-[#c4f3d8] bg-[#eefbf3] text-[#13a863]'
-          : 'border-[#e2e8f0] bg-[#f1f5f9] text-[#64748b]'
-      }`}
-    >
-      {isPublished ? 'PUBLISHED' : 'DRAFT'}
-    </span>
-  );
-}
+function StatusBadge({ status }: { status: DoctorStatus }) { return <AdminPublicationStatus status={status} />; }
 
 function ToggleSwitch({
   checked,
@@ -919,7 +908,7 @@ function AddDoctorModal({
 
 type DoctorListState = Pick<AdminDoctorListQuery, 'page' | 'limit' | 'search' | 'status' | 'specialty' | 'sort' | 'order'>;
 
-function DoctorsContent({ content, listState, onListStateChange }: { content: AdminDoctorsContent; listState: DoctorListState; onListStateChange: (next: DoctorListState) => void }) {
+function DoctorsContent({ content, listState, onListStateChange, busy }: { busy: boolean; content: AdminDoctorsContent; listState: DoctorListState; onListStateChange: (next: DoctorListState) => void }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [doctors, setDoctors] = useState<AdminDoctor[]>(content.doctors);
@@ -937,14 +926,13 @@ function DoctorsContent({ content, listState, onListStateChange }: { content: Ad
   const specialties = useMemo(() => {
     return [
       content.controls.allSpecialties,
-      ...Array.from(new Set(doctors.map((d) => d.specialty))),
+      ...Array.from(new Set([...(listState.specialty ? [listState.specialty] : []), ...doctors.map((d) => d.specialty)])),
     ];
-  }, [content.controls.allSpecialties, doctors]);
+  }, [content.controls.allSpecialties, doctors, listState.specialty]);
 
   const filteredDoctors = doctors;
   const totalPages = Math.max(1, content.meta.totalPages);
   const effectivePage = content.meta.page;
-  const startIndex = (effectivePage - 1) * content.meta.limit;
   const pageDoctors = doctors;
 
   // Currently selected doctor
@@ -985,19 +973,11 @@ function DoctorsContent({ content, listState, onListStateChange }: { content: Ad
       {/* Top Header */}
       <header className="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <h1 className="text-[28px] font-bold tracking-[-0.6px] text-[#182238] sm:text-[33px]">
-            {content.header.title}
-          </h1>
-          <p className="mt-1 text-[16px] text-[#71839e] sm:text-[17px]">
-            {content.header.subtitle}
-          </p>
+          <AdminPageHeading />
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex h-[46px] items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-[14px] font-medium text-[#71839e] shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
-            <AdminIcon className="size-4 text-[#71839e]" name="calendar" />
-            {content.controls.dateLabel}
-          </div>
+
           <Button
             className="h-[46px] rounded-xl bg-[#2187a8] px-5 text-[14px] font-bold text-white shadow-[0_6px_14px_rgba(33,135,168,0.2)] hover:bg-[#1a718c]"
             icon={<span aria-hidden="true" className="text-lg leading-none font-bold">+</span>}
@@ -1016,7 +996,7 @@ function DoctorsContent({ content, listState, onListStateChange }: { content: Ad
         {/* Left Column: Card containing Filters + Table + Pagination */}
         <Card className="flex flex-col overflow-hidden rounded-[28px] border-[#e1e8f0] bg-white p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
           {/* Filters inside card header */}
-          <div className="flex flex-wrap items-center gap-3 pb-6">
+          <div className="admin-list-toolbar">
             {/* Search Input */}
             <label className="flex h-11 min-w-[200px] flex-1 items-center gap-3 rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-4 text-[#9badc5] focus-within:border-[#2187a8] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#d9f0f7]">
               <AdminIcon className="size-4 shrink-0 text-[#9badc5]" name="search" />
@@ -1062,20 +1042,20 @@ function DoctorsContent({ content, listState, onListStateChange }: { content: Ad
               >
                 <option value={content.controls.allStatuses}>{content.controls.allStatuses}</option>
                 <option value="Published">Published</option>
-                <option value="Draft">Draft</option>
+                <option value="Draft">Draft</option><option value="Archived">Archived</option>
               </select>
             </label>
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[580px] border-collapse text-left">
+          {busy ? <p role="status" className="admin-helper px-4">Updating doctors…</p> : null}<div aria-busy={busy} className="admin-table-scroll" role="region" aria-label="Doctors table, scroll horizontally for more columns" tabIndex={0}>
+            <table className="admin-management-table w-full min-w-[580px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-[#f0f4f8] text-[11px] font-bold uppercase tracking-[0.5px] text-[#8699b0]">
-                  <th className="pb-3.5 pt-1 font-bold">{content.table.doctor}</th>
-                  <th className="pb-3.5 pt-1 font-bold">{content.table.specialty}</th>
-                  <th className="pb-3.5 pt-1 font-bold">{content.table.status}</th>
-                  <th className="pb-3.5 pt-1 text-right font-bold">{content.table.updated}</th>
+                  <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.doctor}</th>
+                  <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.specialty}</th>
+                  <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.status}</th>
+                  <th scope="col" className="pb-3.5 pt-1 text-right font-bold">{content.table.updated}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f0f4f8]">
@@ -1083,16 +1063,14 @@ function DoctorsContent({ content, listState, onListStateChange }: { content: Ad
                   const isSelected = doc.id === selectedId;
                   return (
                     <tr
-                      aria-selected={isSelected}
                       className={`cursor-pointer transition-colors hover:bg-[#f8fbfd] ${
                         isSelected ? 'bg-[#f0f7fa]' : ''
                       }`}
                       key={doc.id}
-                      onClick={() => setSelectedId(isSelected ? null : doc.id)}
                     >
                       {/* Doctor info */}
                       <td className="py-4 pr-4">
-                        <div className="flex items-center gap-3.5">
+                        <button type="button" className="flex items-center gap-3.5 text-left" aria-pressed={isSelected} aria-label={`View details for ${doc.name}`} onClick={() => setSelectedId(isSelected ? null : doc.id)}>
                           <DoctorAvatar doctor={doc} size="md" />
                           <div>
                             <span className="block text-[15px] font-bold text-[#182238]">
@@ -1102,7 +1080,7 @@ function DoctorsContent({ content, listState, onListStateChange }: { content: Ad
                               {doc.roleTitle}
                             </span>
                           </div>
-                        </div>
+                        </button>
                       </td>
 
                       {/* Specialty */}
@@ -1117,7 +1095,7 @@ function DoctorsContent({ content, listState, onListStateChange }: { content: Ad
 
                       {/* Updated Date */}
                       <td className="py-4 text-right text-[13px] text-[#8a9bb2]">
-                        {doc.updatedAt}
+                        <AdminListDate value={doc.updatedAt} />
                       </td>
                     </tr>
                   );
@@ -1126,46 +1104,8 @@ function DoctorsContent({ content, listState, onListStateChange }: { content: Ad
             </table>
           </div>
 
-          {/* Empty State (search/filter yielded no results) */}
-          {filteredDoctors.length === 0 ? (
-            <div className="grid min-h-[220px] place-items-center px-6 text-center">
-              <div>
-                <h3 className="text-lg font-bold text-[#182238]">{content.empty.title}</h3>
-                <p className="mt-2 text-[14px] text-[#71839e]">{content.empty.description}</p>
-              </div>
-            </div>
-          ) : null}
-
-          {/* Pagination */}
-          <div className="mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-[#f0f4f8] pt-6 text-[13px] text-[#8a9bb2]">
-            <span>
-              Showing {filteredDoctors.length > 0 ? startIndex + 1 : 0} to{' '}
-              {startIndex + filteredDoctors.length} of {content.meta.total}{' '}
-              specialists
-            </span>
-
-            <div className="flex items-center gap-1.5">
-              <button
-                aria-label="Previous page"
-                className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#71839e] transition hover:bg-[#f4f8fb] disabled:pointer-events-none disabled:opacity-40"
-                disabled={effectivePage <= 1}
-                onClick={() => onListStateChange({ ...listState, page: Math.max(1, effectivePage - 1) })}
-                type="button"
-              >
-                <AdminIcon className="size-3.5 rotate-180" name="chevronRight" />
-              </button>
-              <span className="px-2 font-semibold text-[#61738d]">Page {effectivePage} of {totalPages}</span>
-              <button
-                aria-label="Next page"
-                className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#71839e] transition hover:bg-[#f4f8fb] disabled:pointer-events-none disabled:opacity-40"
-                disabled={effectivePage >= totalPages}
-                onClick={() => onListStateChange({ ...listState, page: Math.min(totalPages, effectivePage + 1) })}
-                type="button"
-              >
-                <AdminIcon className="size-3.5" name="chevronRight" />
-              </button>
-            </div>
-          </div>
+          {filteredDoctors.length === 0 ? <AdminListEmpty noun="doctors" filtered={Boolean(listState.search || listState.specialty || listState.status || (listState.page ?? 1) > 1)} onClear={() => onListStateChange({ ...listState, search: undefined, specialty: undefined, status: undefined, page: 1 })} /> : null}
+          <AdminListPagination busy={busy} noun="doctors" page={effectivePage} totalPages={totalPages} total={content.meta.total} limit={content.meta.limit} count={pageDoctors.length} onPageChange={(page) => onListStateChange({ ...listState, page })} />
         </Card>
 
         {/* Right Column: Doctor Detail & Edit Panel OR No Selection State */}
@@ -1229,7 +1169,7 @@ function DoctorsUnavailable({ onRetry }: { onRetry: () => void }) {
 
 export function AdminDoctorsPage() {
   const [listState, setListState] = useState<DoctorListState>({ page: 1, limit: 20, sort: 'displayOrder', order: 'asc' });
-  const { data, isError, isLoading, refetch } = useAdminDoctorsPageQuery(listState);
+  const { data, isError, isLoading, isFetching, refetch } = useAdminDoctorsPageQuery(listState);
 
   if (isLoading) {
     return <DoctorsSkeleton />;
@@ -1241,8 +1181,8 @@ export function AdminDoctorsPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
-      <AdminSidebar activeLabel="Doctor Management" brand={data.brand} navigation={data.navigation} />
-      <DoctorsContent content={data} listState={listState} onListStateChange={setListState} />
+
+      <DoctorsContent busy={isFetching} content={data} listState={listState} onListStateChange={setListState} />
     </div>
   );
 }

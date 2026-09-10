@@ -1,8 +1,10 @@
+import { AdminListDate, AdminListImage, AdminListEmpty, AdminListPagination, AdminPublicationStatus } from '@/components/admin/admin-list';
+import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ServiceListQuery } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
-import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
+import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import type { AdminService, AdminServicesContent } from '@/services/admin-services';
@@ -10,16 +12,7 @@ import { useAdminServicesPageQuery } from './use-admin-services-page';
 import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 
-function StatusBadge({ status }: { status: AdminService['status'] }) {
-  const published = status === 'published';
-  return (
-    <span
-      className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-bold ${published ? 'border-[#b9f1d0] bg-[#effdf5] text-[#13ad63]' : 'border-[#fde8b2] bg-[#fff8e8] text-[#e58900]'}`}
-    >
-      {published ? 'Published' : 'Draft'}
-    </span>
-  );
-}
+function StatusBadge({ status }: { status: AdminService['status'] }) { return <AdminPublicationStatus status={status} />; }
 
 function ServicesFooter({ footer }: { footer: AdminServicesContent['footer'] }) {
   return (
@@ -70,11 +63,7 @@ function ServiceDetails({
         </button>
       </div>
       <div className="mt-7 flex items-center gap-4">
-        <img
-          alt={service.imageAlt}
-          className="size-20 rounded-2xl object-cover"
-          src={service.imageUrl}
-        />
+        <AdminListImage src={service.imageUrl} />
         <div>
           <h3 className="text-[18px] font-bold text-[#182238]">{service.name}</h3>
           <div className="mt-2 flex items-center gap-3">
@@ -84,15 +73,15 @@ function ServiceDetails({
         </div>
       </div>
       <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-[#f7f9fc] px-4 py-3 text-[14px] text-[#71839e]">
-        <span>Last updated {service.updatedAt}</span>
-        <a
+        <span>Last updated <AdminListDate value={service.updatedAt} /></span>
+        {service.status === 'published' ? <a
           className="font-bold text-[#2187a8]"
-          href={`/services/${service.id}`}
+          href={`/services/${service.slug ?? service.id}`}
           rel="noreferrer"
           target="_blank"
         >
-          Preview on Website ↗
-        </a>
+          View published page ↗
+        </a> : <span className="text-xs">Not published on the website</span>}
       </div>
       <div className="mt-7 grid grid-cols-3 border-b border-[#dce5ef] text-[14px] font-semibold text-[#71839e]">
         {(
@@ -167,7 +156,7 @@ function ServiceDetails({
             <dt className="text-xs font-bold uppercase tracking-[.6px] text-[#98a8bd]">
               Page slug
             </dt>
-            <dd className="mt-2 text-[#182238]">/services/{service.id}</dd>
+            <dd className="mt-2 text-[#182238]">/services/{service.slug ?? service.id}</dd>
           </div>
           <div>
             <dt className="text-xs font-bold uppercase tracking-[.6px] text-[#98a8bd]">
@@ -203,19 +192,18 @@ function ServiceDetails({
 
 type ServiceListState = Pick<ServiceListQuery, 'page' | 'limit' | 'search' | 'status' | 'category' | 'sort' | 'order'>;
 
-function ServicesContent({ content, listState, onListStateChange }: { content: AdminServicesContent; listState: ServiceListState; onListStateChange: (state: ServiceListState) => void }) {
+function ServicesContent({ content, listState, onListStateChange, busy }: { busy: boolean; content: AdminServicesContent; listState: ServiceListState; onListStateChange: (state: ServiceListState) => void }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [services, setServices] = useState(content.services);
   const [selectedId, setSelectedId] = useState<string | undefined>(services[0]?.id);
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   useEffect(() => {
     setServices(content.services);
   }, [content.services]);
   const categories = [
     content.controls.allCategories,
-    ...Array.from(new Set(services.map((service) => service.category))),
+    ...Array.from(new Set([...(listState.category ? [listState.category] : []), ...services.map((service) => service.category)])),
   ];
   const visible = services;
   const selected = services.find((service) => service.id === selectedId);
@@ -252,18 +240,10 @@ function ServicesContent({ content, listState, onListStateChange }: { content: A
         {actionError ? <p className="mb-4 rounded-xl border border-[#fecaca] bg-[#fff1f2] p-3 text-sm text-[#b91c1c]" role="alert">{actionError}</p> : null}
         <header className="flex flex-wrap items-end justify-between gap-5">
           <div>
-            <h1 className="text-[28px] font-bold tracking-[-.6px] text-[#182238] sm:text-[33px]">
-              {content.header.title}
-            </h1>
-            <p className="mt-1 text-[16px] text-[#71839e] sm:text-[17px]">
-              {content.header.subtitle}
-            </p>
+            <AdminPageHeading />
           </div>
           <div className="flex items-center gap-3">
-            <div className="inline-flex h-[46px] items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-[14px] text-[#71839e]">
-              <AdminIcon className="size-4" name="calendar" />
-              {content.controls.dateLabel}
-            </div>
+
             <Button
               className="h-[46px] rounded-xl px-5 text-[14px]"
               icon={
@@ -278,7 +258,7 @@ function ServicesContent({ content, listState, onListStateChange }: { content: A
           </div>
         </header>
         <Card className="mt-9 rounded-[26px] border-[#dce5ef] p-6">
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="admin-list-toolbar">
             <label className="flex h-[46px] min-w-[220px] flex-1 items-center gap-3 rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-4 text-[#9badc5]">
               <AdminIcon className="size-5" name="search" />
               <span className="sr-only">Search services</span>
@@ -311,36 +291,24 @@ function ServicesContent({ content, listState, onListStateChange }: { content: A
               >
                 <option>{content.controls.allStatuses}</option>
                 <option>Published</option>
-                <option>Draft</option>
+                <option>Draft</option><option>Archived</option>
               </select>
             </label>
-            <button
-              aria-expanded={filtersOpen}
-              className="ml-auto inline-flex h-[46px] items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-4 text-[14px] font-semibold text-[#71839e] hover:bg-[#f4f8fb]"
-              onClick={() => setFiltersOpen(!filtersOpen)}
-              type="button"
-            >
-              <AdminIcon className="size-4" name="filter" />
-              {content.controls.filterLabel}
-            </button>
+
           </div>
-          {filtersOpen ? (
-            <p className="mt-4 text-[13px] text-[#71839e]">
-              Use the category and status selectors to refine the service list.
-            </p>
-          ) : null}
+
         </Card>
         <div className="mt-8 grid gap-8 2xl:grid-cols-[minmax(0,1fr)_400px]">
           <Card className="overflow-hidden rounded-[32px] border-[#dce5ef]">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[780px] border-collapse text-left">
+            {busy ? <p role="status" className="admin-helper px-4">Updating services…</p> : null}<div aria-busy={busy} className="admin-table-scroll" role="region" aria-label="Services table, scroll horizontally for more columns" tabIndex={0}>
+              <table className="admin-management-table w-full min-w-[780px] border-collapse text-left">
                 <thead className="bg-[#f7f9fc] text-[12px] font-bold uppercase tracking-[.5px] text-[#61738d]">
                   <tr>
-                    <th className="px-7 py-4">{content.table.service}</th>
-                    <th className="px-5 py-4">{content.table.category}</th>
-                    <th className="px-5 py-4">{content.table.status}</th>
-                    <th className="px-5 py-4">{content.table.updated}</th>
-                    <th className="px-7 py-4 text-right">{content.table.actions}</th>
+                    <th scope="col" className="px-7 py-4">{content.table.service}</th>
+                    <th scope="col" className="px-5 py-4">{content.table.category}</th>
+                    <th scope="col" className="px-5 py-4">{content.table.status}</th>
+                    <th scope="col" className="px-5 py-4">{content.table.updated}</th>
+                    <th scope="col" className="px-7 py-4 text-right">{content.table.actions}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -351,15 +319,11 @@ function ServicesContent({ content, listState, onListStateChange }: { content: A
                     >
                       <td className="px-7 py-5">
                         <button
-                          className="flex items-center gap-4 text-left"
+                          aria-pressed={service.id === selectedId} aria-label={`View details for ${service.name}`} className="flex items-center gap-4 text-left"
                           onClick={() => setSelectedId(service.id)}
                           type="button"
                         >
-                          <img
-                            alt={service.imageAlt}
-                            className="size-[60px] rounded-xl object-cover"
-                            src={service.imageUrl}
-                          />
+                          <AdminListImage src={service.imageUrl} />
                           <span>
                             <span className="block text-[16px] font-bold text-[#182238]">
                               {service.name}
@@ -378,7 +342,7 @@ function ServicesContent({ content, listState, onListStateChange }: { content: A
                       <td className="px-5 py-5">
                         <StatusBadge status={service.status} />
                       </td>
-                      <td className="px-5 py-5 text-[14px] text-[#71839e]">{service.updatedAt}</td>
+                      <td className="px-5 py-5 text-[14px] text-[#71839e]"><AdminListDate value={service.updatedAt} /></td>
                       <td className="px-7 py-5 text-right">
                         <button
                           aria-label={`Edit ${service.name}`}
@@ -386,7 +350,7 @@ function ServicesContent({ content, listState, onListStateChange }: { content: A
                           onClick={() => navigate(`/admin/services/${service.id}/edit`)}
                           type="button"
                         >
-                          ✎
+                          Edit
                         </button>
                       </td>
                     </tr>
@@ -394,30 +358,8 @@ function ServicesContent({ content, listState, onListStateChange }: { content: A
                 </tbody>
               </table>
             </div>
-            {visible.length === 0 ? (
-              <div className="grid min-h-[220px] place-items-center px-6 text-center">
-                <div>
-                  <h2 className="text-xl font-bold text-[#182238]">{content.empty.title}</h2>
-                  <p className="mt-3 text-[#71839e]">{content.empty.description}</p>
-                </div>
-              </div>
-            ) : null}
-            <div className="flex items-center justify-between border-t border-[#e1e8f0] px-7 py-6 text-[13px] text-[#9badc5]">
-              {visible.length > 0 ? (
-                <span>
-                  Showing {(content.meta.page - 1) * content.meta.limit + 1} to {(content.meta.page - 1) * content.meta.limit + visible.length} of {content.meta.total} services
-                </span>
-              ) : (
-                <span />
-              )}
-              <div className="flex gap-2">
-                <button aria-label="Previous page" className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] disabled:opacity-40" disabled={content.meta.page <= 1} onClick={() => onListStateChange({ ...listState, page: content.meta.page - 1 })} type="button">‹</button>
-                <span className="grid size-8 place-items-center rounded-lg bg-[#2187a8] text-white">
-                  {content.meta.page}
-                </span>
-                <button aria-label="Next page" className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] disabled:opacity-40" disabled={content.meta.page >= content.meta.totalPages} onClick={() => onListStateChange({ ...listState, page: content.meta.page + 1 })} type="button">›</button>
-              </div>
-            </div>
+            {visible.length === 0 ? <AdminListEmpty noun="services" filtered={Boolean(listState.search || listState.status || listState.category || (listState.page ?? 1) > 1)} onClear={() => onListStateChange({ ...listState, search: undefined, status: undefined, category: undefined, page: 1 })} /> : null}
+            <AdminListPagination busy={busy} noun="services" page={content.meta.page} totalPages={content.meta.totalPages} total={content.meta.total} limit={content.meta.limit} count={visible.length} onPageChange={(page) => onListStateChange({ ...listState, page })} />
           </Card>
           {selected ? (
             <ServiceDetails
@@ -468,13 +410,13 @@ function ServicesUnavailable({ onRetry }: { onRetry: () => void }) {
 
 export function AdminServicesPage() {
   const [listState, setListState] = useState<ServiceListState>({ page: 1, limit: 20, sort: 'displayOrder', order: 'asc' });
-  const { data, isError, isLoading, refetch } = useAdminServicesPageQuery(listState);
+  const { data, isError, isLoading, isFetching, refetch } = useAdminServicesPageQuery(listState);
   if (isLoading) return <ServicesSkeleton />;
   if (isError || !data) return <ServicesUnavailable onRetry={() => void refetch()} />;
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
-      <AdminSidebar activeLabel="Services" brand={data.brand} navigation={data.navigation} />
-      <ServicesContent content={data} listState={listState} onListStateChange={setListState} />
+
+      <ServicesContent busy={isFetching} content={data} listState={listState} onListStateChange={setListState} />
     </div>
   );
 }

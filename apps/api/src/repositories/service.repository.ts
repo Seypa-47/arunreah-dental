@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, inArray, like, or } from 'drizzle-orm';
 import type { CreateServiceInput, ServiceListQuery, UpdateServiceInput } from '@arunreah/shared';
-import { appointments, serviceBenefits, serviceRelatedServices, services } from '../db/schema';
+import { appointments, serviceBenefits, serviceDetailSections, serviceRelatedServices, services } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
 export async function findServiceById(db: DatabaseClient, id: string) {
   const [x] = await db.select().from(services).where(eq(services.id, id)).limit(1);
@@ -21,20 +21,22 @@ export async function findPublicServiceBySlug(db: DatabaseClient, slug: string) 
 export async function createService(db: DatabaseClient, input: CreateServiceInput) {
   const id = crypto.randomUUID(),
     now = new Date().toISOString();
-  const { benefits, relatedServiceIds, ...row } = input;
+  const { benefits, detailSections, relatedServiceIds, ...row } = input;
   await db.insert(services).values({ id, ...row, createdAt: now, updatedAt: now });
   await replaceBenefits(db, id, benefits);
+  await replaceDetailSections(db, id, detailSections);
   await replaceRelated(db, id, relatedServiceIds);
   return findServiceById(db, id);
 }
 export async function updateService(db: DatabaseClient, id: string, input: UpdateServiceInput) {
-  const { benefits, relatedServiceIds, ...row } = input;
+  const { benefits, detailSections, relatedServiceIds, ...row } = input;
   if (Object.keys(row).length)
     await db
       .update(services)
       .set({ ...row, updatedAt: new Date().toISOString() })
       .where(eq(services.id, id));
   if (benefits !== undefined) await replaceBenefits(db, id, benefits);
+  if (detailSections !== undefined) await replaceDetailSections(db, id, detailSections);
   if (relatedServiceIds !== undefined) await replaceRelated(db, id, relatedServiceIds);
   return findServiceById(db, id);
 }
@@ -52,6 +54,19 @@ async function replaceBenefits(
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+}
+async function replaceDetailSections(
+  db: DatabaseClient,
+  id: string,
+  items: CreateServiceInput['detailSections'],
+) {
+  await db.delete(serviceDetailSections).where(eq(serviceDetailSections.serviceId, id));
+  if (items.length > 0) {
+    const now = new Date().toISOString();
+    await db.insert(serviceDetailSections).values(
+      items.map((item) => ({ id: crypto.randomUUID(), serviceId: id, ...item, createdAt: now, updatedAt: now })),
+    );
+  }
 }
 async function replaceRelated(db: DatabaseClient, id: string, ids: string[]) {
   await db.delete(serviceRelatedServices).where(eq(serviceRelatedServices.serviceId, id));
@@ -71,6 +86,13 @@ export async function getBenefits(db: DatabaseClient, id: string) {
     .from(serviceBenefits)
     .where(eq(serviceBenefits.serviceId, id))
     .orderBy(asc(serviceBenefits.displayOrder));
+}
+export async function getDetailSections(db: DatabaseClient, id: string) {
+  return db
+    .select()
+    .from(serviceDetailSections)
+    .where(eq(serviceDetailSections.serviceId, id))
+    .orderBy(asc(serviceDetailSections.displayOrder));
 }
 export async function getRelated(db: DatabaseClient, id: string) {
   return db

@@ -1,8 +1,10 @@
+import { AdminListDate, AdminListImage, AdminListEmpty, AdminListPagination, AdminPublicationStatus } from '@/components/admin/admin-list';
+import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useState, useMemo, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminShowcaseListQuery, UpdateShowcaseInput } from '@arunreah/shared';
-import { Link, useNavigate } from 'react-router-dom';
-import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
+import { useNavigate } from 'react-router-dom';
+import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAdminShowcasePageQuery } from './use-admin-showcase-page';
@@ -15,27 +17,7 @@ import { cmsApi, type AdminShowcaseDetail } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 import { queryKeys } from '@/lib/query-keys';
 
-function StatusBadge({ status }: { status: ShowcaseStatus }) {
-  if (status === 'published') {
-    return (
-      <span className="inline-flex items-center rounded-md border border-[#bbf7d0] bg-[#f0fdf4] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#16a34a]">
-        Published
-      </span>
-    );
-  }
-  if (status === 'draft') {
-    return (
-      <span className="inline-flex items-center rounded-md border border-[#fef3c7] bg-[#fffbeb] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#d97706]">
-        Draft
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center rounded-md border border-[#e2e8f0] bg-[#f1f5f9] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#64748b]">
-      Hidden
-    </span>
-  );
-}
+function StatusBadge({ status }: { status: ShowcaseStatus }) { return <AdminPublicationStatus status={status} />; }
 
 function ToggleSwitch({
   checked,
@@ -49,7 +31,8 @@ function ToggleSwitch({
   return (
     <button
       aria-label={label ?? 'Toggle switch'}
-      aria-pressed={checked}
+      role="switch"
+      aria-checked={checked}
       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#2187a8] focus:ring-offset-2 ${
         checked ? 'bg-[#2187a8]' : 'bg-[#dce5ef]'
       }`}
@@ -263,7 +246,7 @@ export function AdminShowcasePage() {
     sort: 'displayOrder',
     order: 'asc',
   });
-  const { data, isError, isLoading, refetch } = useAdminShowcasePageQuery(listState);
+  const { data, isError, isLoading, isFetching, refetch } = useAdminShowcasePageQuery(listState);
 
   const [articles, setArticles] = useState<ShowcaseArticle[]>([]);
   const [selectedId, setSelectedId] = useState<string>('');
@@ -321,7 +304,6 @@ export function AdminShowcasePage() {
   const filteredArticles = articles;
   const totalPages = Math.max(1, data?.meta.totalPages ?? 0);
   const effectivePage = data?.meta.page ?? 1;
-  const startIndex = (effectivePage - 1) * (data?.meta.limit ?? listState.limit);
 
   const selectedArticle = useMemo(() => {
     return articles.find((a) => a.id === selectedId) || articles[0] || null;
@@ -386,11 +368,7 @@ export function AdminShowcasePage() {
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
       {/* Left Sidebar */}
-      <AdminSidebar
-        activeLabel="Showcase"
-        brand={data.brand}
-        navigation={data.navigation}
-      />
+
 
       {/* Main Content Area */}
       <main className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
@@ -398,39 +376,21 @@ export function AdminShowcasePage() {
         {actionError ? <p className="mb-4 rounded-xl border border-[#fecaca] bg-[#fff1f2] p-3 text-sm text-[#b91c1c]" role="alert">{actionError}</p> : null}
         {/* Breadcrumb & Header */}
         <div>
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[14px]">
-            <Link
-              className="text-[#71839e] transition hover:text-[#2187a8]"
-              to="/admin/showcase"
-            >
-              {data.header.breadcrumb.parent}
-            </Link>
-            <span className="text-[#a0aec0]">›</span>
-            <span className="font-semibold text-[#2187a8]">
-              {data.header.breadcrumb.current}
-            </span>
-          </nav>
+
 
           <header className="mt-2.5 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-[28px] font-bold tracking-[-0.6px] text-[#182238] sm:text-[32px]">
-                {data.header.title}
-              </h1>
-              <p className="mt-1 text-[15px] text-[#71839e]">
-                {data.header.subtitle}
-              </p>
+              <AdminPageHeading />
             </div>
 
-            {/* Date Badge */}
-            <div className="inline-flex h-[44px] items-center gap-2.5 rounded-xl border border-[#dce5ef] bg-white px-4 text-[13.5px] font-medium text-[#71839e] shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
-              <AdminIcon className="size-4 text-[#71839e]" name="calendar" />
-              <span>{data.header.dateLabel}</span>
-            </div>
+            <Button onClick={() => navigate('/admin/showcase/new')} icon={<span aria-hidden="true">+</span>}>
+              {data.controls.addLabel}
+            </Button>
           </header>
         </div>
 
         {/* Filter & Controls Bar */}
-        <div className="mt-7 flex flex-wrap items-center justify-between gap-4">
+        <div className="admin-list-toolbar mt-7">
           <div className="flex flex-1 flex-wrap items-center gap-3">
             {/* Search Input */}
             <label className="flex h-11 min-w-[240px] flex-1 max-w-md items-center gap-3 rounded-xl border border-[#dce5ef] bg-white px-4 text-[#9badc5] shadow-xs focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#d9f0f7]">
@@ -442,7 +402,7 @@ export function AdminShowcasePage() {
                   page: 1,
                   search: e.target.value || undefined,
                 }))}
-                placeholder={data.controls.searchPlaceholder}
+                aria-label="Search showcases" placeholder={data.controls.searchPlaceholder}
                 type="search"
                 value={listState.search ?? ''}
               />
@@ -451,6 +411,7 @@ export function AdminShowcasePage() {
             {/* Category Dropdown */}
             <label className="flex h-11 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[#71839e] shadow-xs focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#d9f0f7]">
               <select
+                aria-label="Filter showcases by category"
                 className="cursor-pointer bg-transparent text-[14px] font-medium text-[#182238] outline-none"
                 onChange={(e) => setListState((previous) => ({
                   ...previous,
@@ -504,14 +465,6 @@ export function AdminShowcasePage() {
             </label>
           </div>
 
-          {/* Add New Showcase Button */}
-          <Button
-            className="h-11 rounded-xl bg-[#2187a8] px-5 text-[14px] font-bold text-white shadow-[0_6px_14px_rgba(33,135,168,0.2)] hover:bg-[#1a718c]"
-            icon={<span aria-hidden="true" className="text-lg leading-none font-bold">+</span>}
-            onClick={() => navigate('/admin/showcase/new')}
-          >
-            {data.controls.addLabel}
-          </Button>
         </div>
 
         {/* Main 2-Column Grid */}
@@ -523,26 +476,20 @@ export function AdminShowcasePage() {
               <h2 className="text-[18px] font-bold text-[#182238]">
                 {data.table.title}
               </h2>
-              <div className="flex items-center gap-1.5 text-[13px] text-[#8a9bb2]">
-                <svg className="size-4 shrink-0 text-[#8a9bb2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                  <path d="M12 16v-4M12 8h.01" strokeLinecap="round" strokeWidth="2" />
-                </svg>
-                <span>{data.table.dragTip}</span>
-              </div>
+
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[620px] border-collapse text-left">
+            {isFetching ? <p role="status" className="admin-helper">Updating showcases…</p> : null}<div aria-busy={isFetching} className="admin-table-scroll" role="region" aria-label="Showcases table, scroll horizontally for more columns" tabIndex={0}>
+              <table className="admin-management-table w-full min-w-[620px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-[#f0f4f8] text-[11px] font-bold uppercase tracking-[0.6px] text-[#8699b0]">
-                    <th className="py-4 pr-4 font-bold">{data.table.article}</th>
-                    <th className="py-4 pr-4 font-bold">{data.table.category}</th>
-                    <th className="py-4 pr-4 font-bold">{data.table.visibility}</th>
-                    <th className="py-4 pr-4 font-bold">{data.table.status}</th>
-                    <th className="py-4 pr-4 font-bold">{data.table.updated}</th>
-                    <th className="py-4 text-right font-bold"><span className="sr-only">Actions</span></th>
+                    <th scope="col" className="py-4 pr-4 font-bold">{data.table.article}</th>
+                    <th scope="col" className="py-4 pr-4 font-bold">{data.table.category}</th>
+                    <th scope="col" className="py-4 pr-4 font-bold">{data.table.visibility}</th>
+                    <th scope="col" className="py-4 pr-4 font-bold">{data.table.status}</th>
+                    <th scope="col" className="py-4 pr-4 font-bold">{data.table.updated}</th>
+                    <th scope="col" className="py-4 text-right font-bold"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f0f4f8]">
@@ -550,25 +497,17 @@ export function AdminShowcasePage() {
                     const isSelected = article.id === selectedArticle?.id;
                     return (
                       <tr
-                        aria-selected={isSelected}
                         className={`group cursor-pointer transition-colors hover:bg-[#f8fbfd] ${
                           isSelected ? 'bg-[#f0f7fa]' : ''
                         }`}
                         key={article.id}
-                        onClick={() => setSelectedId(article.id)}
                       >
                         {/* Article Info */}
                         <td className="py-4 pr-4">
                           <div className="flex items-center gap-3.5">
-                            <img
-                              alt={article.imageAlt}
-                              className="size-12 rounded-xl object-cover shadow-xs ring-1 ring-black/5"
-                              src={article.imageUrl}
-                            />
+                            <AdminListImage src={article.imageUrl} />
                             <div className="min-w-0">
-                              <span className="block truncate text-[14.5px] font-bold text-[#182238]">
-                                {article.title}
-                              </span>
+                              <button type="button" className="admin-row-action text-left" aria-pressed={isSelected} onClick={() => { setSelectedId(article.id); setIsEditingSelected(false); }}>{article.title}</button>
                               <span className="block truncate text-[12.5px] text-[#8a9bb2]">
                                 {article.subtitle}
                               </span>
@@ -607,11 +546,9 @@ export function AdminShowcasePage() {
                         {/* Last Updated */}
                         <td className="py-4 pr-4">
                           <span className="block text-[13.5px] font-medium text-[#182238]">
-                            {article.lastUpdatedDate}
+                            <AdminListDate value={article.lastUpdatedDate} />
                           </span>
-                          <span className="block text-[11.5px] text-[#8a9bb2]">
-                            {article.lastUpdatedAuthor}
-                          </span>
+
                         </td>
 
                         {/* Actions */}
@@ -619,7 +556,7 @@ export function AdminShowcasePage() {
                           <div className="flex items-center justify-end gap-1">
                             <button
                               aria-label={`Preview ${article.title}`}
-                              className="grid size-8 place-items-center rounded-lg text-[#9badc5] transition hover:bg-white hover:text-[#2187a8]"
+                              className="admin-row-action"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedId(article.id);
@@ -628,11 +565,11 @@ export function AdminShowcasePage() {
                               title="Preview article"
                               type="button"
                             >
-                              <AdminIcon className="size-4" name="eye" />
+                              View
                             </button>
                             <button
                               aria-label={`Edit ${article.title}`}
-                              className="grid size-8 place-items-center rounded-lg text-[#9badc5] transition hover:bg-white hover:text-[#2187a8]"
+                              className="admin-row-action"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedId(article.id);
@@ -640,10 +577,7 @@ export function AdminShowcasePage() {
                               }}
                               title="Edit article text"
                               type="button"
-                            >
-                              <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                              </svg>
+                            >Edit
                             </button>
                           </div>
                         </td>
@@ -654,60 +588,8 @@ export function AdminShowcasePage() {
               </table>
             </div>
 
-            {/* Empty State if filter yields 0 */}
-            {filteredArticles.length === 0 && (
-              <div className="grid min-h-[220px] place-items-center px-6 text-center">
-                <div>
-                  <h3 className="text-lg font-bold text-[#182238]">No showcase articles found</h3>
-                  <p className="mt-1.5 text-[14px] text-[#71839e]">
-                    Try adjusting your search query or filters.
-                  </p>
-                  <Button
-                    className="mt-4 border border-[#dce5ef] bg-white text-[#71839e]"
-                    onClick={() => {
-                      setListState((previous) => ({
-                        ...previous,
-                        page: 1,
-                        search: undefined,
-                        category: undefined,
-                        status: undefined,
-                        showOnHomepage: undefined,
-                      }));
-                    }}
-                    variant="secondary"
-                  >
-                    Reset Filters
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            <div className="mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-[#f0f4f8] pt-6 text-[13px] text-[#8a9bb2]">
-              <span>
-                Showing {filteredArticles.length > 0 ? startIndex + 1 : 0} to {startIndex + filteredArticles.length} of {data.meta.total} articles
-              </span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  aria-label="Previous page"
-                  className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#71839e] transition hover:bg-[#f4f8fb] disabled:pointer-events-none disabled:opacity-40"
-                  disabled={effectivePage <= 1}
-                  onClick={() => setListState((previous) => ({ ...previous, page: Math.max(1, effectivePage - 1) }))}
-                  type="button"
-                >
-                  <AdminIcon className="size-3.5 rotate-180" name="chevronRight" />
-                </button>
-                <span className="px-2 font-semibold text-[#61738d]">Page {effectivePage} of {totalPages}</span>
-                <button
-                  aria-label="Next page"
-                  className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#71839e] transition hover:bg-[#f4f8fb] disabled:pointer-events-none disabled:opacity-40"
-                  disabled={effectivePage >= totalPages}
-                  onClick={() => setListState((previous) => ({ ...previous, page: Math.min(totalPages, effectivePage + 1) }))}
-                  type="button"
-                >
-                  <AdminIcon className="size-3.5" name="chevronRight" />
-                </button>
-              </div>
-            </div>
+            {filteredArticles.length === 0 ? <AdminListEmpty noun="showcases" filtered={Boolean(listState.search || listState.status || listState.category || listState.showOnHomepage !== undefined || (listState.page ?? 1) > 1)} onClear={() => setListState((previous) => ({ ...previous, search: undefined, status: undefined, category: undefined, showOnHomepage: undefined, page: 1 }))} /> : null}
+            <AdminListPagination busy={isFetching} noun="showcases" page={effectivePage} totalPages={totalPages} total={data.meta.total} limit={data.meta.limit} count={filteredArticles.length} onPageChange={(page) => setListState((previous) => ({ ...previous, page }))} />
           </Card>
 
           {/* Right Column: Selected Article Structure Panel */}

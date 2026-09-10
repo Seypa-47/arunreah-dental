@@ -12,6 +12,8 @@ import type {
   ServicesPageContent,
 } from '@/features/landing-page/types';
 import type { ClinicSettingsPublicRead } from '@arunreah/shared';
+import { getPublicMediaUrl } from '@/services/media';
+import type { PublicDoctorSummary, PublicShowcaseDetail } from '@/services/public-content';
 
 // These values are interface copy and layout configuration. CMS-owned records
 // (clinic, contact, services, doctors, branches, showcases and images) are
@@ -49,22 +51,71 @@ export function publicLandingChrome(): LandingPageContent {
   };
 }
 
-export function publicAboutContent(clinic: ClinicSettingsPublicRead, language: 'en' | 'km'): AboutPageContent {
+export function publicAboutContent(
+  clinic: ClinicSettingsPublicRead,
+  language: 'en' | 'km',
+  clinicShowcase?: PublicShowcaseDetail,
+  featuredDoctor?: PublicDoctorSummary,
+): AboutPageContent {
   const clinicName = language === 'km' ? clinic.clinicNameKm : clinic.clinicNameEn;
   const tagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
   const shortAbout = language === 'km' ? clinic.shortAboutKm : clinic.shortAboutEn;
   return {
     ...publicShell(),
+    clinicGallery: clinicShowcase
+      ? [
+          clinicShowcase.coverImageKey
+            ? { imageAlt: clinicShowcase.title, imageUrl: getPublicMediaUrl(clinicShowcase.coverImageKey) ?? '' }
+            : null,
+          ...clinicShowcase.sections
+            .filter((section) => section.sectionType === 'IMAGE' && section.imageKey)
+            .map((section) => ({ imageAlt: section.heading ?? clinicShowcase.title, imageUrl: getPublicMediaUrl(section.imageKey) ?? '' })),
+        ].filter((image): image is { imageAlt: string; imageUrl: string } => image !== null && Boolean(image.imageUrl))
+      : [],
+    editorial: language === 'km'
+      ? {
+          editionLabel: 'ព័ត៌មានគ្លីនិក',
+          galleryEyebrow: 'បរិយាកាសគ្លីនិក',
+          galleryTitle: 'ទិដ្ឋភាពនៅក្នុងគ្លីនិករបស់យើង',
+          professionalEyebrow: 'ការអភិវឌ្ឍវិជ្ជាជីវៈ',
+          professionalTitle: 'រៀនដើម្បីថែទាំអ្នកបានកាន់តែប្រសើរ',
+          timelineEyebrow: 'ប្រវត្តិនៃការរីកចម្រើន',
+          timelineTitle: 'ដំណើរឆ្ពោះទៅមុខរបស់យើង',
+          profileLabel: 'ជួបជាមួយក្រុមការងារ',
+          profileTitle: 'ការថែទាំដែលចាប់ផ្តើមពីការស្តាប់',
+        }
+      : {
+          editionLabel: 'Clinic profile',
+          galleryEyebrow: 'Inside our clinic',
+          galleryTitle: 'A look inside our clinic',
+          professionalEyebrow: 'Professional development',
+          professionalTitle: 'Learning to care better',
+          timelineEyebrow: 'Our journey',
+          timelineTitle: 'Growing with our community',
+          profileLabel: 'Meet the team',
+          profileTitle: 'Care that starts with listening',
+        },
+    featuredDoctor: featuredDoctor
+      ? {
+          imageAlt: featuredDoctor.name,
+          imageUrl: getPublicMediaUrl(featuredDoctor.photoKey) ?? '',
+          name: featuredDoctor.name,
+          profileHref: `/doctors/${featuredDoctor.slug}`,
+          specialty: featuredDoctor.specialty ?? '',
+          summary: featuredDoctor.shortBio ?? '',
+          title: featuredDoctor.title ?? '',
+        }
+      : undefined,
     differences: [],
     facilities: [],
     hero: { eyebrow: '', imageAlt: '', imageUrl: '', subtitle: tagline ?? '', title: clinicName },
     mission: { description: '', iconUrl: '', title: '' },
     stats: [
-      { iconUrl: '/assets/landing/about-stat-experience.svg', label: 'Years Experience', value: String(clinic.yearsExperience) },
-      { iconUrl: '/assets/landing/about-stat-cases.svg', label: 'Successful Cases', value: String(clinic.successfulCases) },
-      { iconUrl: '/assets/landing/about-stat-satisfaction.svg', label: 'Patient Satisfaction', value: `${clinic.patientSatisfaction}%` },
+      { iconUrl: '/assets/landing/about-stat-experience.svg', label: language === 'km' ? 'ឆ្នាំនៃបទពិសោធន៍' : 'Years of experience', value: String(clinic.yearsExperience) },
+      { iconUrl: '/assets/landing/about-stat-cases.svg', label: language === 'km' ? 'ករណីដែលបានថែទាំ' : 'Cases cared for', value: String(clinic.successfulCases) },
+      { iconUrl: '/assets/landing/about-stat-satisfaction.svg', label: language === 'km' ? 'ការពេញចិត្តរបស់អ្នកជំងឺ' : 'Patient satisfaction', value: `${clinic.patientSatisfaction}%` },
     ],
-    story: { eyebrow: '', imageAlt: '', imageUrl: '', paragraphs: shortAbout ? shortAbout.split(/\n{2,}/).filter(Boolean) : [], title: clinicName },
+    story: { eyebrow: '', imageAlt: '', imageUrl: '', paragraphs: shortAbout ? shortAbout.replace(/\\n/g, '\n').split(/\n{2,}/).filter(Boolean) : [], title: clinicName },
     vision: { description: '', iconUrl: '', title: '' },
   };
 }

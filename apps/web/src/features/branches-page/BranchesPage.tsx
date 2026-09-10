@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
+import { MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
 import type { BranchesPageContent } from '@/features/landing-page/types';
 import { useBranchesPageQuery } from './use-branches-page';
 
@@ -61,26 +62,31 @@ function CalendarIcon({ className = 'size-[18px]' }: { className?: string }) {
 
 function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
   const navigate = useNavigate();
+  const imageUrl = hero.backgroundImageUrl || '/assets/landing/figma-branches/image2_183_4173.png';
 
   return (
-    <section className="relative bg-[#eef5f8] pb-0">
-      <div className="relative min-h-[380px] overflow-hidden bg-white sm:min-h-[420px]">
-        <img
+    <section className="relative bg-[#f7fafc] pb-0 pt-5 sm:pt-7">
+      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-white sm:min-h-[340px]">
+        <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png" src={hero.backgroundImageUrl} />
+        <ResilientImage
           alt={hero.backgroundImageAlt}
-          className="absolute inset-0 h-full w-full object-cover object-center opacity-75"
-          src={hero.backgroundImageUrl}
+          className="absolute inset-y-0 right-0 hidden h-full w-[60%] object-cover object-center sm:block"
+          fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
+          src={imageUrl}
         />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-white via-white/88 to-white/12" />
-        <div className="relative mx-auto flex min-h-[380px] w-full max-w-[1280px] items-center px-4 sm:min-h-[420px] sm:px-6 lg:px-8">
-          <div className="max-w-[520px] py-8">
-            <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
+        <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[43%] bg-white sm:block" />
+        <div aria-hidden="true" className="absolute inset-y-0 left-[39%] hidden w-[23%] bg-[linear-gradient(90deg,#fff_0%,rgba(255,255,255,0.82)_52%,rgba(255,255,255,0)_100%)] sm:block" />
+        <div aria-hidden="true" className="absolute inset-y-0 right-0 hidden w-[61%] bg-[linear-gradient(90deg,rgba(5,84,111,0.05),rgba(5,84,111,0.2))] sm:block" />
+        <div className="relative mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
+          <div className="max-w-[560px] py-7">
+            <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
               {hero.eyebrow}
             </p>
-            <h1 className="mt-4 text-[30px] font-extrabold leading-9 text-[#005687] sm:text-[34px] sm:leading-10">
+            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
               {hero.title}
             </h1>
-            <p className="mt-3 max-w-[460px] text-[14px] font-normal leading-6 text-[#6b7280]">{hero.subtitle}</p>
-            <div className="mt-5 flex flex-wrap gap-6">
+            <p className="mt-3 max-w-[500px] text-[16px] font-normal leading-7 text-[#64748b]">{hero.subtitle}</p>
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3">
               {hero.highlights.map((item) => (
                 <div className="flex items-center gap-3" key={item.label}>
                   <span className="grid size-8 place-items-center rounded-full bg-[#eef8fb]">
@@ -90,7 +96,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
                       <img alt="" aria-hidden="true" className="size-3.5" src={item.iconUrl} />
                     )}
                   </span>
-                  <span className="text-[13px] font-bold leading-5 text-[#005687]">{item.label}</span>
+                  <span className="text-[14px] font-bold leading-5 text-[#005687]">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -99,10 +105,10 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
       </div>
 
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <Card className="relative z-10 -mt-10 grid w-full gap-4 rounded-xl border-[#edf2f7] bg-white px-6 py-5 shadow-[0_12px_28px_rgba(15,23,42,0.06)] sm:px-8 lg:grid-cols-[1fr_1fr_1fr_220px] lg:items-center">
+        <Card className="relative z-10 -mt-5 grid w-full gap-4 rounded-xl border-[#dfecef] bg-white px-5 py-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)] sm:px-6 lg:grid-cols-[1fr_1fr_1fr_220px] lg:items-center">
           {hero.metrics.map((metric) => (
             <div
-              className="flex items-center gap-4 border-[#edf2f7] lg:border-r lg:last:border-r-0"
+              className="flex items-center gap-3 border-[#e7eff3] lg:border-r lg:last:border-r-0"
               key={metric.title}
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#eef8fb]">
@@ -113,14 +119,14 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
                 )}
               </span>
               <div>
-                <p className="text-[11px] font-medium leading-4 text-[#6b7280]">{metric.label}</p>
+                <p className="text-[12px] font-medium leading-4 text-[#64748b]">{metric.label}</p>
                 <p className="text-[15px] font-extrabold leading-5 text-[#005687]">{metric.title}</p>
-                <p className="text-[11px] font-medium leading-4 text-[#6b7280]">{metric.description}</p>
+                <p className="text-[12px] font-medium leading-4 text-[#64748b]">{metric.description}</p>
               </div>
             </div>
           ))}
           <Button
-            className="min-h-[46px] rounded-full bg-[#3695B9] px-7 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.20)] hover:bg-[#2c84a5]"
+            className="min-h-11 rounded-full bg-[#3695B9] px-6 text-[14px] font-bold shadow-none hover:bg-[#2c84a5]"
             icon={<CalendarIcon />}
             onClick={() => navigate('/book-appointment')}
           >
@@ -143,11 +149,11 @@ function SectionIntro({
 }) {
   return (
     <div className="mx-auto max-w-[720px] px-4 text-center sm:px-6">
-      <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{eyebrow}</p>
-      <h2 className="mt-3 text-[26px] font-extrabold leading-8 text-[#005687] sm:text-[30px] sm:leading-9">
+      <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p>
+      <h2 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[32px]">
         {title}
       </h2>
-      {description ? <p className="mt-3 text-[14px] font-normal leading-6 text-[#6b7280]">{description}</p> : null}
+      {description ? <p className="mt-3 text-[16px] font-normal leading-7 text-[#64748b]">{description}</p> : null}
     </div>
   );
 }
@@ -173,18 +179,18 @@ function BranchCard({
     : `https://maps.google.com/maps?q=${coords.lat},${coords.lng}&t=k&z=17&ie=UTF8&iwloc=&output=embed`;
 
   return (
-    <Card className="grid overflow-hidden rounded-2xl border-[#edf2f7] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition duration-200 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)] lg:h-[390px] lg:grid-cols-2">
-      <div className={`${flipped ? 'lg:order-2' : ''} flex flex-col justify-between p-6 sm:p-8`}>
+    <Card className="grid overflow-hidden rounded-xl border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)] lg:h-[360px] lg:grid-cols-2">
+      <div className={`${flipped ? 'lg:order-2' : ''} flex flex-col justify-between p-5 sm:p-6`}>
         <div>
           <Badge className="gap-1.5 !bg-[#3695B9] px-3 py-1 text-[10px] !text-white">
             <AssetIcon className="size-[10px] brightness-0 invert" name="branch-card-pin-alt.svg" />
             {branch.badge}
           </Badge>
-          <h3 className="mt-3 text-[22px] font-extrabold leading-7 text-[#005687] sm:text-[24px] sm:leading-8">
+          <h3 className="mt-3 text-[22px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[24px]">
             {branch.name}
           </h3>
 
-          <dl className="mt-6 space-y-3.5 text-[14px] font-medium leading-6 text-[#6b7280]">
+          <dl className="mt-5 space-y-3 text-[14px] font-medium leading-6 text-[#64748b]">
             <div className="flex items-start gap-3.5">
               <dt className="shrink-0">
                 <span className="sr-only">Address</span>
@@ -211,16 +217,16 @@ function BranchCard({
                 <AssetIcon className="size-4" name="branch-card-clock.svg" />
               </dt>
               <dd>
-                <span className="mr-4 text-[#6b7280]">{branch.hoursDays}</span>
+                <span className="mr-4 text-[#64748b]">{branch.hoursDays}</span>
                 <span className="font-extrabold text-[#005687]">{branch.hoursTime}</span>
               </dd>
             </div>
           </dl>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
+        <div className="mt-5 flex flex-wrap items-center gap-2.5 sm:gap-3">
           <a
-            className="inline-flex h-[44px] min-h-[44px] items-center justify-center gap-2 rounded-full bg-[#3695B9] px-5 text-[13px] font-bold text-white shadow-[0_6px_14px_rgba(54,149,185,0.22)] transition hover:-translate-y-0.5 hover:bg-[#2c84a5]"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#3695B9] px-5 text-[13px] font-bold text-white shadow-none transition hover:bg-[#2c84a5]"
             href={branch.directionsUrl}
             rel="noopener noreferrer"
             target="_blank"
@@ -229,14 +235,14 @@ function BranchCard({
             {branch.directionsLabel}
           </a>
           <a
-            className="inline-flex h-[44px] min-h-[44px] items-center justify-center gap-2 rounded-full bg-[#f1f6fa] px-5 text-[13px] font-bold text-[#3695B9] transition hover:-translate-y-0.5 hover:bg-[#e4eff5]"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#f1f6fa] px-5 text-[13px] font-bold text-[#3695B9] transition hover:bg-[#e4eff5]"
             href={phoneHref}
           >
             <AssetIcon className="size-3.5" name="branch-card-phone.svg" />
             {branch.phoneLabel}
           </a>
           <Link
-            className="inline-flex h-[44px] min-h-[44px] items-center justify-center gap-2 rounded-full border border-[#d8e6ee] bg-white px-5 text-[13px] font-bold text-[#3695B9] transition hover:-translate-y-0.5 hover:border-[#3695B9] hover:bg-[#f9fcfd]"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#d8e6ee] bg-white px-5 text-[13px] font-bold text-[#3695B9] transition hover:border-[#3695B9] hover:bg-[#f9fcfd]"
             to="/book-appointment"
           >
             <AssetIcon className="size-3.5" name="hero-calendar.svg" />
@@ -245,9 +251,9 @@ function BranchCard({
         </div>
       </div>
 
-      <div className={`relative min-h-[300px] bg-[#eaf2f6] lg:min-h-full ${flipped ? 'lg:order-1' : ''}`}>
+      <div className={`relative min-h-[250px] bg-[#eaf2f6] lg:min-h-full ${flipped ? 'lg:order-1' : ''}`}>
         {viewMode === 'photo' ? (
-          branch.imageUrl ? <img alt={branch.imageAlt} className="absolute inset-0 h-full w-full object-cover" src={branch.imageUrl} /> : <div aria-hidden="true" className="absolute inset-0 bg-[#eaf2f6]" />
+          branch.imageUrl ? <img alt={branch.imageAlt || branch.name} className="absolute inset-0 h-full w-full object-cover" src={branch.imageUrl} /> : <div aria-hidden="true" className="absolute inset-0 bg-[#eaf2f6]" />
         ) : (
           <iframe
             allowFullScreen
@@ -260,7 +266,7 @@ function BranchCard({
         )}
 
         {/* View Mode Toggle: Clinic Photo / Google Satellite */}
-        <div className="absolute right-4 top-4 z-10 flex items-center rounded-full border border-[#edf2f7] bg-white/95 p-1 shadow-[0_2px_8px_rgba(15,23,42,0.12)] backdrop-blur">
+        <div className="absolute right-3 top-3 z-10 flex items-center rounded-full border border-[#e3edf1] bg-white/95 p-1 shadow-[0_2px_8px_rgba(15,23,42,0.08)] backdrop-blur">
           <button
             className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${
               viewMode === 'photo' ? 'bg-[#3695B9] text-white shadow-sm' : 'text-[#6b7280] hover:text-[#005687]'
@@ -283,12 +289,12 @@ function BranchCard({
 
         {/* Floating Google Maps Link Button */}
         <a
-          className="group/map absolute bottom-5 left-5 z-10 inline-flex h-[42px] items-center overflow-hidden rounded-full bg-white shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,23,42,0.18)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
+          className="group/map absolute bottom-4 left-4 z-10 inline-flex h-10 items-center overflow-hidden rounded-full bg-white shadow-[0_3px_10px_rgba(15,23,42,0.10)] backdrop-blur transition duration-200 hover:bg-[#f8fcfd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
           href={branch.mapUrl}
           rel="noopener noreferrer"
           target="_blank"
         >
-          <span className="grid h-[42px] w-[42px] place-items-center bg-[#edf7fb] transition-colors group-hover/map:bg-[#3695B9]">
+          <span className="grid size-10 place-items-center bg-[#edf7fb] transition-colors group-hover/map:bg-[#3695B9]">
             <AssetIcon className="size-[16px] transition group-hover/map:brightness-0 group-hover/map:invert" name="branch-card-pin-alt.svg" />
           </span>
           <span className="px-4 text-[12.5px] font-bold text-[#005687] transition-colors group-hover/map:text-[#3695B9]">
@@ -302,13 +308,13 @@ function BranchCard({
 
 function BranchesList({ content }: { content: BranchesPageContent }) {
   return (
-    <section className="bg-[#eef5f8] pb-14 pt-12 sm:pb-16 sm:pt-14">
+    <section className="bg-white pb-10 pt-10 sm:pb-14 sm:pt-12">
       <SectionIntro
         description={content.sections.branchesDescription}
         eyebrow={content.sections.branchesEyebrow}
         title={content.sections.branchesTitle}
       />
-      <div className="mx-auto mt-10 grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto mt-7 grid w-full max-w-[1280px] gap-6 px-4 sm:mt-8 sm:px-6 lg:px-8">
         {content.branches.map((branch, index) => (
           <BranchCard branch={branch} flipped={index % 2 === 1} key={branch.name} />
         ))}
@@ -321,19 +327,19 @@ function BenefitsSection({ content }: { content: BranchesPageContent }) {
   if (content.benefits.length === 0) return null;
 
   return (
-    <section className="bg-white py-12 sm:py-14">
+    <section className="border-y border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
       <SectionIntro eyebrow={content.sections.benefitsEyebrow} title={content.sections.benefitsTitle} />
-      <div className="mx-auto mt-10 grid w-full max-w-[1280px] gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+      <div className="mx-auto mt-7 grid w-full max-w-[1280px] gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         {content.benefits.map((item) => (
           <Card
-            className="min-h-[180px] rounded-xl !border-transparent !bg-[#f7fafc] px-6 py-6 text-center shadow-none transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(15,23,42,0.06)]"
+            className="min-h-[168px] rounded-xl !border-transparent !bg-white px-5 py-5 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(15,23,42,0.06)]"
             key={item.title}
           >
-            <span className="mx-auto grid size-12 place-items-center rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)] ring-1 ring-[#e6eef3]">
+            <span className="mx-auto grid size-11 place-items-center rounded-full bg-[#f7fafc] shadow-none ring-1 ring-[#e6eef3]">
               <img alt="" aria-hidden="true" className="max-h-5 max-w-5" src={item.iconUrl} />
             </span>
             <h3 className="mt-4 text-[15px] font-bold leading-5 text-[#005687]">{item.title}</h3>
-            <p className="mx-auto mt-2 max-w-[220px] text-[13px] font-normal leading-5 text-[#6b7280]">
+            <p className="mx-auto mt-2 max-w-[220px] text-[13px] font-normal leading-5 text-[#64748b]">
               {item.description}
             </p>
           </Card>
@@ -347,9 +353,9 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
   const navigate = useNavigate();
 
   return (
-    <section className="bg-white pb-14 pt-4 sm:pb-16">
+    <section className="bg-white pb-10 pt-8 sm:pb-14">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#3695B9] to-[#005687] px-6 py-9 text-white sm:px-12">
+        <div className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#3695B9] to-[#005687] px-5 py-7 text-white sm:px-8 sm:py-8">
         <img
           alt={cta.backgroundImageAlt}
           className="absolute inset-y-0 right-0 hidden h-full w-[48%] object-cover opacity-25 md:block"
@@ -357,14 +363,14 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
         />
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#3695B9]/95 to-[#005687]/95" />
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-6">
-            <span className="grid size-14 shrink-0 place-items-center rounded-full bg-white/16">
+          <div className="flex items-center gap-4 sm:gap-5">
+            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white/16">
               <AssetIcon className="size-6 brightness-0 invert" name="hero-calendar.svg" />
             </span>
             <div>
               <p className="text-[12px] font-bold uppercase leading-4 tracking-wider text-white/75">{cta.eyebrow}</p>
-              <h2 className="mt-1 text-[24px] font-extrabold leading-8 sm:text-[26px]">{cta.title}</h2>
-              <p className="mt-1 text-[13px] font-normal leading-5 text-white/80">{cta.subtitle}</p>
+              <h2 className="mt-1 text-[23px] font-extrabold leading-tight sm:text-[26px]">{cta.title}</h2>
+              <p className="mt-1 text-[14px] font-normal leading-6 text-white/80">{cta.subtitle}</p>
             </div>
           </div>
           <Button
@@ -399,12 +405,73 @@ function BranchesPageView({ content }: { content: BranchesPageContent }) {
 function BranchesPageSkeleton() {
   return (
     <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading branches page" className="bg-[#eef5f8]">
-        <section className="h-[600px] animate-pulse bg-[#d6ecf3]" />
-        <section className="mx-auto max-w-[1440px] space-y-12 py-[96px]">
-          {Array.from({ length: 2 }, (_, index) => (
-            <div className="h-[420px] animate-pulse rounded-xl bg-[#e8f3f7]" key={index} />
-          ))}
+      <main aria-busy="true" aria-label="Loading clinic locations" className="bg-white">
+        <span className="sr-only">Loading clinic locations</span>
+
+        <section className="relative min-h-[300px] overflow-hidden bg-[#f7fafc] sm:min-h-[340px]" aria-hidden="true">
+          <div className="absolute inset-y-0 right-0 hidden w-[47%] bg-[linear-gradient(135deg,#dceef3_0%,#eff7f9_100%)] lg:block" />
+          <div className="relative mx-auto flex min-h-[300px] max-w-[1280px] items-center px-5 sm:min-h-[340px] sm:px-8 lg:px-10">
+            <div className="w-full max-w-[590px] space-y-4 animate-pulse">
+              <div className="h-3 w-28 rounded-full bg-[#d8e8ed]" />
+              <div className="h-10 w-full max-w-[440px] rounded-lg bg-[#d4e7ed] sm:h-12" />
+              <div className="h-4 w-full max-w-[520px] rounded-full bg-[#e2eef1]" />
+              <div className="h-4 w-[72%] rounded-full bg-[#e2eef1]" />
+            </div>
+          </div>
+        </section>
+
+        <section aria-hidden="true" className="relative z-10 mx-auto -mt-5 max-w-[1280px] px-5 sm:px-8 lg:px-10">
+          <div className="grid overflow-hidden rounded-xl border border-[#dcebef] bg-white shadow-[0_10px_28px_rgba(14,77,111,0.08)] sm:grid-cols-[1fr_1fr_1.1fr]">
+            {Array.from({ length: 3 }, (_, index) => (
+              <div className="flex min-h-[82px] items-center gap-3 border-b border-[#e6f0f2] px-5 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0" key={index}>
+                <div className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-[#d8ecf1]" />
+                <div className="min-w-0 flex-1 space-y-2 animate-pulse">
+                  <div className="h-3 w-20 rounded-full bg-[#d9e8ec]" />
+                  <div className="h-4 w-full max-w-[150px] rounded-full bg-[#e6f0f2]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-[1280px] px-5 pb-10 pt-10 sm:px-8 sm:pb-14 sm:pt-12 lg:px-10" aria-hidden="true">
+          <div className="mx-auto mb-8 max-w-[540px] space-y-3 text-center animate-pulse sm:mb-10">
+            <div className="mx-auto h-3 w-24 rounded-full bg-[#dcebef]" />
+            <div className="mx-auto h-9 w-64 max-w-full rounded-lg bg-[#d4e7ed]" />
+            <div className="mx-auto h-4 w-full max-w-[440px] rounded-full bg-[#e6f0f2]" />
+          </div>
+
+          <div className="space-y-5 sm:space-y-6">
+            {Array.from({ length: 2 }, (_, index) => (
+              <article className="grid overflow-hidden rounded-xl border border-[#e1ecef] bg-white lg:min-h-[360px] lg:grid-cols-2" key={index}>
+                <div className="space-y-5 p-6 sm:p-8 lg:p-10 animate-pulse">
+                  <div className="h-7 w-56 max-w-full rounded-lg bg-[#d6e8ed]" />
+                  <div className="space-y-3">
+                    <div className="h-4 w-[84%] rounded-full bg-[#e5f0f2]" />
+                    <div className="h-4 w-[68%] rounded-full bg-[#e5f0f2]" />
+                  </div>
+                  <div className="space-y-3 border-t border-[#edf3f4] pt-5">
+                    <div className="h-4 w-44 rounded-full bg-[#dfecef]" />
+                    <div className="h-4 w-36 rounded-full bg-[#dfecef]" />
+                    <div className="h-4 w-52 rounded-full bg-[#dfecef]" />
+                  </div>
+                </div>
+                <div className="min-h-[210px] bg-[linear-gradient(135deg,#e2f0f3_0%,#f5f9fa_100%)] lg:min-h-0" />
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="bg-[#f7fafc] px-5 py-10 sm:px-8 sm:py-12 lg:px-10" aria-hidden="true">
+          <div className="mx-auto max-w-[1280px] rounded-xl bg-[#0f87ad] px-6 py-8 sm:px-10 sm:py-9 animate-pulse">
+            <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+              <div className="space-y-3">
+                <div className="h-7 w-60 max-w-full rounded-lg bg-white/25" />
+                <div className="h-4 w-80 max-w-full rounded-full bg-white/20" />
+              </div>
+              <div className="h-11 w-44 rounded-lg bg-white/90" />
+            </div>
+          </div>
         </section>
       </main>
     </SiteLayout>

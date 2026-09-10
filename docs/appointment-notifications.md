@@ -31,10 +31,22 @@ TELEGRAM_NOTIFICATIONS_ENABLED=true|false
 TELEGRAM_CHAT_ID=-1001234567890
 ```
 
+The configured clinic recipient is `arunreah@mekhla.digital`. The sender is
+`Arunreah Dental Clinic <appointments@send.mekhla.digital>`. Before enabling
+this in a deployed environment, verify `send.mekhla.digital` in Resend and set
+its environment-specific `RESEND_API_KEY` as a Worker secret. Using the
+`send` subdomain keeps Resend's sender records separate from the root-domain
+MX and SPF records required by the private-email mailbox.
+
 Set `EMAIL_NOTIFICATIONS_ENABLED=false` and
 `TELEGRAM_NOTIFICATIONS_ENABLED=false` locally unless deliberately testing a
 provider with safe test credentials. Automated tests mock all provider HTTP
 requests and never send real messages.
+
+The staging environment is configured to use the disposable testing Telegram
+chat only. Do not copy that chat ID or bot secret into production; create a
+separate clinic group and configure its new `TELEGRAM_CHAT_ID` and
+`TELEGRAM_BOT_TOKEN` before enabling production delivery.
 
 ## Payload and privacy
 

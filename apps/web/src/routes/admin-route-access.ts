@@ -6,6 +6,8 @@ const cmsPathPrefixes = [
   '/admin/doctors',
   '/admin/showcase',
   '/admin/clinic-info',
+  '/admin/page-media',
+  '/admin/about-timeline',
 ] as const;
 const adminManagementPathPrefix = '/admin/admins';
 

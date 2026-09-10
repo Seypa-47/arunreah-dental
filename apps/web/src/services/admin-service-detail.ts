@@ -2,6 +2,7 @@ import type { AdminNavIcon } from '@/services/admin-inbox';
 import { fetchAdminServicesContent, type AdminService } from '@/services/admin-services';
 import { cmsApi } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
+import type { CreateServiceInput } from '@arunreah/shared';
 
 export type BenefitPreview = {
   icon: 'check' | 'heart' | 'shield' | 'smile' | 'star' | 'utensils';
@@ -68,7 +69,14 @@ export type AdminServiceDetailContent = {
     updatedByLabel: string;
     updatedByValue: string;
   };
-  service: AdminService | undefined;
+  service: (AdminService & {
+    detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
+    editorialLabelEn: string;
+    editorialLabelKm: string;
+    editorialTitleEn: string;
+    editorialTitleKm: string;
+    detailSections: CreateServiceInput['detailSections'];
+  }) | undefined;
 };
 
 const adminServiceDetailLabels = {
@@ -118,6 +126,7 @@ const adminServiceDetailLabels = {
     nameLabel: 'Service Name',
     sections: [
       { description: 'Heading, summary, CTA buttons, hero image', title: '2. Hero Section' },
+      { description: 'Choose the page composition, then add its bilingual label and title', title: '2a. Page Presentation' },
       { description: 'About content and supporting image', title: '3. About Section' },
       { description: 'Key facts list and CTA button', title: '4. Treatment at a Glance' },
       { description: 'Benefits intro and 6 benefit items', title: '5. Benefits Section' },
@@ -188,8 +197,10 @@ export async function fetchAdminServiceDetailContent(serviceId: string | undefin
   const service: AdminService = {
     id: detail.id,
     name: detail.nameEn,
+    nameKm: detail.nameKm,
     category: detail.category ?? 'Uncategorized',
     description: detail.summaryEn ?? detail.descriptionEn ?? '',
+    descriptionKm: detail.summaryKm ?? detail.descriptionKm ?? '',
     imageAlt: detail.nameEn,
     imageUrl: getPublicMediaUrl(detail.imageKey) ?? '',
     status: detail.status === 'PUBLISHED' ? 'published' : 'draft',
@@ -205,6 +216,14 @@ export async function fetchAdminServiceDetailContent(serviceId: string | undefin
     brand: servicesContent.brand,
     footer: servicesContent.footer,
     navigation: servicesContent.navigation,
-    service,
+    service: {
+      ...service,
+      detailPresentation: detail.detailPresentation,
+      editorialLabelEn: detail.editorialLabelEn ?? '',
+      editorialLabelKm: detail.editorialLabelKm ?? '',
+      editorialTitleEn: detail.editorialTitleEn ?? '',
+      editorialTitleKm: detail.editorialTitleKm ?? '',
+      detailSections: detail.detailSections,
+    },
   };
 }

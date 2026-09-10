@@ -45,7 +45,7 @@ export function useLandingPageQuery() {
           imageUrl: getPublicMediaUrl(branch.heroImageKey) ?? getPublicMediaUrl(branch.branchImageKey) ?? '',
           locationLabel: 'Location',
           phones: [contact.primaryPhone, contact.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
-          qrImageUrl: '/assets/landing/hero-qr.png',
+          qrImageUrl: '/assets/landing/qr-code.png',
           qrLabel: 'Clinic information',
         })),
         services: services.services.map(toLandingService),

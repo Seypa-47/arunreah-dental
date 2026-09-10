@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
+import { MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
 import type { BookAppointmentPageContent } from '@/features/landing-page/types';
 import { useBookAppointmentPageQuery } from './use-book-appointment-page';
 import { ApiClientError } from '@/lib/api';
 import { env } from '@/config/env';
 import { createPublicAppointment } from '@/services/public-content';
 import { TurnstileWidget } from './turnstile-widget';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 
 const skeletonNavigation = [
   { href: '/', label: 'Home' },
@@ -21,6 +23,20 @@ const skeletonNavigation = [
 ];
 
 type IconName = 'calendar' | 'check' | 'clock' | 'doctor' | 'email' | 'hourglass' | 'location' | 'notes' | 'phone' | 'service' | 'user';
+
+function createIdempotencyKey() {
+  if (typeof globalThis.crypto.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID();
+  }
+
+  const bytes = new Uint8Array(16);
+  globalThis.crypto.getRandomValues(bytes);
+  bytes[6] = ((bytes[6] ?? 0) & 0x0f) | 0x40;
+  bytes[8] = ((bytes[8] ?? 0) & 0x3f) | 0x80;
+
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
 
 function AppointmentIcon({ className = 'size-[18px]', name }: { className?: string; name: IconName }) {
   const icons = {
@@ -105,7 +121,7 @@ function ChevronIcon({ direction }: { direction: 'left' | 'right' }) {
 }
 
 const fieldClass =
-  'h-[46px] w-full rounded-lg border border-[#d9e4eb] bg-white px-11 text-[14px] font-medium text-[#005687] outline-none transition placeholder:text-[#94a3b8] focus:border-[#3695b9] focus:ring-2 focus:ring-[#d9f0f7]';
+  'h-12 w-full rounded-lg border border-[#d9e4eb] bg-white px-11 text-[16px] font-medium text-[#005687] outline-none transition placeholder:text-[#94a3b8] focus:border-[#3695b9] focus:ring-2 focus:ring-[#d9f0f7] sm:h-11 sm:text-[14px]';
 
 function FieldIcon({ name }: { name: IconName }) {
   return (
@@ -191,28 +207,36 @@ function TextField({
 function SectionTitle({ number, title }: { number: string; title: string }) {
   return (
     <div className="flex items-center gap-3.5">
-      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#3695b9] text-[14px] font-bold text-white">
+      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#3695b9] text-[13px] font-bold text-white">
         {number}
       </span>
-      <h2 className="text-[20px] font-extrabold leading-7 text-[#005687] sm:text-[22px]">{title}</h2>
+      <h2 className="text-[20px] font-extrabold leading-7 tracking-[-0.02em] text-[#005687] sm:text-[22px]">{title}</h2>
     </div>
   );
 }
 
 function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] }) {
+  const imageUrl = hero.backgroundImageUrl || '/assets/landing/figma-branches/image5_183_4173.jpg';
   return (
-    <section className="relative overflow-hidden bg-[#3695b9]">
-      <img
+    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
+      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
+      <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg" src={hero.backgroundImageUrl} />
+      <ResilientImage
         alt={hero.backgroundImageAlt}
-        className="absolute inset-0 h-full w-full object-cover object-center opacity-20"
-        src={hero.backgroundImageUrl}
+        className="absolute inset-y-0 right-0 hidden h-full w-[50%] object-cover object-center sm:block"
+        fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg"
+        src={imageUrl}
       />
-      <div aria-hidden="true" className="absolute inset-0 bg-[#3695b9]/90" />
-      <div className="relative mx-auto flex min-h-[220px] w-full max-w-[1280px] items-center px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+      <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[45%] bg-[#f7fafc] sm:block" />
+      <div aria-hidden="true" className="absolute inset-y-0 left-[41%] hidden w-[22%] bg-[linear-gradient(90deg,#f7fafc_0%,rgba(247,250,252,0.82)_52%,rgba(247,250,252,0)_100%)] sm:block" />
+      <div aria-hidden="true" className="absolute inset-y-0 right-0 hidden w-[51%] bg-[linear-gradient(90deg,rgba(5,84,111,0.06),rgba(5,84,111,0.24))] sm:block" />
+      <div className="relative flex items-center py-8 sm:min-h-[250px] sm:py-10">
         <div className="max-w-[600px]">
-          <h1 className="text-[30px] font-extrabold leading-tight text-white sm:text-[34px] sm:leading-10">{hero.title}</h1>
-          <p className="mt-2.5 max-w-[520px] text-[14px] font-normal leading-6 text-white/90">{hero.subtitle}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">Appointment request</p>
+          <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">{hero.title}</h1>
+          <p className="mt-3 max-w-[560px] text-[16px] font-normal leading-7 text-[#64748b]">{hero.subtitle}</p>
         </div>
+      </div>
       </div>
     </section>
   );
@@ -227,18 +251,20 @@ function AppointmentCalendar({
   onSelectDate: (date: string) => void;
   selectedDate: string;
 }) {
+  const { language } = usePublicLanguage();
+  const dateFormatter = new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', { dateStyle: 'full' });
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <button aria-label="Previous month" className="text-[#94a3b8] transition hover:text-[#3695b9]" type="button">
+        <button aria-label="Previous month unavailable" className="grid size-11 place-items-center rounded-full text-[#cbd5e1]" disabled type="button">
           <ChevronIcon direction="left" />
         </button>
         <h3 className="text-[15px] font-extrabold leading-6 text-[#005687]">{calendar.monthLabel}</h3>
-        <button aria-label="Next month" className="text-[#94a3b8] transition hover:text-[#3695b9]" type="button">
+        <button aria-label="Next month unavailable" className="grid size-11 place-items-center rounded-full text-[#cbd5e1]" disabled type="button">
           <ChevronIcon direction="right" />
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-y-3.5 text-center">
+      <div className="grid grid-cols-7 gap-y-2 text-center sm:gap-y-3">
         {calendar.weekdays.map((day) => (
           <span className="text-[12px] font-bold leading-4 text-[#6b7280]" key={day}>
             {day}
@@ -248,8 +274,9 @@ function AppointmentCalendar({
           const isSelected = date.key === selectedDate;
           return (
             <button
+              aria-label={dateFormatter.format(new Date(`${date.key}T12:00:00`))}
               aria-pressed={isSelected}
-              className={`mx-auto grid size-8 place-items-center rounded-full text-[13px] font-bold transition ${
+              className={`mx-auto grid aspect-square w-full max-w-10 place-items-center rounded-full text-[13px] font-bold transition sm:max-w-8 ${
                 isSelected
                   ? 'bg-[#3695b9] text-white'
                   : date.muted
@@ -287,10 +314,11 @@ function AvailableTimes({
           const isSelected = time === selectedTime;
           return (
             <button
+              aria-label={`Select ${time}`}
               aria-pressed={isSelected}
-              className={`h-[42px] w-full rounded-lg border text-[13px] font-bold transition ${
+              className={`min-h-12 w-full rounded-lg border text-[14px] font-bold transition sm:min-h-[42px] sm:text-[13px] ${
                 isSelected
-                  ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-[0_8px_16px_rgba(54,149,185,0.2)]'
+                  ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-none'
                   : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
               }`}
               key={time}
@@ -351,11 +379,11 @@ function AppointmentForm({
   };
 
   return (
-    <Card className="rounded-2xl border-[#edf2f7] p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] sm:p-8">
-      <form className="space-y-8 sm:space-y-10" onSubmit={handleSubmit}>
+    <Card className="rounded-xl border-[#e1ebef] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.05)] sm:p-7">
+      <form className="space-y-7 sm:space-y-8" onSubmit={handleSubmit}>
         <section>
           <SectionTitle number="1" title="Appointment Details" />
-          <div className="mt-6 space-y-5">
+          <div className="mt-5 space-y-4">
             <SelectField
               icon="location"
               id="branch"
@@ -383,17 +411,17 @@ function AppointmentForm({
           </div>
         </section>
 
-        <section>
+        <section className="border-t border-[#e7eff3] pt-7 sm:pt-8">
           <SectionTitle number="2" title="Choose Date & Time" />
-          <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_320px]">
+          <div className="mt-5 grid gap-7 lg:grid-cols-[1fr_300px]">
             <AppointmentCalendar calendar={content.calendar} onSelectDate={onSelectDate} selectedDate={selectedDate} />
             <AvailableTimes onSelectTime={onSelectTime} selectedTime={selectedTime} times={content.times} />
           </div>
         </section>
 
-        <section>
+        <section className="border-t border-[#e7eff3] pt-7 sm:pt-8">
           <SectionTitle number="3" title="Your Information" />
-          <div className="mt-6 grid gap-5 md:grid-cols-2">
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
             <TextField icon="user" id="fullName" label={content.form.fields.fullName} onChange={setPatientName} placeholder={content.form.placeholders.fullName} value={patientName} />
             <TextField
               icon="phone"
@@ -419,9 +447,9 @@ function AppointmentForm({
 
         <TurnstileWidget onToken={onTurnstileToken} resetSignal={turnstileResetSignal} />
         {submissionError ? <p className="text-sm font-medium text-[#9d4d18]" role="alert">{submissionError}</p> : null}
-        <Button className="h-[46px] min-h-[46px] rounded-full bg-[#3695b9] px-8 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.24)] hover:bg-[#2f8fb0]" disabled={isSubmitting}>
+        <Button className="min-h-12 w-full rounded-full px-7 text-[14px] font-bold shadow-none sm:min-h-11 sm:w-auto" disabled={isSubmitting} type="submit">
           <AppointmentIcon className="size-[16px]" name="calendar" />
-          {isSubmitting ? 'Sending request…' : 'Send Appointment Request'}
+          {isSubmitting ? 'Sending request…' : content.form.submitLabel}
         </Button>
       </form>
     </Card>
@@ -430,10 +458,10 @@ function AppointmentForm({
 
 function SummaryRow({ icon, label, value }: { icon: IconName; label: string; value: string }) {
   return (
-    <div className="grid grid-cols-[20px_1fr_auto] items-center gap-4">
+    <div className="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4">
       <AppointmentIcon className="size-[15px] text-[#3695b9]" name={icon} />
-      <span className="text-[13px] font-medium leading-5 text-[#6b7280]">{label}</span>
-      <span className="text-right text-[13px] font-bold leading-5 text-[#005687]">{value}</span>
+      <span className="text-[13px] font-medium leading-5 text-[#64748b]">{label}</span>
+      <span className="ui-copy-safe text-right text-[13px] font-bold leading-5 text-[#005687]">{value}</span>
     </div>
   );
 }
@@ -453,15 +481,17 @@ function AppointmentSummary({
   selectedServiceName: string;
   selectedTime: string;
 }) {
+  const hasBranchImage = Boolean(branch.imageUrl);
+
   return (
-    <Card className="sticky top-20 rounded-2xl border-[#edf2f7] p-6 shadow-[0_10px_28px_rgba(15,23,42,0.06)]">
+    <Card className="sticky top-20 rounded-xl border-[#e1ebef] p-5 shadow-[0_1px_2px_rgba(15,23,42,0.05)] sm:p-6">
       <h2 className="text-[18px] font-extrabold leading-6 text-[#005687] sm:text-[20px]">{content.summary.title}</h2>
-      <div className="mt-5 rounded-xl bg-[#edf7fb] p-3.5">
-        <div className="grid grid-cols-[80px_1fr] gap-4">
-          {branch.imageUrl ? <img alt={branch.imageAlt} className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0] object-cover" src={branch.imageUrl} /> : <div aria-hidden="true" className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0]" />}
+      <div className="mt-5 rounded-xl bg-[#f2f9fb] p-3.5">
+        <div className={`grid gap-4 ${hasBranchImage ? 'grid-cols-[80px_1fr]' : 'grid-cols-1'}`}>
+          {hasBranchImage ? <img alt={branch.imageAlt || branch.name} className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0] object-cover object-center" src={branch.imageUrl} /> : null}
           <div>
             <h3 className="text-[13px] font-bold leading-5 text-[#005687]">{branch.name}</h3>
-            <p className="mt-1 text-[12px] font-normal leading-4 text-[#6b7280]">{branch.address}</p>
+            <p className="mt-1 text-[12px] font-normal leading-4 text-[#64748b]">{branch.address}</p>
             <a
               className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-[#3695b9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
               href={branch.mapUrl}
@@ -478,27 +508,27 @@ function AppointmentSummary({
         <SummaryRow icon="doctor" label="Doctor" value={selectedDoctorName} />
         <SummaryRow icon="calendar" label="Date" value={selectedDateLabel} />
         <SummaryRow icon="clock" label="Time" value={selectedTime} />
-        <SummaryRow icon="hourglass" label="Duration" value={content.summary.duration} />
+        {content.summary.duration ? <SummaryRow icon="hourglass" label="Duration" value={content.summary.duration} /> : null}
       </div>
 
-      <div className="mt-6 rounded-xl border border-[#d7e7ef] bg-[#f4fbfd] p-5">
+      {content.information.length > 0 ? <div className="mt-5 rounded-xl border border-[#d7e7ef] bg-[#f4fbfd] p-4">
         <h3 className="flex items-center gap-2 text-[13px] font-bold leading-5 text-[#3695b9]">
           <AppointmentIcon className="size-[15px]" name="doctor" />
           Important Information
         </h3>
         <ul className="mt-3.5 space-y-3">
           {content.information.map((item) => (
-            <li className="flex gap-3 text-[12px] font-medium leading-5 text-[#6b7280]" key={item}>
+            <li className="flex gap-3 text-[12px] font-medium leading-5 text-[#64748b]" key={item}>
               <AppointmentIcon className="mt-0.5 size-[13px] shrink-0 text-[#3695b9]" name="check" />
               <span>{item}</span>
             </li>
           ))}
         </ul>
-      </div>
+      </div> : null}
 
-      <div className="mt-6 border-t border-[#edf2f5] pt-6">
+      <div className="mt-5 border-t border-[#edf2f5] pt-5">
         <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{content.help.title}</h3>
-        <p className="mt-1 text-[12px] font-medium leading-5 text-[#6b7280]">{content.help.subtitle}</p>
+        <p className="mt-1 text-[12px] font-medium leading-5 text-[#64748b]">{content.help.subtitle}</p>
         <div className="mt-4 space-y-2.5 text-[13px] font-bold leading-5 text-[#3695b9]">
           {content.help.phone ? <a className="flex items-center gap-2.5 hover:text-[#005687]" href={`tel:${content.help.phone.replaceAll(/[^0-9+]/g, '')}`}>
             <AppointmentIcon className="size-[15px]" name="phone" />
@@ -534,7 +564,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
   const [selectedDoctor, setSelectedDoctor] = useState(content.doctors[0]?.value ?? '');
   const [selectedDate, setSelectedDate] = useState(content.calendar.selectedDateKey);
   const [selectedTime, setSelectedTime] = useState(content.times[2] ?? content.times[0] ?? '');
-  const idempotencyKey = useRef(crypto.randomUUID());
+  const idempotencyKey = useRef(createIdempotencyKey());
   const [acknowledgement, setAcknowledgement] = useState<{ reference: string; status: string; message: string } | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
@@ -574,7 +604,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
       turnstileToken: turnstileToken ?? undefined,
     }).then((response) => {
       setAcknowledgement(response);
-      idempotencyKey.current = crypto.randomUUID();
+      idempotencyKey.current = createIdempotencyKey();
     }).catch(() => undefined).finally(() => setTurnstileResetSignal((value) => value + 1));
   };
 
@@ -587,9 +617,9 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 
   return (
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
-      <main className="bg-[#f2f7fa]">
+      <main className="bg-white">
         <AppointmentHero hero={content.hero} />
-        <section className="relative z-10 mx-auto grid w-full max-w-[1280px] gap-8 px-4 pb-14 sm:px-6 sm:pb-16 lg:-mt-[28px] lg:grid-cols-[1fr_390px] lg:px-8">
+        <section className="mx-auto grid w-full max-w-[1180px] gap-6 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:px-8">
           <AppointmentForm
             content={content}
             onSelectBranch={setSelectedBranch}
@@ -617,7 +647,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
             selectedTime={selectedTime}
           />
         </section>
-        {acknowledgement ? <section className="mx-auto max-w-[1280px] px-4 pb-10 sm:px-6 lg:px-8"><Card className="border-[#b9e2ee] bg-[#f4fbfd] p-5"><p className="font-bold text-[#005687]">Appointment request received</p><p className="mt-1 text-sm text-[#62798b]">{acknowledgement.message}</p><p className="mt-1 text-sm text-[#62798b]">Reference: {acknowledgement.reference}. Status: {acknowledgement.status}.</p></Card></section> : null}
+        {acknowledgement ? <section className="mx-auto max-w-[1180px] px-4 pb-10 sm:px-6 lg:px-8"><Card className="rounded-xl border-[#b9e2ee] bg-[#f4fbfd] p-5"><p className="font-bold text-[#005687]">Appointment request received</p><p className="mt-1 text-sm text-[#64748b]">{acknowledgement.message}</p><p className="mt-1 text-sm text-[#64748b]">Reference: {acknowledgement.reference}. Status: {acknowledgement.status}.</p></Card></section> : null}
       </main>
       <SiteFooter {...content.footer} />
     </SiteLayout>
@@ -627,11 +657,75 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 function BookAppointmentSkeleton() {
   return (
     <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading appointment page" className="bg-[#f2f7fa]">
-        <section className="h-[220px] animate-pulse bg-[#238eb4]" />
-        <section className="relative z-10 mx-auto grid max-w-[1280px] gap-8 px-4 pb-14 sm:px-6 sm:pb-16 lg:-mt-[28px] lg:grid-cols-[1fr_390px] lg:px-8">
-          <div className="h-[800px] animate-pulse rounded-2xl bg-white" />
-          <div className="h-[520px] animate-pulse rounded-2xl bg-white" />
+      <main aria-busy="true" aria-label="Loading appointment request form" className="bg-white">
+        <span className="sr-only">Loading appointment request form</span>
+
+        <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+          <div className="mx-auto flex min-h-[180px] max-w-[1280px] items-center sm:min-h-[200px]">
+            <div className="w-full max-w-[600px] animate-pulse">
+              <div className="h-3 w-32 rounded-full bg-[#dcebf0]" />
+              <div className="mt-3 h-10 w-[82%] rounded-lg bg-[#d1e6ee] sm:h-11" />
+              <div className="mt-4 h-4 w-full max-w-[520px] rounded-full bg-[#e5f0f4]" />
+              <div className="mt-2 h-4 w-[70%] rounded-full bg-[#e5f0f4]" />
+            </div>
+          </div>
+        </section>
+
+        <section aria-hidden="true" className="mx-auto grid w-full max-w-[1180px] gap-6 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:px-8">
+          <div className="rounded-xl border border-[#e1ebef] bg-white p-5 sm:p-7">
+            <div className="flex items-center gap-3.5">
+              <div className="size-8 animate-pulse rounded-full bg-[#d3e9f0]" />
+              <div className="h-6 w-48 animate-pulse rounded-lg bg-[#d5e7ed]" />
+            </div>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div className="space-y-2" key={index}>
+                  <div className="h-3 w-24 animate-pulse rounded-full bg-[#dcebf0]" />
+                  <div className="h-11 w-full animate-pulse rounded-lg border border-[#e3edf1] bg-[#f9fbfc]" />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 border-t border-[#e8f0f3] pt-7">
+              <div className="flex items-center gap-3.5">
+                <div className="size-8 animate-pulse rounded-full bg-[#d3e9f0]" />
+                <div className="h-6 w-52 animate-pulse rounded-lg bg-[#d5e7ed]" />
+              </div>
+              <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                {Array.from({ length: 4 }, (_, index) => (
+                  <div className="space-y-2" key={index}>
+                    <div className="h-3 w-28 animate-pulse rounded-full bg-[#dcebf0]" />
+                    <div className="h-11 w-full animate-pulse rounded-lg border border-[#e3edf1] bg-[#f9fbfc]" />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 space-y-2">
+                <div className="h-3 w-24 animate-pulse rounded-full bg-[#dcebf0]" />
+                <div className="h-24 w-full animate-pulse rounded-lg border border-[#e3edf1] bg-[#f9fbfc]" />
+              </div>
+              <div className="mt-6 h-11 w-full animate-pulse rounded-lg bg-[#cce7ef] sm:w-52" />
+            </div>
+          </div>
+
+          <aside className="h-fit rounded-xl border border-[#e1ebef] bg-[#f7fafc] p-5 sm:p-6 lg:sticky lg:top-6">
+            <div className="h-6 w-40 animate-pulse rounded-lg bg-[#d5e7ed]" />
+            <div className="mt-5 space-y-4">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div className="flex items-center gap-3 border-b border-[#e4edf0] pb-4 last:border-b-0 last:pb-0" key={index}>
+                  <div className="size-9 shrink-0 animate-pulse rounded-full bg-[#dcebf0]" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="h-3 w-20 animate-pulse rounded-full bg-[#dcebf0]" />
+                    <div className="h-4 w-full max-w-[190px] animate-pulse rounded-full bg-[#e8f1f3]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 rounded-lg border border-[#dcebef] bg-white p-4">
+              <div className="h-3 w-24 animate-pulse rounded-full bg-[#dcebf0]" />
+              <div className="mt-3 h-4 w-full animate-pulse rounded-full bg-[#e8f1f3]" />
+              <div className="mt-2 h-4 w-[76%] animate-pulse rounded-full bg-[#e8f1f3]" />
+            </div>
+          </aside>
         </section>
       </main>
     </SiteLayout>

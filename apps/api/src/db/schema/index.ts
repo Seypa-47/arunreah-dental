@@ -7,3 +7,5 @@ export * from './relations';
 export * from './services';
 export * from './settings';
 export * from './showcases';
+export * from './page-media';
+export * from './about-timeline';

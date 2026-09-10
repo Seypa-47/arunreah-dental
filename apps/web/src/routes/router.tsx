@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import type { ReactNode } from 'react';
+import '@/styles/admin.css';
 import { AboutPage } from '@/features/about-page/AboutPage';
 import { AdminLoginPage } from '@/features/admin-login-page/AdminLoginPage';
 import { AdminInboxPage } from '@/features/admin-inbox-page/AdminInboxPage';
@@ -15,6 +16,8 @@ import { AdminShowcasePage } from '@/features/admin-showcase-page/AdminShowcaseP
 import { AdminAddShowcasePage } from '@/features/admin-add-showcase-page/AdminAddShowcasePage';
 import { AdminClinicInfoPage } from '@/features/admin-clinic-info-page/AdminClinicInfoPage';
 import { AdminManagementPage } from '@/features/admin-management-page/AdminManagementPage';
+import { AdminPageMediaPage } from '@/features/admin-page-media-page/AdminPageMediaPage';
+import { AdminAboutTimelinePage } from '@/features/admin-about-timeline-page/AdminAboutTimelinePage';
 import { BookAppointmentPage } from '@/features/book-appointment-page/BookAppointmentPage';
 import { BranchesPage } from '@/features/branches-page/BranchesPage';
 import { ContactPage } from '@/features/contact-page/ContactPage';
@@ -29,13 +32,13 @@ import { PublicNotFoundPage } from '@/features/public-content/PublicNotFoundPage
 import { RedirectAuthenticatedAdmin, RequireAdminRoute } from '@/features/admin-auth/admin-route-guard';
 
 const protectedAdminRoute = (element: ReactNode) => (
-  <RequireAdminRoute>{element}</RequireAdminRoute>
+  <div className="admin-ui"><RequireAdminRoute>{element}</RequireAdminRoute></div>
 );
 
 export const router = createBrowserRouter([
   {
     path: '/admin/login',
-    element: <RedirectAuthenticatedAdmin><AdminLoginPage /></RedirectAuthenticatedAdmin>,
+    element: <div className="admin-ui"><RedirectAuthenticatedAdmin><AdminLoginPage /></RedirectAuthenticatedAdmin></div>,
   },
   {
     path: '/admin/dashboard',
@@ -96,6 +99,14 @@ export const router = createBrowserRouter([
   {
     path: '/admin/admins',
     element: protectedAdminRoute(<AdminManagementPage />),
+  },
+  {
+    path: '/admin/page-media',
+    element: protectedAdminRoute(<AdminPageMediaPage />),
+  },
+  {
+    path: '/admin/about-timeline',
+    element: protectedAdminRoute(<AdminAboutTimelinePage />),
   },
   {
     path: '/',

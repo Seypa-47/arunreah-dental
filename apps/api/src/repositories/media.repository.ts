@@ -3,6 +3,7 @@ import {
   branches,
   clinicSettings,
   doctors,
+  pageMedia,
   services,
   showcaseSections,
   showcases,
@@ -47,6 +48,7 @@ export async function isMediaKeyReferenced(database: DatabaseClient, key: string
       .from(showcaseSections)
       .where(eq(showcaseSections.imageKey, key))
       .limit(1),
+    database.select({ id: pageMedia.id }).from(pageMedia).where(eq(pageMedia.imageKey, key)).limit(1),
   ]);
 
   return references.some((result) => result.length > 0);

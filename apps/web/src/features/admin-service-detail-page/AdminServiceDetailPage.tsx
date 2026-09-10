@@ -1,7 +1,9 @@
+import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
+import { AdminIcon } from '@/components/layout/admin-sidebar';
+import { MediaUploader } from '@/components/admin/media-uploader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import type { AdminServiceDetailContent, BenefitPreview } from '@/services/admin-service-detail';
@@ -9,6 +11,8 @@ import type { AdminService } from '@/services/admin-services';
 import { useAdminServiceDetailPageQuery } from './use-admin-service-detail-page';
 import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
+import { getPublicMediaUrl } from '@/services/media';
+import type { CreateServiceInput } from '@arunreah/shared';
 
 type EditableService = AdminService & {
   aboutContent: string;
@@ -22,6 +26,12 @@ type EditableService = AdminService & {
   bottomCtaTitle: string;
   canonicalUrl: string;
   duration: string;
+  detailSections: CreateServiceInput['detailSections'];
+  detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
+  editorialLabelEn: string;
+  editorialLabelKm: string;
+  editorialTitleEn: string;
+  editorialTitleKm: string;
   heroHeading: string;
   heroImageUrl: string;
   heroPrimaryCta: string;
@@ -35,6 +45,8 @@ type EditableService = AdminService & {
   relatedServices: string[];
   slug: string;
 };
+
+type EditableDetailSection = CreateServiceInput['detailSections'][number];
 
 const slugify = (value: string) =>
   value
@@ -109,7 +121,7 @@ function StatusSwitch({
   label: string;
   onChange: (status: 'published' | 'draft') => void;
   publishedLabel: string;
-  status: 'published' | 'draft';
+  status: 'published' | 'draft' | 'archived';
 }) {
   return (
     <div>
@@ -153,19 +165,28 @@ function BasicInformation({
     <Card className="rounded-[18px] border-[#dce5ef] p-6 shadow-none">
       <h2 className="text-[16px] font-bold text-[#182238]">{content.editor.basicTitle}</h2>
       <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_1fr_0.8fr]">
-        <Field label={content.editor.nameLabel}>
-          <TextInput
-            onChange={(event) =>
-              setService((current) => ({
-                ...current,
-                heroHeading: `Restore Your Smile with ${event.target.value}`,
-                name: event.target.value,
-                slug: slugify(event.target.value),
-              }))
-            }
-            value={service.name}
-          />
-        </Field>
+        <div className="grid gap-4 xl:col-span-2 sm:grid-cols-2">
+          <Field label={`${content.editor.nameLabel} · English`}>
+            <TextInput
+              onChange={(event) =>
+                setService((current) => ({
+                  ...current,
+                  heroHeading: `Restore Your Smile with ${event.target.value}`,
+                  name: event.target.value,
+                  slug: slugify(event.target.value),
+                }))
+              }
+              value={service.name}
+            />
+          </Field>
+          <Field label="ឈ្មោះសេវា · ខ្មែរ">
+            <TextInput
+              lang="km"
+              onChange={(event) => setService((current) => ({ ...current, nameKm: event.target.value }))}
+              value={service.nameKm}
+            />
+          </Field>
+        </div>
         <Field label={content.editor.slugLabel}>
           <TextInput
             onChange={(event) => setService((current) => ({ ...current, slug: event.target.value }))}
@@ -210,13 +231,23 @@ function BasicInformation({
         </div>
       </div>
       <div className="mt-6 grid gap-5 xl:grid-cols-[1fr_0.6fr]">
-        <Field label={content.editor.descriptionLabel}>
-          <textarea
-            className="h-[120px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-            onChange={(event) => setService((current) => ({ ...current, description: event.target.value }))}
-            value={service.description}
-          />
-        </Field>
+        <div className="grid gap-4 sm:grid-cols-2 xl:col-span-1">
+          <Field label={`${content.editor.descriptionLabel} · English`}>
+            <textarea
+              className="h-[120px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+              onChange={(event) => setService((current) => ({ ...current, description: event.target.value }))}
+              value={service.description}
+            />
+          </Field>
+          <Field label="ពិពណ៌នាខ្លី · ខ្មែរ">
+            <textarea
+              className="h-[120px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+              lang="km"
+              onChange={(event) => setService((current) => ({ ...current, descriptionKm: event.target.value }))}
+              value={service.descriptionKm}
+            />
+          </Field>
+        </div>
         <div>
           <p className="text-[12px] font-bold text-[#61738d]">{content.editor.imageLabel}</p>
           <div className="mt-1.5 flex items-center gap-4 rounded-xl border border-dashed border-[#d4e4ee] bg-[#fafbfd] p-3">
@@ -239,6 +270,155 @@ function BasicInformation({
           </div>
         </div>
       </div>
+    </Card>
+  );
+}
+
+const presentationOptions: { description: string; label: string; value: EditableService['detailPresentation'] }[] = [
+  { value: 'STANDARD', label: 'Standard information', description: 'A flexible editorial page for a service overview and supporting details.' },
+  { value: 'JOURNEY', label: 'Ordered treatment process', description: 'Use only when the content explains genuine clinical stages in sequence.' },
+  { value: 'CARE_MENU', label: 'Services included', description: 'For a group of related care options rather than a step-by-step treatment.' },
+  { value: 'CLINICAL_SCOPE', label: 'Clinical scope', description: 'For specialist care, procedures, and the conditions the team can address.' },
+  { value: 'IMAGING_GUIDE', label: 'Diagnostic guide', description: 'For imaging, technology, or educational information that is not a treatment process.' },
+  { value: 'PROBLEM_TO_CARE', label: 'Problem to care', description: 'For condition-focused services that explain the problem, care, and expected visit.' },
+  { value: 'FAMILY_CARE', label: 'Family care', description: 'For age-specific or family-oriented services and preventive care.' },
+];
+
+function PagePresentation({ service, setService }: { service: EditableService; setService: Dispatch<SetStateAction<EditableService>> }) {
+  const selected = presentationOptions.find((option) => option.value === service.detailPresentation);
+  return (
+    <Card className="mt-4 rounded-[18px] border-[#dce5ef] p-6 shadow-none">
+      <div>
+        <h2 className="text-[16px] font-bold text-[#182238]">Page presentation</h2>
+        <p className="mt-1 text-[13px] leading-6 text-[#71839e]">Choose the reading pattern that best fits this service. It does not change the content you have entered.</p>
+      </div>
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+        <Field label="Content pattern">
+          <select
+            aria-describedby="presentation-help"
+            className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+            onChange={(event) => setService((current) => ({ ...current, detailPresentation: event.target.value as EditableService['detailPresentation'] }))}
+            value={service.detailPresentation}
+          >
+            {presentationOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+          <p className="mt-2 text-[12px] leading-5 text-[#71839e]" id="presentation-help">{selected?.description}</p>
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Editorial label · English">
+            <TextInput onChange={(event) => setService((current) => ({ ...current, editorialLabelEn: event.target.value }))} value={service.editorialLabelEn} />
+          </Field>
+          <Field label="ស្លាកអត្ថបទ · ខ្មែរ">
+            <TextInput lang="km" onChange={(event) => setService((current) => ({ ...current, editorialLabelKm: event.target.value }))} value={service.editorialLabelKm} />
+          </Field>
+          <Field label="Editorial title · English">
+            <TextInput onChange={(event) => setService((current) => ({ ...current, editorialTitleEn: event.target.value }))} value={service.editorialTitleEn} />
+          </Field>
+          <Field label="ចំណងជើងអត្ថបទ · ខ្មែរ">
+            <TextInput lang="km" onChange={(event) => setService((current) => ({ ...current, editorialTitleKm: event.target.value }))} value={service.editorialTitleKm} />
+          </Field>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function sectionLanguageState(section: EditableDetailSection) {
+  const english = Boolean(section.headingEn?.trim() || section.bodyEn?.trim());
+  const khmer = Boolean(section.headingKm?.trim() || section.bodyKm?.trim());
+  return english && khmer ? 'English + Khmer ready' : english ? 'Khmer content needed' : khmer ? 'English content needed' : 'Content needed';
+}
+
+function DetailSectionsEditor({ service, setService }: { service: EditableService; setService: Dispatch<SetStateAction<EditableService>> }) {
+  const [openIndex, setOpenIndex] = useState<number | undefined>();
+  const imageCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    service.detailSections.forEach((section) => {
+      if (section.imageKey) counts.set(section.imageKey, (counts.get(section.imageKey) ?? 0) + 1);
+    });
+    return counts;
+  }, [service.detailSections]);
+  const updateSection = (index: number, patch: Partial<EditableDetailSection>) =>
+    setService((current) => ({
+      ...current,
+      detailSections: current.detailSections.map((section, sectionIndex) => sectionIndex === index ? { ...section, ...patch } : section),
+    }));
+  const moveSection = (from: number, direction: -1 | 1) => {
+    const to = from + direction;
+    if (to < 0 || to >= service.detailSections.length) return;
+    setService((current) => {
+      const sections = [...current.detailSections];
+      const source = sections[from];
+      const destination = sections[to];
+      if (!source || !destination) return current;
+      [sections[from], sections[to]] = [destination, source];
+      return { ...current, detailSections: sections.map((section, index) => ({ ...section, displayOrder: index })) };
+    });
+    setOpenIndex(to);
+  };
+  const addSection = () => {
+    setService((current) => ({
+      ...current,
+      detailSections: [...current.detailSections, { sectionType: 'TEXT', headingEn: null, headingKm: null, bodyEn: null, bodyKm: null, imageKey: null, displayOrder: current.detailSections.length }],
+    }));
+    setOpenIndex(service.detailSections.length);
+  };
+
+  return (
+    <Card className="mt-4 rounded-[18px] border-[#dce5ef] p-6 shadow-none">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-[16px] font-bold text-[#182238]">Detail sections</h2>
+          <p className="mt-1 text-[13px] leading-6 text-[#71839e]">Build the flexible content blocks for this service. Use the order controls to define how they appear on the page.</p>
+        </div>
+        <Button className="shrink-0" onClick={addSection} type="button" variant="secondary">Add section</Button>
+      </div>
+      {service.detailSections.length ? (
+        <ol className="mt-5 space-y-3" aria-label="Ordered service detail sections">
+          {service.detailSections.map((section, index) => {
+            const isOpen = openIndex === index;
+            const imageUrl = section.imageKey ? getPublicMediaUrl(section.imageKey) : null;
+            const repeatedImage = section.imageKey && (imageCounts.get(section.imageKey) ?? 0) > 1;
+            return (
+              <li className="overflow-hidden rounded-xl border border-[#dce5ef]" key={`${section.displayOrder}-${index}`}>
+                <div className="flex flex-wrap items-center gap-3 bg-[#fbfdfe] p-3 sm:flex-nowrap">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#edf7fb] text-[12px] font-bold text-[#167ea7]">{index + 1}</span>
+                  {imageUrl ? <img alt="Selected section media" className="size-11 shrink-0 rounded-lg border border-[#dce5ef] object-cover" src={imageUrl} /> : <span className="grid size-11 shrink-0 place-items-center rounded-lg border border-dashed border-[#dce5ef] text-[11px] text-[#71839e]">No image</span>}
+                  <button aria-expanded={isOpen} className="min-w-0 flex-1 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8]" onClick={() => setOpenIndex((current) => current === index ? undefined : index)} type="button">
+                    <span className="block truncate text-[14px] font-bold text-[#182238]">{section.headingEn?.trim() || section.headingKm?.trim() || 'Untitled section'}</span>
+                    <span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[#71839e]"><span>{section.sectionType === 'IMAGE' ? 'Image-led section' : 'Text section'}</span><span>{sectionLanguageState(section)}</span></span>
+                  </button>
+                  <div className="flex shrink-0 items-center gap-1" aria-label={`Section ${index + 1} ordering controls`}>
+                    <Button aria-label={`Move section ${index + 1} earlier`} className="min-h-9 px-3 py-1" disabled={index === 0} onClick={() => moveSection(index, -1)} type="button" variant="secondary">↑</Button>
+                    <Button aria-label={`Move section ${index + 1} later`} className="min-h-9 px-3 py-1" disabled={index === service.detailSections.length - 1} onClick={() => moveSection(index, 1)} type="button" variant="secondary">↓</Button>
+                  </div>
+                </div>
+                {isOpen ? (
+                  <div className="border-t border-[#dce5ef] p-4 sm:p-5">
+                    <div className="grid gap-4 sm:grid-cols-[12rem_minmax(0,1fr)]">
+                      <Field label="Section type">
+                        <select className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[13px]" onChange={(event) => updateSection(index, { sectionType: event.target.value as EditableDetailSection['sectionType'] })} value={section.sectionType}>
+                          <option value="TEXT">Text section</option>
+                          <option value="IMAGE">Image-led section</option>
+                        </select>
+                      </Field>
+                      <div className="rounded-lg bg-[#f4f8fa] px-3 py-2 text-[12px] leading-5 text-[#52647d]">{section.sectionType === 'IMAGE' ? 'Use the image to support this content; headings and copy remain available for context.' : 'An image is optional. Leave it empty when text communicates the information better.'}</div>
+                    </div>
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                      <Field label="Heading · English"><TextInput onChange={(event) => updateSection(index, { headingEn: event.target.value || null })} value={section.headingEn ?? ''} /></Field>
+                      <Field label="ចំណងជើង · ខ្មែរ"><TextInput lang="km" onChange={(event) => updateSection(index, { headingKm: event.target.value || null })} value={section.headingKm ?? ''} /></Field>
+                      <Field label="Body · English"><textarea className="h-32 w-full rounded-xl border border-[#dce5ef] px-3 py-2 text-[13px]" onChange={(event) => updateSection(index, { bodyEn: event.target.value || null })} value={section.bodyEn ?? ''} /></Field>
+                      <Field label="ខ្លឹមសារ · ខ្មែរ"><textarea className="h-32 w-full rounded-xl border border-[#dce5ef] px-3 py-2 text-[13px]" lang="km" onChange={(event) => updateSection(index, { bodyKm: event.target.value || null })} value={section.bodyKm ?? ''} /></Field>
+                    </div>
+                    <div className="mt-4"><MediaUploader category="services" help="Optional. Add one image only when it helps patients understand this section." label="Section image" onClear={() => updateSection(index, { imageKey: null })} onUploaded={(imageKey) => updateSection(index, { imageKey })} value={section.imageKey ?? undefined} /></div>
+                    {repeatedImage ? <p className="mt-3 rounded-lg border border-[#f0c36d] bg-[#fff8e8] px-3 py-2 text-[12px] leading-5 text-[#7a4900]" role="status">This image is also used in another detail section. That can be intentional, but consider using a different image if the sections cover different topics.</p> : null}
+                  </div>
+                ) : null}
+              </li>
+            );
+          })}
+        </ol>
+      ) : <p className="mt-5 rounded-xl border border-dashed border-[#dce5ef] p-4 text-[13px] leading-6 text-[#71839e]">No detail sections yet. Add a text or image-led section when this service needs supporting information.</p>}
     </Card>
   );
 }
@@ -308,6 +488,38 @@ function SectionRows({
                         />
                       </Field>
                     </div>
+                  </div>
+                ) : section.title.includes('2a. Page Presentation') ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="Page presentation">
+                      <select
+                        className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                        onChange={(e) => setService((c) => ({ ...c, detailPresentation: e.target.value as EditableService['detailPresentation'] }))}
+                        value={service.detailPresentation}
+                      >
+                        <option value="STANDARD">Standard information</option>
+                        <option value="JOURNEY">Multi-stage treatment</option>
+                        <option value="CARE_MENU">Care menu</option>
+                        <option value="CLINICAL_SCOPE">Clinical scope</option>
+                        <option value="IMAGING_GUIDE">Imaging guide</option>
+                        <option value="PROBLEM_TO_CARE">Problem to care</option>
+                        <option value="FAMILY_CARE">Family care</option>
+                      </select>
+                    </Field>
+                    <div className="hidden sm:block" aria-hidden="true" />
+                    <Field label="Guide label (English)">
+                      <TextInput onChange={(e) => setService((c) => ({ ...c, editorialLabelEn: e.target.value }))} value={service.editorialLabelEn} />
+                    </Field>
+                    <Field label="Guide label (Khmer)">
+                      <TextInput onChange={(e) => setService((c) => ({ ...c, editorialLabelKm: e.target.value }))} value={service.editorialLabelKm} />
+                    </Field>
+                    <Field label="Guide title (English)">
+                      <TextInput onChange={(e) => setService((c) => ({ ...c, editorialTitleEn: e.target.value }))} value={service.editorialTitleEn} />
+                    </Field>
+                    <Field label="Guide title (Khmer)">
+                      <TextInput onChange={(e) => setService((c) => ({ ...c, editorialTitleKm: e.target.value }))} value={service.editorialTitleKm} />
+                    </Field>
+                    <p className="sm:col-span-2 text-[12px] leading-5 text-[#71839e]">Select the presentation that matches the content. Use a multi-stage treatment only for genuinely ordered clinical stages.</p>
                   </div>
                 ) : section.title.includes('3. About Section') ? (
                   <div className="space-y-4">
@@ -667,6 +879,12 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     bottomCtaTitle: `Ready to Restore Your Smile with ${content.service.name}?`,
     canonicalUrl: `/services/${content.service.id}`,
     duration: '1 - 2 Hours',
+    detailSections: content.service.detailSections,
+    detailPresentation: content.service.detailPresentation,
+    editorialLabelEn: content.service.editorialLabelEn,
+    editorialLabelKm: content.service.editorialLabelKm,
+    editorialTitleEn: content.service.editorialTitleEn,
+    editorialTitleKm: content.service.editorialTitleKm,
     heroHeading: `${content.preview.titlePrefix} ${content.service.name}`,
     heroImageUrl: content.preview.heroImageUrl,
     heroPrimaryCta: 'Book an Appointment',
@@ -684,10 +902,14 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
   const [notification, setNotification] = useState<string | undefined>();
   const saveMutation = useMutation({
     mutationFn: (status: 'DRAFT' | 'PUBLISHED') => cmsApi.services.update(content.service.id, {
-      status, slug: service.slug, nameEn: service.name, category: service.category || null, summaryEn: service.description || null,
+      status, slug: service.slug, nameEn: service.name, nameKm: service.nameKm, category: service.category || null, summaryEn: service.description || null, summaryKm: service.descriptionKm || null,
       descriptionEn: service.heroSummary || null, imageKey: service.imageUrl || null, featured: service.featured,
       heroTitleEn: service.heroHeading || null, heroSummaryEn: service.heroSummary || null, heroImageKey: service.heroImageUrl || null,
       aboutTitleEn: service.aboutTitle || null, aboutBodyEn: service.aboutContent || null, aboutImageKey: service.aboutImageUrl || null,
+      editorialLabelEn: service.editorialLabelEn || null, editorialLabelKm: service.editorialLabelKm || null,
+      editorialTitleEn: service.editorialTitleEn || null, editorialTitleKm: service.editorialTitleKm || null,
+      detailPresentation: service.detailPresentation,
+      detailSections: service.detailSections,
       metaTitleEn: service.metaTitle || null, metaDescriptionEn: service.metaDescription || null,
     }),
     onSuccess: async () => { await invalidateCmsDomain(queryClient, 'services'); },
@@ -737,17 +959,8 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
 
       <header className="flex flex-wrap items-start justify-between gap-5">
         <div>
-          <nav aria-label="Breadcrumb" className="text-[12px] font-bold text-[#71839e]">
-            <Link className="text-[#2187a8] hover:text-[#0f6f90]" to="/admin/services">
-              {content.header.breadcrumb[0]}
-            </Link>
-            <span className="mx-2 text-[#a7b5c7]">›</span>
-            <span>{content.header.breadcrumb[1]}</span>
-          </nav>
-          <h1 className="mt-2 text-[26px] font-bold tracking-tight text-[#182238] sm:text-[28px]">
-            {content.header.title}
-          </h1>
-          <p className="mt-1 text-[13.5px] text-[#71839e]">{content.header.subtitle}</p>
+
+          <AdminPageHeading />
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           <Button
@@ -780,7 +993,13 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_480px] 2xl:grid-cols-[minmax(0,1.2fr)_510px]">
         <section aria-label="Service editor">
           <BasicInformation content={content} service={service} setService={setService} />
-          <SectionRows sections={content.editor.sections} service={service} setService={setService} />
+          <PagePresentation service={service} setService={setService} />
+          <DetailSectionsEditor service={service} setService={setService} />
+          <SectionRows
+            sections={content.editor.sections.filter((section) => !section.title.includes('2a. Page Presentation'))}
+            service={service}
+            setService={setService}
+          />
         </section>
         <aside className="space-y-4">
           <LivePreview content={content} service={service} />
@@ -813,7 +1032,7 @@ function LoadingState() {
 function EmptyState({ content }: { content: AdminServiceDetailContent }) {
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
-      <AdminSidebar activeLabel="Services" brand={content.brand} navigation={content.navigation} />
+
       <main className="grid min-h-screen flex-1 place-items-center p-6">
         <Card className="max-w-md p-8 text-center">
           <h1 className="text-2xl font-bold text-[#182238]">{content.empty.title}</h1>
@@ -854,7 +1073,7 @@ export function AdminServiceDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
-      <AdminSidebar activeLabel="Services" brand={data.brand} navigation={data.navigation} />
+
       <ServiceDetailEditor content={{ ...data, service: data.service }} />
     </div>
   );

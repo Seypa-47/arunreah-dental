@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAdminNavigation } from '@/features/admin-auth/admin-navigation';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAdminSession } from '@/features/admin-auth/session-provider';
+import { getAdminNavigationGroups, isAdminNavigationActive } from '@/features/admin-auth/admin-page-navigation';
 import type { AdminNavIcon } from '@/services/admin-inbox';
 
 export type AdminIconName =
@@ -23,37 +23,6 @@ export type AdminIconName =
   | 'upload'
   | 'userAdd'
   | 'utensils';
-
-type AdminNavigationItem = {
-  icon: AdminNavIcon;
-  label: string;
-  section?: 'appointments' | 'services' | 'doctors' | 'clinic';
-};
-
-type AdminSidebarProps = {
-  activeLabel: string;
-  brand: {
-    logoAlt: string;
-    logoUrl: string;
-  };
-  navigation: AdminNavigationItem[];
-};
-
-const routeForNavigation = (label: string) => {
-  if (label === 'Dashboard') return '/admin/dashboard';
-  if (label === 'Inbox') return '/admin/appointments/inbox';
-  if (label === 'Calendar') return '/admin/appointments/calendar';
-  if (label === 'All Appointments') return '/admin/appointments';
-  if (label === 'Services' || label === 'Service Management') return '/admin/services';
-  if (label === 'Doctors' || label === 'Doctor Management') return '/admin/doctors';
-  if (label === 'Add New Doctor') return '/admin/doctors/new';
-  if (label === 'Showcase') return '/admin/showcase';
-  if (label === 'Clinic Info' || label === 'Clinic Settings') return '/admin/clinic-info';
-  if (label === 'Branches / Locations') return '/admin/clinic-info/branches';
-  if (label === 'Contact Settings') return '/admin/clinic-info/contact';
-  if (label === 'Admin Management') return '/admin/admins';
-  return '#';
-};
 
 export function AdminIcon({ className = 'size-5', name }: { className?: string; name: AdminIconName }) {
   const paths: Record<AdminIconName, ReactNode> = {
@@ -87,293 +56,31 @@ export function AdminIcon({ className = 'size-5', name }: { className?: string; 
   return <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">{paths[name]}</svg>;
 }
 
-export function AdminSidebar({ activeLabel, brand, navigation }: AdminSidebarProps) {
+export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { admin, isLoggingOut, logout } = useAdminSession();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const [logoutFailed, setLogoutFailed] = useState(false);
-  const effectiveNavigation = admin ? getAdminNavigation(admin.role) : navigation;
-  const hasActiveAppointmentItem = effectiveNavigation.some(
-    (item) => item.section === 'appointments' && item.label !== 'Appointments' && item.label === activeLabel,
-  );
-  const [appointmentsExpanded, setAppointmentsExpanded] = useState(hasActiveAppointmentItem);
-  const hasActiveServiceItem = effectiveNavigation.some(
-    (item) => item.section === 'services' && item.label !== 'Services' && item.label === activeLabel,
-  );
-  const [servicesExpanded, setServicesExpanded] = useState(hasActiveServiceItem);
-  const hasActiveDoctorItem =
-    activeLabel === 'Doctors' ||
-    activeLabel === 'Doctor Management' ||
-    activeLabel === 'Add New Doctor' ||
-    effectiveNavigation.some(
-      (item) => item.section === 'doctors' && item.label === activeLabel,
-    );
-  const [doctorsExpanded, setDoctorsExpanded] = useState(hasActiveDoctorItem);
-  const hasActiveClinicItem =
-    activeLabel === 'Clinic Info' ||
-    activeLabel === 'Clinic Settings' ||
-    activeLabel === 'Branches / Locations' ||
-    activeLabel === 'Contact Settings' ||
-    effectiveNavigation.some(
-      (item) => item.section === 'clinic' && item.label === activeLabel,
-    );
-  const [clinicInfoExpanded, setClinicInfoExpanded] = useState(hasActiveClinicItem);
-  const primaryNavigation = effectiveNavigation.filter(
-    (item) =>
-      !item.section ||
-      item.label === 'Appointments' ||
-      item.label === 'Services' ||
-      item.label === 'Doctors' ||
-      item.label === 'Clinic Info',
-  );
-  const appointmentNavigation = effectiveNavigation.filter((item) => item.section === 'appointments' && item.label !== 'Appointments');
-  const serviceNavigation = effectiveNavigation.filter((item) => item.section === 'services' && item.label !== 'Services');
-  const rawDoctorNav = effectiveNavigation.filter(
-    (item) => item.section === 'doctors' && item.label !== 'Doctors' && item.label !== 'Specializations',
-  );
-  const defaultDoctorNavigation: AdminNavigationItem[] = [
-    { icon: 'doctors', label: 'Doctor Management', section: 'doctors' },
-    { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' },
-  ];
-  const doctorNavigation = rawDoctorNav.length > 0 ? rawDoctorNav : defaultDoctorNavigation;
-  const rawClinicNav = effectiveNavigation.filter((item) => item.section === 'clinic' && item.label !== 'Clinic Info');
-  const defaultClinicNavigation: AdminNavigationItem[] = [
-    { icon: 'clinicInfo', label: 'Clinic Settings', section: 'clinic' },
-    { icon: 'clinicInfo', label: 'Branches / Locations', section: 'clinic' },
-    { icon: 'clinicInfo', label: 'Contact Settings', section: 'clinic' },
-  ];
-  const clinicNavigation = rawClinicNav.length > 0 ? rawClinicNav : defaultClinicNavigation;
-
-  return (
-    <aside className="flex w-full shrink-0 flex-col border-b border-[#e1e8f0] bg-white px-5 py-5 lg:min-h-screen lg:w-[302px] lg:border-b-0 lg:border-r lg:px-7 lg:py-7">
-      <a aria-label="Arunreah Dental Clinic admin home" className="mx-2 inline-flex w-fit" href="/admin/dashboard">
-        <img alt={brand.logoAlt} className="h-auto w-[168px] max-w-full" src={brand.logoUrl} />
-      </a>
-      <nav aria-label="Admin navigation" className="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:mt-11 lg:block">
-        {primaryNavigation.map((item) => {
-          const isActive =
-            item.label === activeLabel ||
-            (item.label === 'Services' && (activeLabel === 'Services' || activeLabel === 'Service Management')) ||
-            (item.label === 'Doctors' && (activeLabel === 'Doctors' || activeLabel === 'Doctor Management'));
-          const href = routeForNavigation(item.label);
-
-          if (item.label === 'Appointments') {
-            return (
-              <div
-                className="col-span-2 sm:col-span-1 lg:col-auto"
-                key={item.label}
-              >
-                <button
-                  aria-expanded={appointmentsExpanded}
-                  className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[14px] font-semibold text-[#71839e] transition hover:bg-[#f4f8fb] hover:text-[#2187a8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8]"
-                  onClick={() => setAppointmentsExpanded((expanded) => !expanded)}
-                  type="button"
-                >
-                  <AdminIcon className="size-5 shrink-0" name={item.icon} />
-                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  <AdminIcon className={`size-4 transition ${appointmentsExpanded ? 'rotate-180' : ''}`} name="chevronDown" />
-                </button>
-                {appointmentsExpanded ? (
-                  <div className="mt-1 space-y-1 lg:ml-4">
-                    {appointmentNavigation.map((subItem) => {
-                      const isSubItemActive = subItem.label === activeLabel;
-                      const subItemHref = routeForNavigation(subItem.label);
-
-                      return (
-                        <a
-                          aria-current={isSubItemActive ? 'page' : undefined}
-                          className={`flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-[14px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${isSubItemActive ? 'bg-[#2187a8] text-white shadow-[0_6px_12px_rgba(33,135,168,0.14)]' : 'text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]'}`}
-                          href={subItemHref}
-                          key={subItem.label}
-                          onClick={(event) => {
-                            if (subItemHref === '#') event.preventDefault();
-                          }}
-                        >
-                          <AdminIcon className="size-5 shrink-0" name={subItem.icon} />
-                          <span className="min-w-0 flex-1 truncate">{subItem.label}</span>
-                        </a>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            );
-          }
-
-          if (item.label === 'Services' && serviceNavigation.length > 0) {
-            return (
-              <div className="col-span-2 sm:col-span-1 lg:col-auto" key={item.label}>
-                <button
-                  aria-expanded={servicesExpanded}
-                  className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[14px] font-semibold transition hover:bg-[#f4f8fb] hover:text-[#2187a8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${hasActiveServiceItem ? 'text-[#2187a8]' : 'text-[#71839e]'}`}
-                  onClick={() => setServicesExpanded((expanded) => !expanded)}
-                  type="button"
-                >
-                  <AdminIcon className="size-5 shrink-0" name={item.icon} />
-                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  <AdminIcon className={`size-4 transition ${servicesExpanded ? 'rotate-180' : ''}`} name="chevronDown" />
-                </button>
-                {servicesExpanded ? (
-                  <div className="mt-1 space-y-1 lg:ml-4">
-                    {serviceNavigation.map((subItem) => {
-                      const isSubItemActive = subItem.label === activeLabel;
-                      const subItemHref = routeForNavigation(subItem.label);
-
-                      return (
-                        <a
-                          aria-current={isSubItemActive ? 'page' : undefined}
-                          className={`flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-[14px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${isSubItemActive ? 'bg-[#2187a8] text-white shadow-[0_6px_12px_rgba(33,135,168,0.14)]' : 'text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]'}`}
-                          href={subItemHref}
-                          key={subItem.label}
-                          onClick={(event) => {
-                            if (subItemHref === '#') event.preventDefault();
-                          }}
-                        >
-                          <span className="min-w-0 flex-1 truncate">{subItem.label}</span>
-                        </a>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            );
-          }
-
-          if (item.label === 'Doctors') {
-            return (
-              <div className="col-span-2 sm:col-span-1 lg:col-auto" key={item.label}>
-                <button
-                  aria-expanded={doctorsExpanded}
-                  className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[14px] font-semibold transition hover:bg-[#f4f8fb] hover:text-[#2187a8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${
-                    hasActiveDoctorItem ? 'text-[#2187a8]' : 'text-[#71839e]'
-                  }`}
-                  onClick={() => setDoctorsExpanded((expanded) => !expanded)}
-                  type="button"
-                >
-                  <AdminIcon className="size-5 shrink-0" name={item.icon} />
-                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  <AdminIcon
-                    className={`size-4 transition ${doctorsExpanded ? 'rotate-180' : ''}`}
-                    name="chevronDown"
-                  />
-                </button>
-                {doctorsExpanded ? (
-                  <div className="mt-1 space-y-1 lg:ml-4">
-                    {doctorNavigation.map((subItem) => {
-                      const isSubItemActive =
-                        subItem.label === activeLabel ||
-                        (subItem.label === 'Doctor Management' && activeLabel === 'Doctors');
-                      const subItemHref = routeForNavigation(subItem.label);
-
-                      return (
-                        <a
-                          aria-current={isSubItemActive ? 'page' : undefined}
-                          className={`flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-[14px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${
-                            isSubItemActive
-                              ? 'bg-[#edf7fb] text-[#2187a8] font-bold'
-                              : 'text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]'
-                          }`}
-                          href={subItemHref}
-                          key={subItem.label}
-                          onClick={(event) => {
-                            if (subItemHref === '#') event.preventDefault();
-                          }}
-                        >
-                          <span className="min-w-0 flex-1 truncate">{subItem.label}</span>
-                        </a>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            );
-          }
-
-          if (item.label === 'Clinic Info') {
-            return (
-              <div className="col-span-2 sm:col-span-1 lg:col-auto" key={item.label}>
-                <button
-                  aria-expanded={clinicInfoExpanded}
-                  className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[14px] font-semibold transition hover:bg-[#f4f8fb] hover:text-[#2187a8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${
-                    hasActiveClinicItem ? 'text-[#2187a8]' : 'text-[#71839e]'
-                  }`}
-                  onClick={() => setClinicInfoExpanded((expanded) => !expanded)}
-                  type="button"
-                >
-                  <AdminIcon className="size-5 shrink-0" name={item.icon} />
-                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  <AdminIcon
-                    className={`size-4 transition ${clinicInfoExpanded ? 'rotate-180' : ''}`}
-                    name="chevronDown"
-                  />
-                </button>
-                {clinicInfoExpanded ? (
-                  <div className="mt-1 space-y-1 lg:ml-4">
-                    {clinicNavigation.map((subItem) => {
-                      const isSubItemActive =
-                        subItem.label === activeLabel ||
-                        (subItem.label === 'Clinic Settings' &&
-                          (activeLabel === 'Clinic Info' || activeLabel === 'Clinic Settings'));
-                      const subItemHref = routeForNavigation(subItem.label);
-
-                      return (
-                        <a
-                          aria-current={isSubItemActive ? 'page' : undefined}
-                          className={`flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-[14px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${
-                            isSubItemActive
-                              ? 'bg-[#edf7fb] text-[#2187a8] font-bold'
-                              : 'text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]'
-                          }`}
-                          href={subItemHref}
-                          key={subItem.label}
-                          onClick={(event) => {
-                            if (subItemHref === '#') event.preventDefault();
-                          }}
-                        >
-                          <span className="min-w-0 flex-1 truncate">{subItem.label}</span>
-                        </a>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            );
-          }
-
-          return (
-            <a
-              aria-current={isActive ? 'page' : undefined}
-              className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${isActive ? 'bg-[#2187a8] text-white shadow-[0_6px_12px_rgba(33,135,168,0.14)]' : 'text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]'}`}
-              href={href}
-              key={item.label}
-              onClick={(event) => {
-                if (href === '#') event.preventDefault();
-              }}
-            >
-              <AdminIcon className="size-5 shrink-0" name={item.icon} />
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
-            </a>
-          );
-        })}
-      </nav>
-      {logoutFailed ? (
-        <p aria-live="polite" className="mt-5 px-3 text-sm text-[#c92727]" role="alert">
-          We could not sign you out. Please try again.
-        </p>
-      ) : null}
-      <button
-        className="mt-7 flex items-center gap-3 px-3 py-2.5 text-left text-[14px] font-semibold text-[#ed3838] transition hover:text-[#c92727] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ed3838] disabled:cursor-not-allowed disabled:opacity-60 lg:mt-auto"
-        disabled={isLoggingOut}
-        onClick={() => {
-          setLogoutFailed(false);
-          void logout()
-            .then(() => navigate('/admin/login', { replace: true }))
-            .catch(() => setLogoutFailed(true));
-        }}
-        type="button"
-      >
-        <svg aria-hidden="true" className="size-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M10 17 15 12l-5-5M15 12H3" /><path d="M13 5h5v14h-5" /></svg>
-        {isLoggingOut ? 'Signing out…' : 'Logout'}
-      </button>
-    </aside>
-  );
+  if (!admin) return null;
+  const groups = getAdminNavigationGroups(admin.role);
+  return <aside className="admin-sidebar">
+    <nav aria-label="Admin navigation">
+      {groups.map((group) => <section className="admin-nav-group" key={group.label} aria-label={group.label}>
+        <p className="admin-nav-group-label" data-active={group.items.some((item) => isAdminNavigationActive(pathname, item.to))}>{group.label}</p>
+        <ul>{group.items.map((item) => {
+          const active = isAdminNavigationActive(pathname, item.to);
+          return <li key={item.to}><Link className="admin-nav-link" aria-current={active ? (pathname === item.to ? 'page' : 'location') : undefined} to={item.to} onClick={onNavigate}>
+            <AdminIcon className="size-5 shrink-0" name={item.icon} /><span>{item.label}</span>
+          </Link></li>;
+        })}</ul>
+      </section>)}
+    </nav>
+    <div className="admin-sidebar-footer">
+      {logoutFailed ? <p role="alert">We could not sign you out. Please try again.</p> : null}
+      <button type="button" disabled={isLoggingOut} onClick={() => {
+        setLogoutFailed(false);
+        void logout().then(() => navigate('/admin/login', { replace: true })).catch(() => setLogoutFailed(true));
+      }}>{isLoggingOut ? 'Signing out…' : 'Sign out'}</button>
+    </div>
+  </aside>;
 }

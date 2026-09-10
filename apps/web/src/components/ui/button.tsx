@@ -10,11 +10,10 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-[#3ca8c7] text-white shadow-[0_12px_24px_rgba(58,167,200,0.28)] hover:bg-[#2f98b7] focus-visible:outline-[#0d6f93]',
-  secondary:
-    'bg-white text-[#2f9fbe] shadow-none hover:bg-[#eef9fc] focus-visible:outline-[#2f9fbe]',
-  ghost: 'bg-transparent text-[#155d82] hover:bg-[#edf7fb] focus-visible:outline-[#2f9fbe]',
-  link: 'bg-transparent px-0 text-[#0f628a] hover:text-[#2f9fbe] focus-visible:outline-[#2f9fbe]',
+    'bg-[#0d7596] text-white shadow-[0_8px_18px_rgba(22,138,173,0.20)] hover:bg-[#075d83] focus-visible:outline-[#075d83]',
+  secondary: 'border border-[#b9dce8] bg-white text-[#075d83] shadow-none hover:border-[#168aad] hover:bg-[#eef8fb] focus-visible:outline-[#168aad]',
+  ghost: 'bg-transparent text-[#075d83] hover:bg-[#edf7fb] focus-visible:outline-[#168aad]',
+  link: 'bg-transparent px-0 text-[#087b9f] hover:text-[#075d83] focus-visible:outline-[#168aad]',
 };
 
 export function Button({
@@ -28,7 +27,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-60',
+        'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-extrabold leading-5 transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:min-h-11',
         variantClasses[variant],
         className,
       )}

@@ -41,6 +41,10 @@ export type {
   DashboardResponse,
 } from './contracts/dashboard';
 export type { DeleteMediaInput, MediaCategory } from './schemas/media';
+export { createPageMediaSchema, pageMediaPlacementSchema, pageMediaPlacementValues, pageMediaPublicQuerySchema, updatePageMediaSchema } from './schemas/page-media';
+export type { CreatePageMediaInput, PageMediaPlacement, UpdatePageMediaInput } from './schemas/page-media';
+export { aboutTimelinePublicQuerySchema, createAboutTimelineSchema, updateAboutTimelineSchema } from './schemas/about-timeline';
+export type { CreateAboutTimelineInput, UpdateAboutTimelineInput } from './schemas/about-timeline';
 export type {
   AdminAppointmentListQuery,
   AppointmentStatus,

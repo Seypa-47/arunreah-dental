@@ -68,6 +68,7 @@ export async function getAdminService(db: DatabaseClient, id: string) {
   return {
     ...admin(s),
     benefits: await repo.getBenefits(db, id),
+    detailSections: await repo.getDetailSections(db, id),
     relatedServiceIds: (await repo.getRelated(db, id)).map((x) => x.relation.relatedServiceId),
   };
 }
@@ -89,16 +90,22 @@ export async function getPublicServiceList(db: DatabaseClient, l: ServiceLanguag
 export async function getPublicService(db: DatabaseClient, slug: string, l: ServiceLanguage) {
   const s = await repo.findPublicServiceBySlug(db, slug);
   if (!s) throw new HttpError(404, 'NOT_FOUND', 'Service not found.');
-  const benefits = (await repo.getBenefits(db, s.id)).map((x) => ({
+  const [benefits, detailSections, related] = await Promise.all([
+    repo.getBenefits(db, s.id),
+    repo.getDetailSections(db, s.id),
+    repo.getRelated(db, s.id),
+  ]);
+  const localizedBenefits = benefits.map((x) => ({
     title: l === 'km' ? x.titleKm : x.titleEn,
     description: l === 'km' ? x.descriptionKm : x.descriptionEn,
     icon: x.icon,
   }));
-  const related = (await repo.getRelated(db, s.id))
+  const localizedRelated = related
     .filter((x) => x.service.status === 'PUBLISHED')
     .map((x) => local(x.service, l));
   return {
     ...local(s, l),
+    detailPresentation: s.detailPresentation,
     hero: {
       eyebrow: l === 'km' ? s.heroEyebrowKm : s.heroEyebrowEn,
       title: l === 'km' ? s.heroTitleKm : s.heroTitleEn,
@@ -116,8 +123,19 @@ export async function getPublicService(db: DatabaseClient, slug: string, l: Serv
       visits: l === 'km' ? s.visitsKm : s.visitsEn,
       consultation: l === 'km' ? s.consultationKm : s.consultationEn,
     },
-    benefits,
-    relatedServices: related,
+    editorial: {
+      label: l === 'km' ? s.editorialLabelKm : s.editorialLabelEn,
+      title: l === 'km' ? s.editorialTitleKm : s.editorialTitleEn,
+    },
+    benefits: localizedBenefits,
+    detailSections: detailSections.map((section) => ({
+      sectionType: section.sectionType,
+      heading: l === 'km' ? section.headingKm : section.headingEn,
+      body: l === 'km' ? section.bodyKm : section.bodyEn,
+      imageKey: section.imageKey,
+      displayOrder: section.displayOrder,
+    })),
+    relatedServices: localizedRelated,
     cta: {
       title: l === 'km' ? s.ctaTitleKm : s.ctaTitleEn,
       description: l === 'km' ? s.ctaDescriptionKm : s.ctaDescriptionEn,
