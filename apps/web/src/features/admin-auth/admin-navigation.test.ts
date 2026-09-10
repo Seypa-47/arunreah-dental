@@ -19,6 +19,7 @@ describe('role-based admin navigation', () => {
     expect(labels).toContain('Services');
     expect(labels).toContain('Doctors');
     expect(labels).toContain('Showcase');
+    expect(labels).toContain('Page Media');
     expect(labels).not.toContain('Appointments');
     expect(labels).not.toContain('Inbox');
     expect(labels).not.toContain('Admin Management');

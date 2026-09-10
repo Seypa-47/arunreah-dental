@@ -1,0 +1,10 @@
+import { Hono } from 'hono';
+import { requireAdmin } from '../../middleware/require-admin';
+import { requirePermission } from '../../middleware/require-permission';
+import type { AppEnv } from '../../types/env';
+import * as controller from './page-media.controller';
+export const publicPageMediaModule = new Hono<AppEnv>();
+export const adminPageMediaModule = new Hono<AppEnv>();
+publicPageMediaModule.get('/', controller.listPublic);
+adminPageMediaModule.use('*', requireAdmin, requirePermission('CMS_MANAGEMENT'));
+adminPageMediaModule.get('/', controller.listAdmin); adminPageMediaModule.post('/', controller.create); adminPageMediaModule.patch('/:id', controller.update); adminPageMediaModule.delete('/:id', controller.remove);

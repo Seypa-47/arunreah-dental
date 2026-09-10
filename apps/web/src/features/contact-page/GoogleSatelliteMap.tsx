@@ -71,9 +71,9 @@ export function GoogleSatelliteMap({
     : `https://maps.google.com/maps?q=${lat},${lng}&t=k&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
 
   return (
-    <Card className="flex w-full flex-col overflow-hidden rounded-2xl border border-[#edf2f7] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition duration-200 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]">
+    <Card className="flex w-full flex-col overflow-hidden rounded-xl border border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
       {/* Google Maps Satellite Viewport */}
-      <div className="relative h-[260px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[280px]">
+      <div className="relative h-[230px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[250px]">
         <iframe
           allowFullScreen
           className="h-full w-full border-0"
@@ -84,14 +84,14 @@ export function GoogleSatelliteMap({
         />
 
         {/* Floating Satellite Indicator */}
-        <div className="pointer-events-none absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[10.5px] font-bold text-[#3695B9] shadow-[0_2px_8px_rgba(15,23,42,0.12)] backdrop-blur">
+        <div className="pointer-events-none absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[10.5px] font-bold text-[#3695B9] shadow-[0_2px_8px_rgba(15,23,42,0.08)] backdrop-blur">
           <SatelliteIcon />
           <span>Google Satellite</span>
         </div>
       </div>
 
       {/* Rich Text Details Under the Map */}
-      <div className="flex flex-1 flex-col justify-between p-5 sm:p-6">
+      <div className="flex flex-1 flex-col justify-between p-5">
         <div>
           {/* Top Row: Badge & Direction Button */}
           <div className="flex items-center justify-between gap-3">
@@ -101,7 +101,7 @@ export function GoogleSatelliteMap({
             </span>
 
             <a
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#3695B9] px-4 py-1.5 text-[12px] font-bold text-white shadow-[0_4px_10px_rgba(54,149,185,0.22)] transition hover:-translate-y-0.5 hover:bg-[#2c84a5]"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#3695B9] px-4 py-1.5 text-[12px] font-bold text-white shadow-none transition hover:bg-[#2c84a5]"
               href={directionsUrl}
               rel="noopener noreferrer"
               target="_blank"
@@ -119,7 +119,7 @@ export function GoogleSatelliteMap({
           {/* Structured Details with Icons */}
           <div className="mt-4 space-y-2.5">
             {/* Address */}
-            <div className="flex items-start gap-2.5 text-[13px] text-[#6b7280]">
+            <div className="flex items-start gap-2.5 text-[13px] text-[#64748b]">
               <LocationIcon className="mt-0.5 size-4 shrink-0 text-[#3695B9]" />
               <span className="font-medium leading-relaxed">{address}</span>
             </div>
@@ -144,7 +144,7 @@ export function GoogleSatelliteMap({
 
             {/* Opening Hours */}
             {hours && (
-              <div className="flex items-center gap-2.5 text-[12.5px] text-[#6b7280]">
+              <div className="flex items-center gap-2.5 text-[12.5px] text-[#64748b]">
                 <ClockIcon className="size-4 shrink-0 text-[#3695B9]" />
                 <span>
                   Hours: <strong className="font-bold text-[#005687]">{hours}</strong>

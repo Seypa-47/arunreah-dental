@@ -1,4 +1,4 @@
-import { useEffect, type PropsWithChildren } from 'react';
+import { useEffect, useState, type PropsWithChildren } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { LandingNavigationItem, LandingService } from '@/features/landing-page/types';
@@ -21,12 +21,14 @@ type SiteLayoutProps = PropsWithChildren<{
 
 export function SiteLayout({ actions, children, navigation, services = [] }: SiteLayoutProps) {
   const { language: activeLanguage, setLanguage } = usePublicLanguage();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic() });
   const { hash, pathname } = useLocation();
   const navigate = useNavigate();
   const serviceHref = (service: Pick<LandingService, 'name' | 'slug'>) => `/services/${service.slug ?? serviceSlug(service.name)}`;
 
   useEffect(() => {
+    setIsMobileMenuOpen(false);
     if (!hash) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -37,6 +39,21 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
       }
     }
   }, [pathname, hash]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isMobileMenuOpen]);
 
   const isActiveNavigationItem = (item: LandingNavigationItem) => {
     if (item.href.startsWith('/doctors')) {
@@ -67,13 +84,13 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#f7fafc] text-[#005687]">
-      <header className="sticky top-0 z-40 border-b border-[#edf2f7] bg-white/95 shadow-[0_1px_2px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-200">
-        <div className="mx-auto flex h-[64px] w-full max-w-[1280px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-40 border-b border-[#d9e9ee] bg-white/95 shadow-[0_2px_12px_rgba(10,63,90,0.05)] backdrop-blur-xl">
+        <div className="ui-page-container flex h-[64px] items-center justify-between gap-2 sm:h-[74px] sm:gap-4">
           <Link aria-label="Arunreah Dental Clinic home" className="shrink-0 leading-none" to="/">
-            {logoUrl ? <img alt={clinicName ?? 'Arunreah Dental Clinic'} className="h-10 max-w-[180px] object-contain object-left" src={logoUrl} /> : <span className="block text-[20px] font-extrabold uppercase leading-5 tracking-[-0.25px] text-[#3695B9]">{clinicName ?? 'Arunreah Dental Clinic'}</span>}
+            {logoUrl ? <img alt={clinicName ?? 'Arunreah Dental Clinic'} className="h-8 max-w-[86px] object-contain object-left sm:h-11 sm:max-w-[190px]" src={logoUrl} /> : <span className="block max-w-[86px] text-[13px] font-extrabold uppercase leading-4 tracking-[-0.25px] text-[#3695B9] sm:max-w-none sm:text-[20px] sm:leading-5">{clinicName ?? 'Arunreah Dental Clinic'}</span>}
           </Link>
 
-          <nav aria-label="Primary navigation" className="hidden items-center gap-7 lg:flex">
+          <nav aria-label="Primary navigation" className="hidden items-center gap-4 lg:flex xl:gap-6">
             {navigation.map((item) => {
               const isActive = isActiveNavigationItem(item);
 
@@ -81,8 +98,8 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
                 return (
                   <Link
                     aria-current={isActive ? 'page' : undefined}
-                    className={`relative py-2 text-[14px] font-medium transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] ${
-                      isActive ? 'text-[#3695B9]' : 'text-[#6b7280] hover:text-[#3695B9]'
+                    className={`relative inline-flex min-h-10 items-center py-2 text-[14px] transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#168aad] ${
+                      isActive ? 'font-extrabold text-[#087b9f]' : 'font-semibold text-[#526879] hover:text-[#087b9f]'
                     }`}
                     key={item.label}
                     to={item.href}
@@ -99,8 +116,8 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
                 <div className="group relative" key={item.label}>
                   <Link
                     aria-current={isActive ? 'page' : undefined}
-                    className={`relative inline-flex items-center gap-1.5 py-2 text-[14px] font-medium transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] ${
-                      isActive ? 'text-[#3695B9]' : 'text-[#6b7280] hover:text-[#3695B9]'
+                    className={`relative inline-flex min-h-10 items-center gap-1.5 py-2 text-[14px] transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#168aad] ${
+                      isActive ? 'font-extrabold text-[#087b9f]' : 'font-semibold text-[#526879] hover:text-[#087b9f]'
                     }`}
                     to={item.href}
                   >
@@ -115,11 +132,11 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
                       <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[#3695B9]" />
                     ) : null}
                   </Link>
-                  <div className="invisible absolute left-1/2 top-full z-50 mt-2 w-[282px] -translate-x-1/2 translate-y-2 rounded-2xl border border-[#edf2f7] bg-white p-2 opacity-0 shadow-[0_18px_40px_rgba(15,23,42,0.12)] transition-all duration-200 ease-out group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                  <div className="invisible absolute left-1/2 top-full z-50 mt-2 w-[296px] -translate-x-1/2 translate-y-2 rounded-2xl border border-[#d9e9ee] bg-white p-2 opacity-0 shadow-[0_18px_40px_rgba(15,61,84,0.14)] transition-all duration-200 ease-out group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
                     <div className="absolute -top-2 left-0 h-2 w-full" />
                     {services.map((service) => (
                       <Link
-                        className="block rounded-xl px-4 py-2.5 text-[14px] font-medium leading-5 text-[#6b7280] transition-colors duration-150 hover:bg-[#f0f9fa] hover:text-[#3695B9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
+                        className="block rounded-xl px-4 py-3 text-[14px] font-semibold leading-5 text-[#526879] transition-colors duration-150 hover:bg-[#eef8fb] hover:text-[#087b9f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad]"
                         key={service.name}
                         to={serviceHref(service)}
                       >
@@ -132,9 +149,9 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
             })}
           </nav>
 
-          <div className="flex items-center gap-5">
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-3 xl:gap-5">
             <button
-              className="hidden items-center gap-2.5 text-[15px] font-bold text-[#3695B9] transition hover:opacity-80 sm:inline-flex"
+              className="hidden min-h-11 items-center gap-2.5 rounded-full px-2 text-[14px] font-extrabold text-[#087b9f] transition hover:bg-[#eef8fb] xl:inline-flex"
               onClick={() => navigate('/contact')}
               type="button"
             >
@@ -145,41 +162,83 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
             </button>
             <span aria-hidden="true" className="hidden h-5 w-[1.5px] bg-[#3695B9]/40 sm:inline-block" />
             <button
-              className="min-h-[42px] rounded-full bg-[#3695B9] px-6 text-[15px] font-bold text-white shadow-[0_8px_18px_rgba(54,149,185,0.28)] transition-all duration-150 hover:bg-[#2c84a5] active:scale-95"
+              className="min-h-11 max-w-[112px] rounded-full bg-[#168aad] px-3 text-[12px] font-extrabold leading-4 text-white shadow-[0_6px_16px_rgba(22,138,173,0.2)] transition-all duration-150 hover:bg-[#0d7596] active:scale-95 sm:max-w-none sm:min-h-[44px] sm:px-5 sm:text-[14px] xl:px-6 xl:text-[15px]"
               onClick={() => navigate('/book-appointment')}
               type="button"
             >
-              {actions.appointmentLabel}
+              <span>{actions.appointmentLabel}</span>
             </button>
-            <div aria-label="Language selector" className="hidden items-center gap-2 pl-2 sm:flex" role="group">
+            <div aria-label="Language selector" className="hidden items-center gap-1 rounded-full border border-[#d9e9ee] bg-[#f7fafc] p-1 xl:flex" role="group">
               <button
                 aria-label="Switch to Khmer"
                 aria-pressed={activeLanguage === 'km'}
-                className={`size-[30px] overflow-hidden rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2f9fbe] ${
-                  activeLanguage === 'km' ? 'opacity-100' : 'opacity-50'
+                className={`min-h-9 rounded-full px-3 text-[13px] font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad] ${
+                  activeLanguage === 'km' ? 'bg-white text-[#087b9f] shadow-sm' : 'text-[#607486] hover:text-[#087b9f]'
                 }`}
                 onClick={() => setLanguage('km')}
                 type="button"
               >
-                <img alt="" className="size-full object-cover" src={asset('flag-kh.png')} />
-                <span className="sr-only">Khmer</span>
+                ខ្មែរ
               </button>
-              <span className="text-[12px] font-semibold leading-4 text-[#94a3b8]">|</span>
               <button
                 aria-label="Switch to English"
                 aria-pressed={activeLanguage === 'en'}
-                className={`size-[30px] overflow-hidden rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2f9fbe] ${
-                  activeLanguage === 'en' ? 'opacity-100' : 'opacity-50'
+                className={`min-h-9 rounded-full px-3 text-[13px] font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad] ${
+                  activeLanguage === 'en' ? 'bg-white text-[#087b9f] shadow-sm' : 'text-[#607486] hover:text-[#087b9f]'
                 }`}
                 onClick={() => setLanguage('en')}
                 type="button"
               >
-                <img alt="" className="size-full object-cover" src={asset('flag-en.png')} />
-                <span className="sr-only">English</span>
+                English
               </button>
             </div>
+            <div aria-label="Language selector" className="hidden items-center gap-1 lg:flex xl:hidden" role="group">
+              <button aria-label="Switch to Khmer" aria-pressed={activeLanguage === 'km'} className={`size-8 overflow-hidden rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad] ${activeLanguage === 'km' ? 'border-[#168aad] opacity-100' : 'border-transparent opacity-55'}`} onClick={() => setLanguage('km')} type="button"><img alt="" className="size-full object-cover" src={asset('flag-kh.png')} /></button>
+              <button aria-label="Switch to English" aria-pressed={activeLanguage === 'en'} className={`size-8 overflow-hidden rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad] ${activeLanguage === 'en' ? 'border-[#168aad] opacity-100' : 'border-transparent opacity-55'}`} onClick={() => setLanguage('en')} type="button"><img alt="" className="size-full object-cover" src={asset('flag-en.png')} /></button>
+            </div>
+            <button
+              aria-controls="mobile-primary-navigation"
+              aria-expanded={isMobileMenuOpen}
+              aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              className="grid size-11 shrink-0 place-items-center rounded-full border border-[#cfe4ec] text-[#005687] transition hover:bg-[#eef9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9] lg:hidden"
+              onClick={() => setIsMobileMenuOpen((open) => !open)}
+              type="button"
+            >
+              <span aria-hidden="true" className="flex w-5 flex-col gap-1.5">
+                <span className={`h-0.5 w-full rounded-full bg-current transition ${isMobileMenuOpen ? 'translate-y-2 rotate-45' : ''}`} />
+                <span className={`h-0.5 w-full rounded-full bg-current transition ${isMobileMenuOpen ? 'opacity-0' : ''}`} />
+                <span className={`h-0.5 w-full rounded-full bg-current transition ${isMobileMenuOpen ? '-translate-y-2 -rotate-45' : ''}`} />
+              </span>
+            </button>
           </div>
         </div>
+        {isMobileMenuOpen ? (
+          <div className="max-h-[calc(100vh-64px)] overflow-y-auto border-t border-[#e7f0f4] bg-white px-4 py-4 shadow-[0_16px_30px_rgba(15,61,84,0.10)] sm:max-h-[calc(100vh-74px)] lg:hidden" id="mobile-primary-navigation">
+            <nav aria-label="Mobile primary navigation" className="ui-page-container grid gap-1 px-0 sm:px-2">
+              {navigation.map((item) => (
+                <div key={item.label}>
+                  <Link
+                    aria-current={isActiveNavigationItem(item) ? 'page' : undefined}
+                    className={`flex min-h-12 items-center rounded-xl px-4 py-3 text-[16px] transition ${isActiveNavigationItem(item) ? 'bg-[#eef8fb] font-extrabold text-[#087b9f]' : 'font-semibold text-[#365366] hover:bg-[#f5fafc]'}`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    to={item.href}
+                  >
+                    {item.label}
+                  </Link>
+                  {item.label === 'Services' && services.length > 0 ? <div className="ml-4 mt-1 grid gap-1 border-l border-[#d9e9ee] pl-3">{services.map((service) => <Link className="ui-copy-safe rounded-lg px-3 py-3 text-[14px] font-semibold leading-5 text-[#607486] hover:bg-[#f5fafc] hover:text-[#087b9f]" key={service.name} onClick={() => setIsMobileMenuOpen(false)} to={serviceHref(service)}>{service.name}</Link>)}</div> : null}
+                </div>
+              ))}
+              <div className="mt-3 grid gap-2 border-t border-[#e7f0f4] pt-4 sm:grid-cols-2">
+                <Link className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#b9dce8] px-5 text-[15px] font-extrabold text-[#075d83] hover:bg-[#eef8fb]" onClick={() => setIsMobileMenuOpen(false)} to="/contact">{actions.contactLabel}</Link>
+                <button className="min-h-12 rounded-full bg-[#168aad] px-5 text-[15px] font-extrabold text-white shadow-[0_6px_16px_rgba(22,138,173,0.2)] hover:bg-[#0d7596]" onClick={() => { setIsMobileMenuOpen(false); navigate('/book-appointment'); }} type="button">{actions.appointmentLabel}</button>
+              </div>
+              <div className="mt-3 flex items-center gap-2 border-t border-[#e7f0f4] px-1 pt-4" role="group" aria-label="Language selector">
+                <button className={`min-h-10 rounded-full px-4 text-[14px] font-extrabold ${activeLanguage === 'km' ? 'bg-[#eef8fb] text-[#087b9f]' : 'text-[#607486]'}`} onClick={() => setLanguage('km')} type="button">ខ្មែរ</button>
+                <button className={`min-h-10 rounded-full px-4 text-[14px] font-extrabold ${activeLanguage === 'en' ? 'bg-[#eef8fb] text-[#087b9f]' : 'text-[#607486]'}`} onClick={() => setLanguage('en')} type="button">English</button>
+              </div>
+            </nav>
+          </div>
+        ) : null}
       </header>
 
       {children}

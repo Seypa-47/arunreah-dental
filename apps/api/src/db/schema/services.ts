@@ -38,6 +38,13 @@ export const services = sqliteTable(
     visitsKm: text('visits_km'),
     consultationEn: text('consultation_en'),
     consultationKm: text('consultation_km'),
+    editorialLabelEn: text('editorial_label_en'),
+    editorialLabelKm: text('editorial_label_km'),
+    editorialTitleEn: text('editorial_title_en'),
+    editorialTitleKm: text('editorial_title_km'),
+    detailPresentation: text('detail_presentation', {
+      enum: ['STANDARD', 'JOURNEY', 'CARE_MENU', 'CLINICAL_SCOPE', 'IMAGING_GUIDE', 'PROBLEM_TO_CARE', 'FAMILY_CARE'],
+    }).notNull().default('STANDARD'),
     ctaTitleEn: text('cta_title_en'),
     ctaTitleKm: text('cta_title_km'),
     ctaDescriptionEn: text('cta_description_en'),
@@ -80,6 +87,29 @@ export const serviceBenefits = sqliteTable(
   (table) => [
     index('service_benefits_service_id_idx').on(table.serviceId),
     index('service_benefits_service_order_idx').on(table.serviceId, table.displayOrder),
+  ],
+);
+
+export const serviceDetailSections = sqliteTable(
+  'service_detail_sections',
+  {
+    id: text('id').primaryKey(),
+    serviceId: text('service_id')
+      .notNull()
+      .references(() => services.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
+    sectionType: text('section_type', { enum: ['TEXT', 'IMAGE'] }).notNull().default('TEXT'),
+    headingEn: text('heading_en'),
+    headingKm: text('heading_km'),
+    bodyEn: text('body_en'),
+    bodyKm: text('body_km'),
+    imageKey: text('image_key'),
+    displayOrder: integer('display_order').notNull().default(0),
+    ...timestamps(),
+  },
+  (table) => [
+    index('service_detail_sections_service_id_idx').on(table.serviceId),
+    index('service_detail_sections_service_order_idx').on(table.serviceId, table.displayOrder),
+    check('service_detail_sections_type_check', sql`section_type in ('TEXT', 'IMAGE')`),
   ],
 );
 

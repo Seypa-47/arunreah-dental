@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { ImageFrame, PageContainer, PageFeedback, SectionIntro } from '@/components/layout/public-ui';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import type { LandingService, ServicesPageContent } from '@/features/landing-page/types';
@@ -21,16 +21,12 @@ const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/
 
 function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
   return (
-    <section className="bg-white pb-8 pt-12 text-center">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <p className="mb-2 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
-          Our Treatments
-        </p>
-        <h1 className="text-[30px] font-extrabold leading-9 text-[#005687] sm:text-[34px] sm:leading-10">
-          {hero.title}
-        </h1>
-        <p className="mx-auto mt-4 max-w-[580px] text-[14px] font-normal leading-6 text-[#6b7280]">{hero.description}</p>
-      </div>
+    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
+      <PageContainer>
+        <div className="rounded-2xl border border-[#d9e9ee] bg-[linear-gradient(120deg,#fafdfe_0%,#edf7fa_100%)] px-5 py-11 text-center shadow-[0_5px_20px_rgba(15,61,84,0.04)] sm:px-8 sm:py-14">
+          <SectionIntro align="center" as="h1" description={hero.description} eyebrow="Our Treatments" title={hero.title} />
+        </div>
+      </PageContainer>
     </section>
   );
 }
@@ -41,25 +37,25 @@ function ServiceCard({ service }: { service: LandingService }) {
 
   return (
     <Card
-      className="group flex h-[354px] flex-col overflow-hidden rounded-lg border-[#edf2f7] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
+      className="group overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:h-[330px]"
       id={id}
     >
       <Link
         aria-label={`View ${service.name}`}
-        className="flex h-full flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+        className="flex min-h-[192px] h-full flex-row focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:flex-col"
         to={`/services/${slug}`}
       >
-        {service.imageUrl ? <img alt={service.imageAlt} className="h-[210px] w-full bg-[#eaf2f6] object-cover object-center" src={service.imageUrl} /> : <div aria-hidden="true" className="h-[210px] w-full bg-[#eaf2f6]" />}
-        <div className="flex flex-1 flex-col justify-between p-4">
+        <ImageFrame alt={service.imageAlt} className="h-[192px] w-[42%] shrink-0 rounded-none border-0 bg-[#eaf2f6] shadow-none sm:h-[190px] sm:w-full" fallbackSrc="/assets/landing/hero-clinic.png" src={service.imageUrl} />
+        <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
           <div>
-            <h2 className="text-[14px] font-semibold leading-5 text-[#005687] transition-colors group-hover:text-[#3695B9]">
+            <h2 className="text-[16px] font-bold leading-5 text-[#005687] transition-colors group-hover:text-[#3695B9]">
               {service.name}
             </h2>
-            <p className="mt-1 line-clamp-2 text-[12px] font-medium leading-[18px] text-[#6b7280]">
+            <p className="mt-2 line-clamp-3 text-[14px] font-medium leading-5 text-[#607486] sm:line-clamp-2">
               {service.description}
             </p>
           </div>
-          <span className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#3695B9] transition group-hover:text-[#005687]">
+          <span className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#3695B9] transition group-hover:text-[#005687]">
             Learn More
             <svg
               aria-hidden="true"
@@ -82,14 +78,14 @@ function ServiceCard({ service }: { service: LandingService }) {
 
 function ServicesGrid({ services }: { services: LandingService[] }) {
   return (
-    <section className="bg-white pb-16 pt-2">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="bg-white py-10 sm:py-14">
+      <PageContainer>
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {services.map((service) => (
             <ServiceCard key={service.name} service={service} />
           ))}
         </div>
-      </div>
+      </PageContainer>
     </section>
   );
 }
@@ -98,13 +94,13 @@ function ServicesCta({ cta }: { cta: ServicesPageContent['cta'] }) {
   const navigate = useNavigate();
 
   return (
-    <section className="bg-[#f7fafc] px-4 py-14 sm:px-6">
-      <Card className="mx-auto max-w-[860px] rounded-2xl border-[#edf2f7] bg-white px-6 py-10 text-center shadow-[0_2px_6px_rgba(15,23,42,0.04)] sm:px-12">
-        <h2 className="text-[26px] font-extrabold leading-8 text-[#005687] sm:text-[28px] sm:leading-9">{cta.title}</h2>
-        <p className="mx-auto mt-3 max-w-[580px] text-[14px] font-normal leading-6 text-[#6b7280]">{cta.description}</p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+    <section className="bg-[#f7fafc] py-12 sm:py-14">
+      <PageContainer>
+      <Card className="mx-auto max-w-[860px] rounded-xl border-[#dcebf1] bg-white px-5 py-8 text-center shadow-[0_2px_10px_rgba(15,61,84,0.05)] sm:px-12 sm:py-10">
+        <SectionIntro align="center" description={cta.description} title={cta.title} />
+        <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button
-            className="min-h-[46px] w-full rounded-full px-8 text-[14px] font-bold shadow-[0_8px_18px_rgba(54,149,185,0.22)] sm:w-auto"
+            className="min-h-[46px] w-full rounded-full px-8 text-[14px] font-bold shadow-[0_4px_12px_rgba(54,149,185,0.18)] sm:w-auto"
             onClick={() => navigate('/book-appointment')}
             type="button"
           >
@@ -120,6 +116,7 @@ function ServicesCta({ cta }: { cta: ServicesPageContent['cta'] }) {
           </Button>
         </div>
       </Card>
+      </PageContainer>
     </section>
   );
 }
@@ -141,15 +138,39 @@ function ServicesPageSkeleton() {
   return (
     <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
       <main aria-busy="true" aria-label="Loading services page" className="bg-white">
-        <section className="px-4 py-[72px] text-center">
-          <div className="mx-auto h-12 w-72 animate-pulse rounded-full bg-[#d6ecf3]" />
-          <div className="mx-auto mt-5 h-16 w-full animate-pulse rounded bg-[#edf5f8]" />
+        <span className="sr-only">Loading treatments</span>
+
+        <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] px-4 py-12 text-center sm:px-6 sm:py-14">
+          <div className="mx-auto max-w-[620px]">
+            <div className="mx-auto h-3 w-28 animate-pulse rounded-full bg-[#dcebf0]" />
+            <div className="mx-auto mt-3 h-9 w-56 max-w-full animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
+            <div className="mx-auto mt-4 h-4 w-[88%] animate-pulse rounded-full bg-[#e5f0f4] sm:w-[72%]" />
+            <div className="mx-auto mt-2 h-4 w-[70%] animate-pulse rounded-full bg-[#e5f0f4] sm:w-[56%]" />
+          </div>
         </section>
-        <section className="pb-[96px]">
-          <div className="mx-auto grid max-w-[1280px] gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+
+        <section aria-hidden="true" className="py-10 sm:py-14">
+          <div className="mx-auto grid max-w-[1280px] gap-4 px-4 sm:grid-cols-2 sm:gap-5 sm:px-6 lg:grid-cols-4 lg:px-8">
             {Array.from({ length: 8 }, (_, index) => (
-              <div className="h-[354px] animate-pulse rounded-lg bg-[#edf5f8]" key={index} />
+              <div className="flex min-h-[192px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white sm:block sm:h-[330px]" key={index}>
+                <div className="h-[192px] w-[42%] shrink-0 animate-pulse bg-[#e3eef2] sm:h-[190px] sm:w-full" />
+                <div className="flex flex-1 flex-col justify-center space-y-3 p-4 sm:h-[140px] sm:justify-start sm:p-5">
+                  <div className="h-4 w-3/4 animate-pulse rounded-full bg-[#dcebf0]" />
+                  <div className="h-3 w-full animate-pulse rounded-full bg-[#edf4f6]" />
+                  <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#edf4f6]" />
+                  <div className="h-3 w-20 animate-pulse rounded-full bg-[#dcebf0]" />
+                </div>
+              </div>
             ))}
+          </div>
+        </section>
+
+        <section aria-hidden="true" className="border-t border-[#e7eff3] bg-[#f7fafc] px-4 py-10 sm:px-6 sm:py-12">
+          <div className="mx-auto max-w-[860px] rounded-xl border border-[#e1ebef] bg-white px-5 py-8 text-center sm:px-12 sm:py-10">
+            <div className="mx-auto h-8 w-56 max-w-full animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
+            <div className="mx-auto mt-4 h-4 w-[82%] animate-pulse rounded-full bg-[#edf4f6] sm:w-[64%]" />
+            <div className="mx-auto mt-2 h-4 w-[68%] animate-pulse rounded-full bg-[#edf4f6] sm:w-[48%]" />
+            <div className="mx-auto mt-6 h-11 w-48 animate-pulse rounded-full bg-[#dcebf0]" />
           </div>
         </section>
       </main>
@@ -158,30 +179,11 @@ function ServicesPageSkeleton() {
 }
 
 function ServicesPageEmpty() {
-  return (
-    <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
-      <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Service information is unavailable</h1>
-        <p className="mt-3 text-[#62798b]">Please check the content source and try again.</p>
-      </Card>
-    </main>
-  );
+  return <PageFeedback body="Please check the content source and try again." title="Service information is unavailable" />;
 }
 
 function ServicesPageError({ onRetry }: { onRetry: () => void }) {
-  return (
-    <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
-      <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the services page</h1>
-        <p className="mt-3 text-[#62798b]">Try again to refresh the service list.</p>
-        <Button className="mt-6" onClick={onRetry} type="button">
-          Retry
-        </Button>
-      </Card>
-    </main>
-  );
+  return <PageFeedback action={<Button onClick={onRetry}>Retry</Button>} body="Try again to refresh the service list." title="We could not load the services page" />;
 }
 
 function hasServicesContent(content: ServicesPageContent | undefined): content is ServicesPageContent {

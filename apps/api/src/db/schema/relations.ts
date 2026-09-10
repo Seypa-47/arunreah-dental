@@ -10,6 +10,7 @@ import {
 } from './doctors';
 import {
   serviceBenefits,
+  serviceDetailSections,
   serviceRelatedServices,
   services,
 } from './services';
@@ -33,9 +34,17 @@ export const branchesRelations = relations(branches, ({ many }) => ({
 
 export const servicesRelations = relations(services, ({ many }) => ({
   benefits: many(serviceBenefits),
+  detailSections: many(serviceDetailSections),
   relatedServices: many(serviceRelatedServices, { relationName: 'relatedServiceSource' }),
   relatedToServices: many(serviceRelatedServices, { relationName: 'relatedServiceTarget' }),
   appointments: many(appointments),
+}));
+
+export const serviceDetailSectionsRelations = relations(serviceDetailSections, ({ one }) => ({
+  service: one(services, {
+    fields: [serviceDetailSections.serviceId],
+    references: [services.id],
+  }),
 }));
 
 export const serviceBenefitsRelations = relations(serviceBenefits, ({ one }) => ({

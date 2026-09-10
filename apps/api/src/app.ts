@@ -19,6 +19,8 @@ import { adminServicesModule, publicServicesModule } from './modules/services/se
 import { adminDoctorsModule, publicDoctorsModule } from './modules/doctors/doctor.route';
 import { adminShowcasesModule, publicShowcasesModule } from './modules/showcases/showcase.route';
 import { adminMediaModule } from './modules/media/media.route';
+import { adminPageMediaModule, publicPageMediaModule } from './modules/page-media/page-media.route';
+import { adminAboutTimelineModule, publicAboutTimelineModule } from './modules/about-timeline/about-timeline.route';
 import { adminDashboardModule } from './modules/dashboard/dashboard.route';
 import {
   adminAppointmentsModule,
@@ -52,6 +54,10 @@ app.route('/api/admin/doctors', adminDoctorsModule);
 app.route('/api/public/doctors', publicDoctorsModule);
 app.route('/api/admin/showcases', adminShowcasesModule);
 app.route('/api/admin/media', adminMediaModule);
+app.route('/api/admin/page-media', adminPageMediaModule);
+app.route('/api/public/page-media', publicPageMediaModule);
+app.route('/api/admin/about-timeline', adminAboutTimelineModule);
+app.route('/api/public/about-timeline', publicAboutTimelineModule);
 app.route('/api/admin/dashboard', adminDashboardModule);
 app.route('/api/public/appointments', publicAppointmentsModule);
 app.route('/api/admin/appointments', adminAppointmentsModule);

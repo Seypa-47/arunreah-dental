@@ -23,6 +23,11 @@ type ServiceRecord = {
   heroSummaryEn: string | null;
   heroSummaryKm: string | null;
   heroImageKey: string | null;
+  editorialLabelEn: string | null;
+  editorialLabelKm: string | null;
+  editorialTitleEn: string | null;
+  editorialTitleKm: string | null;
+  detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
   aboutTitleEn: string | null;
   aboutTitleKm: string | null;
   aboutBodyEn: string | null;
@@ -62,12 +67,14 @@ type SessionRecord = {
 
 type ServiceInput = Partial<ServiceRecord> & {
   benefits?: Array<Record<string, unknown>>;
+  detailSections?: Array<Record<string, unknown>>;
   relatedServiceIds?: string[];
 };
 
 const state = vi.hoisted(() => ({
   services: [] as ServiceRecord[],
   benefits: new Map<string, Array<Record<string, unknown>>>(),
+  detailSections: new Map<string, Array<Record<string, unknown>>>(),
   related: new Map<string, string[]>(),
   sessions: new Map<string, SessionRecord>(),
   appointmentServiceIds: new Set<string>(),
@@ -101,19 +108,22 @@ vi.mock('../src/repositories/service.repository', () => ({
     } as ServiceRecord;
     state.services.push(service);
     state.benefits.set(service.id, input.benefits ?? []);
+    state.detailSections.set(service.id, input.detailSections ?? []);
     state.related.set(service.id, input.relatedServiceIds ?? []);
     return service;
   },
   updateService: async (_database: unknown, id: string, input: ServiceInput) => {
     const service = state.services.find((item) => item.id === id);
     if (!service) return undefined;
-    const { benefits, relatedServiceIds, ...updates } = input;
+    const { benefits, detailSections, relatedServiceIds, ...updates } = input;
     Object.assign(service, updates, { updatedAt: '2026-01-02T00:00:00.000Z' });
     if (benefits !== undefined) state.benefits.set(id, benefits);
+    if (detailSections !== undefined) state.detailSections.set(id, detailSections);
     if (relatedServiceIds !== undefined) state.related.set(id, relatedServiceIds);
     return service;
   },
   getBenefits: async (_database: unknown, id: string) => state.benefits.get(id) ?? [],
+  getDetailSections: async (_database: unknown, id: string) => state.detailSections.get(id) ?? [],
   getRelated: async (_database: unknown, id: string) =>
     (state.related.get(id) ?? [])
       .map((relatedId) => state.services.find((service) => service.id === relatedId))
@@ -173,6 +183,11 @@ function serviceFixture(overrides: Partial<ServiceRecord> = {}): ServiceRecord {
     heroSummaryEn: null,
     heroSummaryKm: null,
     heroImageKey: 'services/implants/hero.webp',
+    editorialLabelEn: 'Treatment guide',
+    editorialLabelKm: 'ព័ត៌មានអំពីការព្យាបាល',
+    editorialTitleEn: 'Your implant treatment journey',
+    editorialTitleKm: 'ដំណើរការព្យាបាលដាំបង្គោលក្នុងឆ្អឹងរបស់អ្នក',
+    detailPresentation: 'JOURNEY',
     aboutTitleEn: null,
     aboutTitleKm: null,
     aboutBodyEn: null,
@@ -228,6 +243,7 @@ function createPayload(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   state.services = [];
   state.benefits.clear();
+  state.detailSections.clear();
   state.related.clear();
   state.sessions.clear();
   state.appointmentServiceIds.clear();
@@ -249,6 +265,17 @@ describe('service API routes', () => {
         displayOrder: 0,
       },
     ]);
+    state.detailSections.set('service-1', [
+      {
+        sectionType: 'IMAGE',
+        headingEn: 'Digital assessment',
+        headingKm: 'ការវិភាគឌីជីថល',
+        bodyEn: 'A clear, visual first step.',
+        bodyKm: 'ជំហានដំបូងដែលច្បាស់លាស់ និងអាចមើលឃើញ។',
+        imageKey: 'service-guides/assessment.png',
+        displayOrder: 0,
+      },
+    ]);
     const list = await app.request(
       'http://localhost/api/public/services?lang=km',
       undefined,
@@ -267,7 +294,30 @@ describe('service API routes', () => {
     expect(detail.status).toBe(200);
     await expect(detail.json()).resolves.toMatchObject({
       success: true,
-      data: { service: { hero: { title: 'Dental Implants' }, benefits: [{ title: 'Durable' }] } },
+      data: {
+        service: {
+          detailPresentation: 'JOURNEY',
+          hero: { title: 'Dental Implants' },
+          editorial: { label: 'Treatment guide', title: 'Your implant treatment journey' },
+          benefits: [{ title: 'Durable' }],
+          detailSections: [{ heading: 'Digital assessment', imageKey: 'service-guides/assessment.png' }],
+        },
+      },
+    });
+    const khmerDetail = await app.request(
+      'http://localhost/api/public/services/dental-implants?lang=km',
+      undefined,
+      testBindings,
+    );
+    await expect(khmerDetail.json()).resolves.toMatchObject({
+      data: {
+        service: {
+          editorial: {
+            label: 'ព័ត៌មានអំពីការព្យាបាល',
+            title: 'ដំណើរការព្យាបាលដាំបង្គោលក្នុងឆ្អឹងរបស់អ្នក',
+          },
+        },
+      },
     });
     expect(
       (await app.request('http://localhost/api/public/services/draft', undefined, testBindings))

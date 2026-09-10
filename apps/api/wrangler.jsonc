@@ -8,6 +8,9 @@
     "APP_ENV": "development",
     "CORS_ALLOWED_ORIGINS": "http://localhost:5173",
     "MEDIA_PUBLIC_BASE_URL": "",
+    "EMAIL_NOTIFICATIONS_ENABLED": "false",
+    "EMAIL_NOTIFICATION_RECIPIENT": "arunreah@mekhla.digital",
+    "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.mekhla.digital>",
   },
   "d1_databases": [
     {
@@ -30,6 +33,11 @@
         "APP_ENV": "staging",
         "CORS_ALLOWED_ORIGINS": "https://staging.mekhla.digital",
         "MEDIA_PUBLIC_BASE_URL": "https://pub-0dae1b4d79d0465fa30f0366829841b4.r2.dev",
+        "EMAIL_NOTIFICATIONS_ENABLED": "true",
+        "EMAIL_NOTIFICATION_RECIPIENT": "arunreah@mekhla.digital",
+        "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.mekhla.digital>",
+        "TELEGRAM_NOTIFICATIONS_ENABLED": "true",
+        "TELEGRAM_CHAT_ID": "909395067",
       },
       "routes": [
         {
@@ -58,6 +66,9 @@
         "APP_ENV": "production",
         "CORS_ALLOWED_ORIGINS": "https://www.example.com",
         "MEDIA_PUBLIC_BASE_URL": "https://media.example.com",
+        "EMAIL_NOTIFICATIONS_ENABLED": "true",
+        "EMAIL_NOTIFICATION_RECIPIENT": "arunreah@mekhla.digital",
+        "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.mekhla.digital>",
       },
       "d1_databases": [
         {

@@ -18,10 +18,13 @@ export type PublicServiceSummary = {
 };
 
 export type PublicServiceDetail = PublicServiceSummary & {
+  detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
   hero: { eyebrow: string | null; title: string | null; summary: string | null; imageKey: string | null };
   about: { title: string | null; body: string | null; imageKey: string | null };
   treatmentAtAGlance: { duration: string | null; recovery: string | null; visits: string | null; consultation: string | null };
+  editorial: { label: string | null; title: string | null };
   benefits: { title: string; description: string | null; icon: string | null }[];
+  detailSections: { sectionType: 'TEXT' | 'IMAGE'; heading: string | null; body: string | null; imageKey: string | null; displayOrder: number }[];
   relatedServices: PublicServiceSummary[];
   cta: { title: string | null; description: string | null; primaryLabel: string | null; secondaryLabel: string | null };
   seo: { title: string | null; description: string | null };
@@ -88,6 +91,9 @@ export type PublicShowcaseDetail = PublicShowcaseSummary & {
   relatedShowcases: PublicShowcaseSummary[];
   seo: { title: string | null; description: string | null };
 };
+export type PublicPageMedia = { id: string; imageKey: string; title: string | null; body: string | null; displayOrder: number };
+export type PageMediaPlacement = 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'DOCTORS_HERO' | 'DOCTORS_PATIENT_EDUCATION';
+export type PublicAboutTimelineItem = { id: string; year: number; title: string; body: string; displayOrder: number };
 
 export type AppointmentAcknowledgement = {
   reference: string;
@@ -145,6 +151,12 @@ export function getPublicShowcases(language: PublicLanguage, homepageOnly = fals
 
 export function getPublicShowcase(slug: string, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
   return client.get<{ showcase: PublicShowcaseDetail }>(`/api/public/showcases/${encodeURIComponent(slug)}${languageQuery(language)}`);
+}
+export function getPublicPageMedia(placement: PageMediaPlacement, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
+  return client.get<{ items: PublicPageMedia[] }>(`/api/public/page-media${languageQuery(language, { placement })}`);
+}
+export function getPublicAboutTimeline(language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
+  return client.get<{ items: PublicAboutTimelineItem[] }>(`/api/public/about-timeline${languageQuery(language)}`);
 }
 
 export function createPublicAppointment(input: CreatePublicAppointmentInput, client: Pick<ApiClient, 'post'> = getApiClient()) {

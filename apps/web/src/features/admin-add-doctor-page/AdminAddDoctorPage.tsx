@@ -1,7 +1,8 @@
+import { AdminPageHeading } from '@/components/layout/admin-workspace';
+import { focusFirstInvalid } from '@/components/admin/admin-form';
 import { useState, useRef, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate, Link } from 'react-router-dom';
-import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -16,6 +17,7 @@ export function AdminAddDoctorPage() {
   const { data, isLoading } = useAdminAddDoctorPageQuery();
   const createMutation = useCreateDoctorMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Form states
   const [name, setName] = useState('');
@@ -99,7 +101,7 @@ export function AdminAddDoctorPage() {
   const handleSubmit = (e?: FormEvent) => {
     if (e) e.preventDefault();
     if (!validate()) {
-      window.scrollTo({ behavior: 'smooth', top: 0 });
+      focusFirstInvalid(formRef);
       return;
     }
 
@@ -148,11 +150,7 @@ export function AdminAddDoctorPage() {
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
       {/* Left Sidebar */}
-      <AdminSidebar
-        activeLabel="Add New Doctor"
-        brand={data.brand}
-        navigation={data.navigation}
-      />
+
 
       {/* Main Content Area */}
       <main className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
@@ -170,40 +168,28 @@ export function AdminAddDoctorPage() {
             <span className="font-semibold">Specialist profile saved successfully! Redirecting...</span>
           </div>
         )}
+        {createMutation.isError ? (
+          <p className="admin-feedback mt-4" data-tone="error" role="alert">
+            We could not save this doctor profile. Please review the information and try again.
+          </p>
+        ) : null}
 
         {/* Breadcrumbs & Header */}
         <div>
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[14px]">
-            <Link
-              className="text-[#71839e] transition hover:text-[#2187a8]"
-              to="/admin/doctors"
-            >
-              Doctors
-            </Link>
-            <span className="text-[#a0aec0]">›</span>
-            <span className="font-semibold text-[#2187a8]">Add New Doctor</span>
-          </nav>
+
 
           <header className="mt-2.5 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-[28px] font-bold tracking-[-0.6px] text-[#182238] sm:text-[32px]">
-                {data.header.title}
-              </h1>
-              <p className="mt-1 text-[15px] text-[#71839e]">
-                {data.header.subtitle}
-              </p>
+              <AdminPageHeading />
             </div>
 
             {/* Date Badge */}
-            <div className="inline-flex h-[44px] items-center gap-2.5 rounded-xl border border-[#dce5ef] bg-white px-4 text-[13.5px] font-medium text-[#71839e] shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
-              <AdminIcon className="size-4 text-[#71839e]" name="calendar" />
-              <span>{data.header.dateLabel}</span>
-            </div>
+
           </header>
         </div>
 
         {/* Form Container */}
-        <form className="mt-8 space-y-8" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-8" noValidate onSubmit={handleSubmit} ref={formRef}>
           {/* Main 2-Column Grid */}
           <div className="grid gap-7 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1.05fr)]">
             {/* Left Column */}
@@ -308,6 +294,7 @@ export function AdminAddDoctorPage() {
                         Full Name <span className="text-[#ef4444]">*</span>
                       </label>
                       <input
+                        aria-invalid={Boolean(errors.name)}
                         className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                           errors.name ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                         }`}
@@ -329,6 +316,7 @@ export function AdminAddDoctorPage() {
                         Full Name (Khmer) <span className="text-[#ef4444]">*</span>
                       </label>
                       <input
+                        aria-invalid={Boolean(errors.nameKm)}
                         className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                           errors.nameKm ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                         }`}
@@ -350,6 +338,7 @@ export function AdminAddDoctorPage() {
                         Position / Title <span className="text-[#ef4444]">*</span>
                       </label>
                       <input
+                        aria-invalid={Boolean(errors.roleTitle)}
                         className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                           errors.roleTitle ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                         }`}
@@ -374,6 +363,7 @@ export function AdminAddDoctorPage() {
                         Specialization / Designation <span className="text-[#ef4444]">*</span>
                       </label>
                       <input
+                        aria-invalid={Boolean(errors.specialty)}
                         className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                           errors.specialty ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                         }`}
@@ -396,6 +386,7 @@ export function AdminAddDoctorPage() {
                       </label>
                       <div className="relative mt-1.5">
                         <input
+                          aria-invalid={Boolean(errors.yearsExp)}
                           className={`h-11 w-full rounded-xl border bg-white pl-3.5 pr-14 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                             errors.yearsExp ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                           }`}
@@ -427,6 +418,7 @@ export function AdminAddDoctorPage() {
                     </p>
                     <div className="relative mt-2">
                       <textarea
+                        aria-invalid={Boolean(errors.shortIntro)}
                         className={`h-24 w-full resize-none rounded-xl border bg-white p-3.5 pb-7 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                           errors.shortIntro ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                         }`}

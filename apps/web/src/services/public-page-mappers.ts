@@ -108,6 +108,18 @@ export function mapServiceDetail(base: ServiceDetailContent, detail: PublicServi
       icon: 'check' as const,
       title: benefit.title,
     })),
+    detailSections: detail.detailSections.map((section) => ({
+      body: section.body ?? '',
+      heading: section.heading ?? '',
+      imageAlt: section.heading ?? detail.name,
+      imageUrl: getPublicMediaUrl(section.imageKey) ?? '',
+      sectionType: section.sectionType,
+    })),
+    detailPresentation: detail.detailPresentation,
+    editorial: {
+      label: detail.editorial.label ?? '',
+      title: detail.editorial.title ?? '',
+    },
     cta: {
       appointmentLabel: detail.cta.primaryLabel ?? 'Book Appointment',
       contactLabel: detail.cta.secondaryLabel ?? 'Contact Us',
@@ -137,7 +149,11 @@ export function mapDoctorDetail(base: DoctorDetailContent, detail: PublicDoctorD
   doctor.detail = {
     about: detail.about ? detail.about.split(/\n{2,}/).filter(Boolean) : [],
     biography: detail.about ?? '',
-    certifications: detail.education.map((item) => ({ institution: item.institution, title: item.qualification })),
+    certifications: detail.education.map((item) => ({
+      institution: item.institution,
+      title: item.qualification,
+      yearLabel: item.yearLabel,
+    })),
     education: detail.education.map((item) => item.qualification),
     experience: detail.statistics.yearsExperience === null ? '' : `${detail.statistics.yearsExperience}+ years of experience`,
     heroSummary: detail.shortBio ?? '',

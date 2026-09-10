@@ -1,7 +1,8 @@
+import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useState, useRef, useId, type ChangeEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate, Link } from 'react-router-dom';
-import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
+import { useNavigate } from 'react-router-dom';
+import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -171,12 +172,14 @@ export function AdminAddShowcasePage() {
     if (!primaryCtaText.trim()) newErrors.primaryCtaText = 'Primary CTA text is required';
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   };
 
   const handleSubmit = (chosenStatus?: ShowcaseStatus) => {
-    if (!validate()) {
-      window.scrollTo({ behavior: 'smooth', top: 0 });
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length) {
+      const firstField = Object.keys(validationErrors)[0];
+      window.requestAnimationFrame(() => document.getElementById(`showcase-${firstField}`)?.focus());
       return;
     }
 
@@ -240,11 +243,7 @@ export function AdminAddShowcasePage() {
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
       {/* Left Sidebar */}
-      <AdminSidebar
-        activeLabel="Showcase"
-        brand={data.brand}
-        navigation={data.navigation}
-      />
+
 
       {/* Main Content Area */}
       <main className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
@@ -262,37 +261,23 @@ export function AdminAddShowcasePage() {
             <span className="font-semibold">Showcase article created successfully! Redirecting...</span>
           </div>
         )}
+        {createMutation.isError ? (
+          <p className="admin-feedback mt-4" data-tone="error" role="alert">
+            We could not save this showcase. Please review the required fields and try again.
+          </p>
+        ) : null}
 
         {/* Breadcrumbs & Header */}
         <div>
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[14px]">
-            <Link
-              className="text-[#71839e] transition hover:text-[#2187a8]"
-              to="/admin/showcase"
-            >
-              {data.header.breadcrumb.parent}
-            </Link>
-            <span className="text-[#a0aec0]">›</span>
-            <span className="font-semibold text-[#2187a8]">
-              {data.header.breadcrumb.current}
-            </span>
-          </nav>
+
 
           <header className="mt-2.5 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-[28px] font-bold tracking-[-0.6px] text-[#182238] sm:text-[32px]">
-                {data.header.title}
-              </h1>
-              <p className="mt-1 text-[15px] text-[#71839e]">
-                {data.header.subtitle}
-              </p>
+              <AdminPageHeading />
             </div>
 
             {/* Date Badge */}
-            <div className="inline-flex h-[44px] items-center gap-2.5 rounded-xl border border-[#dce5ef] bg-white px-4 text-[13.5px] font-medium text-[#71839e] shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
-              <AdminIcon className="size-4 text-[#71839e]" name="calendar" />
-              <span>{data.header.dateLabel}</span>
-            </div>
+
           </header>
         </div>
 
@@ -312,11 +297,13 @@ export function AdminAddShowcasePage() {
                       Showcase Title <span className="text-[#ef4444]">*</span>
                     </label>
                     <input
+                      aria-invalid={Boolean(errors.title)}
                       className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                         errors.title ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                       }`}
                       onChange={(e) => handleTitleChange(e.target.value)}
                       placeholder="Enter showcase title"
+                      id="showcase-title"
                       type="text"
                       value={title}
                     />
@@ -330,10 +317,12 @@ export function AdminAddShowcasePage() {
                       Slug / URL <span className="text-[#ef4444]">*</span>
                     </label>
                     <input
+                      aria-invalid={Boolean(errors.slug)}
                       className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                         errors.slug ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                       }`}
                       onChange={(e) => handleSlugChange(e.target.value)}
+                      id="showcase-slug"
                       placeholder="enter-showcase-slug"
                       type="text"
                       value={slug}
@@ -349,6 +338,7 @@ export function AdminAddShowcasePage() {
                     Showcase Title (Khmer) <span className="text-[#ef4444]">*</span>
                   </label>
                   <input
+                    aria-invalid={Boolean(errors.titleKm)}
                     className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                       errors.titleKm ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                     }`}
@@ -356,6 +346,7 @@ export function AdminAddShowcasePage() {
                       setTitleKm(e.target.value);
                       if (errors.titleKm) setErrors((previous) => ({ ...previous, titleKm: '' }));
                     }}
+                    id="showcase-titleKm"
                     placeholder="បញ្ចូលចំណងជើងជាភាសាខ្មែរ"
                     type="text"
                     value={titleKm}
@@ -371,10 +362,12 @@ export function AdminAddShowcasePage() {
                     </label>
                     <div className="relative mt-1.5">
                       <select
+                        aria-invalid={Boolean(errors.category)}
                         className={`h-11 w-full appearance-none rounded-xl border bg-white px-3.5 pr-9 text-[14px] text-[#182238] outline-none transition focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                           errors.category ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                         }`}
                         onChange={(e) => setCategory(e.target.value as ShowcaseCategory)}
+                        id="showcase-category"
                         value={category}
                       >
                         <option disabled value="">
@@ -525,10 +518,12 @@ export function AdminAddShowcasePage() {
                       Headline <span className="text-[#ef4444]">*</span>
                     </label>
                     <input
+                      aria-invalid={Boolean(errors.headline)}
                       className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                         errors.headline ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                       }`}
                       onChange={(e) => setHeadline(e.target.value)}
+                      id="showcase-headline"
                       placeholder="Enter compelling headline"
                       type="text"
                       value={headline}
@@ -549,11 +544,13 @@ export function AdminAddShowcasePage() {
                     </div>
                     <div className="relative mt-1.5">
                       <textarea
+                        aria-invalid={Boolean(errors.shortSummary)}
                         className={`h-28 w-full resize-none rounded-xl border bg-white p-3.5 text-[13.5px] leading-relaxed text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                           errors.shortSummary ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                         }`}
                         maxLength={160}
                         onChange={(e) => setShortSummary(e.target.value)}
+                        id="showcase-shortSummary"
                         placeholder="Write a short summary (max 160 characters) that will appear on the homepage card."
                         value={shortSummary}
                       />
@@ -645,8 +642,10 @@ export function AdminAddShowcasePage() {
 
                     {/* Textarea */}
                     <textarea
+                      aria-invalid={Boolean(errors.bodyContent)}
                       className="min-h-[190px] w-full resize-none p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none placeholder:text-[#a9b7c9]"
                       onChange={(e) => setBodyContent(e.target.value)}
+                      id="showcase-bodyContent"
                       placeholder="Write the main content for this showcase detail page..."
                       value={bodyContent}
                     />
@@ -753,10 +752,12 @@ export function AdminAddShowcasePage() {
                       Primary CTA Button Text <span className="text-[#ef4444]">*</span>
                     </label>
                     <input
+                      aria-invalid={Boolean(errors.primaryCtaText)}
                       className={`mt-1.5 h-11 w-full rounded-xl border bg-white px-3.5 text-[14px] text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                         errors.primaryCtaText ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                       }`}
                       onChange={(e) => setPrimaryCtaText(e.target.value)}
+                      id="showcase-primaryCtaText"
                       placeholder="e.g., Book an Appointment"
                       type="text"
                       value={primaryCtaText}

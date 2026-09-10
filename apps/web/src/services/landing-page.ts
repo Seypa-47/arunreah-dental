@@ -449,6 +449,12 @@ function buildServiceDetail({
       title: `About ${service.name}`,
     },
     benefits,
+    detailSections: [],
+    detailPresentation: 'STANDARD',
+    editorial: {
+      label: '',
+      title: '',
+    },
     cta: {
       appointmentLabel: 'Book Your Appointment',
       contactLabel: 'Contact Our Clinic',
@@ -907,6 +913,7 @@ export async function fetchDoctorsPage(): Promise<DoctorsPageContent> {
 export async function fetchAboutPage(): Promise<AboutPageContent> {
   return {
     actions: landingPageContent.actions,
+    clinicGallery: [],
     differences: [
       {
         description: 'State-of-the-art equipment ensures accurate diagnosis and effective treatment.',
@@ -929,6 +936,17 @@ export async function fetchAboutPage(): Promise<AboutPageContent> {
         title: 'Safe & Sterile',
       },
     ],
+    editorial: {
+      editionLabel: 'Clinic Profile',
+      galleryEyebrow: 'Inside Our Clinic',
+      galleryTitle: 'A Look Inside Our Clinic',
+      professionalEyebrow: 'Professional Development',
+      professionalTitle: 'Learning to Care Better',
+      timelineEyebrow: 'Our Journey',
+      timelineTitle: 'Growing with Our Community',
+      profileLabel: 'Meet the Team',
+      profileTitle: 'Care That Starts With Listening',
+    },
     facilities: [
       {
         description: 'Equipped with the latest ergonomic technology for maximum patient comfort during procedures.',

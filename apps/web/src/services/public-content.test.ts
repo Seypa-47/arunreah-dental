@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ApiClient } from '@/lib/api';
-import { createPublicAppointment, getPublicBranch, getPublicClinic, getPublicContact, getPublicDoctor, getPublicServices, getPublicShowcase, getPublicShowcases } from './public-content';
+import { createPublicAppointment, getPublicBranch, getPublicClinic, getPublicContact, getPublicDoctor, getPublicPageMedia, getPublicServices, getPublicShowcase, getPublicShowcases } from './public-content';
 
 describe('public content API service', () => {
   it('uses language-specific public endpoints without admin credentials', async () => {
@@ -16,12 +16,14 @@ describe('public content API service', () => {
     await getPublicShowcases('en', true, client);
     await getPublicShowcase('smile/transformation', 'en', client);
     await getPublicDoctor('a/doctor', 'km', client);
+    await getPublicPageMedia('DOCTORS_PATIENT_EDUCATION', 'km', client);
 
     expect(requests).toEqual([
       { authenticated: undefined, path: '/api/public/services?lang=km' },
       { authenticated: undefined, path: '/api/public/showcases?lang=en&homepage=true' },
       { authenticated: undefined, path: '/api/public/showcases/smile%2Ftransformation?lang=en' },
       { authenticated: undefined, path: '/api/public/doctors/a%2Fdoctor?lang=km' },
+      { authenticated: undefined, path: '/api/public/page-media?lang=km&placement=DOCTORS_PATIENT_EDUCATION' },
     ]);
   });
 

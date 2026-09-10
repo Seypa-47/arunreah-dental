@@ -35,6 +35,7 @@ export type LandingDoctor = {
     certifications: {
       institution: string;
       title: string;
+      yearLabel?: string | null;
     }[];
     education: string[];
     experience: string;
@@ -108,9 +109,47 @@ export type DoctorsPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
     description: string;
     title: string;
   };
+  heroMedia?: {
+    body: string | null;
+    id: string;
+    imageKey: string;
+    title: string | null;
+  };
+  patientEducation?: {
+    body: string | null;
+    id: string;
+    imageKey: string;
+    title: string | null;
+  }[];
 };
 
 export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  clinicGallery?: {
+    imageAlt: string;
+    imageUrl: string;
+  }[];
+  editorial: {
+    editionLabel: string;
+    galleryEyebrow: string;
+    galleryTitle: string;
+    professionalEyebrow: string;
+    professionalTitle: string;
+    timelineEyebrow: string;
+    timelineTitle: string;
+    profileLabel: string;
+    profileTitle: string;
+  };
+  featuredDoctor?: {
+    imageAlt: string;
+    imageUrl: string;
+    name: string;
+    profileHref: string;
+    specialty: string;
+    summary: string;
+    title: string;
+  };
+  professionalMedia?: { id: string; imageKey: string; title: string | null; body: string | null; displayOrder: number }[];
+  timeline?: { id: string; year: number; title: string; body: string; displayOrder: number }[];
   differences: {
     description: string;
     iconUrl: string;
@@ -244,6 +283,18 @@ export type ServiceDetailContent = Pick<LandingPageContent, 'actions' | 'footer'
           appointmentLabel: string;
           contactLabel: string;
           description: string;
+          title: string;
+        };
+        detailSections: {
+          body: string;
+          heading: string;
+          imageAlt: string;
+          imageUrl: string;
+          sectionType: 'TEXT' | 'IMAGE';
+        }[];
+        detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
+        editorial: {
+          label: string;
           title: string;
         };
         glance: {

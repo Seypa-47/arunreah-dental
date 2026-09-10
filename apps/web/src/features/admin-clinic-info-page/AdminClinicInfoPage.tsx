@@ -1,8 +1,10 @@
+import { AdminListEmpty, AdminListPagination, AdminPublicationStatus } from '@/components/admin/admin-list';
+import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useState, useEffect, useMemo, useRef, type ChangeEvent, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminBranchListQuery, CreateBranchInput } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
-import { AdminIcon, AdminSidebar } from '@/components/layout/admin-sidebar';
+import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -323,13 +325,6 @@ export function AdminClinicInfoPage({
     imageUpload.mutate({ category, file }, { onSuccess: (media) => callback(media.key) });
   };
 
-  const activeSidebarLabel =
-    activeTab === 'clinic'
-      ? 'Clinic Settings'
-      : activeTab === 'branches'
-      ? 'Branches / Locations'
-      : 'Contact Settings';
-
   if (isLoading || !data) {
     return (
       <div className="flex min-h-screen bg-[#f6f8fb]">
@@ -347,11 +342,7 @@ export function AdminClinicInfoPage({
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
       {/* Left Sidebar with Dropdown */}
-      <AdminSidebar
-        activeLabel={activeSidebarLabel}
-        brand={data.brand}
-        navigation={data.navigation}
-      />
+
 
       {/* Main Content Area */}
       <main className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
@@ -374,27 +365,11 @@ export function AdminClinicInfoPage({
         <div>
           <header className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-[28px] font-bold tracking-[-0.6px] text-[#182238] sm:text-[32px]">
-                {activeTab === 'clinic'
-                  ? 'Clinic Info Settings'
-                  : activeTab === 'branches'
-                  ? 'Branches / Locations'
-                  : 'Contact Settings'}
-              </h1>
-              <p className="mt-1 text-[15px] text-[#71839e]">
-                {activeTab === 'clinic'
-                  ? 'Manage your clinic information, contact details, and branch locations.'
-                  : activeTab === 'branches'
-                  ? 'Manage branch details, homepage carousel content, and website location information.'
-                  : 'Manage website contact details, communication channels, and inquiry form settings.'}
-              </p>
+              <AdminPageHeading />
             </div>
 
             {/* Date Badge */}
-            <div className="inline-flex h-[44px] items-center gap-2.5 rounded-xl border border-[#dce5ef] bg-white px-4 text-[13.5px] font-medium text-[#71839e] shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
-              <AdminIcon className="size-4 text-[#71839e]" name="calendar" />
-              <span>{data.header.dateLabel}</span>
-            </div>
+
           </header>
 
           {/* Tab Navigation */}
@@ -732,7 +707,7 @@ export function AdminClinicInfoPage({
                 </div>
 
                 {/* Filters */}
-                <div className="mt-4 flex gap-3">
+                <div className="admin-list-toolbar mt-4">
                   <label className="flex h-10 flex-1 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-3 text-[13.5px] text-[#9badc5] focus-within:border-[#2187a8]">
                     <AdminIcon className="size-3.5 text-[#9badc5]" name="search" />
                     <input
@@ -742,12 +717,13 @@ export function AdminClinicInfoPage({
                         page: 1,
                         search: e.target.value || undefined,
                       }))}
-                      placeholder="Search branches..."
+                      aria-label="Search branches" placeholder="Search branches..."
                       type="search"
                       value={branchListState.search ?? ''}
                     />
                   </label>
                   <select
+                    aria-label="Filter branches by status"
                     className="h-10 rounded-xl border border-[#dce5ef] bg-white px-3 text-[13px] text-[#71839e] outline-none"
                     onChange={(e) => setBranchListState((previous) => ({
                       ...previous,
@@ -802,20 +778,7 @@ export function AdminClinicInfoPage({
                             : 'border-[#e2e8f0] bg-white hover:border-[#b8d6e7]'
                         }`}
                         key={b.id}
-                        onClick={() => setSelectedBranchId(b.id)}
                       >
-                        {/* Drag dots */}
-                        <div className="flex items-center text-[#cbd5e1]">
-                          <svg className="size-4" fill="currentColor" viewBox="0 0 20 20">
-                            <circle cx="7" cy="6" r="1.5" />
-                            <circle cx="13" cy="6" r="1.5" />
-                            <circle cx="7" cy="10" r="1.5" />
-                            <circle cx="13" cy="10" r="1.5" />
-                            <circle cx="7" cy="14" r="1.5" />
-                            <circle cx="13" cy="14" r="1.5" />
-                          </svg>
-                        </div>
-
                         {/* Photo */}
                         <img
                           alt={b.name}
@@ -825,8 +788,8 @@ export function AdminClinicInfoPage({
 
                         {/* Details */}
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="truncate text-[15px] font-bold text-[#182238]">{b.name}</h3>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3><button type="button" className="admin-row-action text-left" aria-pressed={isSelected} onClick={() => setSelectedBranchId(b.id)}>{b.name}</button></h3>
                             <span
                               className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${
                                 b.badge === 'Main Branch'
@@ -836,17 +799,7 @@ export function AdminClinicInfoPage({
                             >
                               {b.badge}
                             </span>
-                            <span
-                              className={`ml-auto inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold ${
-                                b.status === 'PUBLISHED'
-                                  ? 'bg-[#f0fdf4] text-[#16a34a]'
-                                  : b.status === 'ARCHIVED'
-                                  ? 'bg-[#f1f5f9] text-[#64748b]'
-                                  : 'bg-[#fffbeb] text-[#b45309]'
-                              }`}
-                            >
-                              {branchStatusLabel(b.status)}
-                            </span>
+                            <AdminPublicationStatus status={b.status} />
                           </div>
 
                           <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-[#71839e]">
@@ -862,45 +815,19 @@ export function AdminClinicInfoPage({
                     );
                   })}
                   {branchListQuery.isLoading && (
-                    <p className="rounded-xl border border-dashed border-[#dce5ef] p-5 text-center text-sm text-[#71839e]">Loading branches…</p>
+                    <p role="status" className="admin-helper">Loading branches…</p>
                   )}
                   {branchListQuery.isError && (
-                    <div className="rounded-xl border border-[#fecaca] bg-[#fff7f7] p-4 text-sm text-[#b91c1c]">
+                    <div role="alert" className="rounded-xl border border-[#fecaca] bg-[#fff7f7] p-4 text-sm text-[#b91c1c]">
                       Unable to load branches. <button className="font-bold underline" onClick={() => void branchListQuery.refetch()} type="button">Try again</button>
                     </div>
                   )}
                   {!branchListQuery.isLoading && !branchListQuery.isError && filteredBranches.length === 0 && (
-                    <p className="rounded-xl border border-dashed border-[#dce5ef] p-5 text-center text-sm text-[#71839e]">No branches match these filters.</p>
+                    <AdminListEmpty noun="branches" filtered={Boolean(branchListState.search || branchListState.status || (branchListState.page ?? 1) > 1)} onClear={() => setBranchListState((previous) => ({ ...previous, search: undefined, status: undefined, page: 1 }))} />
                   )}
                 </div>
 
-                {/* Pagination */}
-                <div className="mt-6 flex items-center justify-between border-t border-[#f0f4f8] pt-4 text-[13px] text-[#71839e]">
-                  <span>
-                    Showing {filteredBranches.length > 0 ? ((branchListQuery.data?.meta.page ?? 1) - 1) * (branchListQuery.data?.meta.limit ?? 20) + 1 : 0}
-                    {' '}to {((branchListQuery.data?.meta.page ?? 1) - 1) * (branchListQuery.data?.meta.limit ?? 20) + filteredBranches.length}
-                    {' '}of {branchListQuery.data?.meta.total ?? 0} branches
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      aria-label="Previous page"
-                      className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#8a9bb2] disabled:opacity-40"
-                      disabled={(branchListQuery.data?.meta.page ?? 1) <= 1}
-                      onClick={() => setBranchListState((previous) => ({ ...previous, page: Math.max(1, (branchListQuery.data?.meta.page ?? 1) - 1) }))}
-                      type="button"
-                    >‹</button>
-                    <span className="rounded-lg border border-[#2187a8] bg-[#edf7fb] px-2 py-1 font-bold text-[#2187a8]">
-                      Page {branchListQuery.data?.meta.page ?? 1} of {Math.max(1, branchListQuery.data?.meta.totalPages ?? 0)}
-                    </span>
-                    <button
-                      aria-label="Next page"
-                      className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#8a9bb2] disabled:opacity-40"
-                      disabled={(branchListQuery.data?.meta.page ?? 1) >= Math.max(1, branchListQuery.data?.meta.totalPages ?? 0)}
-                      onClick={() => setBranchListState((previous) => ({ ...previous, page: Math.min(Math.max(1, branchListQuery.data?.meta.totalPages ?? 0), (branchListQuery.data?.meta.page ?? 1) + 1) }))}
-                      type="button"
-                    >›</button>
-                  </div>
-                </div>
+                {branchListQuery.data ? <AdminListPagination noun="branches" page={branchListQuery.data.meta.page} totalPages={branchListQuery.data.meta.totalPages} total={branchListQuery.data.meta.total} limit={branchListQuery.data.meta.limit} count={filteredBranches.length} busy={branchListQuery.isFetching} onPageChange={(page) => setBranchListState((previous) => ({ ...previous, page }))} /> : null}
               </Card>
             </div>
 
