@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { LandingNavigationItem, LandingService } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { queryKeys } from '@/lib/query-keys';
-import { getPublicClinic } from '@/services/public-content';
+import { getPublicClinic, type PublicLanguage } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
 
 const asset = (name: string) => `/assets/landing/${name}`;
@@ -18,6 +18,32 @@ type SiteLayoutProps = PropsWithChildren<{
   navigation: LandingNavigationItem[];
   services?: Pick<LandingService, 'name'>[];
 }>;
+
+type LanguageFlagSelectorProps = {
+  activeLanguage: PublicLanguage;
+  className?: string;
+  onLanguageChange: (language: PublicLanguage) => void;
+};
+
+function LanguageFlagSelector({ activeLanguage, className = '', onLanguageChange }: LanguageFlagSelectorProps) {
+  const buttonClassName = (language: PublicLanguage) =>
+    `grid size-10 place-items-center overflow-hidden rounded-full border-2 bg-white p-0.5 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad] ${
+      activeLanguage === language
+        ? 'border-transparent opacity-100 shadow-[0_3px_8px_rgba(15,61,84,0.16)]'
+        : 'border-transparent opacity-60 hover:opacity-100'
+    }`;
+
+  return (
+    <div aria-label="Language selector" className={`items-center gap-1.5 ${className}`} role="group">
+      <button aria-label="Switch to Khmer" aria-pressed={activeLanguage === 'km'} className={buttonClassName('km')} onClick={() => onLanguageChange('km')} type="button">
+        <img alt="" aria-hidden="true" className="size-full rounded-full object-cover" src={asset('flag-kh.png')} />
+      </button>
+      <button aria-label="Switch to English" aria-pressed={activeLanguage === 'en'} className={buttonClassName('en')} onClick={() => onLanguageChange('en')} type="button">
+        <img alt="" aria-hidden="true" className="size-full rounded-full object-cover" src={asset('flag-en.png')} />
+      </button>
+    </div>
+  );
+}
 
 export function SiteLayout({ actions, children, navigation, services = [] }: SiteLayoutProps) {
   const { language: activeLanguage, setLanguage } = usePublicLanguage();
@@ -168,34 +194,7 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
             >
               <span>{actions.appointmentLabel}</span>
             </button>
-            <div aria-label="Language selector" className="hidden items-center gap-1 rounded-full border border-[#d9e9ee] bg-[#f7fafc] p-1 xl:flex" role="group">
-              <button
-                aria-label="Switch to Khmer"
-                aria-pressed={activeLanguage === 'km'}
-                className={`min-h-9 rounded-full px-3 text-[13px] font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad] ${
-                  activeLanguage === 'km' ? 'bg-white text-[#087b9f] shadow-sm' : 'text-[#607486] hover:text-[#087b9f]'
-                }`}
-                onClick={() => setLanguage('km')}
-                type="button"
-              >
-                ខ្មែរ
-              </button>
-              <button
-                aria-label="Switch to English"
-                aria-pressed={activeLanguage === 'en'}
-                className={`min-h-9 rounded-full px-3 text-[13px] font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad] ${
-                  activeLanguage === 'en' ? 'bg-white text-[#087b9f] shadow-sm' : 'text-[#607486] hover:text-[#087b9f]'
-                }`}
-                onClick={() => setLanguage('en')}
-                type="button"
-              >
-                English
-              </button>
-            </div>
-            <div aria-label="Language selector" className="hidden items-center gap-1 lg:flex xl:hidden" role="group">
-              <button aria-label="Switch to Khmer" aria-pressed={activeLanguage === 'km'} className={`size-8 overflow-hidden rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad] ${activeLanguage === 'km' ? 'border-[#168aad] opacity-100' : 'border-transparent opacity-55'}`} onClick={() => setLanguage('km')} type="button"><img alt="" className="size-full object-cover" src={asset('flag-kh.png')} /></button>
-              <button aria-label="Switch to English" aria-pressed={activeLanguage === 'en'} className={`size-8 overflow-hidden rounded-full border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad] ${activeLanguage === 'en' ? 'border-[#168aad] opacity-100' : 'border-transparent opacity-55'}`} onClick={() => setLanguage('en')} type="button"><img alt="" className="size-full object-cover" src={asset('flag-en.png')} /></button>
-            </div>
+            <LanguageFlagSelector activeLanguage={activeLanguage} className="hidden lg:inline-flex" onLanguageChange={setLanguage} />
             <button
               aria-controls="mobile-primary-navigation"
               aria-expanded={isMobileMenuOpen}
@@ -232,9 +231,8 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
                 <Link className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#b9dce8] px-5 text-[15px] font-extrabold text-[#075d83] hover:bg-[#eef8fb]" onClick={() => setIsMobileMenuOpen(false)} to="/contact">{actions.contactLabel}</Link>
                 <button className="min-h-12 rounded-full bg-[#168aad] px-5 text-[15px] font-extrabold text-white shadow-[0_6px_16px_rgba(22,138,173,0.2)] hover:bg-[#0d7596]" onClick={() => { setIsMobileMenuOpen(false); navigate('/book-appointment'); }} type="button">{actions.appointmentLabel}</button>
               </div>
-              <div className="mt-3 flex items-center gap-2 border-t border-[#e7f0f4] px-1 pt-4" role="group" aria-label="Language selector">
-                <button className={`min-h-10 rounded-full px-4 text-[14px] font-extrabold ${activeLanguage === 'km' ? 'bg-[#eef8fb] text-[#087b9f]' : 'text-[#607486]'}`} onClick={() => setLanguage('km')} type="button">ខ្មែរ</button>
-                <button className={`min-h-10 rounded-full px-4 text-[14px] font-extrabold ${activeLanguage === 'en' ? 'bg-[#eef8fb] text-[#087b9f]' : 'text-[#607486]'}`} onClick={() => setLanguage('en')} type="button">English</button>
+              <div className="mt-3 border-t border-[#e7f0f4] px-1 pt-4">
+                <LanguageFlagSelector activeLanguage={activeLanguage} className="inline-flex" onLanguageChange={setLanguage} />
               </div>
             </nav>
           </div>
