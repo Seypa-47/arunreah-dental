@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { LandingNavigationItem, LandingService } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { queryKeys } from '@/lib/query-keys';
-import { getPublicClinic, type PublicLanguage } from '@/services/public-content';
+import { getPublicClinic, getPublicServices, type PublicLanguage } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
 
 const asset = (name: string) => `/assets/landing/${name}`;
@@ -45,9 +45,12 @@ function LanguageFlagSelector({ activeLanguage, className = '', onLanguageChange
   );
 }
 
-export function SiteLayout({ actions, children, navigation, services = [] }: SiteLayoutProps) {
+export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
   const { language: activeLanguage, setLanguage } = usePublicLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const servicesQuery = useQuery({ queryKey: queryKeys.public.serviceNavigation(activeLanguage), queryFn: () => getPublicServices(activeLanguage) });
+  const services = servicesQuery.data?.services ?? [];
   const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic() });
   const { hash, pathname } = useLocation();
   const navigate = useNavigate();
@@ -120,7 +123,7 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
             {navigation.map((item) => {
               const isActive = isActiveNavigationItem(item);
 
-              if (item.label !== 'Services') {
+              if (item.href !== '/services') {
                 return (
                   <Link
                     aria-current={isActive ? 'page' : undefined}
@@ -212,19 +215,22 @@ export function SiteLayout({ actions, children, navigation, services = [] }: Sit
           </div>
         </div>
         {isMobileMenuOpen ? (
-          <div className="max-h-[calc(100vh-64px)] overflow-y-auto border-t border-[#e7f0f4] bg-white px-4 py-4 shadow-[0_16px_30px_rgba(15,61,84,0.10)] sm:max-h-[calc(100vh-74px)] lg:hidden" id="mobile-primary-navigation">
+          <div className="h-[calc(100dvh-64px)] overflow-y-auto overscroll-contain border-t border-[#e7f0f4] bg-white px-4 pt-3 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-[0_16px_30px_rgba(15,61,84,0.10)] sm:h-[calc(100dvh-74px)] lg:hidden" id="mobile-primary-navigation">
             <nav aria-label="Mobile primary navigation" className="ui-page-container grid gap-1 px-0 sm:px-2">
               {navigation.map((item) => (
                 <div key={item.label}>
+                  <div className="flex items-center gap-2">
                   <Link
                     aria-current={isActiveNavigationItem(item) ? 'page' : undefined}
-                    className={`flex min-h-12 items-center rounded-xl px-4 py-3 text-[16px] transition ${isActiveNavigationItem(item) ? 'bg-[#eef8fb] font-extrabold text-[#087b9f]' : 'font-semibold text-[#365366] hover:bg-[#f5fafc]'}`}
+                    className={`flex min-h-11 min-w-0 flex-1 items-center rounded-xl px-4 py-2 text-[16px] transition ${isActiveNavigationItem(item) ? 'bg-[#eef8fb] font-extrabold text-[#087b9f]' : 'font-semibold text-[#365366] hover:bg-[#f5fafc]'}`}
                     onClick={() => setIsMobileMenuOpen(false)}
                     to={item.href}
                   >
                     {item.label}
                   </Link>
-                  {item.label === 'Services' && services.length > 0 ? <div className="ml-4 mt-1 grid gap-1 border-l border-[#d9e9ee] pl-3">{services.map((service) => <Link className="ui-copy-safe rounded-lg px-3 py-3 text-[14px] font-semibold leading-5 text-[#607486] hover:bg-[#f5fafc] hover:text-[#087b9f]" key={service.name} onClick={() => setIsMobileMenuOpen(false)} to={serviceHref(service)}>{service.name}</Link>)}</div> : null}
+                  {item.href === '/services' && services.length > 0 ? <button aria-label={activeLanguage === 'km' ? 'បង្ហាញសេវាកម្ម' : 'Show service links'} aria-expanded={isServicesOpen} aria-controls="mobile-service-links" className="size-11 shrink-0 rounded-lg text-xl text-[#087b9f]" onClick={() => setIsServicesOpen((open) => !open)} type="button"><span aria-hidden="true">{isServicesOpen ? '−' : '+'}</span></button> : null}
+                  </div>
+                  {item.href === '/services' && services.length > 0 && isServicesOpen ? <div id="mobile-service-links" className="ml-4 mt-1 grid gap-1 border-l border-[#d9e9ee] pl-3">{services.map((service) => <Link className="ui-copy-safe rounded-lg px-3 py-3 text-[14px] font-semibold leading-5 text-[#607486] hover:bg-[#f5fafc] hover:text-[#087b9f]" key={service.slug} onClick={() => setIsMobileMenuOpen(false)} to={serviceHref(service)}>{service.name}</Link>)}</div> : null}
                 </div>
               ))}
               <div className="mt-3 grid gap-2 border-t border-[#e7f0f4] pt-4 sm:grid-cols-2">

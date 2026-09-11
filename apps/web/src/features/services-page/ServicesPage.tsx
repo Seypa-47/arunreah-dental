@@ -37,16 +37,16 @@ function ServiceCard({ service }: { service: LandingService }) {
 
   return (
     <Card
-      className="group overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:h-[330px]"
+      className="group overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)]"
       id={id}
     >
       <Link
         aria-label={`View ${service.name}`}
-        className="flex min-h-[192px] h-full flex-row focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:flex-col"
+        className="flex h-full flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
         to={`/services/${slug}`}
       >
-        <ImageFrame alt={service.imageAlt} className="h-[192px] w-[42%] shrink-0 rounded-none border-0 bg-[#eaf2f6] shadow-none sm:h-[190px] sm:w-full" fallbackSrc="/assets/landing/hero-clinic.png" src={service.imageUrl} />
-        <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
+        {service.imageUrl ? <ImageFrame alt={service.imageAlt || service.name} className="h-[190px] w-full shrink-0 rounded-none border-0 bg-[#eaf2f6] shadow-none" src={service.imageUrl} /> : null}
+        <div className="flex min-w-0 flex-1 flex-col justify-between p-5">
           <div>
             <h2 className="text-[16px] font-bold leading-5 text-[#005687] transition-colors group-hover:text-[#3695B9]">
               {service.name}
@@ -150,10 +150,10 @@ function ServicesPageSkeleton() {
         </section>
 
         <section aria-hidden="true" className="py-10 sm:py-14">
-          <div className="mx-auto grid max-w-[1280px] gap-4 px-4 sm:grid-cols-2 sm:gap-5 sm:px-6 lg:grid-cols-4 lg:px-8">
+          <div className="mx-auto grid max-w-[1280px] gap-4 px-4 sm:grid-cols-2 sm:gap-5 sm:px-6 lg:grid-cols-3 lg:px-8">
             {Array.from({ length: 8 }, (_, index) => (
-              <div className="flex min-h-[192px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white sm:block sm:h-[330px]" key={index}>
-                <div className="h-[192px] w-[42%] shrink-0 animate-pulse bg-[#e3eef2] sm:h-[190px] sm:w-full" />
+              <div className="min-h-[330px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white" key={index}>
+                <div className="h-[190px] w-full animate-pulse bg-[#e3eef2]" />
                 <div className="flex flex-1 flex-col justify-center space-y-3 p-4 sm:h-[140px] sm:justify-start sm:p-5">
                   <div className="h-4 w-3/4 animate-pulse rounded-full bg-[#dcebf0]" />
                   <div className="h-3 w-full animate-pulse rounded-full bg-[#edf4f6]" />

@@ -266,7 +266,8 @@ function useSmoothCarousel<T>(items: T[]) {
       cancelMomentum();
       const el = scrollRef.current;
       const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
-      const scrollDistance = 310;
+      const firstCard = el.firstElementChild as HTMLElement | null;
+      const scrollDistance = firstCard ? firstCard.offsetWidth + 16 : el.clientWidth;
       const target = direction === 'left'
         ? Math.max(0, el.scrollLeft - scrollDistance)
         : Math.min(maxScroll, el.scrollLeft + scrollDistance);
@@ -454,7 +455,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
         </div>
 
         <div
-          className={`no-scrollbar mt-6 flex gap-4 overflow-x-auto px-1 py-2 select-none overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+          className={`no-scrollbar mt-6 flex snap-x snap-mandatory items-start gap-4 overflow-x-auto px-1 py-2 select-none overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
             isDragging ? 'cursor-grabbing' : 'cursor-grab'
           }`}
           data-scroll-container
@@ -464,13 +465,13 @@ function ServicesSection({ services }: { services: LandingService[] }) {
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {services.map((service) => {
-            const slug = serviceSlug(service.name);
+            const slug = service.slug ?? serviceSlug(service.name);
             const id = serviceId(service.name);
             const hasImage = Boolean(service.imageUrl);
 
             return (
               <Card
-                className={`w-[268px] shrink-0 overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:w-[286px] ${hasImage ? 'h-[318px] sm:h-[334px]' : 'min-h-[176px]'}`}
+                className={`w-full shrink-0 snap-start overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:w-[286px] ${hasImage ? 'min-h-[318px]' : 'min-h-[176px]'}`}
                 id={id}
                 key={service.name}
               >

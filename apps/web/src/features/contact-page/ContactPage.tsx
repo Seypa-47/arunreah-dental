@@ -78,7 +78,7 @@ function InfoBlock({ item, compact = false }: { compact?: boolean; item: Contact
       >
         <ContactIcon className={compact ? 'size-[15px]' : 'size-[18px]'} name={item.icon} />
       </span>
-      <div>
+      <div className="min-w-0 break-words">
         <p className="text-[12px] font-extrabold leading-4 text-[#3695b9]">{item.label}</p>
         <p className={`whitespace-pre-line font-extrabold text-[#005687] ${compact ? 'text-[14px] leading-5' : 'text-[16px] leading-6'}`}>
           {item.value}
@@ -212,7 +212,7 @@ function ContactPageView({ content }: { content: ContactPageContent }) {
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main>
         <ContactHero hero={content.hero} />
-        <ContactCards cards={content.contactCards} />
+        {content.contactCards.some((card) => !content.hero.info.some((item) => item.icon === card.icon && item.value === card.value)) ? <ContactCards cards={content.contactCards.filter((card) => !content.hero.info.some((item) => item.icon === card.icon && item.value === card.value))} /> : null}
         <ContactForm form={content.form} />
         <MapsSection maps={content.maps} />
       </main>

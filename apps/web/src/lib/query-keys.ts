@@ -18,6 +18,7 @@ export const queryKeys = {
     service: (slug: string, language: 'en' | 'km') =>
       ['public', 'services', slug, language] as const,
     services: (language: 'en' | 'km') => ['public', 'services', language] as const,
+    serviceNavigation: (language: 'en' | 'km') => ['public', 'service-navigation', language] as const,
     showcase: (slug: string, language: 'en' | 'km') =>
       ['public', 'showcases', slug, language] as const,
     showcases: (language: 'en' | 'km', homepageOnly = false) =>
