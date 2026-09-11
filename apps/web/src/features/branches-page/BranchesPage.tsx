@@ -106,16 +106,16 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
 
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <Card className="relative z-10 -mt-5 grid w-full gap-4 rounded-xl border-[#dfecef] bg-white px-5 py-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)] sm:px-6 lg:grid-cols-[1fr_1fr_1fr_220px] lg:items-center">
-          {hero.metrics.map((metric) => (
+          {hero.metrics.map((metric, index) => (
             <div
               className="flex items-center gap-3 border-[#e7eff3] lg:border-r lg:last:border-r-0"
               key={metric.title}
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#eef8fb]">
-                {metric.title === 'Locations' ? (
+                {index === 0 ? (
                   <MetricLocationIcon />
                 ) : (
-                  <img alt="" aria-hidden="true" className="size-[18px]" src={metric.iconUrl} />
+                  <svg aria-hidden="true" className="size-5 text-[#3695B9]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4m10-4v4M3 11h18m-14 5 3 3 6-6" /></svg>
                 )}
               </span>
               <div>

@@ -23,8 +23,8 @@ function ShowcaseCard({ showcase }: { showcase: PublicShowcaseSummary }) {
 
   return (
     <Card className="group overflow-hidden rounded-xl border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-0.5 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
-      <Link className="flex min-h-[168px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:block" to={`/showcases/${showcase.slug}`}>
-        <ImageFrame alt={showcase.title} className="h-[168px] w-[42%] shrink-0 rounded-none border-0 bg-[#edf5f8] shadow-none sm:h-[220px] sm:w-full" fallbackSrc="/assets/landing/showcase-room.png" src={imageUrl} />
+      <Link className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]" to={`/showcases/${showcase.slug}`}>
+        {imageUrl ? <ImageFrame alt={showcase.title} className="h-[220px] w-full rounded-none border-0 bg-[#edf5f8] shadow-none" src={imageUrl} /> : null}
         <div className="flex min-w-0 flex-1 flex-col p-4 sm:min-h-[184px] sm:p-5">
           {showcase.category ? <Badge className="w-fit bg-[#eef8fb] text-[11px] font-bold text-[#005687]">{showcase.category}</Badge> : null}
           <h2 className="mt-2 line-clamp-2 text-[16px] font-extrabold leading-5 tracking-[-0.015em] text-[#005687] transition group-hover:text-[#167ea7] sm:text-[18px] sm:leading-6">{showcase.title}</h2>
@@ -73,8 +73,8 @@ function ShowcasesPageSkeleton() {
         <section aria-hidden="true" className="mx-auto max-w-[1280px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {Array.from({ length: 6 }, (_, index) => (
-              <article className="flex min-h-[168px] overflow-hidden rounded-xl border border-[#e1ebef] bg-white sm:block" key={index}>
-                <div className="h-[168px] w-[42%] shrink-0 animate-pulse bg-[#e3eef2] sm:h-[220px] sm:w-full" />
+              <article className="overflow-hidden rounded-xl border border-[#e1ebef] bg-white" key={index}>
+                <div className="h-[220px] w-full animate-pulse bg-[#e3eef2]" />
                 <div className="flex min-w-0 flex-1 flex-col justify-center space-y-3 p-4 sm:min-h-[184px] sm:justify-start sm:p-5">
                   <div className="h-5 w-20 animate-pulse rounded-full bg-[#e2f1f5]" />
                   <div className="h-5 w-[92%] animate-pulse rounded-full bg-[#d7e8ee] sm:h-6" />

@@ -36,9 +36,9 @@ function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; he
     <section className="border-b border-[#dceaf0] bg-[#f7fafc] py-5 sm:py-7">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="relative min-h-[330px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#063e5c] sm:min-h-[430px]">
-          <ResilientImage alt="Arunreah Dental Clinic team" className="absolute inset-0 h-full w-full object-cover object-center" fallbackSrc={fallbackImageUrl} src={imageUrl} />
-          <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,52,78,0.88)_0%,rgba(5,52,78,0.61)_48%,rgba(5,52,78,0.08)_100%)]" />
-          <div className="relative z-10 flex min-h-[330px] max-w-[690px] items-end p-6 sm:min-h-[430px] sm:p-10 lg:p-12">
+          <ResilientImage alt="Arunreah Dental Clinic team" className="h-[200px] w-full object-cover object-center sm:absolute sm:inset-0 sm:h-full" fallbackSrc={fallbackImageUrl} src={imageUrl} />
+          <div aria-hidden="true" className="absolute inset-0 hidden bg-[linear-gradient(90deg,rgba(5,52,78,0.88)_0%,rgba(5,52,78,0.61)_48%,rgba(5,52,78,0.08)_100%)] sm:block" />
+          <div className="relative z-10 flex max-w-[690px] items-end p-5 sm:min-h-[430px] sm:p-10 lg:p-12">
             <div>
               <p className="text-[11px] font-bold uppercase leading-4 tracking-[3px] text-[#b7e7f4] sm:text-[12px] sm:tracking-[3.6px]">
                 {eyebrow}
