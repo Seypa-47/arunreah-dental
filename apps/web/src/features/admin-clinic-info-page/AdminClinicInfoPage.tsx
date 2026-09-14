@@ -208,10 +208,12 @@ export function AdminClinicInfoPage({
     taglineKm: '',
     shortAboutEn: '',
     shortAboutKm: '',
+    visionTitleEn: '',
+    visionTitleKm: '',
+    visionBodyEn: '',
+    visionBodyKm: '',
     logoKey: '',
     yearsExperience: '',
-    successfulCases: '',
-    patientSatisfaction: '',
   });
 
   // Tab 2 state: Branches
@@ -549,9 +551,10 @@ export function AdminClinicInfoPage({
                 </div>
               </Card>
 
-              {/* Card 2: Business Hours */}
+              {/* Card 2: About page emphasis */}
               <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
-                <h2 className="text-[18px] font-bold text-[#182238]">Clinic Statistics</h2>
+                <h2 className="text-[18px] font-bold text-[#182238]">About page emphasis</h2>
+                <p className="mt-1 text-[13px] text-[#71839e]">Feature the clinic's experience and a concise vision statement.</p>
 
                 <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
                   <div>
@@ -562,35 +565,25 @@ export function AdminClinicInfoPage({
                   </div>
 
                   <div>
-                    <label className="block text-[13px] font-bold text-[#182238]">Cases and Satisfaction</label>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <input
-                          className="h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[13.5px] text-[#182238] outline-none focus:border-[#2187a8]"
-                          onChange={(e) =>
-                            setGeneralInfo((prev) => ({ ...prev, successfulCases: e.target.value }))
-                          }
-                          min="0" type="number" value={generalInfo.successfulCases}
-                        />
-                        <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-[#8a9bb2]">
-                          🕒
-                        </span>
-                      </div>
-                      <span className="text-[#8a9bb2]">-</span>
-                      <div className="relative flex-1">
-                        <input
-                          className="h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[13.5px] text-[#182238] outline-none focus:border-[#2187a8]"
-                          onChange={(e) =>
-                            setGeneralInfo((prev) => ({ ...prev, patientSatisfaction: e.target.value }))
-                          }
-                          max="100" min="0" type="number" value={generalInfo.patientSatisfaction}
-                        />
-                        <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-[#8a9bb2]">
-                          🕒
-                        </span>
-                      </div>
-                    </div>
+                    <label className="block text-[13px] font-bold text-[#182238]">Vision title (English)</label>
+                    <input className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]" maxLength={300} onChange={(e) => setGeneralInfo((prev) => ({ ...prev, visionTitleEn: e.target.value }))} placeholder="Our vision" type="text" value={generalInfo.visionTitleEn} />
                   </div>
+                </div>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  {([
+                    ['visionBodyEn', 'Vision statement (English)'],
+                    ['visionBodyKm', 'Vision statement (Khmer)'],
+                  ] as const).map(([field, label]) => (
+                    <label className="block" key={field}>
+                      <span className="text-[13px] font-bold text-[#182238]">{label}</span>
+                      <textarea className="mt-1.5 min-h-24 w-full resize-y rounded-xl border border-[#dce5ef] bg-white p-3.5 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]" maxLength={2000} onChange={(e) => setGeneralInfo((prev) => ({ ...prev, [field]: e.target.value }))} value={generalInfo[field]} />
+                    </label>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <label className="block text-[13px] font-bold text-[#182238]">Vision title (Khmer)</label>
+                  <input className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]" maxLength={300} onChange={(e) => setGeneralInfo((prev) => ({ ...prev, visionTitleKm: e.target.value }))} type="text" value={generalInfo.visionTitleKm} />
                 </div>
               </Card>
             </div>

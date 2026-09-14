@@ -204,14 +204,12 @@ export async function listAdminShowcases(database: DatabaseClient, query: AdminS
   return { items, total: total[0]?.value ?? 0 };
 }
 
-export async function listPublicShowcases(database: DatabaseClient, homepageOnly = false) {
+export async function listPublicShowcases(database: DatabaseClient) {
   return database
     .select()
     .from(showcases)
     .where(
-      homepageOnly
-        ? and(eq(showcases.status, 'PUBLISHED'), eq(showcases.showOnHomepage, true))
-        : eq(showcases.status, 'PUBLISHED'),
+      and(eq(showcases.status, 'PUBLISHED'), eq(showcases.showOnHomepage, true)),
     )
     .orderBy(asc(showcases.displayOrder), asc(showcases.id));
 }

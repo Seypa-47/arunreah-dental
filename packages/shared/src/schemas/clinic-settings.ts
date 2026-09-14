@@ -9,10 +9,12 @@ const clinicSettingsFields = {
   taglineKm: optionalText(300),
   shortAboutEn: optionalText(5_000),
   shortAboutKm: optionalText(5_000),
+  visionTitleEn: optionalText(300),
+  visionTitleKm: optionalText(300),
+  visionBodyEn: optionalText(2_000),
+  visionBodyKm: optionalText(2_000),
   logoKey: optionalText(1_024),
   yearsExperience: z.number().int().min(0).max(200).nullable().optional(),
-  successfulCases: z.number().int().min(0).max(100_000_000).nullable().optional(),
-  patientSatisfaction: z.number().int().min(0).max(100).nullable().optional(),
 } as const;
 
 export const createClinicSettingsSchema = z.object(clinicSettingsFields);
@@ -25,10 +27,12 @@ export const updateClinicSettingsSchema = z
     taglineKm: clinicSettingsFields.taglineKm,
     shortAboutEn: clinicSettingsFields.shortAboutEn,
     shortAboutKm: clinicSettingsFields.shortAboutKm,
+    visionTitleEn: clinicSettingsFields.visionTitleEn,
+    visionTitleKm: clinicSettingsFields.visionTitleKm,
+    visionBodyEn: clinicSettingsFields.visionBodyEn,
+    visionBodyKm: clinicSettingsFields.visionBodyKm,
     logoKey: clinicSettingsFields.logoKey,
     yearsExperience: clinicSettingsFields.yearsExperience,
-    successfulCases: clinicSettingsFields.successfulCases,
-    patientSatisfaction: clinicSettingsFields.patientSatisfaction,
   })
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
     message: 'Provide at least one field to update.',
@@ -42,10 +46,12 @@ export const clinicSettingsAdminReadSchema = z.object({
   taglineKm: z.string().nullable(),
   shortAboutEn: z.string().nullable(),
   shortAboutKm: z.string().nullable(),
+  visionTitleEn: z.string().nullable(),
+  visionTitleKm: z.string().nullable(),
+  visionBodyEn: z.string().nullable(),
+  visionBodyKm: z.string().nullable(),
   logoKey: z.string().nullable(),
   yearsExperience: z.number().int().nullable(),
-  successfulCases: z.number().int().nullable(),
-  patientSatisfaction: z.number().int().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -57,10 +63,12 @@ export const clinicSettingsPublicReadSchema = clinicSettingsAdminReadSchema.pick
   taglineKm: true,
   shortAboutEn: true,
   shortAboutKm: true,
+  visionTitleEn: true,
+  visionTitleKm: true,
+  visionBodyEn: true,
+  visionBodyKm: true,
   logoKey: true,
   yearsExperience: true,
-  successfulCases: true,
-  patientSatisfaction: true,
 });
 
 export type CreateClinicSettingsInput = z.infer<typeof createClinicSettingsSchema>;

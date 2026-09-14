@@ -413,10 +413,10 @@ export function AdminAddShowcasePage() {
                   </div>
                 </div>
 
-                {/* Homepage Visibility */}
+                {/* Public listing visibility */}
                 <div className="flex items-center gap-3 pt-1">
                   <span className="text-[13px] font-bold text-[#182238]">
-                    Homepage Visibility
+                    Public Listing Visibility
                   </span>
                   <ToggleSwitch
                     checked={homepageVisibility}
@@ -427,7 +427,7 @@ export function AdminAddShowcasePage() {
                     className="cursor-pointer text-[13px] text-[#71839e]"
                     htmlFor={homepageVisibilityToggleId}
                   >
-                    Show this showcase on homepage cards
+                    Show this showcase on the homepage and Latest Showcases page
                   </label>
                 </div>
               </div>
@@ -960,11 +960,11 @@ export function AdminAddShowcasePage() {
               <h2 className="text-[18px] font-bold text-[#182238]">Homepage Card Settings</h2>
 
               <div className="mt-4 space-y-4">
-                {/* Show on Homepage */}
+                {/* Public listing visibility */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <span className="text-[13px] font-bold text-[#182238]">
-                      Show on Homepage
+                      Show in Public Listings
                     </span>
                     <svg className="size-4 text-[#8a9bb2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <circle cx="12" cy="12" r="10" strokeWidth="2" />

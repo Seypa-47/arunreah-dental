@@ -129,7 +129,7 @@ export async function getPublicShowcaseList(
   language: ShowcaseLanguage,
   homepageOnly = false,
 ) {
-  const showcases = await repository.listPublicShowcases(database, homepageOnly);
+  const showcases = await repository.listPublicShowcases(database);
   return (homepageOnly ? showcases.slice(0, 3) : showcases).map((showcase) =>
     localize(showcase, language),
   );

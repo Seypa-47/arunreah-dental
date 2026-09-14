@@ -49,10 +49,12 @@ export type ClinicGeneralInfo = {
   taglineKm: string;
   shortAboutEn: string;
   shortAboutKm: string;
+  visionTitleEn: string;
+  visionTitleKm: string;
+  visionBodyEn: string;
+  visionBodyKm: string;
   logoKey: string;
   yearsExperience: string;
-  successfulCases: string;
-  patientSatisfaction: string;
 };
 
 export type ContactSettings = {
@@ -194,7 +196,7 @@ const adminClinicInfoContent: AdminClinicInfoContent = {
   },
   generalInfo: {
     clinicNameEn: '', clinicNameKm: '', taglineEn: '', taglineKm: '', shortAboutEn: '', shortAboutKm: '',
-    logoKey: '', yearsExperience: '', successfulCases: '', patientSatisfaction: '',
+    visionTitleEn: '', visionTitleKm: '', visionBodyEn: '', visionBodyKm: '', logoKey: '', yearsExperience: '',
   },
   header: {
     dateLabel: 'October 24, 2024',
@@ -283,10 +285,12 @@ function toClinicGeneralInfo(clinic: ClinicSettingsAdminRead): ClinicGeneralInfo
     taglineKm: clinic.taglineKm ?? '',
     shortAboutEn: clinic.shortAboutEn ?? '',
     shortAboutKm: clinic.shortAboutKm ?? '',
+    visionTitleEn: clinic.visionTitleEn ?? '',
+    visionTitleKm: clinic.visionTitleKm ?? '',
+    visionBodyEn: clinic.visionBodyEn ?? '',
+    visionBodyKm: clinic.visionBodyKm ?? '',
     logoKey: clinic.logoKey ?? '',
     yearsExperience: numberForForm(clinic.yearsExperience),
-    successfulCases: numberForForm(clinic.successfulCases),
-    patientSatisfaction: numberForForm(clinic.patientSatisfaction),
   };
 }
 
@@ -324,10 +328,12 @@ export async function saveClinicInfo(info: ClinicGeneralInfo): Promise<ClinicGen
     taglineKm: nullableText(info.taglineKm),
     shortAboutEn: nullableText(info.shortAboutEn),
     shortAboutKm: nullableText(info.shortAboutKm),
+    visionTitleEn: nullableText(info.visionTitleEn),
+    visionTitleKm: nullableText(info.visionTitleKm),
+    visionBodyEn: nullableText(info.visionBodyEn),
+    visionBodyKm: nullableText(info.visionBodyKm),
     logoKey: nullableText(info.logoKey),
     yearsExperience: nullableInteger(info.yearsExperience),
-    successfulCases: nullableInteger(info.successfulCases),
-    patientSatisfaction: nullableInteger(info.patientSatisfaction),
   });
   return info;
 }

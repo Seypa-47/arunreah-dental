@@ -65,6 +65,17 @@ export function publicAboutContent(
   const clinicName = language === 'km' ? clinic.clinicNameKm : clinic.clinicNameEn;
   const tagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
   const shortAbout = language === 'km' ? clinic.shortAboutKm : clinic.shortAboutEn;
+  const visionTitle = language === 'km' ? clinic.visionTitleKm : clinic.visionTitleEn;
+  const visionBody = language === 'km' ? clinic.visionBodyKm : clinic.visionBodyEn;
+  const aboutCopy = shortAbout?.replace(/\\n/g, '\n') ?? '';
+  const visionStart = aboutCopy.search(/arunreah means morning light/i);
+  const founderStart = visionStart >= 0 ? aboutCopy.slice(visionStart).search(/founder and dentist/i) : -1;
+  const visionEnd = founderStart >= 0 ? visionStart + founderStart : aboutCopy.length;
+  const legacyVision = visionStart >= 0 ? aboutCopy.slice(visionStart, visionEnd).trim() : '';
+  const storyCopy = visionStart >= 0
+    ? `${aboutCopy.slice(0, visionStart).trim()}\n\n${aboutCopy.slice(visionEnd).trim()}`.trim()
+    : aboutCopy;
+  const paragraphs = storyCopy.split(/\n{2,}/).filter(Boolean);
   return {
     ...publicShell(),
     clinicGallery: clinicShowcase
@@ -129,11 +140,9 @@ export function publicAboutContent(
     mission: { description: '', iconUrl: '', title: '' },
     stats: [
       { iconUrl: '/assets/landing/about-stat-experience.svg', label: language === 'km' ? 'ឆ្នាំនៃបទពិសោធន៍' : 'Years of experience', value: String(clinic.yearsExperience) },
-      { iconUrl: '/assets/landing/about-stat-cases.svg', label: language === 'km' ? 'ករណីដែលបានថែទាំ' : 'Cases cared for', value: String(clinic.successfulCases) },
-      { iconUrl: '/assets/landing/about-stat-satisfaction.svg', label: language === 'km' ? 'ការពេញចិត្តរបស់អ្នកជំងឺ' : 'Patient satisfaction', value: `${clinic.patientSatisfaction}%` },
     ],
-    story: { eyebrow: '', imageAlt: '', imageUrl: '', paragraphs: shortAbout ? shortAbout.replace(/\\n/g, '\n').split(/\n{2,}/).filter(Boolean) : [], title: clinicName },
-    vision: { description: '', iconUrl: '', title: '' },
+    story: { eyebrow: '', imageAlt: '', imageUrl: '', paragraphs, title: clinicName },
+    vision: { description: visionBody || legacyVision, iconUrl: '', title: visionTitle || (language === 'km' ? 'ទស្សនវិស័យរបស់យើង' : 'Our vision') },
   };
 }
 

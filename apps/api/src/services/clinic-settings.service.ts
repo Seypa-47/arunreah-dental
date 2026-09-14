@@ -22,10 +22,12 @@ function toAdminClinicSettings(settings: NonNullable<Awaited<ReturnType<typeof f
     taglineKm: settings.taglineKm,
     shortAboutEn: settings.shortAboutEn,
     shortAboutKm: settings.shortAboutKm,
+    visionTitleEn: settings.visionTitleEn,
+    visionTitleKm: settings.visionTitleKm,
+    visionBodyEn: settings.visionBodyEn,
+    visionBodyKm: settings.visionBodyKm,
     logoKey: settings.logoKey,
     yearsExperience: settings.yearsExperience,
-    successfulCases: settings.successfulCases,
-    patientSatisfaction: settings.patientSatisfaction,
     createdAt: settings.createdAt,
     updatedAt: settings.updatedAt,
   };
@@ -39,10 +41,12 @@ function toPublicClinicSettings(settings: ClinicSettingsAdminRead): ClinicSettin
     taglineKm: settings.taglineKm,
     shortAboutEn: settings.shortAboutEn,
     shortAboutKm: settings.shortAboutKm,
+    visionTitleEn: settings.visionTitleEn,
+    visionTitleKm: settings.visionTitleKm,
+    visionBodyEn: settings.visionBodyEn,
+    visionBodyKm: settings.visionBodyKm,
     logoKey: settings.logoKey,
     yearsExperience: settings.yearsExperience,
-    successfulCases: settings.successfulCases,
-    patientSatisfaction: settings.patientSatisfaction,
   };
 }
 

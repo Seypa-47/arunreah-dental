@@ -82,11 +82,12 @@ function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPag
             </div>
           </div>
 
-          <aside className="grid content-start gap-3 border-t border-[#d6e5eb] pt-5 sm:grid-cols-3 sm:border-t-0 sm:pt-0 lg:grid-cols-1 lg:border-l lg:pl-6">
+          <aside className="border-t border-[#d6e5eb] pt-5 sm:border-t-0 sm:pt-0 lg:border-l lg:pl-6">
             {stats.map((stat) => (
-              <div className="border-b border-[#dce9ee] pb-4 last:border-b-0" key={stat.label}>
-                <p className="text-[28px] font-extrabold leading-8 tracking-[-0.035em] text-[#087b9f]">{stat.value}</p>
-                <p className="mt-1 text-[11px] font-bold uppercase leading-4 tracking-[0.1em] text-[#607486]">{stat.label}</p>
+              <div className="relative overflow-hidden rounded-2xl border border-[#cae6ee] bg-[linear-gradient(135deg,#f3fbfd_0%,#e4f5f9_100%)] px-6 py-7 shadow-[0_12px_28px_rgba(28,121,151,0.10)]" key={stat.label}>
+                <span aria-hidden="true" className="absolute -right-3 -top-8 text-[112px] font-black leading-none text-[#3695B9]/10">{stat.value}</span>
+                <p className="relative text-[54px] font-extrabold leading-none tracking-[-0.07em] text-[#005687] sm:text-[64px]">{stat.value}</p>
+                <p className="relative mt-3 max-w-[130px] text-[11px] font-extrabold uppercase leading-4 tracking-[0.12em] text-[#42697a]">{stat.label}</p>
               </div>
             ))}
           </aside>
@@ -155,7 +156,23 @@ function VisionMissionSection({
   mission,
   vision,
 }: Pick<AboutPageContent, 'mission' | 'vision'>) {
-  if (!mission.title && !vision.title) return null;
+  if (!mission.title && !vision.description) return null;
+  if (!mission.title) {
+    return (
+      <section className="border-y border-[#dcecf1] bg-[#f5fafc] py-7 sm:py-9">
+        <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8">
+          <article className="relative overflow-hidden rounded-2xl border border-[#b9deea] bg-[#087b9f] px-6 py-6 text-white shadow-[0_14px_30px_rgba(5,84,111,0.16)] sm:px-8">
+            <span aria-hidden="true" className="absolute -right-5 -top-16 text-[150px] font-black leading-none text-white/10">✦</span>
+            <div className="relative max-w-[820px]">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#c9f1fb]">Arunreah Dental Clinic</p>
+              <h2 className="mt-2 text-[25px] font-extrabold leading-tight sm:text-[30px]">{vision.title}</h2>
+              <p className="mt-3 text-[14px] leading-6 text-white/90 sm:text-[15px]">{vision.description}</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="grid lg:grid-cols-2">
       <article className="bg-[#3695B9] px-5 py-10 text-white sm:px-10 sm:py-12 lg:pl-[calc((100vw-1280px)/2)]">

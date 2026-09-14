@@ -10,10 +10,12 @@ type ClinicRecord = {
   taglineKm: string | null;
   shortAboutEn: string | null;
   shortAboutKm: string | null;
+  visionTitleEn: string | null;
+  visionTitleKm: string | null;
+  visionBodyEn: string | null;
+  visionBodyKm: string | null;
   logoKey: string | null;
   yearsExperience: number | null;
-  successfulCases: number | null;
-  patientSatisfaction: number | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -99,10 +101,12 @@ function clinicFixture(): ClinicRecord {
     taglineKm: 'ស្នាមញញឹមមានសុខភាពល្អ',
     shortAboutEn: 'Clinic introduction.',
     shortAboutKm: 'ការណែនាំអំពីគ្លីនិក។',
+    visionTitleEn: 'Our vision',
+    visionTitleKm: 'ទស្សនវិស័យរបស់យើង',
+    visionBodyEn: 'A healthy, confident smile for every patient.',
+    visionBodyKm: 'ស្នាមញញឹមប្រកបដោយសុខភាព និងទំនុកចិត្តសម្រាប់អ្នកជំងឺគ្រប់រូប។',
     logoKey: 'clinic/logo.png',
     yearsExperience: 12,
-    successfulCases: 5000,
-    patientSatisfaction: 98,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-02T00:00:00.000Z',
   };
@@ -131,10 +135,12 @@ describe('clinic information API routes', () => {
           taglineKm: 'ស្នាមញញឹមមានសុខភាពល្អ',
           shortAboutEn: 'Clinic introduction.',
           shortAboutKm: 'ការណែនាំអំពីគ្លីនិក។',
+          visionTitleEn: 'Our vision',
+          visionTitleKm: 'ទស្សនវិស័យរបស់យើង',
+          visionBodyEn: 'A healthy, confident smile for every patient.',
+          visionBodyKm: 'ស្នាមញញឹមប្រកបដោយសុខភាព និងទំនុកចិត្តសម្រាប់អ្នកជំងឺគ្រប់រូប។',
           logoKey: 'clinic/logo.png',
           yearsExperience: 12,
-          successfulCases: 5000,
-          patientSatisfaction: 98,
         },
       },
     });
@@ -197,7 +203,7 @@ describe('clinic information API routes', () => {
       {
         method: 'PATCH',
         headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patientSatisfaction: 99, logoKey: 'clinic/new-logo.png' }),
+        body: JSON.stringify({ visionTitleEn: 'A brighter tomorrow', logoKey: 'clinic/new-logo.png' }),
       },
       testBindings,
     );
@@ -207,7 +213,7 @@ describe('clinic information API routes', () => {
       data: {
         clinic: {
           clinicNameEn: 'Arunreah Dental Clinic',
-          patientSatisfaction: 99,
+          visionTitleEn: 'A brighter tomorrow',
           logoKey: 'clinic/new-logo.png',
         },
       },
@@ -233,7 +239,7 @@ describe('clinic information API routes', () => {
       {
         method: 'PATCH',
         headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ patientSatisfaction: 101 }),
+        body: JSON.stringify({ yearsExperience: 201 }),
       },
       testBindings,
     );

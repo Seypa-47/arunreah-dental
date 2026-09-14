@@ -103,9 +103,9 @@ vi.mock('../src/repositories/showcase.repository', () => ({
     items: state.showcases.slice((query.page - 1) * query.limit, query.page * query.limit),
     total: state.showcases.length,
   }),
-  listPublicShowcases: async (_database: unknown, homepageOnly = false) =>
+  listPublicShowcases: async () =>
     state.showcases
-      .filter((item) => item.status === 'PUBLISHED' && (!homepageOnly || item.showOnHomepage))
+      .filter((item) => item.status === 'PUBLISHED' && item.showOnHomepage)
       .sort((a, b) => a.displayOrder - b.displayOrder),
 }));
 
@@ -186,7 +186,8 @@ describe('showcase API routes', () => {
       undefined,
       bindings,
     );
-    await expect(list.json()).resolves.toMatchObject({
+    const listJson = await list.json() as { success: boolean; data: { showcases: Array<{ slug: string; title: string }> } };
+    expect(listJson).toMatchObject({
       success: true,
       data: {
         showcases: expect.arrayContaining([
@@ -194,6 +195,7 @@ describe('showcase API routes', () => {
         ]),
       },
     });
+    expect(listJson.data.showcases).not.toContainEqual(expect.objectContaining({ slug: 'not-home' }));
     const homepage = await app.request(
       'http://localhost/api/public/showcases?homepage=true',
       undefined,

@@ -181,7 +181,7 @@ function AddShowcaseModal({
           </div>
 
           <div className="flex items-center justify-between rounded-xl border border-[#edf2f7] bg-[#f8fbfe] p-3.5">
-            <span className="text-[13px] font-bold text-[#182238]">Homepage Visibility</span>
+            <span className="text-[13px] font-bold text-[#182238]">Public Listing Visibility</span>
             <ToggleSwitch checked={homepageVisibility} onChange={setHomepageVisibility} />
           </div>
 
@@ -448,7 +448,7 @@ export function AdminShowcasePage() {
             </label>
 
             <label className="flex h-11 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[#71839e] shadow-xs focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#d9f0f7]">
-              <span className="sr-only">Filter by homepage visibility</span>
+              <span className="sr-only">Filter by public listing visibility</span>
               <select
                 className="cursor-pointer bg-transparent text-[14px] font-medium text-[#182238] outline-none"
                 onChange={(e) => setListState((previous) => ({
@@ -520,12 +520,12 @@ export function AdminShowcasePage() {
                           {article.category}
                         </td>
 
-                        {/* Homepage Visibility */}
+                        {/* Public listing visibility */}
                         <td className="py-4 pr-4">
                           <div className="flex items-center gap-2.5">
                             <ToggleSwitch
                               checked={article.homepageVisibility}
-                              label={`Toggle homepage visibility for ${article.title}`}
+                              label={`Toggle public listing visibility for ${article.title}`}
                               onChange={(checked) => handleToggleVisibility(article.id, checked)}
                             />
                             <span
@@ -778,7 +778,7 @@ export function AdminShowcasePage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between rounded-lg border border-[#edf2f7] p-3 text-[12.5px] font-bold text-[#182238]">
-                    Show on Homepage <ToggleSwitch checked={editHomepage} onChange={setEditHomepage} />
+                    Show in Public Listings <ToggleSwitch checked={editHomepage} onChange={setEditHomepage} />
                   </div>
                   <label className="block text-[12.5px] font-bold text-[#182238]">Related showcase IDs (maximum 3, comma separated)<textarea className="mt-1 h-16 w-full rounded-lg border border-[#dce5ef] p-2 text-[13px] font-normal" onChange={(e) => setEditRelatedIds(e.target.value.split(',').map((id) => id.trim()).filter(Boolean))} value={editRelatedIds.join(', ')} /></label>
                   <div className="space-y-2">
@@ -936,14 +936,14 @@ export function AdminShowcasePage() {
 
                   <div className="my-6 border-t border-[#f0f4f8]" />
 
-                  {/* Show on Homepage Toggle */}
+                  {/* Public listing visibility toggle */}
                   <div className="flex items-center justify-between">
                     <span className="text-[14px] font-bold text-[#182238]">
-                      Show on Homepage
+                      Show in Public Listings
                     </span>
                     <ToggleSwitch
                       checked={selectedArticle.homepageVisibility}
-                      label="Show on homepage toggle"
+                      label="Show in public listings toggle"
                       onChange={(checked) =>
                         handleToggleVisibility(selectedArticle.id, checked)
                       }
