@@ -134,6 +134,8 @@ export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | '
     galleryTitle: string;
     professionalEyebrow: string;
     professionalTitle: string;
+    facilitiesEyebrow: string;
+    facilitiesTitle: string;
     timelineEyebrow: string;
     timelineTitle: string;
     profileLabel: string;

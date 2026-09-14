@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const pageMediaPlacementValues = ['ABOUT_PROFESSIONAL_DEVELOPMENT', 'DOCTORS_HERO', 'DOCTORS_PATIENT_EDUCATION'] as const;
+export const pageMediaPlacementValues = ['ABOUT_PROFESSIONAL_DEVELOPMENT', 'ABOUT_ADVANCED_FACILITIES', 'DOCTORS_HERO', 'DOCTORS_PATIENT_EDUCATION'] as const;
 export const pageMediaPlacementSchema = z.enum(pageMediaPlacementValues);
 const base = z.object({
   placement: pageMediaPlacementSchema,
