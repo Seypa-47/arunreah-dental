@@ -74,6 +74,17 @@ export type LandingShowcase = {
   title: string;
 };
 
+export type LandingPromotion = {
+  badge: string;
+  benefits: string[];
+  description: string;
+  imageAlt: string;
+  imageUrl: string;
+  discount: string;
+  title: string;
+  validUntil: string | null;
+};
+
 export type LandingFooterLinkGroup = {
   links: LandingNavigationItem[];
   title: string;
@@ -94,6 +105,12 @@ export type LandingPageContent = {
   };
   heroes: LandingHero[];
   navigation: LandingNavigationItem[];
+  promotions: LandingPromotion[];
+  promotionsEditorial: {
+    eyebrow: string;
+    subtitle: string;
+    title: string;
+  };
   services: LandingService[];
   showcase: LandingShowcase[];
 };

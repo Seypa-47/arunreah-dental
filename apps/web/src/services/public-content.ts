@@ -91,8 +91,8 @@ export type PublicShowcaseDetail = PublicShowcaseSummary & {
   relatedShowcases: PublicShowcaseSummary[];
   seo: { title: string | null; description: string | null };
 };
-export type PublicPageMedia = { id: string; imageKey: string; title: string | null; body: string | null; displayOrder: number };
-export type PageMediaPlacement = 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'ABOUT_ADVANCED_FACILITIES' | 'DOCTORS_HERO' | 'DOCTORS_PATIENT_EDUCATION';
+export type PublicPageMedia = { id: string; imageKey: string; title: string | null; body: string | null; badge: string | null; benefits: string | null; discount: string | null; validUntil: string | null; displayOrder: number };
+export type PageMediaPlacement = 'HOME_PROMOTIONS' | 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'ABOUT_ADVANCED_FACILITIES' | 'DOCTORS_HERO' | 'DOCTORS_PATIENT_EDUCATION';
 export type PublicAboutTimelineItem = { id: string; year: number; title: string; body: string; displayOrder: number };
 
 export type AppointmentAcknowledgement = {

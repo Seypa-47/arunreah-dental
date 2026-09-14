@@ -12,25 +12,33 @@ import { cmsApi, type AdminPageMediaRecord } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
 
 type EditorState = {
+  badgeEn: string;
+  badgeKm: string;
+  benefitsEn: string;
+  benefitsKm: string;
   bodyEn: string;
   bodyKm: string;
   displayOrder: string;
   imageKey: string;
+  discountEn: string;
+  discountKm: string;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   titleEn: string;
   titleKm: string;
+  validUntil: string;
 };
 
 const placements: { description: string; label: string; value: PageMediaPlacement }[] = [
+  { value: 'HOME_PROMOTIONS', label: 'Home · Promotions', description: 'Current clinic campaigns and announcements. Publish only active promotions, then archive or remove them when finished.' },
   { value: 'ABOUT_PROFESSIONAL_DEVELOPMENT', label: 'About · Professional Development', description: 'Editorial images that support the clinic story on the About page.' },
   { value: 'ABOUT_ADVANCED_FACILITIES', label: 'About · Advanced Facilities', description: 'Ordered facility cards for the technology section on the About page.' },
   { value: 'DOCTORS_HERO', label: 'Doctors · Team Hero', description: 'The team photo and bilingual introduction at the top of the Doctors page.' },
   { value: 'DOCTORS_PATIENT_EDUCATION', label: 'Doctors · Patient-first Approach', description: 'A single educational image block on the Doctors page.' },
 ];
 
-const emptyEditor = (): EditorState => ({ bodyEn: '', bodyKm: '', displayOrder: '0', imageKey: '', status: 'DRAFT', titleEn: '', titleKm: '' });
+const emptyEditor = (): EditorState => ({ badgeEn: '', badgeKm: '', benefitsEn: '', benefitsKm: '', bodyEn: '', bodyKm: '', discountEn: '', discountKm: '', displayOrder: '0', imageKey: '', status: 'DRAFT', titleEn: '', titleKm: '', validUntil: '' });
 const toEditor = (item: AdminPageMediaRecord): EditorState => ({
-  bodyEn: item.bodyEn ?? '', bodyKm: item.bodyKm ?? '', displayOrder: String(item.displayOrder), imageKey: item.imageKey, status: item.status, titleEn: item.titleEn ?? '', titleKm: item.titleKm ?? '',
+  badgeEn: item.badgeEn ?? '', badgeKm: item.badgeKm ?? '', benefitsEn: item.benefitsEn ?? '', benefitsKm: item.benefitsKm ?? '', bodyEn: item.bodyEn ?? '', bodyKm: item.bodyKm ?? '', discountEn: item.discountEn ?? '', discountKm: item.discountKm ?? '', displayOrder: String(item.displayOrder), imageKey: item.imageKey, status: item.status, titleEn: item.titleEn ?? '', titleKm: item.titleKm ?? '', validUntil: item.validUntil ?? '',
 });
 
 function safeError(error: unknown) {
@@ -65,7 +73,14 @@ export function AdminPageMediaPage() {
         titleKm: form.titleKm.trim() || null,
         bodyEn: form.bodyEn.trim() || null,
         bodyKm: form.bodyKm.trim() || null,
+        badgeEn: placement === 'HOME_PROMOTIONS' ? form.badgeEn.trim() || null : null,
+        badgeKm: placement === 'HOME_PROMOTIONS' ? form.badgeKm.trim() || null : null,
+        benefitsEn: placement === 'HOME_PROMOTIONS' ? form.benefitsEn.trim() || null : null,
+        benefitsKm: placement === 'HOME_PROMOTIONS' ? form.benefitsKm.trim() || null : null,
         imageKey: form.imageKey,
+        discountEn: placement === 'HOME_PROMOTIONS' ? form.discountEn.trim() || null : null,
+        discountKm: placement === 'HOME_PROMOTIONS' ? form.discountKm.trim() || null : null,
+        validUntil: placement === 'HOME_PROMOTIONS' ? form.validUntil || null : null,
         displayOrder: Number.parseInt(form.displayOrder, 10) || 0,
       };
       if (!payload.imageKey) throw new Error('An image is required.');
@@ -82,6 +97,7 @@ export function AdminPageMediaPage() {
   });
   const set = <K extends keyof EditorState>(key: K, value: EditorState[K]) => setForm((current) => ({ ...current, [key]: value }));
   const placementLabel = placements.find((item) => item.value === placement);
+  const isPromotion = placement === 'HOME_PROMOTIONS';
 
   return <div className="min-h-screen bg-[#f6f8fb] lg:flex">
 
@@ -120,6 +136,13 @@ export function AdminPageMediaPage() {
               <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#52647d]">Status<select className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-sm" onChange={(event) => set('status', event.target.value as EditorState['status'])} value={form.status}><option value="DRAFT">Draft</option><option value="PUBLISHED">Published</option><option value="ARCHIVED">Archived</option></select></label><label className="text-sm font-semibold text-[#52647d]">Display order<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm" min="0" onChange={(event) => set('displayOrder', event.target.value)} type="number" value={form.displayOrder} /></label></div>
               <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#52647d]">Title · English<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm" maxLength={160} onChange={(event) => set('titleEn', event.target.value)} value={form.titleEn} /></label><label className="text-sm font-semibold text-[#52647d]">ចំណងជើង · ខ្មែរ<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm" maxLength={160} onChange={(event) => set('titleKm', event.target.value)} value={form.titleKm} /></label></div>
               <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#52647d]">Description · English<textarea className="mt-2 min-h-32 w-full rounded-xl border border-[#dce5ef] p-3 text-sm leading-6" maxLength={1200} onChange={(event) => set('bodyEn', event.target.value)} value={form.bodyEn} /></label><label className="text-sm font-semibold text-[#52647d]">ពិពណ៌នា · ខ្មែរ<textarea className="mt-2 min-h-32 w-full rounded-xl border border-[#dce5ef] p-3 text-sm leading-6" maxLength={1200} onChange={(event) => set('bodyKm', event.target.value)} value={form.bodyKm} /></label></div>
+              {isPromotion ? <fieldset className="space-y-5 rounded-xl border border-[#dcebf0] bg-[#f8fcfd] p-4 sm:p-5">
+                <legend className="px-1 text-sm font-bold text-[#182238]">Promotion details <span className="font-normal text-[#71839e]">(all optional)</span></legend>
+                <p className="-mt-2 text-xs leading-5 text-[#71839e]">Use only details that are true for this campaign. Add up to three short benefits, one per line.</p>
+                <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#52647d]">Campaign label · English<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-sm" maxLength={80} onChange={(event) => set('badgeEn', event.target.value)} placeholder="e.g. Limited-time offer" value={form.badgeEn} /></label><label className="text-sm font-semibold text-[#52647d]">ស្លាកកម្មវិធី · ខ្មែរ<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-sm" maxLength={80} onChange={(event) => set('badgeKm', event.target.value)} value={form.badgeKm} /></label></div>
+                <div className="grid gap-4 sm:grid-cols-3"><label className="text-sm font-semibold text-[#52647d]">Discount · English<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-sm" maxLength={40} onChange={(event) => set('discountEn', event.target.value)} placeholder="e.g. 20% OFF" value={form.discountEn} /></label><label className="text-sm font-semibold text-[#52647d]">ការបញ្ចុះតម្លៃ · ខ្មែរ<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-sm" maxLength={40} onChange={(event) => set('discountKm', event.target.value)} placeholder="ឧ. បញ្ចុះតម្លៃ 20%" value={form.discountKm} /></label><label className="text-sm font-semibold text-[#52647d]">Valid until<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-sm" onChange={(event) => set('validUntil', event.target.value)} type="date" value={form.validUntil} /></label></div>
+                <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#52647d]">Benefits · English<textarea className="mt-2 min-h-28 w-full rounded-xl border border-[#dce5ef] bg-white p-3 text-sm leading-6" maxLength={600} onChange={(event) => set('benefitsEn', event.target.value)} placeholder={'Benefit one\\nBenefit two\\nBenefit three'} value={form.benefitsEn} /></label><label className="text-sm font-semibold text-[#52647d]">អត្ថប្រយោជន៍ · ខ្មែរ<textarea className="mt-2 min-h-28 w-full rounded-xl border border-[#dce5ef] bg-white p-3 text-sm leading-6" maxLength={600} onChange={(event) => set('benefitsKm', event.target.value)} value={form.benefitsKm} /></label></div>
+              </fieldset> : null}
               {save.isError ? <p className="text-sm text-[#c92727]" role="alert">{safeError(save.error)}</p> : null}
               {remove.isError ? <p className="text-sm text-[#c92727]" role="alert">We could not remove this block. Please try again.</p> : null}
               <div className="flex flex-wrap justify-between gap-3 border-t border-[#edf1f5] pt-5"><div>{selectedId ? <div><Button className="bg-[#b42318] hover:bg-[#8f1c14]" disabled={remove.isPending || save.isPending} onClick={() => { if (window.confirm('Remove this CMS content block? The uploaded image will remain in media storage.')) remove.mutate(selectedId); }} type="button">Remove content block</Button><p className="mt-2 max-w-sm text-xs leading-5 text-[#71839e]">This removes the placement and its copy from the page. It does not delete the image asset from R2.</p></div> : null}</div><Button disabled={save.isPending || !form.imageKey} type="submit">{save.isPending ? 'Saving…' : selectedId ? 'Save changes' : 'Create block'}</Button></div>

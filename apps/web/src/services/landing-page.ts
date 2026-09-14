@@ -601,6 +601,12 @@ const landingPageContent: LandingPageContent = {
       qrLabel: 'Clinic QR code',
     },
   ],
+  promotions: [],
+  promotionsEditorial: {
+    eyebrow: 'News and special offers',
+    subtitle: 'Explore current clinic campaigns and helpful updates from our care team.',
+    title: 'Clinic promotions',
+  },
   services: [
     {
       description: 'Professional check-ups and cleanings for optimal oral health.',

@@ -3,9 +3,10 @@ import type { AuthenticatedAdmin } from '../src/types/auth';
 import type { Bindings } from '../src/types/env';
 
 type PageMediaRecord = {
+  badgeEn?: string | null; badgeKm?: string | null; benefitsEn?: string | null; benefitsKm?: string | null;
   bodyEn: string | null; bodyKm: string | null; createdAt: string; displayOrder: number; id: string;
-  imageKey: string; placement: 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'ABOUT_ADVANCED_FACILITIES' | 'DOCTORS_PATIENT_EDUCATION'; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
-  titleEn: string | null; titleKm: string | null; updatedAt: string;
+  imageKey: string; placement: 'HOME_PROMOTIONS' | 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'ABOUT_ADVANCED_FACILITIES' | 'DOCTORS_PATIENT_EDUCATION'; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  discountEn?: string | null; discountKm?: string | null; titleEn: string | null; titleKm: string | null; updatedAt: string; validUntil?: string | null;
 };
 type SessionRecord = { adminId: string; displayName: string; email: string; role: AuthenticatedAdmin['role']; sessionId: string };
 
@@ -56,6 +57,15 @@ describe('page media API routes', () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({ success: true, data: { items: [{ id: 'facility', title: 'Digital scanning' }] } });
+  });
+
+  it('accepts the Home Promotions placement for public CMS content', async () => {
+    state.items = [{ id: 'promotion', placement: 'HOME_PROMOTIONS', status: 'PUBLISHED', titleEn: 'Care campaign', titleKm: 'កម្មវិធីថែទាំ', bodyEn: 'Current clinic information.', bodyKm: 'ព័ត៌មានបច្ចុប្បន្នពីគ្លីនិក។', badgeEn: 'Limited time', badgeKm: 'រយៈពេលកំណត់', discountEn: '20% OFF', discountKm: 'បញ្ចុះតម្លៃ 20%', benefitsEn: 'Friendly care\nClear next steps', benefitsKm: 'ការថែទាំប្រកបដោយក្តីស្រឡាញ់\nជំហានបន្ទាប់ច្បាស់លាស់', validUntil: '2026-12-31', imageKey: 'clinic/care-campaign.jpg', displayOrder: 10, createdAt: '2026-09-14T00:00:00.000Z', updatedAt: '2026-09-14T00:00:00.000Z' }];
+
+    const response = await app.request('http://localhost/api/public/page-media?placement=HOME_PROMOTIONS&lang=en', undefined, bindings);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ success: true, data: { items: [{ id: 'promotion', title: 'Care campaign', badge: 'Limited time', discount: '20% OFF', benefits: 'Friendly care\nClear next steps', validUntil: '2026-12-31' }] } });
   });
 
   it('requires CMS permission for private editing', async () => {
