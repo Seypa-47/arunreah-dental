@@ -4,6 +4,7 @@ import {
   clinicSettings,
   doctors,
   pageMedia,
+  serviceDetailSections,
   services,
   showcaseSections,
   showcases,
@@ -42,6 +43,11 @@ export async function isMediaKeyReferenced(database: DatabaseClient, key: string
       .select({ id: showcases.id })
       .from(showcases)
       .where(eq(showcases.coverImageKey, key))
+      .limit(1),
+    database
+      .select({ id: serviceDetailSections.id })
+      .from(serviceDetailSections)
+      .where(eq(serviceDetailSections.imageKey, key))
       .limit(1),
     database
       .select({ id: showcaseSections.id })
