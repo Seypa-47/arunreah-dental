@@ -1,4 +1,4 @@
-import { useEffect, useState, type PropsWithChildren } from 'react';
+import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { LandingNavigationItem, LandingService } from '@/features/landing-page/types';
@@ -54,6 +54,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
   const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic() });
   const { hash, pathname } = useLocation();
   const navigate = useNavigate();
+  const mainContentRef = useRef<HTMLDivElement>(null);
   const serviceHref = (service: Pick<LandingService, 'name' | 'slug'>) => `/services/${service.slug ?? serviceSlug(service.name)}`;
 
   useEffect(() => {
@@ -113,6 +114,13 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#f7fafc] text-[#005687]">
+      <a
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-[14px] focus:font-bold focus:text-[#005687] focus:shadow-[0_8px_20px_rgba(15,61,84,0.16)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad]"
+        href="#main-content"
+        onClick={() => mainContentRef.current?.focus()}
+      >
+        Skip to main content
+      </a>
       <header className="sticky top-0 z-40 border-b border-[#d9e9ee] bg-white/95 shadow-[0_2px_12px_rgba(10,63,90,0.05)] backdrop-blur-xl">
         <div className="ui-page-container flex h-[64px] items-center justify-between gap-2 sm:h-[74px] sm:gap-4">
           <Link aria-label="Arunreah Dental Clinic home" className="shrink-0 leading-none" to="/">
@@ -245,7 +253,9 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
         ) : null}
       </header>
 
-      {children}
+      <div id="main-content" ref={mainContentRef} tabIndex={-1}>
+        {children}
+      </div>
     </div>
   );
 }
