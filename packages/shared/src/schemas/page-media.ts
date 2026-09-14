@@ -7,6 +7,10 @@ const base = z.object({
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
   titleEn: z.string().trim().max(160).nullable().optional(), titleKm: z.string().trim().max(160).nullable().optional(),
   bodyEn: z.string().trim().max(1200).nullable().optional(), bodyKm: z.string().trim().max(1200).nullable().optional(),
+  badgeEn: z.string().trim().max(80).nullable().optional(), badgeKm: z.string().trim().max(80).nullable().optional(),
+  discountEn: z.string().trim().max(40).nullable().optional(), discountKm: z.string().trim().max(40).nullable().optional(),
+  benefitsEn: z.string().trim().max(600).nullable().optional(), benefitsKm: z.string().trim().max(600).nullable().optional(),
+  validUntil: z.string().date().nullable().optional(),
   imageKey: z.string().regex(/^clinic\/[a-z0-9][a-z0-9-]*\.(jpg|png|webp)$/),
   displayOrder: z.number().int().min(0).max(999).default(0),
 });

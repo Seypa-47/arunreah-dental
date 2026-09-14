@@ -75,10 +75,14 @@ export type LandingShowcase = {
 };
 
 export type LandingPromotion = {
+  badge: string;
+  benefits: string[];
   description: string;
   imageAlt: string;
   imageUrl: string;
+  discount: string;
   title: string;
+  validUntil: string | null;
 };
 
 export type LandingFooterLinkGroup = {
@@ -104,6 +108,7 @@ export type LandingPageContent = {
   promotions: LandingPromotion[];
   promotionsEditorial: {
     eyebrow: string;
+    subtitle: string;
     title: string;
   };
   services: LandingService[];

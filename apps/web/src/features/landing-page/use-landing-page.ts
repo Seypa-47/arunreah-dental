@@ -51,10 +51,14 @@ export function useLandingPageQuery() {
         })),
         promotions: promotions.items
           .map((promotion) => ({
+            badge: promotion.badge ?? '',
+            benefits: (promotion.benefits ?? '').split('\n').map((benefit) => benefit.trim()).filter(Boolean).slice(0, 3),
             description: promotion.body ?? '',
             imageAlt: promotion.title ?? (language === 'km' ? 'ព័ត៌មានពីគ្លីនិក' : 'Clinic promotion'),
             imageUrl: getPublicMediaUrl(promotion.imageKey) ?? '',
+            discount: promotion.discount ?? '',
             title: promotion.title ?? '',
+            validUntil: promotion.validUntil,
           }))
           .filter((promotion) => Boolean(promotion.imageUrl) && Boolean(promotion.title)),
         services: services.services.map(toLandingService),

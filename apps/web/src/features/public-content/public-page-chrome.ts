@@ -49,8 +49,8 @@ export function publicLandingChrome(language: 'en' | 'km' = 'en'): LandingPageCo
     heroes: [],
     promotions: [],
     promotionsEditorial: language === 'km'
-      ? { eyebrow: 'ព័ត៌មាន និងកម្មវិធីពិសេស', title: 'កម្មវិធីពិសេសពីគ្លីនិក' }
-      : { eyebrow: 'News and special offers', title: 'Clinic promotions' },
+      ? { eyebrow: 'ព័ត៌មាន និងកម្មវិធីពិសេស', subtitle: 'ស្វែងយល់អំពីកម្មវិធី និងព័ត៌មានថ្មីៗពីគ្លីនិករបស់យើង។', title: 'កម្មវិធីពិសេសពីគ្លីនិក' }
+      : { eyebrow: 'News and special offers', subtitle: 'Explore current clinic campaigns and helpful updates from our care team.', title: 'Clinic promotions' },
     showcase: [],
   };
 }

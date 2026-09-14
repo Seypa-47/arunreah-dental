@@ -9,6 +9,8 @@ export const pageMedia = sqliteTable('page_media', {
   placement: text('placement', { enum: pageMediaPlacements }).notNull(),
   status: text('status', { enum: contentStatusValues }).notNull().default('DRAFT'),
   titleEn: text('title_en'), titleKm: text('title_km'), bodyEn: text('body_en'), bodyKm: text('body_km'),
+  badgeEn: text('badge_en'), badgeKm: text('badge_km'), discountEn: text('discount_en'), discountKm: text('discount_km'),
+  benefitsEn: text('benefits_en'), benefitsKm: text('benefits_km'), validUntil: text('valid_until'),
   imageKey: text('image_key').notNull(), displayOrder: integer('display_order').notNull().default(0),
   ...timestamps(),
 }, (table) => [

@@ -13,6 +13,7 @@ import type {
   LandingShowcase,
 } from '@/features/landing-page/types';
 import { useLandingPageQuery } from './use-landing-page';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 
 const asset = (name: string) => `/assets/landing/${name}`;
 const serviceId = (name: string) => `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
@@ -224,13 +225,17 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
 function PromotionsSection({
   appointmentLabel,
   editorial,
+  language,
   promotions,
 }: {
   appointmentLabel: string;
   editorial: LandingPageContent['promotionsEditorial'];
+  language: 'en' | 'km';
   promotions: LandingPageContent['promotions'];
 }) {
   if (promotions.length === 0) return null;
+
+  const formattedDate = (value: string) => new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${value}T00:00:00`));
 
   return (
     <section aria-labelledby="promotions-title" className="border-y border-[#e2edf2] bg-[#f7fafc] py-14 sm:py-16">
@@ -239,18 +244,28 @@ function PromotionsSection({
           <div className="max-w-[680px]">
             <p className="text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.eyebrow}</p>
             <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]" id="promotions-title">{editorial.title}</h2>
+            <p className="mt-3 max-w-[620px] text-[15px] leading-6 text-[#607486] sm:text-[16px]">{editorial.subtitle}</p>
           </div>
           <Link className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#3695B9] px-5 text-[14px] font-bold text-white transition hover:bg-[#2c84a5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]" to="/book-appointment">
             {appointmentLabel}
           </Link>
         </div>
-        <div className="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {promotions.map((promotion, index) => (
-            <article className={`group overflow-hidden rounded-xl border border-[#dceaf0] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition-shadow duration-200 hover:shadow-[0_10px_24px_rgba(15,61,84,0.1)] ${index === 0 && promotions.length > 1 ? 'md:col-span-2 lg:col-span-1' : ''}`} key={`${promotion.title}-${promotion.imageUrl}`}>
-              <img alt={promotion.imageAlt} className="aspect-[16/10] w-full bg-[#eaf2f6] object-cover object-center transition duration-300 group-hover:scale-[1.02]" src={promotion.imageUrl} />
-              <div className="p-5">
+        <div className="mt-7 grid gap-5 lg:grid-cols-3">
+          {promotions.map((promotion) => (
+            <article className="group overflow-hidden rounded-2xl border border-[#dceaf0] bg-white shadow-[0_2px_12px_rgba(15,61,84,0.06)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,61,84,0.12)]" key={`${promotion.title}-${promotion.imageUrl}`}>
+              <div className="relative overflow-hidden bg-[#eaf2f6]">
+                <img alt={promotion.imageAlt} className="aspect-[16/10] w-full object-cover object-center transition duration-500 group-hover:scale-[1.03]" src={promotion.imageUrl} />
+                {promotion.badge ? <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-bold text-[#07577f] shadow-sm">{promotion.badge}</span> : null}
+              </div>
+              <div className="p-5 sm:p-6">
                 <h3 className="text-[18px] font-bold leading-6 text-[#073f60]">{promotion.title}</h3>
                 {promotion.description ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{promotion.description}</p> : null}
+                {promotion.discount ? <div className="mt-4 inline-flex rounded-full bg-[#e6f6fb] px-4 py-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#005687]">{promotion.discount}</div> : null}
+                {promotion.benefits.length ? <ul className="mt-5 space-y-2 border-y border-[#edf2f5] py-4">{promotion.benefits.map((benefit) => <li className="flex gap-2 text-[13px] leading-5 text-[#536d80]" key={benefit}><span aria-hidden="true" className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-[#dff3f7] text-[11px] font-bold text-[#168aad]">✓</span>{benefit}</li>)}</ul> : null}
+                <div className="mt-5 flex items-center justify-between gap-3">
+                  <Link className="inline-flex min-h-10 items-center text-[14px] font-bold text-[#0073a8] transition hover:text-[#005687] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]" to="/book-appointment">{appointmentLabel}<span aria-hidden="true" className="ml-2">→</span></Link>
+                  {promotion.validUntil ? <p className="text-right text-[12px] leading-4 text-[#71839e]">{language === 'km' ? 'មានសុពលភាពដល់' : 'Valid until'} {formattedDate(promotion.validUntil)}</p> : null}
+                </div>
               </div>
             </article>
           ))}
@@ -735,12 +750,14 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
 }
 
 function LandingPageView({ content }: { content: LandingPageContent }) {
+  const { language } = usePublicLanguage();
+
   return (
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main>
         <h1 className="sr-only">Arunreah Dental Clinic</h1>
         <HeroSection heroes={content.heroes} />
-        <PromotionsSection appointmentLabel={content.actions.appointmentLabel} editorial={content.promotionsEditorial} promotions={content.promotions} />
+        <PromotionsSection appointmentLabel={content.actions.appointmentLabel} editorial={content.promotionsEditorial} language={language} promotions={content.promotions} />
         <ServicesSection services={content.services} />
         <DoctorsSection doctors={content.doctors} />
         <BranchesSection branches={content.branches} />

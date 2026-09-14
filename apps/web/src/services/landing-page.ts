@@ -604,6 +604,7 @@ const landingPageContent: LandingPageContent = {
   promotions: [],
   promotionsEditorial: {
     eyebrow: 'News and special offers',
+    subtitle: 'Explore current clinic campaigns and helpful updates from our care team.',
     title: 'Clinic promotions',
   },
   services: [
