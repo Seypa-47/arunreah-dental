@@ -14,6 +14,7 @@ import type {
 } from '@/features/landing-page/types';
 import { useLandingPageQuery } from './use-landing-page';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { CmsImage } from '@/components/layout/public-ui';
 
 const asset = (name: string) => `/assets/landing/${name}`;
 const serviceId = (name: string) => `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
@@ -254,14 +255,13 @@ function PromotionsSection({
           {promotions.map((promotion) => (
             <article className="group overflow-hidden rounded-2xl border border-[#dceaf0] bg-white shadow-[0_2px_12px_rgba(15,61,84,0.06)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,61,84,0.12)]" key={`${promotion.title}-${promotion.imageUrl}`}>
               <div className="relative overflow-hidden bg-[#eaf2f6]">
-                <img alt={promotion.imageAlt} className="aspect-[16/10] w-full object-cover object-center transition duration-500 group-hover:scale-[1.03]" src={promotion.imageUrl} />
+                <CmsImage alt={promotion.imageAlt} className="aspect-[16/10] w-full transition duration-500 group-hover:scale-[1.03]" presentation={promotion.imagePresentation} src={promotion.imageUrl} />
                 {promotion.badge ? <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-bold text-[#07577f] shadow-sm">{promotion.badge}</span> : null}
               </div>
               <div className="p-5 sm:p-6">
                 <h3 className="text-[18px] font-bold leading-6 text-[#073f60]">{promotion.title}</h3>
                 {promotion.description ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{promotion.description}</p> : null}
                 {promotion.discount ? <div className="mt-4 inline-flex rounded-full bg-[#e6f6fb] px-4 py-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#005687]">{promotion.discount}</div> : null}
-                {promotion.benefits.length ? <ul className="mt-5 space-y-2 border-y border-[#edf2f5] py-4">{promotion.benefits.map((benefit) => <li className="flex gap-2 text-[13px] leading-5 text-[#536d80]" key={benefit}><span aria-hidden="true" className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-[#dff3f7] text-[11px] font-bold text-[#168aad]">✓</span>{benefit}</li>)}</ul> : null}
                 <div className="mt-5 flex items-center justify-between gap-3">
                   <Link className="inline-flex min-h-10 items-center text-[14px] font-bold text-[#0073a8] transition hover:text-[#005687] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]" to="/book-appointment">{appointmentLabel}<span aria-hidden="true" className="ml-2">→</span></Link>
                   {promotion.validUntil ? <p className="text-right text-[12px] leading-4 text-[#71839e]">{language === 'km' ? 'មានសុពលភាពដល់' : 'Valid until'} {formattedDate(promotion.validUntil)}</p> : null}

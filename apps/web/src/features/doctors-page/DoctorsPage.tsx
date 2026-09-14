@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage } from '@/components/layout/public-ui';
 import type { DoctorsPageContent, LandingDoctor } from '@/features/landing-page/types';
 import { useDoctorsPageQuery } from './use-doctors-page';
 import { getPublicMediaUrl } from '@/services/media';
@@ -36,7 +36,7 @@ function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; he
     <section className="border-b border-[#dceaf0] bg-[#f7fafc] py-5 sm:py-7">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="relative min-h-[330px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#063e5c] sm:min-h-[430px]">
-          <ResilientImage alt="Arunreah Dental Clinic team" className="h-[200px] w-full object-cover object-center sm:absolute sm:inset-0 sm:h-full" fallbackSrc={fallbackImageUrl} src={imageUrl} />
+          <CmsImage alt="Arunreah Dental Clinic team" className="h-[200px] w-full sm:absolute sm:inset-0 sm:h-full" fallbackSrc={fallbackImageUrl} presentation={heroMedia?.imagePresentation} src={imageUrl} />
           <div aria-hidden="true" className="absolute inset-0 hidden bg-[linear-gradient(90deg,rgba(5,52,78,0.88)_0%,rgba(5,52,78,0.61)_48%,rgba(5,52,78,0.08)_100%)] sm:block" />
           <div className="relative z-10 flex max-w-[690px] items-end p-5 sm:min-h-[430px] sm:p-10 lg:p-12">
             <div>
@@ -113,7 +113,7 @@ function PatientFirstApproach({ items }: { items: NonNullable<DoctorsPageContent
   const { language } = usePublicLanguage();
   if (items.length === 0) return null;
   const copy = language === 'km' ? { eyebrow: 'ការថែទាំដោយផ្តោតលើអ្នកជំងឺ', title: 'ការថែទាំចាប់ផ្តើមពីការណែនាំច្បាស់លាស់' } : { eyebrow: 'Patient-first approach', title: 'Care begins with clear guidance' };
-  return <section className="border-t border-[#e7eff3] bg-[#f7fafc] py-12 sm:py-16"><div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="max-w-[640px]"><p className="text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{copy.eyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{copy.title}</h2></div><div className={`mt-7 grid gap-5 ${items.length === 1 ? 'max-w-[840px] md:grid-cols-[0.78fr_1.22fr]' : 'sm:grid-cols-2'}`}>{items.map((item) => { const imageUrl = getPublicMediaUrl(item.imageKey); return <article className={`overflow-hidden rounded-xl border border-[#dce9ee] bg-white ${items.length === 1 ? 'md:contents' : ''}`} key={item.id}>{imageUrl ? <img alt={item.title ?? ''} className="h-[280px] w-full rounded-t-xl object-cover object-center md:rounded-xl" src={imageUrl} /> : null}<div className={`p-5 sm:p-6 ${items.length === 1 ? 'rounded-b-xl border border-t-0 border-[#dce9ee] bg-white md:rounded-xl md:border' : ''}`}>{item.title ? <h3 className="text-[19px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[15px] leading-6 text-[#607486]">{item.body}</p> : null}</div></article>; })}</div></div></section>;
+  return <section className="border-t border-[#e7eff3] bg-[#f7fafc] py-12 sm:py-16"><div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="max-w-[640px]"><p className="text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{copy.eyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{copy.title}</h2></div><div className={`mt-7 grid gap-5 ${items.length === 1 ? 'max-w-[840px] md:grid-cols-[0.78fr_1.22fr]' : 'sm:grid-cols-2'}`}>{items.map((item) => { const imageUrl = getPublicMediaUrl(item.imageKey); return <article className={`overflow-hidden rounded-xl border border-[#dce9ee] bg-white ${items.length === 1 ? 'md:contents' : ''}`} key={item.id}>{imageUrl ? <CmsImage alt={item.title ?? ''} className="h-[280px] w-full rounded-t-xl md:rounded-xl" presentation={item.imagePresentation} src={imageUrl} /> : null}<div className={`p-5 sm:p-6 ${items.length === 1 ? 'rounded-b-xl border border-t-0 border-[#dce9ee] bg-white md:rounded-xl md:border' : ''}`}>{item.title ? <h3 className="text-[19px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[15px] leading-6 text-[#607486]">{item.body}</p> : null}</div></article>; })}</div></div></section>;
 }
 
 function DoctorsPageView({ content }: { content: DoctorsPageContent }) {

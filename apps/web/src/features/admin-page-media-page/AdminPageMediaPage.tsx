@@ -2,7 +2,7 @@ import { AdminListImage, AdminPublicationStatus } from '@/components/admin/admin
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { PageMediaPlacement } from '@arunreah/shared';
+import { defaultImagePresentation, type ImagePresentation, type PageMediaPlacement } from '@arunreah/shared';
 import { MediaUploader } from '@/components/admin/media-uploader';
 import { AdminFeedback } from '@/components/admin/admin-feedback';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { queryKeys } from '@/lib/query-keys';
 import { cmsApi, type AdminPageMediaRecord } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
+import { ImagePositionEditor } from '@/components/admin/image-position-editor';
 
 type EditorState = {
   badgeEn: string;
@@ -20,6 +21,7 @@ type EditorState = {
   bodyKm: string;
   displayOrder: string;
   imageKey: string;
+  imagePresentation: ImagePresentation;
   discountEn: string;
   discountKm: string;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
@@ -36,9 +38,9 @@ const placements: { description: string; label: string; value: PageMediaPlacemen
   { value: 'DOCTORS_PATIENT_EDUCATION', label: 'Doctors · Patient-first Approach', description: 'A single educational image block on the Doctors page.' },
 ];
 
-const emptyEditor = (): EditorState => ({ badgeEn: '', badgeKm: '', benefitsEn: '', benefitsKm: '', bodyEn: '', bodyKm: '', discountEn: '', discountKm: '', displayOrder: '0', imageKey: '', status: 'DRAFT', titleEn: '', titleKm: '', validUntil: '' });
+const emptyEditor = (): EditorState => ({ badgeEn: '', badgeKm: '', benefitsEn: '', benefitsKm: '', bodyEn: '', bodyKm: '', discountEn: '', discountKm: '', displayOrder: '0', imageKey: '', imagePresentation: defaultImagePresentation, status: 'DRAFT', titleEn: '', titleKm: '', validUntil: '' });
 const toEditor = (item: AdminPageMediaRecord): EditorState => ({
-  badgeEn: item.badgeEn ?? '', badgeKm: item.badgeKm ?? '', benefitsEn: item.benefitsEn ?? '', benefitsKm: item.benefitsKm ?? '', bodyEn: item.bodyEn ?? '', bodyKm: item.bodyKm ?? '', discountEn: item.discountEn ?? '', discountKm: item.discountKm ?? '', displayOrder: String(item.displayOrder), imageKey: item.imageKey, status: item.status, titleEn: item.titleEn ?? '', titleKm: item.titleKm ?? '', validUntil: item.validUntil ?? '',
+  badgeEn: item.badgeEn ?? '', badgeKm: item.badgeKm ?? '', benefitsEn: item.benefitsEn ?? '', benefitsKm: item.benefitsKm ?? '', bodyEn: item.bodyEn ?? '', bodyKm: item.bodyKm ?? '', discountEn: item.discountEn ?? '', discountKm: item.discountKm ?? '', displayOrder: String(item.displayOrder), imageKey: item.imageKey, imagePresentation: item.imagePresentation ?? defaultImagePresentation, status: item.status, titleEn: item.titleEn ?? '', titleKm: item.titleKm ?? '', validUntil: item.validUntil ?? '',
 });
 
 function safeError(error: unknown) {
@@ -78,6 +80,7 @@ export function AdminPageMediaPage() {
         benefitsEn: placement === 'HOME_PROMOTIONS' ? form.benefitsEn.trim() || null : null,
         benefitsKm: placement === 'HOME_PROMOTIONS' ? form.benefitsKm.trim() || null : null,
         imageKey: form.imageKey,
+        imagePresentation: form.imagePresentation,
         discountEn: placement === 'HOME_PROMOTIONS' ? form.discountEn.trim() || null : null,
         discountKm: placement === 'HOME_PROMOTIONS' ? form.discountKm.trim() || null : null,
         validUntil: placement === 'HOME_PROMOTIONS' ? form.validUntil || null : null,
@@ -98,6 +101,7 @@ export function AdminPageMediaPage() {
   const set = <K extends keyof EditorState>(key: K, value: EditorState[K]) => setForm((current) => ({ ...current, [key]: value }));
   const placementLabel = placements.find((item) => item.value === placement);
   const isPromotion = placement === 'HOME_PROMOTIONS';
+  const previewAspect = placement === 'HOME_PROMOTIONS' ? 'aspect-[16/10]' : placement === 'DOCTORS_HERO' ? 'aspect-[16/9]' : 'aspect-[4/3]';
 
   return <div className="min-h-screen bg-[#f6f8fb] lg:flex">
 
@@ -133,6 +137,7 @@ export function AdminPageMediaPage() {
             <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-lg font-bold text-[#182238]">{selectedId ? 'Edit content block' : 'New content block'}</h2><p className="mt-1 text-sm text-[#71839e]">Add English and Khmer separately. Publish only after the image and copy are ready.</p></div>{selected?.imageKey ? <span className="rounded-full bg-[#edf7fb] px-3 py-1 text-xs font-bold text-[#167ea7]">Editing existing item</span> : null}</div>
             <form className="mt-6 space-y-5" onSubmit={(event) => { event.preventDefault(); save.mutate(); }}>
               <MediaUploader category="clinic" help="Choose an image that supports this website section. JPEG, PNG, or WEBP up to 5 MB." label="Content image" onClear={() => set('imageKey', '')} onUploaded={(key) => set('imageKey', key)} required value={form.imageKey} />
+              <ImagePositionEditor aspectClassName={previewAspect} onChange={(imagePresentation) => set('imagePresentation', imagePresentation)} src={getPublicMediaUrl(form.imageKey)} value={form.imagePresentation} />
               <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#52647d]">Status<select className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-sm" onChange={(event) => set('status', event.target.value as EditorState['status'])} value={form.status}><option value="DRAFT">Draft</option><option value="PUBLISHED">Published</option><option value="ARCHIVED">Archived</option></select></label><label className="text-sm font-semibold text-[#52647d]">Display order<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm" min="0" onChange={(event) => set('displayOrder', event.target.value)} type="number" value={form.displayOrder} /></label></div>
               <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#52647d]">Title · English<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm" maxLength={160} onChange={(event) => set('titleEn', event.target.value)} value={form.titleEn} /></label><label className="text-sm font-semibold text-[#52647d]">ចំណងជើង · ខ្មែរ<input className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm" maxLength={160} onChange={(event) => set('titleKm', event.target.value)} value={form.titleKm} /></label></div>
               <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-semibold text-[#52647d]">Description · English<textarea className="mt-2 min-h-32 w-full rounded-xl border border-[#dce5ef] p-3 text-sm leading-6" maxLength={1200} onChange={(event) => set('bodyEn', event.target.value)} value={form.bodyEn} /></label><label className="text-sm font-semibold text-[#52647d]">ពិពណ៌នា · ខ្មែរ<textarea className="mt-2 min-h-32 w-full rounded-xl border border-[#dce5ef] p-3 text-sm leading-6" maxLength={1200} onChange={(event) => set('bodyKm', event.target.value)} value={form.bodyKm} /></label></div>

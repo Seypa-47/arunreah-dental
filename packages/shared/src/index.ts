@@ -42,6 +42,7 @@ export type {
 } from './contracts/dashboard';
 export type { DeleteMediaInput, MediaCategory } from './schemas/media';
 export { createPageMediaSchema, pageMediaPlacementSchema, pageMediaPlacementValues, pageMediaPublicQuerySchema, updatePageMediaSchema } from './schemas/page-media';
+export { defaultImagePresentation, imagePresentationSchema, type ImagePresentation } from './schemas/image-presentation';
 export type { CreatePageMediaInput, PageMediaPlacement, UpdatePageMediaInput } from './schemas/page-media';
 export { aboutTimelinePublicQuerySchema, createAboutTimelineSchema, updateAboutTimelineSchema } from './schemas/about-timeline';
 export type { CreateAboutTimelineInput, UpdateAboutTimelineInput } from './schemas/about-timeline';

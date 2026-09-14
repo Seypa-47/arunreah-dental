@@ -80,6 +80,7 @@ export type LandingPromotion = {
   description: string;
   imageAlt: string;
   imageUrl: string;
+  imagePresentation: import('@arunreah/shared').ImagePresentation;
   discount: string;
   title: string;
   validUntil: string | null;
@@ -130,12 +131,14 @@ export type DoctorsPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
     body: string | null;
     id: string;
     imageKey: string;
+    imagePresentation: import('@arunreah/shared').ImagePresentation;
     title: string | null;
   };
   patientEducation?: {
     body: string | null;
     id: string;
     imageKey: string;
+    imagePresentation: import('@arunreah/shared').ImagePresentation;
     title: string | null;
   }[];
 };
@@ -167,7 +170,7 @@ export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | '
     summary: string;
     title: string;
   };
-  professionalMedia?: { id: string; imageKey: string; title: string | null; body: string | null; displayOrder: number }[];
+  professionalMedia?: { id: string; imageKey: string; imagePresentation: import('@arunreah/shared').ImagePresentation; title: string | null; body: string | null; displayOrder: number }[];
   timeline?: { id: string; year: number; title: string; body: string; displayOrder: number }[];
   differences: {
     description: string;
@@ -178,6 +181,7 @@ export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | '
     description: string;
     imageAlt: string;
     imageUrl: string;
+    imagePresentation: import('@arunreah/shared').ImagePresentation;
     title: string;
   }[];
   hero: {

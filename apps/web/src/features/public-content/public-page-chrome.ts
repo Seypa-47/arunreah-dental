@@ -60,7 +60,7 @@ export function publicAboutContent(
   language: 'en' | 'km',
   clinicShowcase?: PublicShowcaseDetail,
   featuredDoctor?: PublicDoctorSummary,
-  advancedFacilities: { id: string; imageKey: string; title: string | null; body: string | null; displayOrder: number }[] = [],
+  advancedFacilities: { id: string; imageKey: string; imagePresentation: import('@arunreah/shared').ImagePresentation; title: string | null; body: string | null; displayOrder: number }[] = [],
 ): AboutPageContent {
   const clinicName = language === 'km' ? clinic.clinicNameKm : clinic.clinicNameEn;
   const tagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
@@ -121,6 +121,7 @@ export function publicAboutContent(
         description: item.body ?? '',
         imageAlt: item.title ?? (language === 'km' ? 'គ្រឿងបរិក្ខារទំនើបនៅគ្លីនិក' : 'Advanced dental facility'),
         imageUrl: getPublicMediaUrl(item.imageKey) ?? '',
+        imagePresentation: item.imagePresentation,
         title: item.title ?? '',
       }))
       .filter((facility) => Boolean(facility.imageUrl)),

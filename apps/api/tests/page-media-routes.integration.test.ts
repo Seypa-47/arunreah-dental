@@ -24,6 +24,11 @@ vi.mock('../src/repositories/page-media.repository', () => ({
     const item = state.items.find((record) => record.id === id); if (!item) return undefined; Object.assign(item, input); return item;
   },
 }));
+vi.mock('../src/repositories/image-presentation.repository', () => ({
+  listForPageMedia: async () => [],
+  removeForPageMedia: async () => undefined,
+  upsertForPageMedia: async () => undefined,
+}));
 vi.mock('../src/repositories/session.repository', () => ({
   findAuthenticatedSession: async (_db: unknown, tokenHash: string) => state.sessions.get(tokenHash),
   createAdminSession: async () => undefined, revokeAdminSession: async () => undefined,
@@ -65,7 +70,7 @@ describe('page media API routes', () => {
     const response = await app.request('http://localhost/api/public/page-media?placement=HOME_PROMOTIONS&lang=en', undefined, bindings);
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({ success: true, data: { items: [{ id: 'promotion', title: 'Care campaign', badge: 'Limited time', discount: '20% OFF', benefits: 'Friendly care\nClear next steps', validUntil: '2026-12-31' }] } });
+    await expect(response.json()).resolves.toMatchObject({ success: true, data: { items: [{ id: 'promotion', title: 'Care campaign', badge: 'Limited time', discount: '20% OFF', benefits: 'Friendly care\nClear next steps', imagePresentation: { positionX: 50, positionY: 50, zoom: 1 }, validUntil: '2026-12-31' }] } });
   });
 
   it('requires CMS permission for private editing', async () => {
