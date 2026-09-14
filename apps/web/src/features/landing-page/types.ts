@@ -74,6 +74,13 @@ export type LandingShowcase = {
   title: string;
 };
 
+export type LandingPromotion = {
+  description: string;
+  imageAlt: string;
+  imageUrl: string;
+  title: string;
+};
+
 export type LandingFooterLinkGroup = {
   links: LandingNavigationItem[];
   title: string;
@@ -94,6 +101,11 @@ export type LandingPageContent = {
   };
   heroes: LandingHero[];
   navigation: LandingNavigationItem[];
+  promotions: LandingPromotion[];
+  promotionsEditorial: {
+    eyebrow: string;
+    title: string;
+  };
   services: LandingService[];
   showcase: LandingShowcase[];
 };

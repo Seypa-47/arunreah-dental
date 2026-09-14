@@ -41,12 +41,16 @@ export function publicShell() {
   };
 }
 
-export function publicLandingChrome(): LandingPageContent {
+export function publicLandingChrome(language: 'en' | 'km' = 'en'): LandingPageContent {
   return {
     ...publicShell(),
     branches: [],
     doctors: [],
     heroes: [],
+    promotions: [],
+    promotionsEditorial: language === 'km'
+      ? { eyebrow: 'ព័ត៌មាន និងកម្មវិធីពិសេស', title: 'កម្មវិធីពិសេសពីគ្លីនិក' }
+      : { eyebrow: 'News and special offers', title: 'Clinic promotions' },
     showcase: [],
   };
 }

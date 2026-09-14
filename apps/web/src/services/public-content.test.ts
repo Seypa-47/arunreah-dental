@@ -18,6 +18,7 @@ describe('public content API service', () => {
     await getPublicDoctor('a/doctor', 'km', client);
     await getPublicPageMedia('DOCTORS_PATIENT_EDUCATION', 'km', client);
     await getPublicPageMedia('ABOUT_ADVANCED_FACILITIES', 'en', client);
+    await getPublicPageMedia('HOME_PROMOTIONS', 'en', client);
 
     expect(requests).toEqual([
       { authenticated: undefined, path: '/api/public/services?lang=km' },
@@ -26,6 +27,7 @@ describe('public content API service', () => {
       { authenticated: undefined, path: '/api/public/doctors/a%2Fdoctor?lang=km' },
       { authenticated: undefined, path: '/api/public/page-media?lang=km&placement=DOCTORS_PATIENT_EDUCATION' },
       { authenticated: undefined, path: '/api/public/page-media?lang=en&placement=ABOUT_ADVANCED_FACILITIES' },
+      { authenticated: undefined, path: '/api/public/page-media?lang=en&placement=HOME_PROMOTIONS' },
     ]);
   });
 

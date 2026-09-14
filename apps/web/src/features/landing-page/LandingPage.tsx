@@ -221,6 +221,45 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
   );
 }
 
+function PromotionsSection({
+  appointmentLabel,
+  editorial,
+  promotions,
+}: {
+  appointmentLabel: string;
+  editorial: LandingPageContent['promotionsEditorial'];
+  promotions: LandingPageContent['promotions'];
+}) {
+  if (promotions.length === 0) return null;
+
+  return (
+    <section aria-labelledby="promotions-title" className="border-y border-[#e2edf2] bg-[#f7fafc] py-14 sm:py-16">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-[680px]">
+            <p className="text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.eyebrow}</p>
+            <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]" id="promotions-title">{editorial.title}</h2>
+          </div>
+          <Link className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#3695B9] px-5 text-[14px] font-bold text-white transition hover:bg-[#2c84a5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]" to="/book-appointment">
+            {appointmentLabel}
+          </Link>
+        </div>
+        <div className="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {promotions.map((promotion, index) => (
+            <article className={`group overflow-hidden rounded-xl border border-[#dceaf0] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition-shadow duration-200 hover:shadow-[0_10px_24px_rgba(15,61,84,0.1)] ${index === 0 && promotions.length > 1 ? 'md:col-span-2 lg:col-span-1' : ''}`} key={`${promotion.title}-${promotion.imageUrl}`}>
+              <img alt={promotion.imageAlt} className="aspect-[16/10] w-full bg-[#eaf2f6] object-cover object-center transition duration-300 group-hover:scale-[1.02]" src={promotion.imageUrl} />
+              <div className="p-5">
+                <h3 className="text-[18px] font-bold leading-6 text-[#073f60]">{promotion.title}</h3>
+                {promotion.description ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{promotion.description}</p> : null}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function useSmoothCarousel<T>(items: T[]) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -701,6 +740,7 @@ function LandingPageView({ content }: { content: LandingPageContent }) {
       <main>
         <h1 className="sr-only">Arunreah Dental Clinic</h1>
         <HeroSection heroes={content.heroes} />
+        <PromotionsSection appointmentLabel={content.actions.appointmentLabel} editorial={content.promotionsEditorial} promotions={content.promotions} />
         <ServicesSection services={content.services} />
         <DoctorsSection doctors={content.doctors} />
         <BranchesSection branches={content.branches} />

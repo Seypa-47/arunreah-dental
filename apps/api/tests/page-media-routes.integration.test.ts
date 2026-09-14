@@ -4,7 +4,7 @@ import type { Bindings } from '../src/types/env';
 
 type PageMediaRecord = {
   bodyEn: string | null; bodyKm: string | null; createdAt: string; displayOrder: number; id: string;
-  imageKey: string; placement: 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'ABOUT_ADVANCED_FACILITIES' | 'DOCTORS_PATIENT_EDUCATION'; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  imageKey: string; placement: 'HOME_PROMOTIONS' | 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'ABOUT_ADVANCED_FACILITIES' | 'DOCTORS_PATIENT_EDUCATION'; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   titleEn: string | null; titleKm: string | null; updatedAt: string;
 };
 type SessionRecord = { adminId: string; displayName: string; email: string; role: AuthenticatedAdmin['role']; sessionId: string };
@@ -56,6 +56,15 @@ describe('page media API routes', () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({ success: true, data: { items: [{ id: 'facility', title: 'Digital scanning' }] } });
+  });
+
+  it('accepts the Home Promotions placement for public CMS content', async () => {
+    state.items = [{ id: 'promotion', placement: 'HOME_PROMOTIONS', status: 'PUBLISHED', titleEn: 'Care campaign', titleKm: 'កម្មវិធីថែទាំ', bodyEn: 'Current clinic information.', bodyKm: 'ព័ត៌មានបច្ចុប្បន្នពីគ្លីនិក។', imageKey: 'clinic/care-campaign.jpg', displayOrder: 10, createdAt: '2026-09-14T00:00:00.000Z', updatedAt: '2026-09-14T00:00:00.000Z' }];
+
+    const response = await app.request('http://localhost/api/public/page-media?placement=HOME_PROMOTIONS&lang=en', undefined, bindings);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ success: true, data: { items: [{ id: 'promotion', title: 'Care campaign' }] } });
   });
 
   it('requires CMS permission for private editing', async () => {
