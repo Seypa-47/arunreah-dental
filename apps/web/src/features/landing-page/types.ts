@@ -1,0 +1,464 @@
+export type LandingNavigationItem = {
+  href: string;
+  label: string;
+};
+
+export type LandingHero = {
+  address: string;
+  appointmentLabel: string;
+  callLabel: string;
+  imageAlt: string;
+  imageUrl: string;
+  locationLabel: string;
+  phones: string[];
+  qrImageUrl: string;
+  qrLabel: string;
+};
+
+export type LandingService = {
+  description: string;
+  iconAlt: string;
+  iconUrl: string;
+  imageAlt: string;
+  imageUrl: string;
+  khmerName?: string;
+  name: string;
+  slug?: string;
+};
+
+export type LandingDoctor = {
+  bookingLabel?: string;
+  credential?: string;
+  detail: {
+    about: string[];
+    biography: string;
+    certifications: {
+      institution: string;
+      title: string;
+      yearLabel?: string | null;
+    }[];
+    education: string[];
+    experience: string;
+    heroSummary: string;
+    languages: string[];
+    pageDescription: string;
+    profileHref: string;
+    roleTitle: string;
+    services: string[];
+    stats: {
+      label: string;
+      value: string;
+    }[];
+  };
+  focus?: string;
+  imageAlt: string;
+  imageUrl: string;
+  name: string;
+  profileHref?: string;
+  skills?: string[];
+  specialty: string;
+};
+
+export type LandingBranch = {
+  hours: string;
+  imageAlt: string;
+  imageUrl: string;
+  name: string;
+  phones: string[];
+};
+
+export type LandingShowcase = {
+  imageAlt: string;
+  imageUrl: string;
+  slug?: string;
+  title: string;
+};
+
+export type LandingPromotion = {
+  description: string;
+  imageAlt: string;
+  imageUrl: string;
+  title: string;
+};
+
+export type LandingFooterLinkGroup = {
+  links: LandingNavigationItem[];
+  title: string;
+};
+
+export type LandingPageContent = {
+  actions: {
+    appointmentLabel: string;
+    contactLabel: string;
+  };
+  branches: LandingBranch[];
+  doctors: LandingDoctor[];
+  footer: {
+    branchLinks: LandingNavigationItem[];
+    description: string;
+    linkGroups: LandingFooterLinkGroup[];
+    tagline: string;
+  };
+  heroes: LandingHero[];
+  navigation: LandingNavigationItem[];
+  promotions: LandingPromotion[];
+  promotionsEditorial: {
+    eyebrow: string;
+    title: string;
+  };
+  services: LandingService[];
+  showcase: LandingShowcase[];
+};
+
+export type DoctorDetailContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  doctor: LandingDoctor | undefined;
+  otherDoctors: LandingDoctor[];
+};
+
+export type DoctorsPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  doctors: LandingDoctor[];
+  hero: {
+    description: string;
+    title: string;
+  };
+  heroMedia?: {
+    body: string | null;
+    id: string;
+    imageKey: string;
+    title: string | null;
+  };
+  patientEducation?: {
+    body: string | null;
+    id: string;
+    imageKey: string;
+    title: string | null;
+  }[];
+};
+
+export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  clinicGallery?: {
+    imageAlt: string;
+    imageUrl: string;
+  }[];
+  editorial: {
+    editionLabel: string;
+    galleryEyebrow: string;
+    galleryTitle: string;
+    professionalEyebrow: string;
+    professionalTitle: string;
+    facilitiesEyebrow: string;
+    facilitiesTitle: string;
+    timelineEyebrow: string;
+    timelineTitle: string;
+    profileLabel: string;
+    profileTitle: string;
+  };
+  featuredDoctor?: {
+    imageAlt: string;
+    imageUrl: string;
+    name: string;
+    profileHref: string;
+    specialty: string;
+    summary: string;
+    title: string;
+  };
+  professionalMedia?: { id: string; imageKey: string; title: string | null; body: string | null; displayOrder: number }[];
+  timeline?: { id: string; year: number; title: string; body: string; displayOrder: number }[];
+  differences: {
+    description: string;
+    iconUrl: string;
+    title: string;
+  }[];
+  facilities: {
+    description: string;
+    imageAlt: string;
+    imageUrl: string;
+    title: string;
+  }[];
+  hero: {
+    eyebrow: string;
+    imageAlt: string;
+    imageUrl: string;
+    subtitle: string;
+    title: string;
+  };
+  mission: {
+    description: string;
+    iconUrl: string;
+    title: string;
+  };
+  stats: {
+    iconUrl: string;
+    label: string;
+    value: string;
+  }[];
+  story: {
+    eyebrow: string;
+    imageAlt: string;
+    imageUrl: string;
+    paragraphs: string[];
+    title: string;
+  };
+  vision: {
+    description: string;
+    iconUrl: string;
+    title: string;
+  };
+};
+
+export type BranchesPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  benefits: {
+    description: string;
+    iconUrl: string;
+    title: string;
+  }[];
+  branches: {
+    address: string;
+    id?: string;
+    badge: string;
+    bookingLabel: string;
+    directionsLabel: string;
+    directionsUrl: string;
+    hoursDays: string;
+    hoursTime: string;
+    imageAlt: string;
+    imageUrl: string;
+    mapLabel: string;
+    mapUrl: string;
+    mapChipEmbedded?: boolean;
+    name: string;
+    phoneLabel: string;
+    phones: string[];
+  }[];
+  cta: {
+    backgroundImageAlt: string;
+    backgroundImageUrl: string;
+    buttonLabel: string;
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+  };
+  hero: {
+    appointmentLabel: string;
+    backgroundImageAlt: string;
+    backgroundImageUrl: string;
+    eyebrow: string;
+    highlights: {
+      iconUrl: string;
+      label: string;
+    }[];
+    metrics: {
+      description: string;
+      iconUrl: string;
+      label: string;
+      title: string;
+    }[];
+    subtitle: string;
+    title: string;
+  };
+  sections: {
+    benefitsEyebrow: string;
+    benefitsTitle: string;
+    branchesDescription: string;
+    branchesEyebrow: string;
+    branchesTitle: string;
+  };
+};
+
+export type ServicesPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  cta: {
+    consultationLabel: string;
+    contactLabel: string;
+    description: string;
+    title: string;
+  };
+  hero: {
+    description: string;
+    title: string;
+  };
+};
+
+export type ServiceDetailContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  otherServices: LandingService[];
+  service:
+    | (LandingService & {
+        about: {
+          imageAlt: string;
+          imageUrl: string;
+          paragraphs: string[];
+          title: string;
+        };
+        benefits: {
+          description: string;
+          icon: 'check' | 'heart' | 'shield' | 'smile' | 'star' | 'utensils';
+          title: string;
+        }[];
+        cta: {
+          appointmentLabel: string;
+          contactLabel: string;
+          description: string;
+          title: string;
+        };
+        detailSections: {
+          body: string;
+          heading: string;
+          imageAlt: string;
+          imageUrl: string;
+          sectionType: 'TEXT' | 'IMAGE';
+        }[];
+        detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
+        editorial: {
+          label: string;
+          title: string;
+        };
+        glance: {
+          actionLabel: string;
+          items: {
+            description: string;
+            icon: 'calendar' | 'clock' | 'consultation' | 'recovery';
+            label: string;
+          }[];
+          title: string;
+        };
+        hero: {
+          appointmentLabel: string;
+          consultationLabel: string;
+          eyebrow: string;
+          imageAlt: string;
+          imageUrl: string;
+          subtitle: string;
+          title: string;
+        };
+        slug: string;
+      })
+    | undefined;
+};
+
+export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  contactCards: {
+    description: string;
+    icon: 'clock' | 'email' | 'location' | 'phone';
+    label: string;
+    value: string;
+  }[];
+  form: {
+    branches: string[];
+    fields: {
+      email: string;
+      fullName: string;
+      message: string;
+      phone: string;
+      preferredBranch: string;
+      preferredDate: string;
+      preferredTime: string;
+      service: string;
+    };
+    messageLimit: number;
+    placeholders: {
+      email: string;
+      fullName: string;
+      message: string;
+      phone: string;
+      preferredBranch: string;
+      preferredDate: string;
+      preferredTime: string;
+      service: string;
+    };
+    services: string[];
+    submitLabel: string;
+    times: string[];
+    title: string;
+  };
+  hero: {
+    backgroundImageAlt: string;
+    backgroundImageUrl: string;
+    eyebrow: string;
+    info: {
+      description: string;
+      icon: 'clock' | 'email' | 'location' | 'phone';
+      label: string;
+      value: string;
+    }[];
+    subtitle: string;
+    title: string;
+  };
+  maps: {
+    address?: string;
+    badge?: string;
+    directionsUrl?: string;
+    hours?: string;
+    imageAlt: string;
+    imageUrl: string;
+    label: string;
+    lat?: number;
+    lng?: number;
+    name?: string;
+    phone?: string;
+    zoom?: number;
+  }[];
+};
+
+export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  branches: {
+    address: string;
+    id?: string;
+    imageAlt: string;
+    imageUrl: string;
+    mapLabel: string;
+    mapUrl: string;
+    name: string;
+  }[];
+  calendar: {
+    dates: {
+      day: number;
+      disabled?: boolean;
+      key: string;
+      muted?: boolean;
+    }[];
+    monthLabel: string;
+    selectedDateKey: string;
+    selectedDateLabel: string;
+    weekdays: string[];
+  };
+  doctors: {
+    name: string;
+    value: string;
+  }[];
+  form: {
+    fields: {
+      email: string;
+      fullName: string;
+      notes: string;
+      phone: string;
+    };
+    placeholders: {
+      email: string;
+      fullName: string;
+      notes: string;
+      phone: string;
+    };
+    submitLabel: string;
+  };
+  help: {
+    email: string;
+    phone: string;
+    title: string;
+    subtitle: string;
+  };
+  hero: {
+    backgroundImageAlt: string;
+    backgroundImageUrl: string;
+    subtitle: string;
+    title: string;
+  };
+  information: string[];
+  servicesList: {
+    name: string;
+    value: string;
+  }[];
+  summary: {
+    duration: string;
+    title: string;
+  };
+  times: string[];
+};

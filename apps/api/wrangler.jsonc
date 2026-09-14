@@ -6,7 +6,11 @@
   "workers_dev": true,
   "vars": {
     "APP_ENV": "development",
-    "CORS_ALLOWED_ORIGIN": "http://localhost:5173",
+    "CORS_ALLOWED_ORIGINS": "http://localhost:5173",
+    "MEDIA_PUBLIC_BASE_URL": "",
+    "EMAIL_NOTIFICATIONS_ENABLED": "false",
+    "EMAIL_NOTIFICATION_RECIPIENT": "arunreah@mekhla.digital",
+    "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.mekhla.digital>",
   },
   "d1_databases": [
     {
@@ -27,13 +31,25 @@
       "name": "arunreah-api-staging",
       "vars": {
         "APP_ENV": "staging",
-        "CORS_ALLOWED_ORIGIN": "https://staging.example.com",
+        "CORS_ALLOWED_ORIGINS": "https://staging.mekhla.digital",
+        "MEDIA_PUBLIC_BASE_URL": "https://pub-0dae1b4d79d0465fa30f0366829841b4.r2.dev",
+        "EMAIL_NOTIFICATIONS_ENABLED": "true",
+        "EMAIL_NOTIFICATION_RECIPIENT": "arunreah@mekhla.digital",
+        "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.mekhla.digital>",
+        "TELEGRAM_NOTIFICATIONS_ENABLED": "true",
+        "TELEGRAM_CHAT_ID": "909395067",
       },
+      "routes": [
+        {
+          "pattern": "api.staging.mekhla.digital",
+          "custom_domain": true,
+        },
+      ],
       "d1_databases": [
         {
           "binding": "DB",
           "database_name": "arunreah-dental-staging",
-          "database_id": "00000000-0000-0000-0000-000000000000",
+          "database_id": "7fc1477b-a22b-4dc8-a2f9-3054ade0a0d1",
           "migrations_dir": "migrations",
         },
       ],
@@ -48,7 +64,11 @@
       "name": "arunreah-api-production",
       "vars": {
         "APP_ENV": "production",
-        "CORS_ALLOWED_ORIGIN": "https://www.example.com",
+        "CORS_ALLOWED_ORIGINS": "https://www.example.com",
+        "MEDIA_PUBLIC_BASE_URL": "https://media.example.com",
+        "EMAIL_NOTIFICATIONS_ENABLED": "true",
+        "EMAIL_NOTIFICATION_RECIPIENT": "arunreah@mekhla.digital",
+        "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.mekhla.digital>",
       },
       "d1_databases": [
         {
