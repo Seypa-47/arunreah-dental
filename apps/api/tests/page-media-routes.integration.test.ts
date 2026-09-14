@@ -4,7 +4,7 @@ import type { Bindings } from '../src/types/env';
 
 type PageMediaRecord = {
   bodyEn: string | null; bodyKm: string | null; createdAt: string; displayOrder: number; id: string;
-  imageKey: string; placement: 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'DOCTORS_PATIENT_EDUCATION'; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  imageKey: string; placement: 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'ABOUT_ADVANCED_FACILITIES' | 'DOCTORS_PATIENT_EDUCATION'; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   titleEn: string | null; titleKm: string | null; updatedAt: string;
 };
 type SessionRecord = { adminId: string; displayName: string; email: string; role: AuthenticatedAdmin['role']; sessionId: string };
@@ -47,6 +47,15 @@ describe('page media API routes', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('Cache-Control')).toBe('public, max-age=300');
     await expect(response.json()).resolves.toMatchObject({ success: true, data: { items: [{ id: 'published', title: 'ការរៀនសូត្ររបស់ក្រុមការងារ', body: 'ការណែនាំច្បាស់លាស់សម្រាប់អ្នកជំងឺ។' }] } });
+  });
+
+  it('accepts the Advanced Facilities placement for public CMS content', async () => {
+    state.items = [{ id: 'facility', placement: 'ABOUT_ADVANCED_FACILITIES', status: 'PUBLISHED', titleEn: 'Digital scanning', titleKm: 'ការស្កេនឌីជីថល', bodyEn: 'A digital impression workflow.', bodyKm: 'ប្រព័ន្ធស្កេនឌីជីថល។', imageKey: 'clinic/digital-scanning.jpg', displayOrder: 10, createdAt: '2026-09-07T00:00:00.000Z', updatedAt: '2026-09-07T00:00:00.000Z' }];
+
+    const response = await app.request('http://localhost/api/public/page-media?placement=ABOUT_ADVANCED_FACILITIES&lang=en', undefined, bindings);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ success: true, data: { items: [{ id: 'facility', title: 'Digital scanning' }] } });
   });
 
   it('requires CMS permission for private editing', async () => {

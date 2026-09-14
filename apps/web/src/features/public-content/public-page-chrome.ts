@@ -56,6 +56,7 @@ export function publicAboutContent(
   language: 'en' | 'km',
   clinicShowcase?: PublicShowcaseDetail,
   featuredDoctor?: PublicDoctorSummary,
+  advancedFacilities: { id: string; imageKey: string; title: string | null; body: string | null; displayOrder: number }[] = [],
 ): AboutPageContent {
   const clinicName = language === 'km' ? clinic.clinicNameKm : clinic.clinicNameEn;
   const tagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
@@ -79,6 +80,8 @@ export function publicAboutContent(
           galleryTitle: 'ទិដ្ឋភាពនៅក្នុងគ្លីនិករបស់យើង',
           professionalEyebrow: 'ការអភិវឌ្ឍវិជ្ជាជីវៈ',
           professionalTitle: 'រៀនដើម្បីថែទាំអ្នកបានកាន់តែប្រសើរ',
+          facilitiesEyebrow: 'បច្ចេកវិទ្យាក្នុងគ្លីនិក',
+          facilitiesTitle: 'គ្រឿងបរិក្ខារទំនើប សម្រាប់ការថែទាំដោយយកចិត្តទុកដាក់',
           timelineEyebrow: 'ប្រវត្តិនៃការរីកចម្រើន',
           timelineTitle: 'ដំណើរឆ្ពោះទៅមុខរបស់យើង',
           profileLabel: 'ជួបជាមួយក្រុមការងារ',
@@ -90,6 +93,8 @@ export function publicAboutContent(
           galleryTitle: 'A look inside our clinic',
           professionalEyebrow: 'Professional development',
           professionalTitle: 'Learning to care better',
+          facilitiesEyebrow: 'Clinic technology',
+          facilitiesTitle: 'Advanced facilities for considered care',
           timelineEyebrow: 'Our journey',
           timelineTitle: 'Growing with our community',
           profileLabel: 'Meet the team',
@@ -107,7 +112,14 @@ export function publicAboutContent(
         }
       : undefined,
     differences: [],
-    facilities: [],
+    facilities: advancedFacilities
+      .map((item) => ({
+        description: item.body ?? '',
+        imageAlt: item.title ?? (language === 'km' ? 'គ្រឿងបរិក្ខារទំនើបនៅគ្លីនិក' : 'Advanced dental facility'),
+        imageUrl: getPublicMediaUrl(item.imageKey) ?? '',
+        title: item.title ?? '',
+      }))
+      .filter((facility) => Boolean(facility.imageUrl)),
     hero: { eyebrow: '', imageAlt: '', imageUrl: '', subtitle: tagline ?? '', title: clinicName },
     mission: { description: '', iconUrl: '', title: '' },
     stats: [

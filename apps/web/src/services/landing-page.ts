@@ -942,6 +942,8 @@ export async function fetchAboutPage(): Promise<AboutPageContent> {
       galleryTitle: 'A Look Inside Our Clinic',
       professionalEyebrow: 'Professional Development',
       professionalTitle: 'Learning to Care Better',
+      facilitiesEyebrow: 'Clinic Technology',
+      facilitiesTitle: 'Advanced Facilities for Considered Care',
       timelineEyebrow: 'Our Journey',
       timelineTitle: 'Growing with Our Community',
       profileLabel: 'Meet the Team',

@@ -213,34 +213,25 @@ function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences
   );
 }
 
-function FacilitiesSection({ facilities }: Pick<AboutPageContent, 'facilities'>) {
+function FacilitiesSection({ editorial, facilities }: Pick<AboutPageContent, 'editorial' | 'facilities'>) {
   if (facilities.length === 0) return null;
   return (
-    <section className="bg-[#f7fafc] py-14 sm:py-16">
+    <section className="border-y border-[#e2edf2] bg-[#f7fafc] py-14 sm:py-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
-              Our Services & Facilities
-            </p>
-            <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">
-              Premium Care. Advanced Facilities.
-            </h2>
-          </div>
-          <Link
-            className="hidden items-center gap-2 text-[13px] font-extrabold leading-5 text-[#3695B9] hover:text-[#005687] sm:inline-flex"
-            to="/services"
-          >
-            See All Services
-            <ArrowIcon />
-          </Link>
+        <div className="max-w-[720px]">
+          <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.facilitiesEyebrow}</p>
+          <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{editorial.facilitiesTitle}</h2>
         </div>
-        <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {facilities.map((facility) => (
-            <article className="overflow-hidden rounded-xl border border-[#e4edf2] bg-white p-4 shadow-[0_2px_10px_rgba(15,61,84,0.05)]" key={facility.title}>
-              <img alt={facility.imageAlt} className="h-[190px] w-full rounded-lg object-cover" src={facility.imageUrl} />
-              <h3 className="mt-4 text-[16px] font-bold leading-6 text-[#005687]">{facility.title}</h3>
-              <p className="mt-2 text-[13px] font-normal leading-5 text-[#6b7280]">{facility.description}</p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {facilities.map((facility, index) => (
+            <article className={`group overflow-hidden rounded-xl border border-[#dceaf0] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.05)] transition-shadow duration-200 hover:shadow-[0_10px_24px_rgba(15,61,84,0.1)] ${index === 0 ? 'sm:col-span-2 lg:col-span-1' : ''}`} key={`${facility.title}-${facility.imageUrl}`}>
+              <div className="aspect-[4/3] overflow-hidden bg-[radial-gradient(circle_at_center,#ffffff_0%,#eef6f8_72%)] p-3">
+                <img alt={facility.imageAlt} className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.03]" src={facility.imageUrl} />
+              </div>
+              <div className="border-t border-[#e7eff3] p-5">
+                <h3 className="text-[17px] font-bold leading-6 text-[#073f60]">{facility.title}</h3>
+                {facility.description ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{facility.description}</p> : null}
+              </div>
             </article>
           ))}
         </div>
@@ -260,7 +251,7 @@ function AboutPageView({ content }: { content: AboutPageContent }) {
         <ClinicGallery editorial={content.editorial} images={content.clinicGallery ?? []} />
         <VisionMissionSection mission={content.mission} vision={content.vision} />
         <DifferencesSection differences={content.differences} />
-        <FacilitiesSection facilities={content.facilities} />
+        <FacilitiesSection editorial={content.editorial} facilities={content.facilities} />
       </main>
       <SiteFooter {...content.footer} />
     </SiteLayout>

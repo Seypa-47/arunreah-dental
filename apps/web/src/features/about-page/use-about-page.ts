@@ -10,16 +10,29 @@ export function useAboutPageQuery() {
   const { language } = usePublicLanguage();
   return useQuery({
     queryFn: async () => {
-      const [clinic, showcase, doctors, pageMedia, timeline] = await Promise.all([
+      const [clinic, showcase, doctors, pageMedia, advancedFacilities, timeline] = await Promise.all([
         getPublicClinic(),
         getPublicShowcase(clinicGalleryShowcaseSlug, language).catch(() => undefined),
         getPublicDoctors(language).catch(() => ({ doctors: [] })),
         getPublicPageMedia('ABOUT_PROFESSIONAL_DEVELOPMENT', language).catch(() => ({ items: [] })),
+        getPublicPageMedia('ABOUT_ADVANCED_FACILITIES', language).catch(() => ({ items: [] })),
         getPublicAboutTimeline(language).catch(() => ({ items: [] })),
       ]);
       const featuredDoctor = doctors.doctors.find((doctor) => doctor.featured) ?? doctors.doctors[0];
-      return { ...publicAboutContent(clinic, language, showcase?.showcase, featuredDoctor), professionalMedia: pageMedia.items, timeline: timeline.items };
+      return {
+        ...publicAboutContent(clinic, language, showcase?.showcase, featuredDoctor, advancedFacilities.items),
+        professionalMedia: pageMedia.items,
+        timeline: timeline.items,
+      };
     },
-    queryKey: [...queryKeys.public.clinic(), queryKeys.public.doctors(language), queryKeys.public.aboutTimeline(language), language, 'about', clinicGalleryShowcaseSlug],
+    queryKey: [
+      ...queryKeys.public.clinic(),
+      queryKeys.public.doctors(language),
+      queryKeys.public.aboutTimeline(language),
+      queryKeys.public.pageMedia('ABOUT_ADVANCED_FACILITIES', language),
+      language,
+      'about',
+      clinicGalleryShowcaseSlug,
+    ],
   });
 }
