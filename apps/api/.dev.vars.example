@@ -1,14 +1,3 @@
 # Local Worker secrets only. Copy to .dev.vars; never commit the result.
 # No secrets are required for the health-check foundation.
 # Future secret names are documented in docs/environments.md.
-TURNSTILE_SECRET_KEY=
-# Optional appointment notifications. Keep this file empty; use `.dev.vars`
-# locally and Worker secrets remotely for `RESEND_API_KEY` and
-# `TELEGRAM_BOT_TOKEN`.
-EMAIL_NOTIFICATIONS_ENABLED=false
-EMAIL_NOTIFICATION_RECIPIENT=
-EMAIL_FROM_ADDRESS=
-RESEND_API_KEY=
-TELEGRAM_NOTIFICATIONS_ENABLED=false
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=

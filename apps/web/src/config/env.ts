@@ -11,10 +11,5 @@ function readPublicEnv(key: PublicEnvKey): string {
 }
 
 export const env = {
-  get apiBaseUrl() {
-    return readPublicEnv('VITE_API_BASE_URL');
-  },
-  get turnstileSiteKey() {
-    return import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim() || undefined;
-  },
+  apiBaseUrl: readPublicEnv('VITE_API_BASE_URL'),
 } as const;
