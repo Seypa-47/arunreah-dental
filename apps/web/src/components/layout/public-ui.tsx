@@ -1,4 +1,5 @@
-import { useState, type ElementType, type HTMLAttributes, type ReactNode } from 'react';
+import { useState, type ElementType, type HTMLAttributes, type ImgHTMLAttributes, type ReactNode } from 'react';
+import { defaultImagePresentation, type ImagePresentation } from '@arunreah/shared';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/cn';
 
@@ -86,6 +87,30 @@ export function ResilientImage({
       src={imageSrc}
     />
   );
+}
+
+/** Consistent public rendering for CMS-controlled focal point and zoom metadata. */
+export function CmsImage({
+  alt,
+  className,
+  fallbackSrc,
+  fit = 'cover',
+  presentation = defaultImagePresentation,
+  src,
+  ...props
+}: Omit<ImgHTMLAttributes<HTMLImageElement>, 'alt' | 'src'> & {
+  alt: string;
+  fallbackSrc?: string;
+  fit?: 'contain' | 'cover';
+  presentation?: ImagePresentation;
+  src?: string | null;
+}) {
+  const [imageSrc, setImageSrc] = useState(src || fallbackSrc);
+  const { positionX, positionY, zoom } = presentation;
+
+  if (!imageSrc) return <div aria-hidden="true" className={className} />;
+
+  return <img alt={alt} className={className} onError={() => { if (fallbackSrc && imageSrc !== fallbackSrc) setImageSrc(fallbackSrc); }} src={imageSrc} style={{ objectFit: fit, objectPosition: `${positionX}% ${positionY}%`, transform: zoom > 1 ? `scale(${zoom})` : undefined, transformOrigin: `${positionX}% ${positionY}%` }} {...props} />;
 }
 
 /** Keeps split heroes useful on small screens, where an opaque copy panel would otherwise hide the photo. */

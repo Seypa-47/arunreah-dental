@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { ContentBlocks } from '@/components/layout/public-ui';
+import { CmsImage, ContentBlocks } from '@/components/layout/public-ui';
 import type { AboutPageContent } from '@/features/landing-page/types';
 import { useAboutPageQuery } from './use-about-page';
 import { getPublicMediaUrl } from '@/services/media';
@@ -121,7 +121,7 @@ function ClinicGallery({ editorial, images }: { editorial: AboutPageContent['edi
 
 function ProfessionalDevelopment({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['professionalMedia']> }) {
   if (items.length === 0) return null;
-  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <img alt={item.title || editorial.professionalTitle} className="h-[240px] w-full object-cover sm:h-[280px]" src={url} /> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
+  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <CmsImage alt={item.title || editorial.professionalTitle} className="h-[240px] w-full sm:h-[280px]" presentation={item.imagePresentation} src={url} /> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
 }
 
 function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['timeline']> }) {
@@ -226,7 +226,7 @@ function FacilitiesSection({ editorial, facilities }: Pick<AboutPageContent, 'ed
           {facilities.map((facility, index) => (
             <article className={`group overflow-hidden rounded-xl border border-[#dceaf0] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.05)] transition-shadow duration-200 hover:shadow-[0_10px_24px_rgba(15,61,84,0.1)] ${index === 0 ? 'sm:col-span-2 lg:col-span-1' : ''}`} key={`${facility.title}-${facility.imageUrl}`}>
               <div className="aspect-[4/3] overflow-hidden bg-[radial-gradient(circle_at_center,#ffffff_0%,#eef6f8_72%)] p-3">
-                <img alt={facility.imageAlt} className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.03]" src={facility.imageUrl} />
+                <CmsImage alt={facility.imageAlt} className="h-full w-full transition duration-300 group-hover:scale-[1.03]" fit="contain" presentation={facility.imagePresentation} src={facility.imageUrl} />
               </div>
               <div className="border-t border-[#e7eff3] p-5">
                 <h3 className="text-[17px] font-bold leading-6 text-[#073f60]">{facility.title}</h3>

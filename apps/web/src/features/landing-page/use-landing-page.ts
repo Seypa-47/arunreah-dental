@@ -56,6 +56,7 @@ export function useLandingPageQuery() {
             description: promotion.body ?? '',
             imageAlt: promotion.title ?? (language === 'km' ? 'ព័ត៌មានពីគ្លីនិក' : 'Clinic promotion'),
             imageUrl: getPublicMediaUrl(promotion.imageKey) ?? '',
+            imagePresentation: promotion.imagePresentation,
             discount: promotion.discount ?? '',
             title: promotion.title ?? '',
             validUntil: promotion.validUntil,

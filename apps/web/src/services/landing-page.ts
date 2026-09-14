@@ -1,3 +1,4 @@
+import { defaultImagePresentation } from '@arunreah/shared';
 import type {
   AboutPageContent,
   BookAppointmentPageContent,
@@ -960,18 +961,21 @@ export async function fetchAboutPage(): Promise<AboutPageContent> {
         description: 'Equipped with the latest ergonomic technology for maximum patient comfort during procedures.',
         imageAlt: 'Modern dental treatment room',
         imageUrl: '/assets/landing/branches-clinic.png',
+        imagePresentation: defaultImagePresentation,
         title: 'Advanced Treatment Rooms',
       },
       {
         description: 'High-precision digital scans for accurate diagnosis and implant planning.',
         imageAlt: 'Digital dental imaging suite',
         imageUrl: '/assets/landing/service-smile-design.png',
+        imagePresentation: defaultImagePresentation,
         title: 'Digital Imaging Suite',
       },
       {
         description: 'A relaxing environment designed to reduce dental anxiety and provide a premium experience.',
         imageAlt: 'Comfortable patient lounge',
         imageUrl: '/assets/landing/branch-card-clinic.png',
+        imagePresentation: defaultImagePresentation,
         title: 'VIP Patient Lounge',
       },
     ],
