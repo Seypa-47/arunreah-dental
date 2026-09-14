@@ -6,7 +6,7 @@ export type ApiSuccess<T> = {
 export type ApiError = {
   success: false;
   error: {
-    code: ApiErrorCode;
+    code: string;
     message: string;
   };
 };
@@ -17,10 +17,9 @@ export function successResponse<T>(data: T): ApiSuccess<T> {
   return { success: true, data };
 }
 
-export function errorResponse(code: ApiErrorCode, message: string): ApiError {
+export function errorResponse(code: string, message: string): ApiError {
   return {
     success: false,
     error: { code, message },
   };
 }
-import type { ApiErrorCode } from './error-codes';
