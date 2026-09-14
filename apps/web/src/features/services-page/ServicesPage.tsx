@@ -45,7 +45,7 @@ function ServiceCard({ service }: { service: LandingService }) {
         className="flex h-full flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
         to={`/services/${slug}`}
       >
-        {service.imageUrl ? <ImageFrame alt={service.imageAlt || service.name} className="h-[190px] w-full shrink-0 rounded-none border-0 bg-[#eaf2f6] shadow-none" src={service.imageUrl} /> : null}
+        <ImageFrame alt={service.imageAlt || service.name} className="h-[190px] w-full shrink-0 rounded-none border-0 bg-[#eaf2f6] shadow-none" src={service.imageUrl} />
         <div className="flex min-w-0 flex-1 flex-col justify-between p-5">
           <div>
             <h2 className="text-[16px] font-bold leading-5 text-[#005687] transition-colors group-hover:text-[#3695B9]">

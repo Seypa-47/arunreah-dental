@@ -38,6 +38,40 @@ function createIdempotencyKey() {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
+function validatePatientName(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return 'Enter your full name.';
+  if (trimmed.length < 2) return 'Full name must be at least 2 characters.';
+  if (trimmed.length > 160) return 'Full name is too long.';
+  return undefined;
+}
+
+function validatePhone(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return 'Enter your phone number.';
+  if (!/^[0-9+()\- ]+$/.test(trimmed)) return 'Use only digits, spaces, +, -, and parentheses.';
+  if (trimmed.replace(/\D/g, '').length < 8) return 'Enter a valid phone number.';
+  if (trimmed.length > 32) return 'Phone number is too long.';
+  return undefined;
+}
+
+function validateEmail(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return 'Enter your email address.';
+  if (trimmed.length > 320) return 'Email address is too long.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return 'Enter a valid email address.';
+  return undefined;
+}
+
+type AppointmentFieldErrors = { email?: string; fullName?: string; phone?: string };
+
+/** Mirrors the admin form's focusFirstInvalid pattern: wait for the aria-invalid paint, then focus it. */
+function focusFirstInvalidField(formEl: HTMLFormElement | null) {
+  window.requestAnimationFrame(() => {
+    formEl?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+  });
+}
+
 function AppointmentIcon({ className = 'size-[18px]', name }: { className?: string; name: IconName }) {
   const icons = {
     calendar: (
@@ -175,6 +209,7 @@ function SelectField({
 }
 
 function TextField({
+  error,
   icon,
   id,
   label,
@@ -183,6 +218,7 @@ function TextField({
   value,
   onChange,
 }: {
+  error?: string;
   icon: IconName;
   id: string;
   label: string;
@@ -191,6 +227,7 @@ function TextField({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const errorId = `${id}-error`;
   return (
     <div>
       <label className="mb-2 block text-[13px] font-bold leading-4 text-[#005687]" htmlFor={id}>
@@ -198,8 +235,23 @@ function TextField({
       </label>
       <div className="relative">
         <FieldIcon name={icon} />
-        <input className={fieldClass} id={id} name={id} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} type={type} value={value} />
+        <input
+          aria-describedby={error ? errorId : undefined}
+          aria-invalid={error ? true : undefined}
+          className={`${fieldClass} ${error ? 'border-[#e6a4a4] focus:border-[#b91c1c] focus:ring-[#fbe4e4]' : ''}`}
+          id={id}
+          name={id}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          type={type}
+          value={value}
+        />
       </div>
+      {error ? (
+        <p className="mt-1.5 text-[12px] font-semibold text-[#b91c1c]" id={errorId} role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -373,14 +425,43 @@ function AppointmentForm({
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<AppointmentFieldErrors>({});
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handlePatientNameChange = (value: string) => {
+    setPatientName(value);
+    setFieldErrors((previous) => (previous.fullName ? { ...previous, fullName: undefined } : previous));
+  };
+  const handlePhoneChange = (value: string) => {
+    setPhone(value);
+    setFieldErrors((previous) => (previous.phone ? { ...previous, phone: undefined } : previous));
+  };
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    setFieldErrors((previous) => (previous.email ? { ...previous, email: undefined } : previous));
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const nextFieldErrors: AppointmentFieldErrors = {
+      email: validateEmail(email),
+      fullName: validatePatientName(patientName),
+      phone: validatePhone(phone),
+    };
+
+    if (nextFieldErrors.email || nextFieldErrors.fullName || nextFieldErrors.phone) {
+      setFieldErrors(nextFieldErrors);
+      focusFirstInvalidField(formRef.current);
+      return;
+    }
+
+    setFieldErrors({});
     onSubmit({ patientName, phone, email, notes });
   };
 
   return (
     <Card className="rounded-xl border-[#e1ebef] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.05)] sm:p-7">
-      <form className="space-y-7 sm:space-y-8" onSubmit={handleSubmit}>
+      <form className="space-y-7 sm:space-y-8" noValidate onSubmit={handleSubmit} ref={formRef}>
         <section>
           <SectionTitle number="1" title="Appointment Details" />
           <div className="mt-5 space-y-4">
@@ -422,24 +503,26 @@ function AppointmentForm({
         <section className="border-t border-[#e7eff3] pt-7 sm:pt-8">
           <SectionTitle number="3" title="Your Information" />
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <TextField icon="user" id="fullName" label={content.form.fields.fullName} onChange={setPatientName} placeholder={content.form.placeholders.fullName} value={patientName} />
+            <TextField error={fieldErrors.fullName} icon="user" id="fullName" label={content.form.fields.fullName} onChange={handlePatientNameChange} placeholder={content.form.placeholders.fullName} value={patientName} />
             <TextField
+              error={fieldErrors.phone}
               icon="phone"
               id="phone"
               label={content.form.fields.phone}
               placeholder={content.form.placeholders.phone}
               type="tel"
               value={phone}
-              onChange={setPhone}
+              onChange={handlePhoneChange}
             />
             <TextField
+              error={fieldErrors.email}
               icon="email"
               id="email"
               label={content.form.fields.email}
               placeholder={content.form.placeholders.email}
               type="email"
               value={email}
-              onChange={setEmail}
+              onChange={handleEmailChange}
             />
             <TextField icon="notes" id="notes" label={content.form.fields.notes} onChange={setNotes} placeholder={content.form.placeholders.notes} value={notes} />
           </div>

@@ -64,10 +64,14 @@ function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
     <Card className="overflow-hidden rounded-xl border-[#e6edf1] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-0.5 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
       <Link
         aria-label={`View profile for ${doctor.name}`}
-        className={`group flex min-h-[196px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] ${hasImage ? 'sm:block' : 'sm:flex'}`}
+        className="group flex min-h-[196px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:block"
         to={doctor.detail.profileHref}
       >
-        {hasImage ? <img alt={doctor.imageAlt || doctor.name} className="h-[196px] w-[42%] shrink-0 bg-[#edf5f8] object-cover object-top sm:h-[236px] sm:w-full" src={doctor.imageUrl} /> : null}
+        {hasImage ? (
+          <img alt={doctor.imageAlt || doctor.name} className="h-[196px] w-[42%] shrink-0 bg-[#edf5f8] object-cover object-top sm:h-[236px] sm:w-full" src={doctor.imageUrl} />
+        ) : (
+          <div aria-hidden="true" className="h-[196px] w-[42%] shrink-0 bg-[#edf5f8] sm:h-[236px] sm:w-full" />
+        )}
         <div className="flex min-w-0 flex-1 flex-col bg-white p-4 sm:min-h-[156px] sm:p-5">
           <h3 className="text-[15px] font-bold leading-5 text-[#005687] sm:text-[16px]">{doctor.name}</h3>
           <p className="mt-1 text-[12px] font-semibold leading-4 text-[#3695B9] sm:text-[13px]">
