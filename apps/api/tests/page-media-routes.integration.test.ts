@@ -18,7 +18,8 @@ vi.mock('../src/repositories/page-media.repository', () => ({
     state.items.push(item); return item;
   },
   find: async (_db: unknown, id: string) => state.items.find((item) => item.id === id),
-  list: async (_db: unknown, placement: PageMediaRecord['placement'], publishedOnly = false) => state.items.filter((item) => item.placement === placement && (!publishedOnly || item.status === 'PUBLISHED')),
+  listAdmin: async (_db: unknown, placement: PageMediaRecord['placement']) => state.items.filter((item) => item.placement === placement),
+  listPublic: async (_db: unknown, placement: PageMediaRecord['placement']) => state.items.filter((item) => item.placement === placement && item.status === 'PUBLISHED'),
   remove: async (_db: unknown, id: string) => { state.items = state.items.filter((item) => item.id !== id); },
   update: async (_db: unknown, id: string, input: Partial<PageMediaRecord>) => {
     const item = state.items.find((record) => record.id === id); if (!item) return undefined; Object.assign(item, input); return item;

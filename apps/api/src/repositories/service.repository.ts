@@ -117,7 +117,7 @@ export async function listPublicServices(db: DatabaseClient) {
     .select()
     .from(services)
     .where(eq(services.status, 'PUBLISHED'))
-    .orderBy(asc(services.displayOrder));
+    .orderBy(asc(services.displayOrder), asc(services.id));
 }
 export async function listAdminServices(db: DatabaseClient, q: ServiceListQuery) {
   const c = [] as ReturnType<typeof eq>[];
