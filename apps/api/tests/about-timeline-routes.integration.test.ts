@@ -10,7 +10,8 @@ vi.mock('../src/db/client', () => ({ createDbClient: () => ({}) }));
 vi.mock('../src/repositories/about-timeline.repository', () => ({
   create: async () => undefined,
   find: async (_db: unknown, id: string) => state.items.find((item) => item.id === id),
-  list: async (_db: unknown, publishedOnly = false) => state.items.filter((item) => !publishedOnly || item.status === 'PUBLISHED'),
+  listAdmin: async () => state.items,
+  listPublic: async () => state.items.filter((item) => item.status === 'PUBLISHED'),
   remove: async () => undefined,
   update: async () => undefined,
 }));

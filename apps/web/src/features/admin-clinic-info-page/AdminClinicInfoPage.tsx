@@ -1153,18 +1153,21 @@ export function AdminClinicInfoPage({
                       </h3>
 
                       <div className="grid gap-3.5 sm:grid-cols-2 text-[13px]">
-                        <div className="flex items-center gap-3">
-                          <ToggleSwitch
-                            checked={selectedBranch.showOnBranchesPage}
-                            onChange={(checked) =>
-                              setBranches((prev) =>
-                                prev.map((b) =>
-                                  b.id === selectedBranch.id ? { ...b, showOnBranchesPage: checked } : b,
-                                ),
-                              )
-                            }
-                          />
-                          <span className="text-[#182238]">Show on Branches Page</span>
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <ToggleSwitch
+                              checked={selectedBranch.showOnBranchesPage}
+                              onChange={(checked) =>
+                                setBranches((prev) =>
+                                  prev.map((b) =>
+                                    b.id === selectedBranch.id ? { ...b, showOnBranchesPage: checked } : b,
+                                  ),
+                                )
+                              }
+                            />
+                            <span className="text-[#182238]">Show on Branches Page</span>
+                          </div>
+                          <p className="mt-1 pl-[52px] text-[11.5px] leading-4 text-[#71839e]">Controls whether this branch appears on the public /branches page.</p>
                         </div>
                         <div className="flex items-center gap-3">
                           <ToggleSwitch
@@ -1186,31 +1189,37 @@ export function AdminClinicInfoPage({
                           />
                           <span className="text-[#182238]">Enable &ldquo;Book at this Branch&rdquo; button</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <ToggleSwitch
-                            checked={selectedBranch.showOnHomepageSection}
-                            onChange={(checked) =>
-                              setBranches((prev) =>
-                                prev.map((b) =>
-                                  b.id === selectedBranch.id ? { ...b, showOnHomepageSection: checked } : b,
-                                ),
-                              )
-                            }
-                          />
-                          <span className="text-[#182238]">Show on Homepage Branch Section</span>
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <ToggleSwitch
+                              checked={selectedBranch.showOnHomepageSection}
+                              onChange={(checked) =>
+                                setBranches((prev) =>
+                                  prev.map((b) =>
+                                    b.id === selectedBranch.id ? { ...b, showOnHomepageSection: checked } : b,
+                                  ),
+                                )
+                              }
+                            />
+                            <span className="text-[#182238]">Show on Homepage Branch Section</span>
+                          </div>
+                          <p className="mt-1 pl-[52px] text-[11.5px] leading-4 text-[#71839e]">Controls whether this branch appears in the "Branches" card grid on the homepage. Separate from the hero carousel below.</p>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <ToggleSwitch
-                            checked={selectedBranch.includeInHeroCarousel}
-                            onChange={(checked) =>
-                              setBranches((prev) =>
-                                prev.map((b) =>
-                                  b.id === selectedBranch.id ? { ...b, includeInHeroCarousel: checked } : b,
-                                ),
-                              )
-                            }
-                          />
-                          <span className="text-[#182238]">Include in Homepage Hero Carousel</span>
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <ToggleSwitch
+                              checked={selectedBranch.includeInHeroCarousel}
+                              onChange={(checked) =>
+                                setBranches((prev) =>
+                                  prev.map((b) =>
+                                    b.id === selectedBranch.id ? { ...b, includeInHeroCarousel: checked } : b,
+                                  ),
+                                )
+                              }
+                            />
+                            <span className="text-[#182238]">Include in Homepage Hero Carousel</span>
+                          </div>
+                          <p className="mt-1 pl-[52px] text-[11.5px] leading-4 text-[#71839e]">Controls whether this branch appears in the large rotating hero banner at the top of the homepage.</p>
                         </div>
                       </div>
                     </div>

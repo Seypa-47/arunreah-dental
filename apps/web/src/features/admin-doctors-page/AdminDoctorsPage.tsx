@@ -12,6 +12,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { useAdminDoctorsPageQuery } from './use-admin-doctors-page';
 import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
+import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 
 function StatusBadge({ status }: { status: DoctorStatus }) { return <AdminPublicationStatus status={status} />; }
 
@@ -119,27 +120,33 @@ function DoctorDetailPanel({
   const [formData, setFormData] = useState<AdminDoctor>(doctor);
   const [menuOpen, setMenuOpen] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  useUnsavedChangesGuard(isDirty);
 
   // Sync form when selected doctor changes
   useEffect(() => {
     setFormData(doctor);
     setSaveSuccess(false);
+    setIsDirty(false);
   }, [doctor]);
 
   const handleFieldChange = (field: keyof AdminDoctor, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setSaveSuccess(false);
+    setIsDirty(true);
   };
 
   const handleDiscard = () => {
     setFormData(doctor);
     setSaveSuccess(false);
+    setIsDirty(false);
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSave(formData);
     setSaveSuccess(true);
+    setIsDirty(false);
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
@@ -958,7 +965,12 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
     onError: (error: unknown) => setActionError(error instanceof Error && 'code' in error && error.code === 'DOCTOR_IN_USE' ? 'This doctor is used by appointment history. Unpublish the profile instead.' : 'Unable to delete this doctor.'),
   });
   const handleSaveDoctor = (updated: AdminDoctor) => updateMutation.mutate(updated);
-  const handleDeleteDoctor = (id: string) => deleteMutation.mutate(id);
+  const handleDeleteDoctor = (id: string) => {
+    const doctor = doctors.find((item) => item.id === id);
+    if (window.confirm(`Delete ${doctor?.name ?? 'this doctor'}? This cannot be undone.`)) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const handleAddDoctor = (newDoc: AdminDoctor) => {
     setDoctors((prev) => [newDoc, ...prev]);

@@ -12,6 +12,7 @@ import { useAdminServiceDetailPageQuery } from './use-admin-service-detail-page'
 import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 import { getPublicMediaUrl } from '@/services/media';
+import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { CreateServiceInput } from '@arunreah/shared';
 
 type EditableService = AdminService & {
@@ -203,13 +204,7 @@ function BasicInformation({
         <Field label={content.editor.categoryLabel}>
           <select
             className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-            onChange={(event) =>
-              setService((current) => ({
-                ...current,
-                category: event.target.value,
-                relatedCategory: event.target.value,
-              }))
-            }
+            onChange={(event) => setService((current) => ({ ...current, category: event.target.value }))}
             value={service.category}
           >
             {content.editor.categoryOptions.map((opt) => (
@@ -790,45 +785,18 @@ function OrderingCard({
   return (
     <Card className="rounded-[18px] border-[#dce5ef] p-5 shadow-none">
       <h2 className="text-[15px] font-bold text-[#182238]">{content.ordering.title}</h2>
-      <div className="mt-4 space-y-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="text-[12.5px] font-semibold text-[#71839e]">{content.ordering.showLabel}</span>
-            <Toggle
-              checked={service.displayOnHomepage}
-              label={content.ordering.showLabel}
-              onChange={() =>
-                setService((current) => ({ ...current, displayOnHomepage: !current.displayOnHomepage }))
-              }
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[12.5px] font-semibold text-[#71839e]">{content.ordering.sortLabel}</span>
-            <input
-              className="h-9 w-14 rounded-lg border border-[#dce5ef] bg-white text-center text-[13px] font-bold text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-              min={1}
-              onChange={(event) =>
-                setService((current) => ({ ...current, order: Number(event.target.value) || 1 }))
-              }
-              type="number"
-              value={service.order}
-            />
-          </div>
-        </div>
-        <div>
-          <span className="block text-[12px] font-bold text-[#61738d]">{content.ordering.categoryLabel}</span>
-          <select
-            className="mt-1.5 h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-            onChange={(event) => setService((current) => ({ ...current, relatedCategory: event.target.value }))}
-            value={service.relatedCategory}
-          >
-            {content.ordering.categoryOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
-        </div>
+      <p className="mt-1 text-[12px] text-[#71839e]">Lower numbers appear first in the public services list.</p>
+      <div className="mt-4 flex items-center gap-2">
+        <span className="text-[12.5px] font-semibold text-[#71839e]">{content.ordering.sortLabel}</span>
+        <input
+          className="h-9 w-14 rounded-lg border border-[#dce5ef] bg-white text-center text-[13px] font-bold text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+          min={1}
+          onChange={(event) =>
+            setService((current) => ({ ...current, order: Number(event.target.value) || 1 }))
+          }
+          type="number"
+          value={service.order}
+        />
       </div>
     </Card>
   );
@@ -866,7 +834,8 @@ function ChecklistCard({ checklist }: { checklist: AdminServiceDetailContent['ch
 
 function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent & { service: AdminService } }) {
   const queryClient = useQueryClient();
-  const [service, setService] = useState<EditableService>(() => ({
+  const [isDirty, setIsDirty] = useState(false);
+  const [service, setServiceState] = useState<EditableService>(() => ({
     ...content.service,
     aboutContent: content.preview.aboutDescription,
     aboutImageUrl: content.preview.aboutImageUrl,
@@ -898,12 +867,17 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     relatedServices: ['Teeth Whitening', 'Routine Cleaning', 'Orthodontics'],
     slug: content.service.id,
   }));
+  const setService: typeof setServiceState = (value) => {
+    setIsDirty(true);
+    setServiceState(value);
+  };
+  useUnsavedChangesGuard(isDirty);
 
   const [notification, setNotification] = useState<string | undefined>();
   const saveMutation = useMutation({
     mutationFn: (status: 'DRAFT' | 'PUBLISHED') => cmsApi.services.update(content.service.id, {
       status, slug: service.slug, nameEn: service.name, nameKm: service.nameKm, category: service.category || null, summaryEn: service.description || null, summaryKm: service.descriptionKm || null,
-      descriptionEn: service.heroSummary || null, imageKey: service.imageUrl || null, featured: service.featured,
+      descriptionEn: service.heroSummary || null, imageKey: service.imageUrl || null, featured: service.featured, displayOrder: service.order,
       heroTitleEn: service.heroHeading || null, heroSummaryEn: service.heroSummary || null, heroImageKey: service.heroImageUrl || null,
       aboutTitleEn: service.aboutTitle || null, aboutBodyEn: service.aboutContent || null, aboutImageKey: service.aboutImageUrl || null,
       editorialLabelEn: service.editorialLabelEn || null, editorialLabelKm: service.editorialLabelKm || null,
@@ -912,7 +886,7 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       detailSections: service.detailSections,
       metaTitleEn: service.metaTitle || null, metaDescriptionEn: service.metaDescription || null,
     }),
-    onSuccess: async () => { await invalidateCmsDomain(queryClient, 'services'); },
+    onSuccess: async () => { setIsDirty(false); await invalidateCmsDomain(queryClient, 'services'); },
     onError: () => showNotification('Unable to save this service. Please check the fields and try again.'),
   });
   const previewHref = useMemo(() => `/services/${service.slug}`, [service.slug]);

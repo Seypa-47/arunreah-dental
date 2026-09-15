@@ -402,7 +402,7 @@ export function AdminAddShowcasePage() {
                       >
                         <option value="draft">Draft</option>
                         <option value="published">Published</option>
-                        <option value="hidden">Hidden</option>
+                        <option value="hidden">Archived (hidden from the site)</option>
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-[#8a9bb2]">
                         <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -961,21 +961,20 @@ export function AdminAddShowcasePage() {
 
               <div className="mt-4 space-y-4">
                 {/* Show on Homepage */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
+                <div>
+                  <div className="flex items-center justify-between">
                     <span className="text-[13px] font-bold text-[#182238]">
                       Show on Homepage
                     </span>
-                    <svg className="size-4 text-[#8a9bb2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                      <path d="M12 16v-4M12 8h.01" strokeLinecap="round" strokeWidth="2" />
-                    </svg>
+                    <ToggleSwitch
+                      checked={showOnHomepage}
+                      id={showOnHomepageToggleId}
+                      onChange={setShowOnHomepage}
+                    />
                   </div>
-                  <ToggleSwitch
-                    checked={showOnHomepage}
-                    id={showOnHomepageToggleId}
-                    onChange={setShowOnHomepage}
-                  />
+                  <p className="mt-1 text-[12px] leading-4 text-[#71839e]">
+                    Featured in the "Latest Showcase" section on the homepage. This does not affect whether it appears in the full Showcases list.
+                  </p>
                 </div>
 
                 {/* Display Order */}

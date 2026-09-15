@@ -3,7 +3,8 @@ import type { CreatePageMediaInput, PageMediaPlacement, UpdatePageMediaInput } f
 import { pageMedia } from '../db/schema/page-media';
 import type { DatabaseClient } from '../db/client';
 
-export const list = (db: DatabaseClient, placement: PageMediaPlacement, publishedOnly = false) => db.select().from(pageMedia).where(publishedOnly ? and(eq(pageMedia.placement, placement), eq(pageMedia.status, 'PUBLISHED')) : eq(pageMedia.placement, placement)).orderBy(asc(pageMedia.displayOrder), asc(pageMedia.id));
+export const listAdmin = (db: DatabaseClient, placement: PageMediaPlacement) => db.select().from(pageMedia).where(eq(pageMedia.placement, placement)).orderBy(asc(pageMedia.displayOrder), asc(pageMedia.id));
+export const listPublic = (db: DatabaseClient, placement: PageMediaPlacement) => db.select().from(pageMedia).where(and(eq(pageMedia.placement, placement), eq(pageMedia.status, 'PUBLISHED'))).orderBy(asc(pageMedia.displayOrder), asc(pageMedia.id));
 export const find = async (db: DatabaseClient, id: string) => (await db.select().from(pageMedia).where(eq(pageMedia.id, id)).limit(1))[0];
 type PageMediaWriteInput = Omit<CreatePageMediaInput, 'imagePresentation'>;
 type PageMediaUpdateInput = Omit<UpdatePageMediaInput, 'imagePresentation'>;
