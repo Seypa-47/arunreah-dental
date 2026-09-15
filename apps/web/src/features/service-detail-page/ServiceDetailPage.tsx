@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { ContentBlocks, EditorialImage, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ContentBlocks, EditorialImage } from '@/components/layout/public-ui';
 import type { LandingService, ServiceDetailContent } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { useServiceDetailPageQuery } from './use-service-detail-page';
@@ -159,10 +159,12 @@ function ServiceHero({ editorial, service }: { editorial: boolean; service: Serv
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border-4 border-[#d9edf4] bg-[#edf5f8] shadow-[0_8px_22px_rgba(15,61,84,0.09)]">
-            <ResilientImage
+            <CmsImage
               alt={service.hero.imageAlt || service.hero.title}
               className="h-[260px] w-full object-cover sm:h-[320px]"
               fallbackSrc="/assets/landing/hero-clinic.png"
+              loading="eager"
+              presentation={service.hero.imagePresentation}
               src={service.hero.imageUrl}
             />
           </div>
@@ -239,7 +241,7 @@ function AboutService({ service }: { service: ServiceDetail }) {
           <div className="mt-5 max-w-[720px] space-y-4">
             {service.about.paragraphs.map((paragraph) => <ContentBlocks key={paragraph} value={paragraph} />)}
           </div>
-          {service.about.imageUrl ? <EditorialImage alt={service.about.imageAlt} caption={service.about.imageAlt} className="mt-7" imageClassName="h-[240px] sm:h-[280px]" src={service.about.imageUrl} /> : null}
+          {service.about.imageUrl ? <EditorialImage alt={service.about.imageAlt} caption={service.about.imageAlt} className="mt-7" imageClassName="h-[240px] sm:h-[280px]" presentation={service.about.imagePresentation} src={service.about.imageUrl} /> : null}
         </article>
         <aside>
           <GlanceCard glance={service.glance} />
@@ -400,7 +402,7 @@ function CareMenu({ family, service }: { family?: boolean; service: ServiceDetai
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {service.detailSections.map((section, index) => (
             <article className={`overflow-hidden rounded-2xl border ${family ? 'border-[#d6ebe4] bg-white' : 'border-[#dcebf0] bg-[#fbfdfe]'} shadow-[0_5px_18px_rgba(15,61,84,0.05)]`} key={`${section.heading}-${index}`}>
-              {section.imageUrl ? <img alt={section.imageAlt} className="h-40 w-full object-cover" src={section.imageUrl} /> : null}
+              {section.imageUrl ? <CmsImage alt={section.imageAlt} className="h-40 w-full object-cover" presentation={section.imagePresentation} src={section.imageUrl} /> : null}
               <div className="p-5 sm:p-6"><span className={`grid size-8 place-items-center rounded-full text-[12px] font-extrabold ${family ? 'bg-[#e2f4ed] text-[#187a65]' : 'bg-[#e8f5f9] text-[#1682a4]'}`}>{String(index + 1).padStart(2, '0')}</span>{section.heading ? <h3 className="mt-4 text-[19px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div>
             </article>
           ))}
@@ -450,7 +452,7 @@ function OtherServiceCard({ service }: { service: LandingService }) {
   return (
     <Card className="overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.05)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:h-[326px]">
       <div className={`flex min-h-[192px] h-full flex-row ${hasImage ? 'sm:flex-col' : ''}`}>
-        {hasImage ? <img alt={service.imageAlt || service.name} className="h-[192px] w-[42%] shrink-0 bg-[#eaf2f6] object-cover object-center sm:h-[188px] sm:w-full" src={service.imageUrl} /> : null}
+        {hasImage ? <CmsImage alt={service.imageAlt || service.name} className="h-[192px] w-[42%] shrink-0 bg-[#eaf2f6] object-cover sm:h-[188px] sm:w-full" presentation={service.imagePresentation} src={service.imageUrl} /> : null}
         <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
           <div>
             <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{service.name}</h3>

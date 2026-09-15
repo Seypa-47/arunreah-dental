@@ -9,6 +9,7 @@ export type LandingHero = {
   callLabel: string;
   imageAlt: string;
   imageUrl: string;
+  imagePresentation?: import('@arunreah/shared').ImagePresentation;
   locationLabel: string;
   phones: string[];
   qrImageUrl: string;
@@ -21,6 +22,7 @@ export type LandingService = {
   iconUrl: string;
   imageAlt: string;
   imageUrl: string;
+  imagePresentation?: import('@arunreah/shared').ImagePresentation;
   khmerName?: string;
   name: string;
   slug?: string;
@@ -53,6 +55,7 @@ export type LandingDoctor = {
   focus?: string;
   imageAlt: string;
   imageUrl: string;
+  imagePresentation?: import('@arunreah/shared').ImagePresentation;
   name: string;
   profileHref?: string;
   skills?: string[];
@@ -63,6 +66,7 @@ export type LandingBranch = {
   hours: string;
   imageAlt: string;
   imageUrl: string;
+  imagePresentation?: import('@arunreah/shared').ImagePresentation;
   name: string;
   phones: string[];
 };
@@ -70,6 +74,7 @@ export type LandingBranch = {
 export type LandingShowcase = {
   imageAlt: string;
   imageUrl: string;
+  imagePresentation?: import('@arunreah/shared').ImagePresentation;
   slug?: string;
   title: string;
 };
@@ -146,6 +151,7 @@ export type DoctorsPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
 export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
   clinicGallery?: {
     imageAlt: string;
+    imagePresentation?: import('@arunreah/shared').ImagePresentation;
     imageUrl: string;
   }[];
   editorial: {
@@ -231,6 +237,7 @@ export type BranchesPageContent = Pick<LandingPageContent, 'actions' | 'footer' 
     hoursDays: string;
     hoursTime: string;
     imageAlt: string;
+    imagePresentation?: import('@arunreah/shared').ImagePresentation;
     imageUrl: string;
     mapLabel: string;
     mapUrl: string;
@@ -293,6 +300,7 @@ export type ServiceDetailContent = Pick<LandingPageContent, 'actions' | 'footer'
     | (LandingService & {
         about: {
           imageAlt: string;
+          imagePresentation?: import('@arunreah/shared').ImagePresentation;
           imageUrl: string;
           paragraphs: string[];
           title: string;
@@ -312,6 +320,7 @@ export type ServiceDetailContent = Pick<LandingPageContent, 'actions' | 'footer'
           body: string;
           heading: string;
           imageAlt: string;
+          imagePresentation?: import('@arunreah/shared').ImagePresentation;
           imageUrl: string;
           sectionType: 'TEXT' | 'IMAGE';
         }[];
@@ -334,6 +343,7 @@ export type ServiceDetailContent = Pick<LandingPageContent, 'actions' | 'footer'
           consultationLabel: string;
           eyebrow: string;
           imageAlt: string;
+          imagePresentation?: import('@arunreah/shared').ImagePresentation;
           imageUrl: string;
           subtitle: string;
           title: string;
@@ -397,6 +407,7 @@ export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
     directionsUrl?: string;
     hours?: string;
     imageAlt: string;
+    imagePresentation?: import('@arunreah/shared').ImagePresentation;
     imageUrl: string;
     label: string;
     lat?: number;
@@ -412,6 +423,7 @@ export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'f
     address: string;
     id?: string;
     imageAlt: string;
+    imagePresentation?: import('@arunreah/shared').ImagePresentation;
     imageUrl: string;
     mapLabel: string;
     mapUrl: string;

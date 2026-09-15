@@ -6,6 +6,7 @@ import type {
   PublicBranchRead,
   UpdateBranchInput,
 } from '@arunreah/shared';
+import { defaultImagePresentation, type ImagePresentation } from '@arunreah/shared';
 import type { DatabaseClient } from '../db/client';
 import {
   countAppointmentsForBranch,
@@ -20,6 +21,7 @@ import {
 } from '../repositories/branch.repository';
 import { HttpError } from '../shared/http-error';
 import { localize } from '../shared/localize';
+import { listForOwners } from '../repositories/image-presentation.repository';
 
 type BranchRecord = NonNullable<Awaited<ReturnType<typeof findBranchById>>>;
 
@@ -67,7 +69,12 @@ function toAdminBranch(branch: BranchRecord): AdminBranchRead {
   };
 }
 
-function toPublicBranch(branch: BranchRecord, language: PublicBranchLanguage): PublicBranchRead {
+function presentationFor(rows: Awaited<ReturnType<typeof listForOwners>>, ownerId: string, slot: string): ImagePresentation {
+  const row = rows.find((item) => item.ownerId === ownerId && item.slot === slot);
+  return row ? { positionX: row.positionX, positionY: row.positionY, zoom: row.zoom } : defaultImagePresentation;
+}
+
+function toPublicBranch(branch: BranchRecord, language: PublicBranchLanguage, presentations: Awaited<ReturnType<typeof listForOwners>> = []): PublicBranchRead {
   const includeHero = branch.includeInHomepageHero;
 
   return {
@@ -87,6 +94,8 @@ function toPublicBranch(branch: BranchRecord, language: PublicBranchLanguage): P
     googleMapsUrl: branch.googleMapsUrl,
     heroImageKey: includeHero ? branch.heroImageKey : null,
     branchImageKey: branch.branchImageKey,
+    heroImagePresentation: presentationFor(presentations, branch.id, 'HERO'),
+    branchImagePresentation: presentationFor(presentations, branch.id, 'PRIMARY'),
     heroHeadline: includeHero ? localize(branch.heroHeadlineEn, branch.heroHeadlineKm, language) : null,
     heroSupportingText: includeHero ? localize(branch.heroSupportingTextEn, branch.heroSupportingTextKm, language) : null,
     heroCtaLabel: includeHero ? localize(branch.heroCtaLabelEn, branch.heroCtaLabelKm, language) : null,
@@ -168,7 +177,11 @@ export async function getPublicBranchList(
   scope: 'branches' | 'landing' | 'appointments',
 ) {
   const branches = await listPublicBranches(database, scope);
-  return branches.map((branch) => toPublicBranch(branch, language));
+  const presentations = await listForOwners(database, branches.flatMap((branch) => [
+    { ownerType: 'BRANCH' as const, ownerId: branch.id, slot: 'HERO' },
+    { ownerType: 'BRANCH' as const, ownerId: branch.id, slot: 'PRIMARY' },
+  ]));
+  return branches.map((branch) => toPublicBranch(branch, language, presentations));
 }
 
 export async function getPublicBranch(
@@ -178,5 +191,9 @@ export async function getPublicBranch(
 ) {
   const branch = await findPublicBranchBySlug(database, slug);
   if (!branch) throw new HttpError(404, 'NOT_FOUND', 'Branch not found.');
-  return toPublicBranch(branch, language);
+  const presentations = await listForOwners(database, [
+    { ownerType: 'BRANCH', ownerId: branch.id, slot: 'HERO' },
+    { ownerType: 'BRANCH', ownerId: branch.id, slot: 'PRIMARY' },
+  ]);
+  return toPublicBranch(branch, language, presentations);
 }

@@ -126,7 +126,7 @@ function AdminLoginForm({ content }: { content: AdminLoginContent }) {
               />
               <button
                 aria-label={passwordVisible ? 'Hide password' : 'Show password'}
-                className="rounded p-1 transition hover:text-[#2388a9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2388a9]"
+                className="grid size-11 place-items-center rounded transition hover:text-[#2388a9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2388a9]"
                 onClick={() => setPasswordVisible((visible) => !visible)}
                 type="button"
               >

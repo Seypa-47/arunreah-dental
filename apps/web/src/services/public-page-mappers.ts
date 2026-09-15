@@ -45,6 +45,7 @@ export function toLandingService(service: PublicServiceSummary): LandingService 
     iconUrl: '',
     imageAlt: service.name,
     imageUrl: getPublicMediaUrl(service.listingThumbnailKey) ?? '',
+    imagePresentation: service.imagePresentation,
     name: service.name,
     slug: service.slug,
   } as LandingService;
@@ -72,6 +73,7 @@ export function toLandingDoctor(doctor: PublicDoctorSummary): LandingDoctor {
     focus: doctor.specialty ?? undefined,
     imageAlt: doctor.name,
     imageUrl: getPublicMediaUrl(doctor.photoKey) ?? '',
+    imagePresentation: doctor.photoImagePresentation,
     name: doctor.name,
     profileHref,
     specialty: doctor.specialty ?? '',
@@ -100,6 +102,7 @@ export function mapServiceDetail(base: ServiceDetailContent, detail: PublicServi
     about: {
       imageAlt: detail.name,
       imageUrl: getPublicMediaUrl(detail.about.imageKey) ?? '',
+      imagePresentation: detail.about.imagePresentation,
       paragraphs: detail.about.body ? detail.about.body.split(/\n{2,}/).filter(Boolean) : [],
       title: detail.about.title ?? detail.name,
     },
@@ -137,6 +140,7 @@ export function mapServiceDetail(base: ServiceDetailContent, detail: PublicServi
       eyebrow: detail.hero.eyebrow ?? '',
       imageAlt: detail.name,
       imageUrl: getPublicMediaUrl(detail.hero.imageKey) ?? '',
+      imagePresentation: detail.hero.imagePresentation,
       subtitle: detail.hero.summary ?? detail.shortDescription ?? '',
       title: detail.hero.title ?? detail.name,
     },
@@ -175,7 +179,7 @@ export function mapBookingOptions(
   base: BookAppointmentPageContent,
   services: PublicServiceSummary[],
   doctors: PublicDoctorSummary[],
-  branches: { id: string; slug: string; name: string; address: string; branchImageKey: string | null; googleMapsUrl: string | null; acceptsAppointments: boolean }[],
+  branches: { id: string; slug: string; name: string; address: string; branchImageKey: string | null; branchImagePresentation?: import('@arunreah/shared').ImagePresentation; googleMapsUrl: string | null; acceptsAppointments: boolean }[],
   contact?: { primaryPhone: string | null; primaryEmail: string | null },
 ): BookAppointmentPageContent {
   const bookableBranches = branches.filter((branch) => branch.acceptsAppointments);
@@ -186,6 +190,7 @@ export function mapBookingOptions(
       address: branch.address,
       id: branch.id,
       imageAlt: branch.name,
+      imagePresentation: branch.branchImagePresentation,
       imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
       mapLabel: 'View on Map',
       mapUrl: branch.googleMapsUrl ?? '#',

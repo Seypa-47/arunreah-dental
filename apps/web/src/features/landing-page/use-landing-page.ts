@@ -29,6 +29,7 @@ export function useLandingPageQuery() {
         branches: homepageBranches.map((branch) => ({
           hours: branch.openingHours ?? '',
           imageAlt: branch.name,
+          imagePresentation: branch.branchImagePresentation,
           imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
           name: branch.name,
           phones: [branch.phone, branch.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
@@ -45,6 +46,7 @@ export function useLandingPageQuery() {
           appointmentLabel: 'Book Appointment',
           callLabel: 'Call Us',
           imageAlt: branch.name,
+          imagePresentation: branch.heroImagePresentation,
           imageUrl: getPublicMediaUrl(branch.heroImageKey) ?? getPublicMediaUrl(branch.branchImageKey) ?? '',
           locationLabel: 'Location',
           phones: [contact.primaryPhone, contact.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
@@ -67,6 +69,7 @@ export function useLandingPageQuery() {
         services: services.services.map(toLandingService),
         showcase: showcases.showcases.map((showcase) => ({
           imageAlt: showcase.title,
+          imagePresentation: showcase.coverImagePresentation,
           imageUrl: getPublicMediaUrl(showcase.coverImageKey) ?? '',
           slug: showcase.slug,
           title: showcase.title,

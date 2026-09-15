@@ -7,14 +7,36 @@ type PublicLanguageContextValue = {
 };
 
 const PublicLanguageContext = createContext<PublicLanguageContextValue | undefined>(undefined);
+export const publicLanguageStorageKey = 'arunreah-public-language';
+
+export function storedPublicLanguage(value: string | null): PublicLanguage | undefined {
+  return value === 'en' || value === 'km' ? value : undefined;
+}
+
+export function initialPublicLanguage(storedValue: string | null | undefined, documentLanguage?: string): PublicLanguage {
+  return storedPublicLanguage(storedValue ?? null) ?? (documentLanguage?.toLowerCase().startsWith('km') ? 'km' : 'en');
+}
+
+function readStoredLanguage(): PublicLanguage | undefined {
+  try {
+    return storedPublicLanguage(window.localStorage.getItem(publicLanguageStorageKey));
+  } catch {
+    return undefined;
+  }
+}
 
 export function PublicLanguageProvider({ children }: PropsWithChildren) {
-  const [language, setLanguage] = useState<PublicLanguage>(() =>
-    document.documentElement.lang.toLowerCase().startsWith('km') ? 'km' : 'en',
+  const [language, setLanguage] = useState<PublicLanguage>(
+    () => initialPublicLanguage(readStoredLanguage(), document.documentElement.lang),
   );
 
   useEffect(() => {
     document.documentElement.lang = language;
+    try {
+      window.localStorage.setItem(publicLanguageStorageKey, language);
+    } catch {
+      // Private browsing or browser policy can block storage; English remains the safe default on reload.
+    }
   }, [language]);
 
   const value = useMemo(() => ({ language, setLanguage }), [language]);

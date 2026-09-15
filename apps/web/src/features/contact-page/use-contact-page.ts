@@ -35,6 +35,7 @@ export function useContactPageQuery() {
           directionsUrl: branch.googleMapsUrl ?? undefined,
           hours: branch.openingHours ?? undefined,
           imageAlt: branch.name,
+          imagePresentation: branch.branchImagePresentation,
           imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
           label: branch.name,
           name: branch.name,

@@ -37,11 +37,15 @@ export function ImageFrame({
   alt,
   className,
   fallbackSrc,
+  loading = 'lazy',
+  presentation = defaultImagePresentation,
   src,
 }: {
   alt: string;
   className?: string;
   fallbackSrc?: string;
+  loading?: 'eager' | 'lazy';
+  presentation?: ImagePresentation;
   src?: string | null;
 }) {
   const [imageSrc, setImageSrc] = useState(src || fallbackSrc);
@@ -52,10 +56,13 @@ export function ImageFrame({
     <div className={cn('ui-image-frame', className)}>
       <img
         alt={alt}
+        decoding="async"
+        loading={loading}
         onError={() => {
           if (fallbackSrc && imageSrc !== fallbackSrc) setImageSrc(fallbackSrc);
         }}
         src={imageSrc}
+        style={{ objectPosition: `${presentation.positionX}% ${presentation.positionY}%`, transform: presentation.zoom > 1 ? `scale(${presentation.zoom})` : undefined, transformOrigin: `${presentation.positionX}% ${presentation.positionY}%` }}
       />
     </div>
   );
@@ -66,11 +73,13 @@ export function ResilientImage({
   alt,
   className,
   fallbackSrc,
+  loading = 'lazy',
   src,
 }: {
   alt: string;
   className?: string;
   fallbackSrc?: string;
+  loading?: 'eager' | 'lazy';
   src?: string | null;
 }) {
   const [imageSrc, setImageSrc] = useState(src || fallbackSrc);
@@ -81,6 +90,8 @@ export function ResilientImage({
     <img
       alt={alt}
       className={className}
+      decoding="async"
+      loading={loading}
       onError={() => {
         if (fallbackSrc && imageSrc !== fallbackSrc) setImageSrc(fallbackSrc);
       }}
@@ -95,6 +106,7 @@ export function CmsImage({
   className,
   fallbackSrc,
   fit = 'cover',
+  loading = 'lazy',
   presentation = defaultImagePresentation,
   src,
   ...props
@@ -110,7 +122,7 @@ export function CmsImage({
 
   if (!imageSrc) return <div aria-hidden="true" className={className} />;
 
-  return <img alt={alt} className={className} onError={() => { if (fallbackSrc && imageSrc !== fallbackSrc) setImageSrc(fallbackSrc); }} src={imageSrc} style={{ objectFit: fit, objectPosition: `${positionX}% ${positionY}%`, transform: zoom > 1 ? `scale(${zoom})` : undefined, transformOrigin: `${positionX}% ${positionY}%` }} {...props} />;
+  return <img alt={alt} className={className} decoding="async" loading={loading} onError={() => { if (fallbackSrc && imageSrc !== fallbackSrc) setImageSrc(fallbackSrc); }} src={imageSrc} style={{ objectFit: fit, objectPosition: `${positionX}% ${positionY}%`, transform: zoom > 1 ? `scale(${zoom})` : undefined, transformOrigin: `${positionX}% ${positionY}%` }} {...props} />;
 }
 
 /** Keeps split heroes useful on small screens, where an opaque copy panel would otherwise hide the photo. */
@@ -125,7 +137,7 @@ export function MobileHeroMedia({
 }) {
   return (
     <div className="relative h-[160px] overflow-hidden sm:hidden">
-      <ResilientImage alt={alt} className="h-full w-full object-cover object-center" fallbackSrc={fallbackSrc} src={src} />
+      <ResilientImage alt={alt} className="h-full w-full object-cover object-center" fallbackSrc={fallbackSrc} loading="eager" src={src} />
       <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,84,111,0.08),rgba(0,84,111,0.28))]" />
     </div>
   );
@@ -164,6 +176,7 @@ export function EditorialImage({
   className,
   fallbackSrc,
   imageClassName,
+  presentation,
   src,
 }: {
   alt: string;
@@ -171,11 +184,12 @@ export function EditorialImage({
   className?: string;
   fallbackSrc?: string;
   imageClassName?: string;
+  presentation?: ImagePresentation;
   src?: string | null;
 }) {
   return (
     <figure className={className}>
-      <ImageFrame alt={alt} className={imageClassName} fallbackSrc={fallbackSrc} src={src} />
+      <ImageFrame alt={alt} className={imageClassName} fallbackSrc={fallbackSrc} presentation={presentation} src={src} />
       {caption ? <figcaption className="ui-caption">{caption}</figcaption> : null}
     </figure>
   );

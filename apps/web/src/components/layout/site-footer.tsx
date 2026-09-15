@@ -63,7 +63,7 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
           {logoUrl ? <img alt={clinicName ?? 'Clinic logo'} className="mb-3 h-10 w-[190px] max-w-full object-contain object-left sm:h-11 sm:w-[220px]" src={logoUrl} /> : clinicName ? <p className="mb-3 text-xl font-extrabold text-[#087b9f]">{clinicName}</p> : null}
           {clinicTagline ?? tagline ? <p className="mb-2 text-[14px] font-bold leading-[22px] text-[#005687]">{clinicTagline ?? tagline}</p> : null}
           {clinicFooterDescription ?? description ? <p className="max-w-[285px] text-[14px] font-normal leading-6 text-[#607486]">{clinicFooterDescription ?? description}</p> : null}
-          {socialLinks.length > 0 ? <div className="mt-5 flex gap-2">{socialLinks.map((link) => <a aria-label={link.label} className="grid size-9 place-items-center rounded-full border border-[#cfe4ec] bg-white transition hover:border-[#168aad] hover:bg-[#eef8fb]" href={link.href} key={link.href} rel="noreferrer" target="_blank"><img alt="" className="size-4" src={asset(link.icon)} /></a>)}</div> : null}
+          {socialLinks.length > 0 ? <div className="mt-5 flex gap-2">{socialLinks.map((link) => <a aria-label={link.label} className="grid size-11 place-items-center rounded-full border border-[#cfe4ec] bg-white transition hover:border-[#168aad] hover:bg-[#eef8fb]" href={link.href} key={link.href} rel="noreferrer" target="_blank"><img alt="" className="size-4" src={asset(link.icon)} /></a>)}</div> : null}
         </div>
         <div>
           <h2 className="mb-3 text-[15px] font-extrabold leading-6 text-[#075d83]">Our Branches</h2>

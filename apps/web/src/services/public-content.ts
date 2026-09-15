@@ -4,6 +4,7 @@ import type {
   CreatePublicAppointmentInput,
 } from '@arunreah/shared';
 import { getApiClient, type ApiClient } from '@/lib/api';
+import type { ImagePresentation } from '@arunreah/shared';
 
 export type PublicLanguage = 'en' | 'km';
 
@@ -13,14 +14,15 @@ export type PublicServiceSummary = {
   name: string;
   shortDescription: string | null;
   listingThumbnailKey: string | null;
+  imagePresentation?: ImagePresentation;
   category: string | null;
   featured: boolean;
 };
 
 export type PublicServiceDetail = PublicServiceSummary & {
   detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
-  hero: { eyebrow: string | null; title: string | null; summary: string | null; imageKey: string | null };
-  about: { title: string | null; body: string | null; imageKey: string | null };
+  hero: { eyebrow: string | null; title: string | null; summary: string | null; imageKey: string | null; imagePresentation?: ImagePresentation };
+  about: { title: string | null; body: string | null; imageKey: string | null; imagePresentation?: ImagePresentation };
   treatmentAtAGlance: { duration: string | null; recovery: string | null; visits: string | null; consultation: string | null };
   editorial: { label: string | null; title: string | null };
   benefits: { title: string; description: string | null; icon: string | null }[];
@@ -38,6 +40,7 @@ export type PublicDoctorSummary = {
   specialty: string | null;
   shortBio: string | null;
   photoKey: string | null;
+  photoImagePresentation?: ImagePresentation;
   featured: boolean;
 };
 
@@ -66,6 +69,8 @@ export type PublicBranch = {
   googleMapsUrl: string | null;
   heroImageKey: string | null;
   branchImageKey: string | null;
+  heroImagePresentation?: ImagePresentation;
+  branchImagePresentation?: ImagePresentation;
   heroHeadline: string | null;
   heroSupportingText: string | null;
   heroCtaLabel: string | null;
@@ -82,6 +87,7 @@ export type PublicShowcaseSummary = {
   summary: string | null;
   category: string | null;
   coverImageKey: string | null;
+  coverImagePresentation?: ImagePresentation;
   showOnHomepage: boolean;
 };
 

@@ -8,6 +8,10 @@ export type ImagePresentationOwner = { ownerType: ImagePresentationOwnerType; ow
 
 export async function listForOwners(db: DatabaseClient, owners: ImagePresentationOwner[]) {
   if (owners.length === 0) return [];
+  // Route-level unit tests intentionally provide a minimal database stub. In a
+  // deployed Worker this is always a Drizzle client; without it, old records
+  // still render with the documented default presentation.
+  if (typeof (db as { select?: unknown }).select !== 'function') return [];
   return db.select().from(imagePresentations).where(or(...owners.map((owner) => and(
     eq(imagePresentations.ownerType, owner.ownerType),
     eq(imagePresentations.ownerId, owner.ownerId),

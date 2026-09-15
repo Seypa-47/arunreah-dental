@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import { getPublicMediaUrl } from '@/services/media';
 import { useShowcaseDetailPageQuery } from './use-showcase-detail-page';
 
@@ -32,10 +32,12 @@ export function ShowcaseDetailPage() {
         <article>
           <div className="border-b border-[#e7eff3] bg-[#f7fafc] py-6 sm:py-8">
             <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-              <ResilientImage
+              <CmsImage
                 alt={showcase.title}
                 className="h-[250px] w-full rounded-xl bg-[#edf5f8] object-cover sm:h-[390px]"
                 fallbackSrc="/assets/landing/showcase-room.png"
+                loading="eager"
+                presentation={showcase.coverImagePresentation}
                 src={coverImageUrl}
               />
             </div>
@@ -50,7 +52,7 @@ export function ShowcaseDetailPage() {
 
               return (
                 <section className="mt-9 border-t border-[#e7eff3] pt-8" key={`${section.displayOrder}-${section.heading ?? 'section'}`}>
-                  {sectionImageUrl ? <ResilientImage alt={section.heading ?? showcase.title} className="mb-5 max-h-[420px] w-full rounded-xl bg-[#edf5f8] object-cover object-center" src={sectionImageUrl} /> : null}
+                    {sectionImageUrl ? <ResilientImage alt={section.heading ?? showcase.title} className="mb-5 max-h-[420px] w-full rounded-xl bg-[#edf5f8] object-cover object-center" src={sectionImageUrl} /> : null}
                   {section.heading ? <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{section.heading}</h2> : null}
                   {section.body ? <p className="mt-3 whitespace-pre-line text-[16px] leading-8 text-[#465d6c]">{section.body}</p> : null}
                 </section>
@@ -68,7 +70,7 @@ export function ShowcaseDetailPage() {
 
                   return (
                     <Link className={`group flex min-h-[150px] overflow-hidden rounded-xl border border-[#e1ebef] bg-white transition duration-200 hover:-translate-y-0.5 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)] ${relatedImageUrl ? 'sm:block' : 'sm:flex'}`} key={related.slug} to={`/showcases/${related.slug}`}>
-                      {relatedImageUrl ? <ResilientImage alt={related.title} className="h-[150px] w-[40%] shrink-0 bg-[#edf5f8] object-cover object-center sm:h-40 sm:w-full" src={relatedImageUrl} /> : null}
+                      {relatedImageUrl ? <CmsImage alt={related.title} className="h-[150px] w-[40%] shrink-0 bg-[#edf5f8] object-cover sm:h-40 sm:w-full" presentation={related.coverImagePresentation} src={relatedImageUrl} /> : null}
                       <div className="flex min-w-0 flex-1 items-center p-4 sm:block">
                         <h3 className="line-clamp-2 text-[15px] font-bold leading-5 text-[#005687] transition group-hover:text-[#167ea7]">{related.title}</h3>
                       </div>
