@@ -22,9 +22,11 @@ export function useLandingPageQuery() {
       const localizedName = language === 'km' ? clinic.clinicNameKm : clinic.clinicNameEn;
       const localizedTagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
       const publicBranches = branches.branches;
+      const homepageBranches = publicBranches.filter((branch) => branch.showOnHomepage);
+      const heroBranches = publicBranches.filter((branch) => branch.includeInHomepageHero);
       return {
         ...publicLandingChrome(language),
-        branches: publicBranches.map((branch) => ({
+        branches: homepageBranches.map((branch) => ({
           hours: branch.openingHours ?? '',
           imageAlt: branch.name,
           imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
@@ -38,7 +40,7 @@ export function useLandingPageQuery() {
           description: language === 'km' ? clinic.shortAboutKm ?? '' : clinic.shortAboutEn ?? '',
           tagline: localizedTagline ?? localizedName,
         },
-        heroes: publicBranches.map((branch) => ({
+        heroes: heroBranches.map((branch) => ({
           address: branch.address,
           appointmentLabel: 'Book Appointment',
           callLabel: 'Call Us',
