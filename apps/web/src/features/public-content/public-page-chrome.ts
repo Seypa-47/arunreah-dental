@@ -45,6 +45,9 @@ export function publicLandingChrome(language: 'en' | 'km' = 'en'): LandingPageCo
   return {
     ...publicShell(),
     branches: [],
+    branchesEditorial: language === 'km'
+      ? { eyebrow: 'សាខារបស់យើង' }
+      : { eyebrow: 'Our locations' },
     doctors: [],
     heroes: [],
     promotions: [],

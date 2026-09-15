@@ -602,6 +602,9 @@ const landingPageContent: LandingPageContent = {
       qrLabel: 'Clinic QR code',
     },
   ],
+  branchesEditorial: {
+    eyebrow: 'Our locations',
+  },
   promotions: [],
   promotionsEditorial: {
     eyebrow: 'News and special offers',
