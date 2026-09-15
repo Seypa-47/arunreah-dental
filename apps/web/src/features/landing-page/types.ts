@@ -102,6 +102,9 @@ export type LandingPageContent = {
     contactLabel: string;
   };
   branches: LandingBranch[];
+  branchesEditorial: {
+    eyebrow: string;
+  };
   doctors: LandingDoctor[];
   footer: {
     branchLinks: LandingNavigationItem[];

@@ -657,10 +657,10 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
   );
 }
 
-function BranchesSection({ branches }: { branches: LandingBranch[] }) {
+export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch[]; eyebrow: string }) {
   return (
     <section className="bg-[#f4f9fb] pb-16 pt-6 sm:pb-20" id="branches">
-      <SectionHeader actionHref="/branches" actionLabel="See All Branches" title="Branches" />
+      <SectionHeader actionHref="/branches" actionLabel="See All Branches" eyebrow={eyebrow} title="Branches" />
       <div className="mx-auto mt-6 grid w-full max-w-[1280px] gap-5 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         {branches.map((branch) => {
           const [days, time] = branch.hours.split(', ');
@@ -760,7 +760,7 @@ function LandingPageView({ content }: { content: LandingPageContent }) {
         <PromotionsSection appointmentLabel={content.actions.appointmentLabel} editorial={content.promotionsEditorial} language={language} promotions={content.promotions} />
         <ServicesSection services={content.services} />
         <DoctorsSection doctors={content.doctors} />
-        <BranchesSection branches={content.branches} />
+        <BranchesSection branches={content.branches} eyebrow={content.branchesEditorial.eyebrow} />
         <ShowcaseSection showcase={content.showcase} />
       </main>
       <SiteFooter {...content.footer} />
