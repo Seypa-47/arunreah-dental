@@ -7,16 +7,16 @@ import type {
 import type { DatabaseClient } from '../db/client';
 import * as repository from '../repositories/showcase.repository';
 import { HttpError } from '../shared/http-error';
+import { localize as localizeText } from '../shared/localize';
 
 type ShowcaseRecord = NonNullable<Awaited<ReturnType<typeof repository.findShowcaseById>>>;
 
 function localize(showcase: ShowcaseRecord, language: ShowcaseLanguage) {
-  const isKhmer = language === 'km';
   return {
     slug: showcase.slug,
-    title: isKhmer ? showcase.titleKm : showcase.titleEn,
-    summary: isKhmer ? showcase.excerptKm : showcase.excerptEn,
-    category: isKhmer ? showcase.categoryKm : showcase.categoryEn,
+    title: localizeText(showcase.titleEn, showcase.titleKm, language) ?? showcase.titleEn,
+    summary: localizeText(showcase.excerptEn, showcase.excerptKm, language),
+    category: localizeText(showcase.categoryEn, showcase.categoryKm, language),
     coverImageKey: showcase.coverImageKey,
     showOnHomepage: showcase.showOnHomepage,
   };
@@ -142,18 +142,17 @@ export async function getPublicShowcase(
 ) {
   const showcase = await repository.findPublicShowcaseBySlug(database, slug);
   if (!showcase) throw new HttpError(404, 'NOT_FOUND', 'Showcase not found.');
-  const isKhmer = language === 'km';
   const [sections, relatedShowcases] = await Promise.all([
     repository.getSections(database, showcase.id),
     repository.getRelatedShowcases(database, showcase.id),
   ]);
   return {
     ...localize(showcase, language),
-    body: isKhmer ? showcase.bodyKm : showcase.bodyEn,
+    body: localizeText(showcase.bodyEn, showcase.bodyKm, language),
     sections: sections.map((section) => ({
       sectionType: section.sectionType,
-      heading: isKhmer ? section.headingKm : section.headingEn,
-      body: isKhmer ? section.bodyKm : section.bodyEn,
+      heading: localizeText(section.headingEn, section.headingKm, language),
+      body: localizeText(section.bodyEn, section.bodyKm, language),
       imageKey: section.imageKey,
       displayOrder: section.displayOrder,
     })),
@@ -161,8 +160,8 @@ export async function getPublicShowcase(
       .filter((item) => item.showcase.status === 'PUBLISHED')
       .map((item) => localize(item.showcase, language)),
     seo: {
-      title: isKhmer ? showcase.metaTitleKm : showcase.metaTitleEn,
-      description: isKhmer ? showcase.metaDescriptionKm : showcase.metaDescriptionEn,
+      title: localizeText(showcase.metaTitleEn, showcase.metaTitleKm, language),
+      description: localizeText(showcase.metaDescriptionEn, showcase.metaDescriptionKm, language),
     },
   };
 }

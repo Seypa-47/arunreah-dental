@@ -10,13 +10,23 @@ export const mediaCategoryValues = [
 
 export const mediaCategorySchema = z.enum(mediaCategoryValues);
 
+/**
+ * Safe R2 object keys produced by the CMS uploader.  Nested legacy paths are
+ * accepted so existing content remains editable, while traversal, protocols,
+ * query strings, and unsupported extensions remain invalid.
+ */
+export const mediaKeySchema = z
+  .string()
+  .regex(
+    /^(clinic|branches|services|doctors|showcases)\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*[a-z0-9]+(?:-[a-z0-9]+)*\.(?:jpg|png|webp)$/,
+    'Use a valid CMS media key.',
+  );
+
+export const optionalMediaKeySchema = mediaKeySchema.nullable().optional();
+
 export const deleteMediaSchema = z
   .object({
-    key: z
-      .string()
-      .regex(
-        /^(clinic|branches|services|doctors|showcases)\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-[a-z0-9]+(?:-[a-z0-9]+)*\.(?:jpg|png|webp)$/,
-      ),
+    key: mediaKeySchema,
   })
   .strict();
 

@@ -2,12 +2,23 @@ import { describe, expect, it, vi } from 'vitest';
 import type { DatabaseClient } from '../src/db/client';
 import { imagePresentations } from '../src/db/schema/image-presentations';
 import {
+  listForOwners,
   listForPageMedia,
   removeForPageMedia,
   upsertForPageMedia,
 } from '../src/repositories/image-presentation.repository';
 
 describe('image-presentation repository', () => {
+  it('supports typed owner and slot lookups beyond page media', async () => {
+    const rows = [{ ownerType: 'SERVICE', ownerId: 'service-1', slot: 'HERO' }];
+    const where = vi.fn(async () => rows);
+    const from = vi.fn(() => ({ where }));
+    const select = vi.fn(() => ({ from }));
+    const db = { select } as unknown as DatabaseClient;
+
+    await expect(listForOwners(db, [{ ownerType: 'SERVICE', ownerId: 'service-1', slot: 'HERO' }])).resolves.toEqual(rows);
+    expect(from).toHaveBeenCalledWith(imagePresentations);
+  });
   it('returns an empty list without querying when no owner ids are given', async () => {
     const select = vi.fn();
     const db = { select } as unknown as DatabaseClient;

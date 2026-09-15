@@ -1,8 +1,9 @@
 import { and, asc, count, desc, eq, inArray, like, or } from 'drizzle-orm';
-import type { CreateServiceInput, ServiceListQuery, UpdateServiceInput } from '@arunreah/shared';
+import type { CreateServiceInput, ImagePresentation, ServiceListQuery, UpdateServiceInput } from '@arunreah/shared';
 import { appointments, serviceBenefits, serviceDetailSections, serviceRelatedServices, services } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
 import { inTransaction } from '../db/transaction';
+import { upsert } from './image-presentation.repository';
 type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 export async function findServiceById(db: DatabaseClient, id: string) {
   const [x] = await db.select().from(services).where(eq(services.id, id)).limit(1);
@@ -23,17 +24,25 @@ export async function findPublicServiceBySlug(db: DatabaseClient, slug: string) 
 export async function createService(db: DatabaseClient, input: CreateServiceInput) {
   const id = crypto.randomUUID(),
     now = new Date().toISOString();
-  const { benefits, detailSections, relatedServiceIds, ...row } = input;
+  const { benefits, detailSections, relatedServiceIds, imagePresentation, heroImagePresentation, aboutImagePresentation, ...row } = input;
   await inTransaction(db, async (transaction) => {
     await transaction.insert(services).values({ id, ...row, createdAt: now, updatedAt: now });
     await replaceBenefits(transaction, id, benefits);
     await replaceDetailSections(transaction, id, detailSections);
     await replaceRelated(transaction, id, relatedServiceIds);
+    if (imagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'PRIMARY' }, imagePresentation);
+    if (heroImagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'HERO' }, heroImagePresentation);
+    if (aboutImagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'ABOUT' }, aboutImagePresentation);
   });
   return findServiceById(db, id);
 }
 export async function updateService(db: DatabaseClient, id: string, input: UpdateServiceInput) {
-  const { benefits, detailSections, relatedServiceIds, ...row } = input;
+  const presentationInput = input as UpdateServiceInput & {
+    imagePresentation?: ImagePresentation;
+    heroImagePresentation?: ImagePresentation;
+    aboutImagePresentation?: ImagePresentation;
+  };
+  const { benefits, detailSections, relatedServiceIds, imagePresentation, heroImagePresentation, aboutImagePresentation, ...row } = presentationInput;
   await inTransaction(db, async (transaction) => {
     if (Object.keys(row).length)
       await transaction
@@ -43,6 +52,9 @@ export async function updateService(db: DatabaseClient, id: string, input: Updat
     if (benefits !== undefined) await replaceBenefits(transaction, id, benefits);
     if (detailSections !== undefined) await replaceDetailSections(transaction, id, detailSections);
     if (relatedServiceIds !== undefined) await replaceRelated(transaction, id, relatedServiceIds);
+    if (imagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'PRIMARY' }, imagePresentation);
+    if (heroImagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'HERO' }, heroImagePresentation);
+    if (aboutImagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'ABOUT' }, aboutImagePresentation);
   });
   return findServiceById(db, id);
 }
@@ -116,7 +128,14 @@ export async function countAppointmentsForService(db: DatabaseClient, id: string
   return x?.value ?? 0;
 }
 export async function deleteService(db: DatabaseClient, id: string) {
-  await db.delete(services).where(eq(services.id, id));
+  await inTransaction(db, async (transaction) => {
+    await transaction.delete(serviceRelatedServices).where(
+      or(eq(serviceRelatedServices.serviceId, id), eq(serviceRelatedServices.relatedServiceId, id)),
+    );
+    await transaction.delete(serviceBenefits).where(eq(serviceBenefits.serviceId, id));
+    await transaction.delete(serviceDetailSections).where(eq(serviceDetailSections.serviceId, id));
+    await transaction.delete(services).where(eq(services.id, id));
+  });
 }
 export async function listPublicServices(db: DatabaseClient) {
   return db

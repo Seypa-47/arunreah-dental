@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { optionalMediaKeySchema } from './media';
+import { imagePresentationSchema } from './image-presentation';
 export const serviceStatusValues = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 export const serviceDetailPresentationValues = [
   'STANDARD',
@@ -31,7 +33,8 @@ const detailSection = z.object({
   headingKm: text(300),
   bodyEn: text(10000),
   bodyKm: text(10000),
-  imageKey: text(1024),
+  imageKey: optionalMediaKeySchema,
+  imagePresentation: imagePresentationSchema.optional(),
   displayOrder: z.number().int().min(0).max(1000000).default(0),
 });
 const fields = {
@@ -45,7 +48,8 @@ const fields = {
   summaryKm: text(1000),
   descriptionEn: text(10000),
   descriptionKm: text(10000),
-  imageKey: text(1024),
+  imageKey: optionalMediaKeySchema,
+  imagePresentation: imagePresentationSchema.optional(),
   category: text(120),
   heroEyebrowEn: text(160),
   heroEyebrowKm: text(160),
@@ -53,12 +57,14 @@ const fields = {
   heroTitleKm: text(300),
   heroSummaryEn: text(2000),
   heroSummaryKm: text(2000),
-  heroImageKey: text(1024),
+  heroImageKey: optionalMediaKeySchema,
+  heroImagePresentation: imagePresentationSchema.optional(),
   aboutTitleEn: text(300),
   aboutTitleKm: text(300),
   aboutBodyEn: text(10000),
   aboutBodyKm: text(10000),
-  aboutImageKey: text(1024),
+  aboutImageKey: optionalMediaKeySchema,
+  aboutImagePresentation: imagePresentationSchema.optional(),
   durationEn: text(300),
   durationKm: text(300),
   recoveryEn: text(300),

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { optionalMediaKeySchema } from './media';
+import { imagePresentationSchema } from './image-presentation';
 
 export const showcaseStatusValues = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 const slug = z
@@ -16,7 +18,7 @@ const section = z.object({
   headingKm: text(300),
   bodyEn: text(10_000),
   bodyKm: text(10_000),
-  imageKey: text(1_024),
+  imageKey: optionalMediaKeySchema,
   displayOrder: displayOrder.default(0),
 });
 
@@ -33,7 +35,8 @@ const fields = {
   summaryKm: text(2_000),
   bodyEn: text(20_000),
   bodyKm: text(20_000),
-  coverImageKey: text(1_024),
+  coverImageKey: optionalMediaKeySchema,
+  coverImagePresentation: imagePresentationSchema.optional(),
   metaTitleEn: text(160),
   metaTitleKm: text(160),
   metaDescriptionEn: text(320),
@@ -63,6 +66,7 @@ export const updateShowcaseSchema = z
     bodyEn: fields.bodyEn,
     bodyKm: fields.bodyKm,
     coverImageKey: fields.coverImageKey,
+    coverImagePresentation: fields.coverImagePresentation,
     metaTitleEn: fields.metaTitleEn,
     metaTitleKm: fields.metaTitleKm,
     metaDescriptionEn: fields.metaDescriptionEn,

@@ -3,6 +3,8 @@ import type { SQL } from 'drizzle-orm';
 import type { AdminBranchListQuery, CreateBranchInput, UpdateBranchInput } from '@arunreah/shared';
 import { appointments, branches } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
+import { inTransaction } from '../db/transaction';
+import { upsert } from './image-presentation.repository';
 
 export async function findBranchById(database: DatabaseClient, id: string) {
   const [branch] = await database.select().from(branches).where(eq(branches.id, id)).limit(1);
@@ -17,22 +19,23 @@ export async function findBranchBySlug(database: DatabaseClient, slug: string) {
 export async function createBranch(database: DatabaseClient, input: CreateBranchInput) {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-
-  await database.insert(branches).values({
-    id,
-    ...input,
-    createdAt: now,
-    updatedAt: now,
+  const { heroImagePresentation, branchImagePresentation, ...row } = input;
+  await inTransaction(database, async (transaction) => {
+    await transaction.insert(branches).values({ id, ...row, createdAt: now, updatedAt: now });
+    if (heroImagePresentation) await upsert(transaction, { ownerType: 'BRANCH', ownerId: id, slot: 'HERO' }, heroImagePresentation);
+    if (branchImagePresentation) await upsert(transaction, { ownerType: 'BRANCH', ownerId: id, slot: 'PRIMARY' }, branchImagePresentation);
   });
 
   return findBranchById(database, id);
 }
 
 export async function updateBranch(database: DatabaseClient, id: string, input: UpdateBranchInput) {
-  await database
-    .update(branches)
-    .set({ ...input, updatedAt: new Date().toISOString() })
-    .where(eq(branches.id, id));
+  const { heroImagePresentation, branchImagePresentation, ...row } = input;
+  await inTransaction(database, async (transaction) => {
+    if (Object.keys(row).length > 0) await transaction.update(branches).set({ ...row, updatedAt: new Date().toISOString() }).where(eq(branches.id, id));
+    if (heroImagePresentation) await upsert(transaction, { ownerType: 'BRANCH', ownerId: id, slot: 'HERO' }, heroImagePresentation);
+    if (branchImagePresentation) await upsert(transaction, { ownerType: 'BRANCH', ownerId: id, slot: 'PRIMARY' }, branchImagePresentation);
+  });
 
   return findBranchById(database, id);
 }

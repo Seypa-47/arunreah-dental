@@ -7,6 +7,7 @@ import type {
 import type { DatabaseClient } from '../db/client';
 import * as repo from '../repositories/service.repository';
 import { HttpError } from '../shared/http-error';
+import { localize } from '../shared/localize';
 const admin = (s: NonNullable<Awaited<ReturnType<typeof repo.findServiceById>>>) => s;
 const local = (
   s: NonNullable<Awaited<ReturnType<typeof repo.findServiceById>>>,
@@ -14,8 +15,8 @@ const local = (
 ) => ({
   id: s.id,
   slug: s.slug,
-  name: lang === 'km' ? s.nameKm : s.nameEn,
-  shortDescription: lang === 'km' ? s.summaryKm : s.summaryEn,
+  name: localize(s.nameEn, s.nameKm, lang) ?? s.nameEn,
+  shortDescription: localize(s.summaryEn, s.summaryKm, lang),
   listingThumbnailKey: s.imageKey,
   category: s.category,
   featured: s.featured,
@@ -96,8 +97,8 @@ export async function getPublicService(db: DatabaseClient, slug: string, l: Serv
     repo.getRelated(db, s.id),
   ]);
   const localizedBenefits = benefits.map((x) => ({
-    title: l === 'km' ? x.titleKm : x.titleEn,
-    description: l === 'km' ? x.descriptionKm : x.descriptionEn,
+    title: localize(x.titleEn, x.titleKm, l) ?? x.titleEn,
+    description: localize(x.descriptionEn, x.descriptionKm, l),
     icon: x.icon,
   }));
   const localizedRelated = related
@@ -107,44 +108,44 @@ export async function getPublicService(db: DatabaseClient, slug: string, l: Serv
     ...local(s, l),
     detailPresentation: s.detailPresentation,
     hero: {
-      eyebrow: l === 'km' ? s.heroEyebrowKm : s.heroEyebrowEn,
-      title: l === 'km' ? s.heroTitleKm : s.heroTitleEn,
-      summary: l === 'km' ? s.heroSummaryKm : s.heroSummaryEn,
+      eyebrow: localize(s.heroEyebrowEn, s.heroEyebrowKm, l),
+      title: localize(s.heroTitleEn, s.heroTitleKm, l),
+      summary: localize(s.heroSummaryEn, s.heroSummaryKm, l),
       imageKey: s.heroImageKey,
     },
     about: {
-      title: l === 'km' ? s.aboutTitleKm : s.aboutTitleEn,
-      body: l === 'km' ? s.aboutBodyKm : s.aboutBodyEn,
+      title: localize(s.aboutTitleEn, s.aboutTitleKm, l),
+      body: localize(s.aboutBodyEn, s.aboutBodyKm, l),
       imageKey: s.aboutImageKey,
     },
     treatmentAtAGlance: {
-      duration: l === 'km' ? s.durationKm : s.durationEn,
-      recovery: l === 'km' ? s.recoveryKm : s.recoveryEn,
-      visits: l === 'km' ? s.visitsKm : s.visitsEn,
-      consultation: l === 'km' ? s.consultationKm : s.consultationEn,
+      duration: localize(s.durationEn, s.durationKm, l),
+      recovery: localize(s.recoveryEn, s.recoveryKm, l),
+      visits: localize(s.visitsEn, s.visitsKm, l),
+      consultation: localize(s.consultationEn, s.consultationKm, l),
     },
     editorial: {
-      label: l === 'km' ? s.editorialLabelKm : s.editorialLabelEn,
-      title: l === 'km' ? s.editorialTitleKm : s.editorialTitleEn,
+      label: localize(s.editorialLabelEn, s.editorialLabelKm, l),
+      title: localize(s.editorialTitleEn, s.editorialTitleKm, l),
     },
     benefits: localizedBenefits,
     detailSections: detailSections.map((section) => ({
       sectionType: section.sectionType,
-      heading: l === 'km' ? section.headingKm : section.headingEn,
-      body: l === 'km' ? section.bodyKm : section.bodyEn,
+      heading: localize(section.headingEn, section.headingKm, l),
+      body: localize(section.bodyEn, section.bodyKm, l),
       imageKey: section.imageKey,
       displayOrder: section.displayOrder,
     })),
     relatedServices: localizedRelated,
     cta: {
-      title: l === 'km' ? s.ctaTitleKm : s.ctaTitleEn,
-      description: l === 'km' ? s.ctaDescriptionKm : s.ctaDescriptionEn,
-      primaryLabel: l === 'km' ? s.primaryCtaLabelKm : s.primaryCtaLabelEn,
-      secondaryLabel: l === 'km' ? s.secondaryCtaLabelKm : s.secondaryCtaLabelEn,
+      title: localize(s.ctaTitleEn, s.ctaTitleKm, l),
+      description: localize(s.ctaDescriptionEn, s.ctaDescriptionKm, l),
+      primaryLabel: localize(s.primaryCtaLabelEn, s.primaryCtaLabelKm, l),
+      secondaryLabel: localize(s.secondaryCtaLabelEn, s.secondaryCtaLabelKm, l),
     },
     seo: {
-      title: l === 'km' ? s.metaTitleKm : s.metaTitleEn,
-      description: l === 'km' ? s.metaDescriptionKm : s.metaDescriptionEn,
+      title: localize(s.metaTitleEn, s.metaTitleKm, l),
+      description: localize(s.metaDescriptionEn, s.metaDescriptionKm, l),
     },
   };
 }

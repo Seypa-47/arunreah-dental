@@ -9,6 +9,7 @@ import {
 } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
 import { inTransaction } from '../db/transaction';
+import { upsert } from './image-presentation.repository';
 type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 
 function toDoctorRow(input: UpdateDoctorInput) {
@@ -20,11 +21,13 @@ function toDoctorRow(input: UpdateDoctorInput) {
     titleKm,
     aboutEn,
     aboutKm,
+    photoImagePresentation: _photoImagePresentation,
     ...row
   } = input;
   void _expertise;
   void _education;
   void _relatedDoctorIds;
+  void _photoImagePresentation;
   return {
     ...row,
     ...(titleEn !== undefined ? { roleEn: titleEn } : {}),
@@ -43,11 +46,13 @@ function toCreatedDoctorRow(input: CreateDoctorInput) {
     titleKm,
     aboutEn,
     aboutKm,
+    photoImagePresentation: _photoImagePresentation,
     ...row
   } = input;
   void _expertise;
   void _education;
   void _relatedDoctorIds;
+  void _photoImagePresentation;
   return {
     ...row,
     roleEn: titleEn,
@@ -86,6 +91,7 @@ export async function createDoctor(database: DatabaseClient, input: CreateDoctor
     await replaceExpertise(transaction, id, input.expertise);
     await replaceEducation(transaction, id, input.education);
     await replaceRelatedDoctors(transaction, id, input.relatedDoctorIds);
+    if (input.photoImagePresentation) await upsert(transaction, { ownerType: 'DOCTOR', ownerId: id, slot: 'PRIMARY' }, input.photoImagePresentation);
   });
   return findDoctorById(database, id);
 }
@@ -104,6 +110,7 @@ export async function updateDoctor(database: DatabaseClient, id: string, input: 
     if (input.relatedDoctorIds !== undefined) {
       await replaceRelatedDoctors(transaction, id, input.relatedDoctorIds);
     }
+    if (input.photoImagePresentation) await upsert(transaction, { ownerType: 'DOCTOR', ownerId: id, slot: 'PRIMARY' }, input.photoImagePresentation);
   });
   return findDoctorById(database, id);
 }
@@ -215,7 +222,14 @@ export async function countAppointmentsForDoctor(database: DatabaseClient, docto
 }
 
 export async function deleteDoctor(database: DatabaseClient, id: string) {
-  await database.delete(doctors).where(eq(doctors.id, id));
+  await inTransaction(database, async (transaction) => {
+    await transaction.delete(doctorRelatedDoctors).where(
+      or(eq(doctorRelatedDoctors.doctorId, id), eq(doctorRelatedDoctors.relatedDoctorId, id)),
+    );
+    await transaction.delete(doctorExpertise).where(eq(doctorExpertise.doctorId, id));
+    await transaction.delete(doctorEducation).where(eq(doctorEducation.doctorId, id));
+    await transaction.delete(doctors).where(eq(doctors.id, id));
+  });
 }
 
 function buildFilters(query: AdminDoctorListQuery): SQL | undefined {
