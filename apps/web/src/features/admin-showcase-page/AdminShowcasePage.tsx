@@ -17,6 +17,8 @@ import type {
 import { cmsApi, type AdminShowcaseDetail } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 import { queryKeys } from '@/lib/query-keys';
+import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
+import { createShowcaseEditDraft, isShowcaseEditDirty, type ShowcaseEditDraft } from './showcase-edit-draft';
 
 function StatusBadge({ status }: { status: ShowcaseStatus }) { return <AdminPublicationStatus status={status} />; }
 
@@ -278,6 +280,7 @@ export function AdminShowcasePage() {
   const [editRelatedCount, setEditRelatedCount] = useState<number>(3);
   const [editCategory, setEditCategory] = useState<ShowcaseCategory>('Treatment');
   const [editStatus, setEditStatus] = useState<ShowcaseStatus>('published');
+  const [editBaseline, setEditBaseline] = useState<ShowcaseEditDraft | null>(null);
   const [editSavedToast, setEditSavedToast] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const showcaseDetailQuery = useQuery({
@@ -310,6 +313,30 @@ export function AdminShowcasePage() {
     return articles.find((a) => a.id === selectedId) || articles[0] || null;
   }, [articles, selectedId]);
 
+  const editDraft = useMemo(() => createShowcaseEditDraft({
+    slug: editSlug,
+    status: editStatus === 'published' ? 'PUBLISHED' : editStatus === 'hidden' ? 'ARCHIVED' : 'DRAFT',
+    showOnHomepage: editHomepage,
+    displayOrder: editDisplayOrder,
+    titleEn: editTitle,
+    titleKm: editTitleKm,
+    categoryEn: editCategory || null,
+    categoryKm: editCategoryKm,
+    summaryEn: editSummary,
+    summaryKm: editSummaryKm,
+    bodyEn: editBody,
+    bodyKm: editBodyKm,
+    coverImageKey: editCoverImageKey,
+    metaTitleEn: editMetaTitle,
+    metaTitleKm: editMetaTitleKm,
+    metaDescriptionEn: editMetaDescription,
+    metaDescriptionKm: editMetaDescriptionKm,
+    sections: editSections,
+    relatedShowcaseIds: editRelatedIds,
+  }), [editBody, editBodyKm, editCategory, editCategoryKm, editCoverImageKey, editDisplayOrder, editHomepage, editMetaDescription, editMetaDescriptionKm, editMetaTitle, editMetaTitleKm, editRelatedIds, editSections, editSlug, editStatus, editSummary, editSummaryKm, editTitle, editTitleKm]);
+  const isDirty = isShowcaseEditDirty(isEditingSelected, editBaseline, editDraft);
+  useUnsavedChangesGuard(isDirty);
+
   useEffect(() => {
     const showcase = showcaseDetailQuery.data?.showcase;
     if (!showcase || !isEditingSelected) return;
@@ -318,6 +345,15 @@ export function AdminShowcasePage() {
     setEditBody(showcase.bodyEn ?? ''); setEditBodyKm(showcase.bodyKm ?? ''); setEditCategory((showcase.categoryEn as ShowcaseCategory) || 'Treatment'); setEditCategoryKm(showcase.categoryKm ?? '');
     setEditMetaTitle(showcase.metaTitleEn ?? ''); setEditMetaTitleKm(showcase.metaTitleKm ?? ''); setEditMetaDescription(showcase.metaDescriptionEn ?? ''); setEditMetaDescriptionKm(showcase.metaDescriptionKm ?? '');
     setEditCoverImageKey(showcase.coverImageKey); setEditSections(showcase.sections); setEditRelatedIds(showcase.relatedShowcaseIds); setEditDisplayOrder(showcase.displayOrder); setEditHomepage(showcase.showOnHomepage);
+    setEditStatus(showcase.status === 'PUBLISHED' ? 'published' : showcase.status === 'ARCHIVED' ? 'hidden' : 'draft');
+    setEditBaseline(createShowcaseEditDraft({
+      slug: showcase.slug, status: showcase.status, showOnHomepage: showcase.showOnHomepage, displayOrder: showcase.displayOrder,
+      titleEn: showcase.titleEn, titleKm: showcase.titleKm, categoryEn: showcase.categoryEn, categoryKm: showcase.categoryKm,
+      summaryEn: showcase.summaryEn, summaryKm: showcase.summaryKm, bodyEn: showcase.bodyEn, bodyKm: showcase.bodyKm,
+      coverImageKey: showcase.coverImageKey, metaTitleEn: showcase.metaTitleEn, metaTitleKm: showcase.metaTitleKm,
+      metaDescriptionEn: showcase.metaDescriptionEn, metaDescriptionKm: showcase.metaDescriptionKm,
+      sections: showcase.sections, relatedShowcaseIds: showcase.relatedShowcaseIds,
+    }));
   }, [isEditingSelected, showcaseDetailQuery.data]);
 
   const startEditing = (articleToEdit?: ShowcaseArticle) => {
@@ -334,18 +370,34 @@ export function AdminShowcasePage() {
     setEditRelatedCount(target.structure.relatedCardsCount || 3);
     setEditCategory(target.category);
     setEditStatus(target.status);
+    setEditBaseline(null);
     setIsEditingSelected(true);
+  };
+
+  const discardEditing = () => {
+    setEditBaseline(null);
+    setIsEditingSelected(false);
+  };
+
+  const confirmDiscardEditing = () => !isDirty || window.confirm('You have unsaved changes. Leave this page without saving?');
+
+  const handleSelectArticle = (id: string) => {
+    if (id === selectedId) return;
+    if (!confirmDiscardEditing()) return;
+    discardEditing();
+    setSelectedId(id);
+  };
+
+  const handleCancelEditing = () => {
+    if (!confirmDiscardEditing()) return;
+    discardEditing();
   };
 
   const handleSaveEditing = () => {
     if (!selectedArticle) return;
-    updateMutation.mutate({ article: selectedArticle, patch: {
-      slug: editSlug, status: editStatus === 'published' ? 'PUBLISHED' : editStatus === 'hidden' ? 'ARCHIVED' : 'DRAFT', showOnHomepage: editHomepage, displayOrder: editDisplayOrder,
-      titleEn: editTitle, titleKm: editTitleKm, categoryEn: editCategory || null, categoryKm: editCategoryKm || null, summaryEn: editSummary || null, summaryKm: editSummaryKm || null,
-      bodyEn: editBody || null, bodyKm: editBodyKm || null, coverImageKey: editCoverImageKey, metaTitleEn: editMetaTitle || null, metaTitleKm: editMetaTitleKm || null,
-      metaDescriptionEn: editMetaDescription || null, metaDescriptionKm: editMetaDescriptionKm || null, sections: editSections.map((section, displayOrder) => ({ ...section, displayOrder })), relatedShowcaseIds: editRelatedIds,
-    } }, {
+    updateMutation.mutate({ article: selectedArticle, patch: editDraft }, {
       onSuccess: () => {
+        setEditBaseline(editDraft);
         setIsEditingSelected(false);
         setEditSavedToast(true);
         setTimeout(() => setEditSavedToast(false), 2500);
@@ -508,7 +560,7 @@ export function AdminShowcasePage() {
                           <div className="flex items-center gap-3.5">
                             <AdminListImage src={article.imageUrl} />
                             <div className="min-w-0">
-                              <button type="button" className="admin-row-action text-left" aria-pressed={isSelected} onClick={() => { setSelectedId(article.id); setIsEditingSelected(false); }}>{article.title}</button>
+                              <button type="button" className="admin-row-action text-left" aria-pressed={isSelected} onClick={() => handleSelectArticle(article.id)}>{article.title}</button>
                               <span className="block truncate text-[12.5px] text-[#8a9bb2]">
                                 {article.subtitle}
                               </span>
@@ -560,8 +612,7 @@ export function AdminShowcasePage() {
                               className="admin-row-action"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedId(article.id);
-                                setIsEditingSelected(false);
+                                handleSelectArticle(article.id);
                               }}
                               title="Preview article"
                               type="button"
@@ -573,6 +624,8 @@ export function AdminShowcasePage() {
                               className="admin-row-action"
                               onClick={(e) => {
                                 e.stopPropagation();
+                                if ((article.id !== selectedId || isEditingSelected) && !confirmDiscardEditing()) return;
+                                if (article.id !== selectedId || isEditingSelected) discardEditing();
                                 setSelectedId(article.id);
                                 startEditing(article);
                               }}
@@ -624,7 +677,7 @@ export function AdminShowcasePage() {
                   className="inline-flex items-center gap-1.5 rounded-xl border border-[#b8d6e7] bg-[#edf7fb] px-3 py-1.5 text-xs font-bold text-[#2187a8] transition hover:bg-[#e2f1f7]"
                   onClick={() => {
                     if (isEditingSelected) {
-                      setIsEditingSelected(false);
+                      handleCancelEditing();
                     } else {
                       startEditing();
                     }
@@ -827,7 +880,7 @@ export function AdminShowcasePage() {
                   <div className="flex gap-2 pt-2">
                     <Button
                       className="flex-1 rounded-xl border border-[#dce5ef] bg-white text-[13.5px] font-semibold text-[#71839e] hover:bg-[#f8fafc]"
-                      onClick={() => setIsEditingSelected(false)}
+                      onClick={handleCancelEditing}
                       type="button"
                       variant="secondary"
                     >
