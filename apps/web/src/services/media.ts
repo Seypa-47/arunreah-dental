@@ -22,7 +22,13 @@ export async function uploadMedia(
   const form = new FormData();
   form.set('category', category);
   form.set('file', file);
-  return client.post<UploadedMedia>('/api/admin/media', { authenticated: true, body: form });
+  // Uploads can legitimately take longer than regular JSON API requests on a
+  // slow connection, so use an explicit longer limit than the shared 15s one.
+  return client.post<UploadedMedia>('/api/admin/media', {
+    authenticated: true,
+    body: form,
+    signal: AbortSignal.timeout(60_000),
+  });
 }
 
 export async function deleteMedia(key: string, client: Pick<ApiClient, 'delete'> = getApiClient()): Promise<void> {

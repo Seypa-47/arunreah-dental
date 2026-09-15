@@ -11,6 +11,7 @@ import { parseRequestBody, parseRequestQuery } from '../../shared/request';
 import { HttpError } from '../../shared/http-error';
 import * as showcase from '../../services/showcase.service';
 import type { AppEnv } from '../../types/env';
+import { applyPublicCmsCache } from '../../shared/public-cache';
 
 export async function listPublicShowcasesController(context: Context<AppEnv>) {
   const query = parseRequestQuery(context, publicShowcaseQuerySchema);
@@ -19,7 +20,7 @@ export async function listPublicShowcasesController(context: Context<AppEnv>) {
     query.lang,
     query.homepage,
   );
-  context.header('Cache-Control', 'public, max-age=300');
+  applyPublicCmsCache(context);
   return context.json(successResponse({ showcases }));
 }
 
@@ -32,7 +33,7 @@ export async function getPublicShowcaseController(context: Context<AppEnv>) {
     slug,
     query.lang,
   );
-  context.header('Cache-Control', 'public, max-age=300');
+  applyPublicCmsCache(context);
   return context.json(successResponse({ showcase: showcaseDetail }));
 }
 

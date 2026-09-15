@@ -46,7 +46,7 @@ describe('API client', () => {
     expect(receivedInit?.method).toBe('POST');
   });
 
-  it('serializes JSON only when JSON data is provided and forwards cancellation signals', async () => {
+  it('serializes JSON only when JSON data is provided and preserves caller cancellation', async () => {
     let receivedInit: RequestInit | undefined;
     const fetchImplementation: typeof fetch = async (_input, init) => {
       receivedInit = init;
@@ -63,7 +63,25 @@ describe('API client', () => {
 
     expect(receivedInit?.body).toBe('{"clinicNameEn":"Arunreah Dental Clinic"}');
     expect(new Headers(receivedInit?.headers).get('Content-Type')).toBe('application/json');
-    expect(receivedInit?.signal).toBe(controller.signal);
+    expect(receivedInit?.signal).toBeInstanceOf(AbortSignal);
+    controller.abort();
+    expect(receivedInit?.signal?.aborted).toBe(true);
+  });
+
+  it('applies a default timeout to requests', async () => {
+    let receivedInit: RequestInit | undefined;
+    const client = createApiClient({
+      baseUrl: 'https://api.example.test',
+      fetchImplementation: async (_input, init) => {
+        receivedInit = init;
+        return jsonResponse({ success: true, data: { ok: true } });
+      },
+    });
+
+    await client.get('/api/health');
+
+    expect(receivedInit?.signal).toBeInstanceOf(AbortSignal);
+    expect(receivedInit?.signal?.aborted).toBe(false);
   });
 
   it('converts backend errors into typed safe errors', async () => {

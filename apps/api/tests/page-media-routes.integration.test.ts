@@ -52,7 +52,7 @@ describe('page media API routes', () => {
   it('returns only published records in the requested language without authentication', async () => {
     const response = await app.request('http://localhost/api/public/page-media?placement=ABOUT_PROFESSIONAL_DEVELOPMENT&lang=km', undefined, bindings);
     expect(response.status).toBe(200);
-    expect(response.headers.get('Cache-Control')).toBe('public, max-age=300');
+    expect(response.headers.get('Cache-Control')).toBe('public, max-age=60, must-revalidate');
     await expect(response.json()).resolves.toMatchObject({ success: true, data: { items: [{ id: 'published', title: 'ការរៀនសូត្ររបស់ក្រុមការងារ', body: 'ការណែនាំច្បាស់លាស់សម្រាប់អ្នកជំងឺ។' }] } });
   });
 
@@ -83,5 +83,17 @@ describe('page media API routes', () => {
     const allowed = await app.request('http://localhost/api/admin/page-media?placement=ABOUT_PROFESSIONAL_DEVELOPMENT', { headers: cmsAdmin }, bindings);
     expect(allowed.status).toBe(200);
     expect(allowed.headers.get('Cache-Control')).toBe('private, no-store');
+  });
+
+  it('returns the standard validation envelope for missing or invalid admin placement', async () => {
+    const cmsAdmin = await auth('CMS_ADMIN');
+    for (const path of ['/api/admin/page-media', '/api/admin/page-media?placement=NOT_A_PLACEMENT']) {
+      const response = await app.request(`http://localhost${path}`, { headers: cmsAdmin }, bindings);
+      expect(response.status).toBe(400);
+      await expect(response.json()).resolves.toEqual({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Query parameters are invalid.' },
+      });
+    }
   });
 });

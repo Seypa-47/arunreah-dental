@@ -101,9 +101,17 @@ vi.mock('../src/repositories/branch.repository', () => ({
   },
   countAppointmentsForBranch: async (_database: unknown, id: string) =>
     state.appointmentBranchIds.has(id) ? 1 : 0,
-  listPublicBranches: async () =>
+  listPublicBranches: async (_database: unknown, scope: 'branches' | 'landing' | 'appointments') =>
     state.branches
-      .filter((branch) => branch.status === 'PUBLISHED' && branch.showOnBranchesPage)
+      .filter(
+        (branch) =>
+          branch.status === 'PUBLISHED' &&
+          (scope === 'branches'
+            ? branch.showOnBranchesPage
+            : scope === 'landing'
+              ? branch.showOnHomepage || branch.includeInHomepageHero
+              : branch.acceptsAppointments),
+      )
       .sort((left, right) => left.displayOrder - right.displayOrder),
   listAdminBranches: async (_database: unknown, query: { page: number; limit: number; status?: string; search?: string; sort: string; order: string }) => {
     let items = [...state.branches];
@@ -232,7 +240,7 @@ describe('branch API routes', () => {
       testBindings,
     );
     expect(listResponse.status).toBe(200);
-    expect(listResponse.headers.get('Cache-Control')).toBe('public, max-age=300');
+    expect(listResponse.headers.get('Cache-Control')).toBe('public, max-age=60, must-revalidate');
     await expect(listResponse.json()).resolves.toMatchObject({
       success: true,
       data: { branches: [{ id: 'branch-1', slug: 'main-branch', name: 'សាខាចម្បង' }] },
@@ -258,6 +266,27 @@ describe('branch API routes', () => {
         )
       ).status,
     ).toBe(404);
+  });
+
+  it('keeps branches, landing, and appointment visibility scopes independent', async () => {
+    state.branches = [
+      branchFixture({ id: 'branch-page', slug: 'branch-page', showOnHomepage: false, includeInHomepageHero: false }),
+      branchFixture({ id: 'home-only', slug: 'home-only', showOnBranchesPage: false, showOnHomepage: true, includeInHomepageHero: false, acceptsAppointments: false }),
+      branchFixture({ id: 'hero-only', slug: 'hero-only', showOnBranchesPage: false, showOnHomepage: false, includeInHomepageHero: true, acceptsAppointments: false }),
+      branchFixture({ id: 'booking-only', slug: 'booking-only', showOnBranchesPage: false, showOnHomepage: false, includeInHomepageHero: false, acceptsAppointments: true }),
+      branchFixture({ id: 'draft', slug: 'draft', status: 'DRAFT', showOnHomepage: true, includeInHomepageHero: true, acceptsAppointments: true }),
+      branchFixture({ id: 'archived', slug: 'archived', status: 'ARCHIVED', showOnHomepage: true, includeInHomepageHero: true, acceptsAppointments: true }),
+    ];
+
+    const idsFor = async (scope: string) => {
+      const response = await app.request(`http://localhost/api/public/branches?scope=${scope}`, undefined, testBindings);
+      const body = await response.json<{ data: { branches: Array<{ id: string }> } }>();
+      return body.data.branches.map((branch) => branch.id);
+    };
+
+    await expect(idsFor('branches')).resolves.toEqual(['branch-page']);
+    await expect(idsFor('landing')).resolves.toEqual(['home-only', 'hero-only']);
+    await expect(idsFor('appointments')).resolves.toEqual(['branch-page', 'booking-only']);
   });
 
   it('enforces CMS permissions for all admin branch routes', async () => {

@@ -8,14 +8,16 @@ import {
   services,
   showcaseSections,
   showcases,
+  mediaDeletionLocks,
 } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
+type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 
 /**
  * Media keys are stored directly by the small number of CMS domains. A media
  * table would duplicate those references without providing additional value.
  */
-export async function isMediaKeyReferenced(database: DatabaseClient, key: string) {
+export async function isMediaKeyReferenced(database: WriteDatabase, key: string) {
   const references = await Promise.all([
     database
       .select({ id: clinicSettings.id })
@@ -58,4 +60,12 @@ export async function isMediaKeyReferenced(database: DatabaseClient, key: string
   ]);
 
   return references.some((result) => result.length > 0);
+}
+
+export async function createMediaDeletionLock(database: WriteDatabase, key: string) {
+  await database.insert(mediaDeletionLocks).values({ key, createdAt: new Date().toISOString() });
+}
+
+export async function removeMediaDeletionLock(database: WriteDatabase, key: string) {
+  await database.delete(mediaDeletionLocks).where(eq(mediaDeletionLocks.key, key));
 }

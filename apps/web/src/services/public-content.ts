@@ -137,8 +137,12 @@ export function getPublicDoctor(slug: string, language: PublicLanguage, client: 
   return client.get<{ doctor: PublicDoctorDetail }>(`/api/public/doctors/${encodeURIComponent(slug)}${languageQuery(language)}`);
 }
 
-export function getPublicBranches(language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ branches: PublicBranch[] }>(`/api/public/branches${languageQuery(language)}`);
+export function getPublicBranches(
+  language: PublicLanguage,
+  scope: 'branches' | 'landing' | 'appointments' = 'branches',
+  client: Pick<ApiClient, 'get'> = getApiClient(),
+) {
+  return client.get<{ branches: PublicBranch[] }>(`/api/public/branches${languageQuery(language, { scope })}`);
 }
 
 export function getPublicBranch(slug: string, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {

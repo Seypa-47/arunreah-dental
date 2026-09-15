@@ -9,6 +9,7 @@ import {
   services,
 } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
+type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 
 export async function findAppointmentByIdempotencyKey(
   database: DatabaseClient,
@@ -158,7 +159,7 @@ export async function createAppointment(
   return appointment;
 }
 
-export async function getAppointmentRequestRateLimit(database: DatabaseClient, key: string) {
+export async function getAppointmentRequestRateLimit(database: WriteDatabase, key: string) {
   const [record] = await database
     .select()
     .from(appointmentRequestRateLimits)
@@ -168,7 +169,7 @@ export async function getAppointmentRequestRateLimit(database: DatabaseClient, k
 }
 
 export async function saveAppointmentRequestRateLimit(
-  database: DatabaseClient,
+  database: WriteDatabase,
   input: { key: string; attempts: number; windowStartedAt: string },
 ) {
   const now = new Date().toISOString();

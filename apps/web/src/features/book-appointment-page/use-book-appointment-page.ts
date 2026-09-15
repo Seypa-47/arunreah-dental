@@ -12,7 +12,7 @@ export function useBookAppointmentPageQuery() {
       const [services, doctors, branches, contact] = await Promise.all([
         getPublicServices(language),
         getPublicDoctors(language),
-        getPublicBranches(language),
+        getPublicBranches(language, 'appointments'),
         getPublicContact(),
       ]);
       return mapBookingOptions(publicBookingChrome(), services.services, doctors.doctors, branches.branches, contact);

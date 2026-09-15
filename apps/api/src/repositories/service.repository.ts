@@ -2,6 +2,8 @@ import { and, asc, count, desc, eq, inArray, like, or } from 'drizzle-orm';
 import type { CreateServiceInput, ServiceListQuery, UpdateServiceInput } from '@arunreah/shared';
 import { appointments, serviceBenefits, serviceDetailSections, serviceRelatedServices, services } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
+import { inTransaction } from '../db/transaction';
+type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 export async function findServiceById(db: DatabaseClient, id: string) {
   const [x] = await db.select().from(services).where(eq(services.id, id)).limit(1);
   return x;
@@ -22,26 +24,30 @@ export async function createService(db: DatabaseClient, input: CreateServiceInpu
   const id = crypto.randomUUID(),
     now = new Date().toISOString();
   const { benefits, detailSections, relatedServiceIds, ...row } = input;
-  await db.insert(services).values({ id, ...row, createdAt: now, updatedAt: now });
-  await replaceBenefits(db, id, benefits);
-  await replaceDetailSections(db, id, detailSections);
-  await replaceRelated(db, id, relatedServiceIds);
+  await inTransaction(db, async (transaction) => {
+    await transaction.insert(services).values({ id, ...row, createdAt: now, updatedAt: now });
+    await replaceBenefits(transaction, id, benefits);
+    await replaceDetailSections(transaction, id, detailSections);
+    await replaceRelated(transaction, id, relatedServiceIds);
+  });
   return findServiceById(db, id);
 }
 export async function updateService(db: DatabaseClient, id: string, input: UpdateServiceInput) {
   const { benefits, detailSections, relatedServiceIds, ...row } = input;
-  if (Object.keys(row).length)
-    await db
-      .update(services)
-      .set({ ...row, updatedAt: new Date().toISOString() })
-      .where(eq(services.id, id));
-  if (benefits !== undefined) await replaceBenefits(db, id, benefits);
-  if (detailSections !== undefined) await replaceDetailSections(db, id, detailSections);
-  if (relatedServiceIds !== undefined) await replaceRelated(db, id, relatedServiceIds);
+  await inTransaction(db, async (transaction) => {
+    if (Object.keys(row).length)
+      await transaction
+        .update(services)
+        .set({ ...row, updatedAt: new Date().toISOString() })
+        .where(eq(services.id, id));
+    if (benefits !== undefined) await replaceBenefits(transaction, id, benefits);
+    if (detailSections !== undefined) await replaceDetailSections(transaction, id, detailSections);
+    if (relatedServiceIds !== undefined) await replaceRelated(transaction, id, relatedServiceIds);
+  });
   return findServiceById(db, id);
 }
 async function replaceBenefits(
-  db: DatabaseClient,
+  db: WriteDatabase,
   id: string,
   items: CreateServiceInput['benefits'],
 ) {
@@ -56,7 +62,7 @@ async function replaceBenefits(
     });
 }
 async function replaceDetailSections(
-  db: DatabaseClient,
+  db: WriteDatabase,
   id: string,
   items: CreateServiceInput['detailSections'],
 ) {
@@ -68,7 +74,7 @@ async function replaceDetailSections(
     );
   }
 }
-async function replaceRelated(db: DatabaseClient, id: string, ids: string[]) {
+async function replaceRelated(db: WriteDatabase, id: string, ids: string[]) {
   await db.delete(serviceRelatedServices).where(eq(serviceRelatedServices.serviceId, id));
   for (const [i, relatedServiceId] of ids.entries())
     await db.insert(serviceRelatedServices).values({

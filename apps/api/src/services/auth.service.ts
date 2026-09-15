@@ -5,6 +5,7 @@ import {
   saveLoginRateLimit,
 } from '../repositories/session.repository';
 import type { DatabaseClient } from '../db/client';
+import { inTransaction } from '../db/transaction';
 import { HttpError } from '../shared/http-error';
 
 const loginAttemptLimit = 5;
@@ -53,21 +54,23 @@ async function recordFailedLogin(
   database: DatabaseClient,
   { key, attemptLimit }: LoginRateLimitKey,
 ): Promise<void> {
-  const now = new Date();
-  const current = await getLoginRateLimit(database, key);
-  const windowStartedAt = current ? new Date(current.windowStartedAt) : now;
-  const withinWindow = now.getTime() - windowStartedAt.getTime() < loginWindowMilliseconds;
-  const attempts = withinWindow ? (current?.attempts ?? 0) + 1 : 1;
-  const lockedUntil =
-    attempts >= attemptLimit
-      ? new Date(now.getTime() + loginLockoutMilliseconds).toISOString()
-      : null;
+  await inTransaction(database, async (transaction) => {
+    const now = new Date();
+    const current = await getLoginRateLimit(transaction, key);
+    const windowStartedAt = current ? new Date(current.windowStartedAt) : now;
+    const withinWindow = now.getTime() - windowStartedAt.getTime() < loginWindowMilliseconds;
+    const attempts = withinWindow ? (current?.attempts ?? 0) + 1 : 1;
+    const lockedUntil =
+      attempts >= attemptLimit
+        ? new Date(now.getTime() + loginLockoutMilliseconds).toISOString()
+        : null;
 
-  await saveLoginRateLimit(database, {
-    key,
-    attempts,
-    windowStartedAt: withinWindow ? windowStartedAt.toISOString() : now.toISOString(),
-    lockedUntil,
+    await saveLoginRateLimit(transaction, {
+      key,
+      attempts,
+      windowStartedAt: withinWindow ? windowStartedAt.toISOString() : now.toISOString(),
+      lockedUntil,
+    });
   });
 }
 

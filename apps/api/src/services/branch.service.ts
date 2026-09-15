@@ -164,8 +164,12 @@ export async function deleteManagedBranch(database: DatabaseClient, id: string) 
   await deleteBranch(database, id);
 }
 
-export async function getPublicBranchList(database: DatabaseClient, language: PublicBranchLanguage) {
-  const branches = await listPublicBranches(database);
+export async function getPublicBranchList(
+  database: DatabaseClient,
+  language: PublicBranchLanguage,
+  scope: 'branches' | 'landing' | 'appointments',
+) {
+  const branches = await listPublicBranches(database, scope);
   return branches.map((branch) => toPublicBranch(branch, language));
 }
 

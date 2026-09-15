@@ -27,7 +27,7 @@ beforeEach(() => { state.sessions.clear(); state.items = [{ id: 'published', yea
 describe('about timeline API routes', () => {
   it('returns only published milestones in the requested language without authentication', async () => {
     const response = await app.request('http://localhost/api/public/about-timeline?lang=km', undefined, bindings);
-    expect(response.status).toBe(200); expect(response.headers.get('Cache-Control')).toBe('public, max-age=300');
+    expect(response.status).toBe(200); expect(response.headers.get('Cache-Control')).toBe('public, max-age=60, must-revalidate');
     await expect(response.json()).resolves.toMatchObject({ success: true, data: { items: [{ id: 'published', title: 'គ្លីនិកចាប់ផ្តើម', body: 'បន្ទប់ពីរ។' }] } });
   });
   it('allows CMS admins but denies receptionists in the private editor API', async () => {
