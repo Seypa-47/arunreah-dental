@@ -11,11 +11,12 @@ import { parseRequestBody, parseRequestQuery } from '../../shared/request';
 import { HttpError } from '../../shared/http-error';
 import * as service from '../../services/service.service';
 import type { AppEnv } from '../../types/env';
+import { applyPublicCmsCache } from '../../shared/public-cache';
 
 export async function listPublicServicesController(context: Context<AppEnv>) {
   const query = parseRequestQuery(context, servicePublicQuerySchema);
   const services = await service.getPublicServiceList(createDbClient(context.env.DB), query.lang);
-  context.header('Cache-Control', 'public, max-age=300');
+  applyPublicCmsCache(context);
   return context.json(successResponse({ services }));
 }
 
@@ -28,7 +29,7 @@ export async function getPublicServiceController(context: Context<AppEnv>) {
     slug,
     query.lang,
   );
-  context.header('Cache-Control', 'public, max-age=300');
+  applyPublicCmsCache(context);
   return context.json(successResponse({ service: serviceDetail }));
 }
 

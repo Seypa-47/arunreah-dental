@@ -10,3 +10,4 @@ export * from './showcases';
 export * from './page-media';
 export * from './about-timeline';
 export * from './image-presentations';
+export * from './media-deletion-locks';

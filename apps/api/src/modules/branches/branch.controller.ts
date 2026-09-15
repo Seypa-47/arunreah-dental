@@ -19,11 +19,12 @@ import {
   updateManagedBranch,
 } from '../../services/branch.service';
 import type { AppEnv } from '../../types/env';
+import { applyPublicCmsCache } from '../../shared/public-cache';
 
 export async function listPublicBranchesController(context: Context<AppEnv>) {
-  const { lang } = parseRequestQuery(context, publicBranchQuerySchema);
-  const branches = await getPublicBranchList(createDbClient(context.env.DB), lang);
-  context.header('Cache-Control', 'public, max-age=300');
+  const { lang, scope } = parseRequestQuery(context, publicBranchQuerySchema);
+  const branches = await getPublicBranchList(createDbClient(context.env.DB), lang, scope);
+  applyPublicCmsCache(context);
   return context.json(successResponse({ branches }));
 }
 
@@ -36,7 +37,7 @@ export async function getPublicBranchController(context: Context<AppEnv>) {
     slug,
     lang,
   );
-  context.header('Cache-Control', 'public, max-age=300');
+  applyPublicCmsCache(context);
   return context.json(successResponse({ branch }));
 }
 

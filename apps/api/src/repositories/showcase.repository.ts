@@ -6,6 +6,8 @@ import type {
 } from '@arunreah/shared';
 import { showcaseRelated, showcaseSections, showcases } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
+import { inTransaction } from '../db/transaction';
+type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 
 function toShowcaseRow(input: UpdateShowcaseInput) {
   const {
@@ -63,11 +65,13 @@ export async function findPublicShowcaseBySlug(database: DatabaseClient, slug: s
 export async function createShowcase(database: DatabaseClient, input: CreateShowcaseInput) {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  await database
-    .insert(showcases)
-    .values({ id, ...toCreatedShowcaseRow(input), createdAt: now, updatedAt: now });
-  await replaceSections(database, id, input.sections);
-  await replaceRelatedShowcases(database, id, input.relatedShowcaseIds);
+  await inTransaction(database, async (transaction) => {
+    await transaction
+      .insert(showcases)
+      .values({ id, ...toCreatedShowcaseRow(input), createdAt: now, updatedAt: now });
+    await replaceSections(transaction, id, input.sections);
+    await replaceRelatedShowcases(transaction, id, input.relatedShowcaseIds);
+  });
   return findShowcaseById(database, id);
 }
 
@@ -77,21 +81,23 @@ export async function updateShowcase(
   input: UpdateShowcaseInput,
 ) {
   const row = toShowcaseRow(input);
-  if (Object.keys(row).length > 0) {
-    await database
-      .update(showcases)
-      .set({ ...row, updatedAt: new Date().toISOString() })
-      .where(eq(showcases.id, id));
-  }
-  if (input.sections !== undefined) await replaceSections(database, id, input.sections);
-  if (input.relatedShowcaseIds !== undefined) {
-    await replaceRelatedShowcases(database, id, input.relatedShowcaseIds);
-  }
+  await inTransaction(database, async (transaction) => {
+    if (Object.keys(row).length > 0) {
+      await transaction
+        .update(showcases)
+        .set({ ...row, updatedAt: new Date().toISOString() })
+        .where(eq(showcases.id, id));
+    }
+    if (input.sections !== undefined) await replaceSections(transaction, id, input.sections);
+    if (input.relatedShowcaseIds !== undefined) {
+      await replaceRelatedShowcases(transaction, id, input.relatedShowcaseIds);
+    }
+  });
   return findShowcaseById(database, id);
 }
 
 async function replaceSections(
-  database: DatabaseClient,
+  database: WriteDatabase,
   showcaseId: string,
   sections: CreateShowcaseInput['sections'],
 ) {
@@ -111,7 +117,7 @@ async function replaceSections(
 }
 
 async function replaceRelatedShowcases(
-  database: DatabaseClient,
+  database: WriteDatabase,
   showcaseId: string,
   relatedShowcaseIds: string[],
 ) {

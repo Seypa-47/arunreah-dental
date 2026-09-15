@@ -8,10 +8,11 @@ import {
   saveContactSettings,
 } from '../../services/contact-settings.service';
 import type { AppEnv } from '../../types/env';
+import { applyPublicCmsCache } from '../../shared/public-cache';
 
 export async function getPublicContactController(context: Context<AppEnv>) {
   const contact = await getPublicContactSettings(createDbClient(context.env.DB));
-  context.header('Cache-Control', 'public, max-age=300');
+  applyPublicCmsCache(context);
   return context.json(successResponse({ contact }));
 }
 

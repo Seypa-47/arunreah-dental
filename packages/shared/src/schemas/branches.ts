@@ -130,7 +130,15 @@ export const adminBranchListQuerySchema = z.object({
 });
 
 export const publicBranchLanguageSchema = z.enum(publicBranchLanguageValues).default('en');
-export const publicBranchQuerySchema = z.object({ lang: publicBranchLanguageSchema });
+/**
+ * Public consumers need distinct, explicit visibility rules.  In particular,
+ * homepage placement must not be coupled to the /branches page toggle.
+ */
+export const publicBranchScopeSchema = z.enum(['branches', 'landing', 'appointments']).default('branches');
+export const publicBranchQuerySchema = z.object({
+  lang: publicBranchLanguageSchema,
+  scope: publicBranchScopeSchema,
+}).strict();
 
 export const adminBranchReadSchema = z.object({
   id: z.string(),

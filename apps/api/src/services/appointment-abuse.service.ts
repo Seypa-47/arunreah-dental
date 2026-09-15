@@ -1,4 +1,5 @@
 import type { DatabaseClient } from '../db/client';
+import { inTransaction } from '../db/transaction';
 import {
   getAppointmentRequestRateLimit,
   saveAppointmentRequestRateLimit,
@@ -14,34 +15,22 @@ export async function createAppointmentRequestRateLimitKey(headers: Headers) {
   return hashSessionToken(getClientIp(headers));
 }
 
-export async function assertAppointmentRequestAllowed(database: DatabaseClient, key: string) {
-  const record = await getAppointmentRequestRateLimit(database, key);
-  if (!record) return;
+/** Counts an attempt before remote verification, atomically with its limit check. */
+export async function consumeAppointmentRequestAttempt(database: DatabaseClient, key: string) {
+  await inTransaction(database, async (transaction) => {
+    const now = new Date();
+    const current = await getAppointmentRequestRateLimit(transaction, key);
+    const windowStartedAt = current ? new Date(current.windowStartedAt) : now;
+    const withinWindow = now.getTime() - windowStartedAt.getTime() < appointmentRequestWindowMilliseconds;
 
-  const elapsed = Date.now() - new Date(record.windowStartedAt).valueOf();
-  if (
-    elapsed >= 0 &&
-    elapsed < appointmentRequestWindowMilliseconds &&
-    record.attempts >= appointmentRequestLimit
-  ) {
-    throw new HttpError(
-      429,
-      'RATE_LIMITED',
-      'Too many appointment requests. Please try again later.',
-    );
-  }
-}
+    if (withinWindow && (current?.attempts ?? 0) >= appointmentRequestLimit) {
+      throw new HttpError(429, 'RATE_LIMITED', 'Too many appointment requests. Please try again later.');
+    }
 
-export async function recordAppointmentRequestAttempt(database: DatabaseClient, key: string) {
-  const now = new Date();
-  const current = await getAppointmentRequestRateLimit(database, key);
-  const windowStartedAt = current ? new Date(current.windowStartedAt) : now;
-  const withinWindow =
-    now.getTime() - windowStartedAt.getTime() < appointmentRequestWindowMilliseconds;
-
-  await saveAppointmentRequestRateLimit(database, {
-    key,
-    attempts: withinWindow ? (current?.attempts ?? 0) + 1 : 1,
-    windowStartedAt: withinWindow ? windowStartedAt.toISOString() : now.toISOString(),
+    await saveAppointmentRequestRateLimit(transaction, {
+      key,
+      attempts: withinWindow ? (current?.attempts ?? 0) + 1 : 1,
+      windowStartedAt: withinWindow ? windowStartedAt.toISOString() : now.toISOString(),
+    });
   });
 }

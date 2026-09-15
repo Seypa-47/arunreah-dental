@@ -98,11 +98,20 @@ export async function listAdminBranches(database: DatabaseClient, query: AdminBr
   return { items, total: totalResult[0]?.value ?? 0 };
 }
 
-export async function listPublicBranches(database: DatabaseClient) {
+export async function listPublicBranches(
+  database: DatabaseClient,
+  scope: 'branches' | 'landing' | 'appointments',
+) {
+  const visibility =
+    scope === 'branches'
+      ? eq(branches.showOnBranchesPage, true)
+      : scope === 'landing'
+        ? or(eq(branches.showOnHomepage, true), eq(branches.includeInHomepageHero, true))
+        : eq(branches.acceptsAppointments, true);
   return database
     .select()
     .from(branches)
-    .where(and(eq(branches.status, 'PUBLISHED'), eq(branches.showOnBranchesPage, true)))
+    .where(and(eq(branches.status, 'PUBLISHED'), visibility))
     .orderBy(asc(branches.displayOrder), asc(branches.id));
 }
 

@@ -6,6 +6,13 @@ import type { AppEnv } from '../types/env';
 export const globalErrorHandler: ErrorHandler<AppEnv> = (error, context) => {
   const requestId = context.get('requestId');
 
+  if (error instanceof Error && error.message.includes('MEDIA_DELETION_IN_PROGRESS')) {
+    return context.json(
+      errorResponse('CONFLICT', 'This image is currently being deleted. Please choose another image.'),
+      409,
+    );
+  }
+
   if (error instanceof HttpError) {
     console.warn('API request rejected', {
       requestId,

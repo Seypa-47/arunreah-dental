@@ -10,10 +10,7 @@ import {
 import { findServiceById } from '../repositories/service.repository';
 import { HttpError } from '../shared/http-error';
 import { getClientIp } from './auth.service';
-import {
-  assertAppointmentRequestAllowed,
-  recordAppointmentRequestAttempt,
-} from './appointment-abuse.service';
+import { consumeAppointmentRequestAttempt } from './appointment-abuse.service';
 import { notifyClinicOfAppointment } from './appointment-notification.service';
 import { hashSessionToken } from './session.service';
 import { verifyTurnstile } from './turnstile.service';
@@ -67,7 +64,8 @@ export async function createPublicAppointmentRequest(
   const existing = await findAppointmentByIdempotencyKey(database, idempotencyKey);
   if (existing) return { appointment: acknowledgement(existing), created: false };
 
-  await assertAppointmentRequestAllowed(database, rateLimitKey);
+  // Failed Turnstile and invalid selections count too, before remote verification.
+  await consumeAppointmentRequestAttempt(database, rateLimitKey);
   await verifyTurnstile(input.turnstileToken, turnstileSecret, getClientIp(headers), environment);
   assertPreferredDate(input.preferredDate);
 
@@ -86,8 +84,6 @@ export async function createPublicAppointmentRequest(
   if (input.doctorId && (!doctor || doctor.status !== 'PUBLISHED')) {
     throw new HttpError(404, 'DOCTOR_NOT_AVAILABLE', 'The selected doctor is not available.');
   }
-
-  await recordAppointmentRequestAttempt(database, rateLimitKey);
 
   let appointment: Awaited<ReturnType<typeof createAppointment>> | undefined;
   for (let attempt = 0; attempt < 3 && !appointment; attempt += 1) {

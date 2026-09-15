@@ -8,6 +8,8 @@ import {
   doctors,
 } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
+import { inTransaction } from '../db/transaction';
+type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 
 function toDoctorRow(input: UpdateDoctorInput) {
   const {
@@ -77,33 +79,37 @@ export async function findPublicDoctorBySlug(database: DatabaseClient, slug: str
 export async function createDoctor(database: DatabaseClient, input: CreateDoctorInput) {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  await database
-    .insert(doctors)
-    .values({ id, ...toCreatedDoctorRow(input), createdAt: now, updatedAt: now });
-  await replaceExpertise(database, id, input.expertise);
-  await replaceEducation(database, id, input.education);
-  await replaceRelatedDoctors(database, id, input.relatedDoctorIds);
+  await inTransaction(database, async (transaction) => {
+    await transaction
+      .insert(doctors)
+      .values({ id, ...toCreatedDoctorRow(input), createdAt: now, updatedAt: now });
+    await replaceExpertise(transaction, id, input.expertise);
+    await replaceEducation(transaction, id, input.education);
+    await replaceRelatedDoctors(transaction, id, input.relatedDoctorIds);
+  });
   return findDoctorById(database, id);
 }
 
 export async function updateDoctor(database: DatabaseClient, id: string, input: UpdateDoctorInput) {
   const row = toDoctorRow(input);
-  if (Object.keys(row).length > 0) {
-    await database
-      .update(doctors)
-      .set({ ...row, updatedAt: new Date().toISOString() })
-      .where(eq(doctors.id, id));
-  }
-  if (input.expertise !== undefined) await replaceExpertise(database, id, input.expertise);
-  if (input.education !== undefined) await replaceEducation(database, id, input.education);
-  if (input.relatedDoctorIds !== undefined) {
-    await replaceRelatedDoctors(database, id, input.relatedDoctorIds);
-  }
+  await inTransaction(database, async (transaction) => {
+    if (Object.keys(row).length > 0) {
+      await transaction
+        .update(doctors)
+        .set({ ...row, updatedAt: new Date().toISOString() })
+        .where(eq(doctors.id, id));
+    }
+    if (input.expertise !== undefined) await replaceExpertise(transaction, id, input.expertise);
+    if (input.education !== undefined) await replaceEducation(transaction, id, input.education);
+    if (input.relatedDoctorIds !== undefined) {
+      await replaceRelatedDoctors(transaction, id, input.relatedDoctorIds);
+    }
+  });
   return findDoctorById(database, id);
 }
 
 async function replaceExpertise(
-  database: DatabaseClient,
+  database: WriteDatabase,
   doctorId: string,
   items: CreateDoctorInput['expertise'],
 ) {
@@ -125,7 +131,7 @@ async function replaceExpertise(
 }
 
 async function replaceEducation(
-  database: DatabaseClient,
+  database: WriteDatabase,
   doctorId: string,
   items: CreateDoctorInput['education'],
 ) {
@@ -150,7 +156,7 @@ async function replaceEducation(
 }
 
 async function replaceRelatedDoctors(
-  database: DatabaseClient,
+  database: WriteDatabase,
   doctorId: string,
   relatedDoctorIds: string[],
 ) {

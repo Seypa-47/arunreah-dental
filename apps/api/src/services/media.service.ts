@@ -1,7 +1,12 @@
 import type { MediaCategory } from '@arunreah/shared';
 import { mediaCategoryValues } from '@arunreah/shared';
 import type { DatabaseClient } from '../db/client';
-import { isMediaKeyReferenced } from '../repositories/media.repository';
+import {
+  createMediaDeletionLock,
+  isMediaKeyReferenced,
+  removeMediaDeletionLock,
+} from '../repositories/media.repository';
+import { inTransaction } from '../db/transaction';
 import { HttpError } from '../shared/http-error';
 
 export const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -134,13 +139,12 @@ export async function uploadImage(
 }
 
 export async function deleteOrphanedMedia(database: DatabaseClient, bucket: R2Bucket, key: string) {
-  if (await isMediaKeyReferenced(database, key)) {
-    throw new HttpError(
-      409,
-      'MEDIA_IN_USE',
-      'This image is currently used by website content and cannot be deleted.',
-    );
-  }
+  await inTransaction(database, async (transaction) => {
+    if (await isMediaKeyReferenced(transaction, key)) {
+      throw new HttpError(409, 'MEDIA_IN_USE', 'This image is currently used by website content and cannot be deleted.');
+    }
+    await createMediaDeletionLock(transaction, key);
+  });
 
   try {
     const object = await bucket.head(key);
@@ -150,5 +154,7 @@ export async function deleteOrphanedMedia(database: DatabaseClient, bucket: R2Bu
     if (error instanceof HttpError) throw error;
     console.error('R2 media deletion failed', { key });
     throw new HttpError(500, 'INTERNAL_ERROR', 'The image could not be deleted.');
+  } finally {
+    await removeMediaDeletionLock(database, key);
   }
 }

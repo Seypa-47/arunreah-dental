@@ -6,6 +6,12 @@ type UnknownRecord = Record<string, unknown>;
 
 const genericErrorMessage = 'Unable to complete the request. Please try again.';
 const networkErrorMessage = 'Unable to reach the clinic service. Please try again.';
+export const defaultApiTimeoutMs = 15_000;
+
+function withTimeout(signal: AbortSignal | undefined, timeoutMs = defaultApiTimeoutMs): AbortSignal {
+  const timeout = AbortSignal.timeout(timeoutMs);
+  return signal ? AbortSignal.any([signal, timeout]) : timeout;
+}
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -84,7 +90,7 @@ function createRequestInit(options: ApiRequestOptions): RequestInit {
     credentials: options.authenticated ? 'include' : 'omit',
     headers,
     method: options.method ?? 'GET',
-    signal: options.signal,
+    signal: withTimeout(options.signal),
   };
 }
 

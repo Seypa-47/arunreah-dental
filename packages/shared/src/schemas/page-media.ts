@@ -19,6 +19,7 @@ const base = z.object({
 export const createPageMediaSchema = base.strict();
 export const updatePageMediaSchema = base.partial().strict();
 export const pageMediaPublicQuerySchema = z.object({ placement: pageMediaPlacementSchema, lang: z.enum(['en', 'km']).default('en') });
+export const pageMediaAdminQuerySchema = z.object({ placement: pageMediaPlacementSchema }).strict();
 export type PageMediaPlacement = z.infer<typeof pageMediaPlacementSchema>;
 export type CreatePageMediaInput = z.infer<typeof createPageMediaSchema>;
 export type UpdatePageMediaInput = z.infer<typeof updatePageMediaSchema>;

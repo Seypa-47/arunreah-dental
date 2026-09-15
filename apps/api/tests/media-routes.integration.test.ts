@@ -25,6 +25,8 @@ const state = vi.hoisted(() => ({
 vi.mock('../src/db/client', () => ({ createDbClient: () => ({}) }));
 vi.mock('../src/repositories/media.repository', () => ({
   isMediaKeyReferenced: async () => state.referenced,
+  createMediaDeletionLock: async () => undefined,
+  removeMediaDeletionLock: async () => undefined,
 }));
 vi.mock('../src/repositories/session.repository', () => ({
   findAuthenticatedSession: async (_database: unknown, tokenHash: string) =>

@@ -8,11 +8,12 @@ import {
 } from '../../services/clinic-settings.service';
 import { updateClinicSettingsSchema } from '@arunreah/shared';
 import type { AppEnv } from '../../types/env';
+import { applyPublicCmsCache } from '../../shared/public-cache';
 import type { Context } from 'hono';
 
 export async function getPublicClinicController(context: Context<AppEnv>) {
   const clinic = await getPublicClinicSettings(createDbClient(context.env.DB));
-  context.header('Cache-Control', 'public, max-age=300');
+  applyPublicCmsCache(context);
   return context.json(successResponse({ clinic }));
 }
 

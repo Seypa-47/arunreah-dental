@@ -15,7 +15,7 @@ export function useLandingPageQuery() {
         getPublicContact(),
         getPublicServices(language),
         getPublicDoctors(language),
-        getPublicBranches(language),
+        getPublicBranches(language, 'landing'),
         getPublicShowcases(language, true),
         getPublicPageMedia('HOME_PROMOTIONS', language).catch(() => ({ items: [] })),
       ]);

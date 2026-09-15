@@ -1,6 +1,7 @@
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { adminLoginRateLimits, adminSessions, admins } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
+type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 
 export async function createAdminSession(
   database: DatabaseClient,
@@ -52,7 +53,7 @@ export async function revokeAdminSession(database: DatabaseClient, sessionId: st
     .where(eq(adminSessions.id, sessionId));
 }
 
-export async function getLoginRateLimit(database: DatabaseClient, key: string) {
+export async function getLoginRateLimit(database: WriteDatabase, key: string) {
   const [record] = await database
     .select()
     .from(adminLoginRateLimits)
@@ -63,7 +64,7 @@ export async function getLoginRateLimit(database: DatabaseClient, key: string) {
 }
 
 export async function saveLoginRateLimit(
-  database: DatabaseClient,
+  database: WriteDatabase,
   input: {
     key: string;
     attempts: number;
