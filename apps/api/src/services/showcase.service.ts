@@ -4,20 +4,28 @@ import type {
   ShowcaseLanguage,
   UpdateShowcaseInput,
 } from '@arunreah/shared';
+import { defaultImagePresentation, type ImagePresentation } from '@arunreah/shared';
 import type { DatabaseClient } from '../db/client';
 import * as repository from '../repositories/showcase.repository';
 import { HttpError } from '../shared/http-error';
 import { localize as localizeText } from '../shared/localize';
+import { listForOwners } from '../repositories/image-presentation.repository';
 
 type ShowcaseRecord = NonNullable<Awaited<ReturnType<typeof repository.findShowcaseById>>>;
 
-function localize(showcase: ShowcaseRecord, language: ShowcaseLanguage) {
+function presentationFor(rows: Awaited<ReturnType<typeof listForOwners>>, ownerId: string): ImagePresentation {
+  const row = rows.find((item) => item.ownerId === ownerId && item.slot === 'PRIMARY');
+  return row ? { positionX: row.positionX, positionY: row.positionY, zoom: row.zoom } : defaultImagePresentation;
+}
+
+function localize(showcase: ShowcaseRecord, language: ShowcaseLanguage, presentations: Awaited<ReturnType<typeof listForOwners>> = []) {
   return {
     slug: showcase.slug,
     title: localizeText(showcase.titleEn, showcase.titleKm, language) ?? showcase.titleEn,
     summary: localizeText(showcase.excerptEn, showcase.excerptKm, language),
     category: localizeText(showcase.categoryEn, showcase.categoryKm, language),
     coverImageKey: showcase.coverImageKey,
+    coverImagePresentation: presentationFor(presentations, showcase.id),
     showOnHomepage: showcase.showOnHomepage,
   };
 }
@@ -130,9 +138,9 @@ export async function getPublicShowcaseList(
   homepageOnly = false,
 ) {
   const showcases = await repository.listPublicShowcases(database, homepageOnly);
-  return (homepageOnly ? showcases.slice(0, 3) : showcases).map((showcase) =>
-    localize(showcase, language),
-  );
+  const visible = homepageOnly ? showcases.slice(0, 3) : showcases;
+  const presentations = await listForOwners(database, visible.map((showcase) => ({ ownerType: 'SHOWCASE' as const, ownerId: showcase.id, slot: 'PRIMARY' })));
+  return visible.map((showcase) => localize(showcase, language, presentations));
 }
 
 export async function getPublicShowcase(
@@ -142,12 +150,13 @@ export async function getPublicShowcase(
 ) {
   const showcase = await repository.findPublicShowcaseBySlug(database, slug);
   if (!showcase) throw new HttpError(404, 'NOT_FOUND', 'Showcase not found.');
-  const [sections, relatedShowcases] = await Promise.all([
+  const [sections, relatedShowcases, presentations] = await Promise.all([
     repository.getSections(database, showcase.id),
     repository.getRelatedShowcases(database, showcase.id),
+    listForOwners(database, [{ ownerType: 'SHOWCASE', ownerId: showcase.id, slot: 'PRIMARY' }]),
   ]);
   return {
-    ...localize(showcase, language),
+    ...localize(showcase, language, presentations),
     body: localizeText(showcase.bodyEn, showcase.bodyKm, language),
     sections: sections.map((section) => ({
       sectionType: section.sectionType,

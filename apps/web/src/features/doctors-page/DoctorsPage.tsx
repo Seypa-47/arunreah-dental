@@ -68,7 +68,7 @@ function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
         to={doctor.detail.profileHref}
       >
         {hasImage ? (
-          <img alt={doctor.imageAlt || doctor.name} className="h-[196px] w-[42%] shrink-0 bg-[#edf5f8] object-cover object-top sm:h-[236px] sm:w-full" src={doctor.imageUrl} />
+          <CmsImage alt={doctor.imageAlt || doctor.name} className="h-[196px] w-[42%] shrink-0 bg-[#edf5f8] object-cover sm:h-[236px] sm:w-full" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} />
         ) : (
           <div aria-hidden="true" className="h-[196px] w-[42%] shrink-0 bg-[#edf5f8] sm:h-[236px] sm:w-full" />
         )}

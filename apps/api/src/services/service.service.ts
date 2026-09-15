@@ -4,20 +4,28 @@ import type {
   ServiceListQuery,
   UpdateServiceInput,
 } from '@arunreah/shared';
+import { defaultImagePresentation, type ImagePresentation } from '@arunreah/shared';
 import type { DatabaseClient } from '../db/client';
 import * as repo from '../repositories/service.repository';
 import { HttpError } from '../shared/http-error';
 import { localize } from '../shared/localize';
+import { listForOwners } from '../repositories/image-presentation.repository';
 const admin = (s: NonNullable<Awaited<ReturnType<typeof repo.findServiceById>>>) => s;
+function presentationFor(rows: Awaited<ReturnType<typeof listForOwners>>, ownerId: string, slot = 'PRIMARY'): ImagePresentation {
+  const row = rows.find((item) => item.ownerId === ownerId && item.slot === slot);
+  return row ? { positionX: row.positionX, positionY: row.positionY, zoom: row.zoom } : defaultImagePresentation;
+}
 const local = (
   s: NonNullable<Awaited<ReturnType<typeof repo.findServiceById>>>,
   lang: ServiceLanguage,
+  presentations: Awaited<ReturnType<typeof listForOwners>> = [],
 ) => ({
   id: s.id,
   slug: s.slug,
   name: localize(s.nameEn, s.nameKm, lang) ?? s.nameEn,
   shortDescription: localize(s.summaryEn, s.summaryKm, lang),
   listingThumbnailKey: s.imageKey,
+  imagePresentation: presentationFor(presentations, s.id),
   category: s.category,
   featured: s.featured,
 });
@@ -86,15 +94,22 @@ export async function getAdminServiceList(db: DatabaseClient, q: ServiceListQuer
   };
 }
 export async function getPublicServiceList(db: DatabaseClient, l: ServiceLanguage) {
-  return (await repo.listPublicServices(db)).map((s) => local(s, l));
+  const services = await repo.listPublicServices(db);
+  const presentations = await listForOwners(db, services.map((service) => ({ ownerType: 'SERVICE' as const, ownerId: service.id, slot: 'PRIMARY' })));
+  return services.map((service) => local(service, l, presentations));
 }
 export async function getPublicService(db: DatabaseClient, slug: string, l: ServiceLanguage) {
   const s = await repo.findPublicServiceBySlug(db, slug);
   if (!s) throw new HttpError(404, 'NOT_FOUND', 'Service not found.');
-  const [benefits, detailSections, related] = await Promise.all([
+  const [benefits, detailSections, related, presentations] = await Promise.all([
     repo.getBenefits(db, s.id),
     repo.getDetailSections(db, s.id),
     repo.getRelated(db, s.id),
+    listForOwners(db, [
+      { ownerType: 'SERVICE', ownerId: s.id, slot: 'PRIMARY' },
+      { ownerType: 'SERVICE', ownerId: s.id, slot: 'HERO' },
+      { ownerType: 'SERVICE', ownerId: s.id, slot: 'ABOUT' },
+    ]),
   ]);
   const localizedBenefits = benefits.map((x) => ({
     title: localize(x.titleEn, x.titleKm, l) ?? x.titleEn,
@@ -105,18 +120,20 @@ export async function getPublicService(db: DatabaseClient, slug: string, l: Serv
     .filter((x) => x.service.status === 'PUBLISHED')
     .map((x) => local(x.service, l));
   return {
-    ...local(s, l),
+    ...local(s, l, presentations),
     detailPresentation: s.detailPresentation,
     hero: {
       eyebrow: localize(s.heroEyebrowEn, s.heroEyebrowKm, l),
       title: localize(s.heroTitleEn, s.heroTitleKm, l),
       summary: localize(s.heroSummaryEn, s.heroSummaryKm, l),
       imageKey: s.heroImageKey,
+      imagePresentation: presentationFor(presentations, s.id, 'HERO'),
     },
     about: {
       title: localize(s.aboutTitleEn, s.aboutTitleKm, l),
       body: localize(s.aboutBodyEn, s.aboutBodyKm, l),
       imageKey: s.aboutImageKey,
+      imagePresentation: presentationFor(presentations, s.id, 'ABOUT'),
     },
     treatmentAtAGlance: {
       duration: localize(s.durationEn, s.durationKm, l),

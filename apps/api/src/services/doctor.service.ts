@@ -4,14 +4,21 @@ import type {
   DoctorLanguage,
   UpdateDoctorInput,
 } from '@arunreah/shared';
+import { defaultImagePresentation, type ImagePresentation } from '@arunreah/shared';
 import type { DatabaseClient } from '../db/client';
 import * as repository from '../repositories/doctor.repository';
 import { HttpError } from '../shared/http-error';
 import { localize as localizeText } from '../shared/localize';
+import { listForOwners } from '../repositories/image-presentation.repository';
 
 type DoctorRecord = NonNullable<Awaited<ReturnType<typeof repository.findDoctorById>>>;
 
-function localize(doctor: DoctorRecord, language: DoctorLanguage) {
+function presentationFor(rows: Awaited<ReturnType<typeof listForOwners>>, ownerId: string): ImagePresentation {
+  const row = rows.find((item) => item.ownerId === ownerId && item.slot === 'PRIMARY');
+  return row ? { positionX: row.positionX, positionY: row.positionY, zoom: row.zoom } : defaultImagePresentation;
+}
+
+function localize(doctor: DoctorRecord, language: DoctorLanguage, presentations: Awaited<ReturnType<typeof listForOwners>> = []) {
   return {
     id: doctor.id,
     slug: doctor.slug,
@@ -20,6 +27,7 @@ function localize(doctor: DoctorRecord, language: DoctorLanguage) {
     specialty: localizeText(doctor.specialtyEn, doctor.specialtyKm, language),
     shortBio: localizeText(doctor.shortBioEn, doctor.shortBioKm, language),
     photoKey: doctor.photoKey,
+    photoImagePresentation: presentationFor(presentations, doctor.id),
     featured: doctor.featured,
   };
 }
@@ -142,7 +150,8 @@ export async function getAdminDoctorList(database: DatabaseClient, query: AdminD
 
 export async function getPublicDoctorList(database: DatabaseClient, language: DoctorLanguage) {
   const doctors = await repository.listPublicDoctors(database);
-  return doctors.map((doctor) => localize(doctor, language));
+  const presentations = await listForOwners(database, doctors.map((doctor) => ({ ownerType: 'DOCTOR' as const, ownerId: doctor.id, slot: 'PRIMARY' })));
+  return doctors.map((doctor) => localize(doctor, language, presentations));
 }
 
 export async function getPublicDoctor(
@@ -152,13 +161,14 @@ export async function getPublicDoctor(
 ) {
   const doctor = await repository.findPublicDoctorBySlug(database, slug);
   if (!doctor) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
-  const [expertise, education, relatedDoctors] = await Promise.all([
+  const [expertise, education, relatedDoctors, presentations] = await Promise.all([
     repository.getExpertise(database, doctor.id),
     repository.getEducation(database, doctor.id),
     repository.getRelatedDoctors(database, doctor.id),
+    listForOwners(database, [{ ownerType: 'DOCTOR', ownerId: doctor.id, slot: 'PRIMARY' }]),
   ]);
   return {
-    ...localize(doctor, language),
+    ...localize(doctor, language, presentations),
     about: localizeText(doctor.biographyEn, doctor.biographyKm, language),
     statistics: {
       yearsExperience: doctor.yearsExperience,

@@ -205,6 +205,8 @@ export const publicBranchReadSchema = z.object({
   googleMapsUrl: z.string().nullable(),
   heroImageKey: z.string().nullable(),
   branchImageKey: z.string().nullable(),
+  heroImagePresentation: imagePresentationSchema,
+  branchImagePresentation: imagePresentationSchema,
   heroHeadline: z.string().nullable(),
   heroSupportingText: z.string().nullable(),
   heroCtaLabel: z.string().nullable(),

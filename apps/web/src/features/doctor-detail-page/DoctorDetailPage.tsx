@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { DoctorDetailContent, LandingDoctor } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { useDoctorDetailPageQuery } from './use-doctor-detail-page';
@@ -130,7 +130,7 @@ function OtherSpecialistCard({ doctor }: { doctor: LandingDoctor }) {
         className={`flex min-h-[156px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] ${hasImage ? 'sm:block' : 'sm:flex'}`}
         to={doctor.detail.profileHref}
       >
-        {hasImage ? <img alt={doctor.imageAlt || doctor.name} className="h-[156px] w-[40%] shrink-0 bg-[#edf5f8] object-cover object-top sm:h-[210px] sm:w-full" src={doctor.imageUrl} /> : null}
+        {hasImage ? <CmsImage alt={doctor.imageAlt || doctor.name} className="h-[156px] w-[40%] shrink-0 bg-[#edf5f8] object-cover sm:h-[210px] sm:w-full" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} /> : null}
         <div className="flex min-w-0 flex-1 flex-col justify-center bg-white p-4">
           <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{doctor.name}</h3>
           <p className="mt-1 text-[13px] font-medium leading-5 text-[#3695B9]">{doctor.focus ?? doctor.specialty}</p>

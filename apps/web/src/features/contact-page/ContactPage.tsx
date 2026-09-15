@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
 import type { ContactPageContent } from '@/features/landing-page/types';
 import { GoogleSatelliteMap } from './GoogleSatelliteMap';
 import { useContactPageQuery } from './use-contact-page';
@@ -185,7 +185,7 @@ function MapsSection({ maps }: { maps: ContactPageContent['maps'] }) {
 
             return (
               <article className={`relative overflow-hidden rounded-xl border border-[#e1ebef] ${map.imageUrl ? 'bg-[#eaf2f6]' : 'grid min-h-[220px] place-items-center bg-[#f4fafc] p-6 text-center'}`} key={map.imageAlt}>
-                {map.imageUrl ? <img alt={map.imageAlt || map.label} className="h-[280px] w-full object-cover object-center" src={map.imageUrl} /> : null}
+                {map.imageUrl ? <CmsImage alt={map.imageAlt || map.label} className="h-[280px] w-full object-cover" presentation={map.imagePresentation} src={map.imageUrl} /> : null}
                 {map.imageUrl ? (
                   <span className="absolute left-1/2 top-[53%] inline-flex -translate-x-1/2 items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-[13px] font-extrabold text-[#005687] shadow-[0_3px_10px_rgba(15,23,42,0.12)]">
                     <ContactIcon className="size-[14px] text-[#3695B9]" name="location" />

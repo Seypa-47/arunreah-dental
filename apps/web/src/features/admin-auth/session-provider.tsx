@@ -3,6 +3,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useState,
   type PropsWithChildren,
 } from 'react';
 import type { AdminLoginInput } from '@arunreah/shared';
@@ -18,6 +19,7 @@ type AdminSessionContextValue = {
   admin: AuthenticatedAdmin | null;
   authError: Error | null;
   isAuthenticated: boolean;
+  isSessionChecked: boolean;
   isLoading: boolean;
   isLoggingIn: boolean;
   isLoggingOut: boolean;
@@ -30,7 +32,9 @@ const AdminSessionContext = createContext<AdminSessionContextValue | undefined>(
 
 export function AdminSessionProvider({ children }: PropsWithChildren) {
   const queryClient = useQueryClient();
+  const [isSessionChecked, setIsSessionChecked] = useState(false);
   const sessionQuery = useQuery({
+    enabled: false,
     queryFn: () => getCurrentAdmin(),
     queryKey: queryKeys.auth.me(),
     retry: false,
@@ -43,6 +47,7 @@ export function AdminSessionProvider({ children }: PropsWithChildren) {
     async (input: AdminLoginInput) => {
       const admin = await loginMutation.mutateAsync(input);
       queryClient.setQueryData(queryKeys.auth.me(), admin);
+      setIsSessionChecked(true);
       return admin;
     },
     [loginMutation, queryClient],
@@ -51,10 +56,12 @@ export function AdminSessionProvider({ children }: PropsWithChildren) {
   const logout = useCallback(async () => {
     await logoutMutation.mutateAsync();
     queryClient.setQueryData(queryKeys.auth.me(), null);
+    setIsSessionChecked(true);
   }, [logoutMutation, queryClient]);
 
   const refresh = useCallback(async () => {
     const result = await sessionQuery.refetch();
+    setIsSessionChecked(true);
     return result.data ?? null;
   }, [sessionQuery]);
 
@@ -67,6 +74,7 @@ export function AdminSessionProvider({ children }: PropsWithChildren) {
         admin,
         authError,
         isAuthenticated: admin !== null,
+        isSessionChecked,
         isLoading: sessionQuery.isLoading,
         isLoggingIn: loginMutation.isPending,
         isLoggingOut: logoutMutation.isPending,

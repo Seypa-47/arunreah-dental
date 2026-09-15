@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
 import type { BranchesPageContent } from '@/features/landing-page/types';
 import { useBranchesPageQuery } from './use-branches-page';
 
@@ -253,7 +253,7 @@ function BranchCard({
 
       <div className={`relative min-h-[250px] bg-[#eaf2f6] lg:min-h-full ${flipped ? 'lg:order-1' : ''}`}>
         {viewMode === 'photo' ? (
-          branch.imageUrl ? <img alt={branch.imageAlt || branch.name} className="absolute inset-0 h-full w-full object-cover" src={branch.imageUrl} /> : <div aria-hidden="true" className="absolute inset-0 bg-[#eaf2f6]" />
+          branch.imageUrl ? <CmsImage alt={branch.imageAlt || branch.name} className="absolute inset-0 h-full w-full object-cover" presentation={branch.imagePresentation} src={branch.imageUrl} /> : <div aria-hidden="true" className="absolute inset-0 bg-[#eaf2f6]" />
         ) : (
           <iframe
             allowFullScreen
@@ -268,7 +268,7 @@ function BranchCard({
         {/* View Mode Toggle: Clinic Photo / Google Satellite */}
         <div className="absolute right-3 top-3 z-10 flex items-center rounded-full border border-[#e3edf1] bg-white/95 p-1 shadow-[0_2px_8px_rgba(15,23,42,0.08)] backdrop-blur">
           <button
-            className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${
+            className={`min-h-11 rounded-full px-3 py-1 text-[11px] font-bold transition ${
               viewMode === 'photo' ? 'bg-[#3695B9] text-white shadow-sm' : 'text-[#6b7280] hover:text-[#005687]'
             }`}
             onClick={() => setViewMode('photo')}
@@ -277,7 +277,7 @@ function BranchCard({
             Photo
           </button>
           <button
-            className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${
+            className={`min-h-11 rounded-full px-3 py-1 text-[11px] font-bold transition ${
               viewMode === 'satellite' ? 'bg-[#3695B9] text-white shadow-sm' : 'text-[#6b7280] hover:text-[#005687]'
             }`}
             onClick={() => setViewMode('satellite')}

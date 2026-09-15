@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
 import type { BookAppointmentPageContent } from '@/features/landing-page/types';
 import { useBookAppointmentPageQuery } from './use-book-appointment-page';
 import { ApiClientError } from '@/lib/api';
@@ -571,7 +571,7 @@ function AppointmentSummary({
       <h2 className="text-[18px] font-extrabold leading-6 text-[#005687] sm:text-[20px]">{content.summary.title}</h2>
       <div className="mt-5 rounded-xl bg-[#f2f9fb] p-3.5">
         <div className={`grid gap-4 ${hasBranchImage ? 'grid-cols-[80px_1fr]' : 'grid-cols-1'}`}>
-          {hasBranchImage ? <img alt={branch.imageAlt || branch.name} className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0] object-cover object-center" src={branch.imageUrl} /> : null}
+          {hasBranchImage ? <CmsImage alt={branch.imageAlt || branch.name} className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0] object-cover" presentation={branch.imagePresentation} src={branch.imageUrl} /> : null}
           <div>
             <h3 className="text-[13px] font-bold leading-5 text-[#005687]">{branch.name}</h3>
             <p className="mt-1 text-[12px] font-normal leading-4 text-[#64748b]">{branch.address}</p>

@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import type { PropsWithChildren } from 'react';
+import { useEffect, type PropsWithChildren } from 'react';
 import { AdminFeedback } from '@/components/admin/admin-feedback';
 import { Button } from '@/components/ui/button';
 import { AdminWorkspace } from '@/components/layout/admin-workspace';
@@ -26,9 +26,13 @@ function SessionUnavailable({ onRetry }: { onRetry: () => void }) {
 
 export function RequireAdminRoute({ children }: PropsWithChildren) {
   const location = useLocation();
-  const { admin, authError, isLoading, refresh } = useAdminSession();
+  const { admin, authError, isLoading, isSessionChecked, refresh } = useAdminSession();
 
-  if (isLoading) return <SessionLoading />;
+  useEffect(() => {
+    if (!isSessionChecked) void refresh();
+  }, [isSessionChecked, refresh]);
+
+  if (!isSessionChecked || isLoading) return <SessionLoading />;
   if (authError) return <SessionUnavailable onRetry={() => void refresh()} />;
   if (!admin) {
     return (
@@ -47,8 +51,11 @@ export function RequireAdminRoute({ children }: PropsWithChildren) {
 }
 
 export function RedirectAuthenticatedAdmin({ children }: PropsWithChildren) {
-  const { admin, isLoading } = useAdminSession();
-  if (isLoading) return <SessionLoading />;
+  const { admin, isLoading, isSessionChecked, refresh } = useAdminSession();
+  useEffect(() => {
+    if (!isSessionChecked) void refresh();
+  }, [isSessionChecked, refresh]);
+  if (!isSessionChecked || isLoading) return <SessionLoading />;
   if (admin) return <Navigate replace to="/admin/dashboard" />;
   return <>{children}</>;
 }

@@ -118,7 +118,7 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
       <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:px-8 lg:h-[530px] lg:pb-0">
         <div className="relative h-full">
           <div className="relative h-[264px] overflow-hidden rounded-[20px] bg-[#dfe9ee] shadow-[0_8px_22px_rgba(15,61,84,0.08)] sm:h-[330px] md:h-[400px] lg:absolute lg:inset-x-0 lg:top-3 lg:h-[438px] lg:rounded-[24px]">
-            <img alt={hero.imageAlt || 'Arunreah Dental Clinic'} className="h-full w-full object-cover object-center" src={imageUrl} />
+            <CmsImage alt={hero.imageAlt || 'Arunreah Dental Clinic'} className="h-full w-full object-cover" loading="eager" presentation={hero.imagePresentation} src={imageUrl} />
           </div>
           <div className="relative mx-2 -mt-7 grid overflow-hidden rounded-xl border border-[#dcebef] bg-white text-[#005687] shadow-[0_8px_22px_rgba(15,61,84,0.09)] sm:mx-4 sm:grid-cols-2 lg:absolute lg:left-1/2 lg:top-[398px] lg:mx-0 lg:mt-0 lg:w-[calc(100%-4rem)] lg:-translate-x-1/2 lg:grid-cols-[minmax(0,1.35fr)_auto_minmax(0,0.85fr)] xl:w-[920px]">
             <div className="order-2 flex items-center gap-3 px-5 py-4 sm:px-6 sm:py-5 lg:order-none">
@@ -480,7 +480,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
             <div className="flex items-center gap-2">
               <button
                 aria-label="Scroll services left"
-                className={`grid size-9 place-items-center rounded-full border transition duration-200 ${
+                className={`grid size-11 place-items-center rounded-full border transition duration-200 ${
                   canScrollLeft
                     ? 'border-[#3695B9] text-[#3695B9] hover:bg-[#f0f9fa]'
                     : 'cursor-not-allowed border-[#e2e8f0] text-[#cbd5e1]'
@@ -493,7 +493,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
               </button>
               <button
                 aria-label="Scroll services right"
-                className={`grid size-9 place-items-center rounded-full transition duration-200 ${
+                className={`grid size-11 place-items-center rounded-full transition duration-200 ${
                   canScrollRight
                     ? 'bg-[#3695B9] text-white shadow-sm hover:bg-[#2c84a5]'
                     : 'cursor-not-allowed bg-[#e2e8f0] text-[#94a3b8]'
@@ -539,7 +539,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                   }}
                   to={`/services/${slug}`}
                 >
-                  {hasImage ? <img alt={service.imageAlt || service.name} className="pointer-events-none h-[182px] w-full bg-[#eaf2f6] object-cover object-center transition duration-500 group-hover:scale-[1.02] sm:h-[196px]" draggable={false} src={service.imageUrl} /> : null}
+                  {hasImage ? <CmsImage alt={service.imageAlt || service.name} className="pointer-events-none h-[182px] w-full bg-[#eaf2f6] object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[196px]" draggable={false} presentation={service.imagePresentation} src={service.imageUrl} /> : null}
                   <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'h-[136px] sm:h-[138px]' : 'min-h-[176px]'}`}>
                     <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{service.name}</h3>
                     <p className="mt-2 line-clamp-2 text-[13px] font-medium leading-[19px] text-[#607486]">
@@ -589,7 +589,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
             <div className="flex items-center gap-2">
               <button
                 aria-label="Scroll specialists left"
-                className={`grid size-9 place-items-center rounded-full border transition duration-200 ${
+                className={`grid size-11 place-items-center rounded-full border transition duration-200 ${
                   canScrollLeft
                     ? 'border-[#3695B9] text-[#3695B9] hover:bg-[#f0f9fa]'
                     : 'cursor-not-allowed border-[#e2e8f0] text-[#cbd5e1]'
@@ -602,7 +602,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
               </button>
               <button
                 aria-label="Scroll specialists right"
-                className={`grid size-9 place-items-center rounded-full transition duration-200 ${
+                className={`grid size-11 place-items-center rounded-full transition duration-200 ${
                   canScrollRight
                     ? 'bg-[#3695B9] text-white shadow-sm hover:bg-[#2c84a5]'
                     : 'cursor-not-allowed bg-[#e2e8f0] text-[#94a3b8]'
@@ -643,7 +643,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
                 }}
                 to={doctor.detail?.profileHref || '/doctors'}
               >
-                  {hasImage ? <img alt={doctor.imageAlt || doctor.name} className="pointer-events-none h-[226px] w-full bg-[#eaf2f6] object-cover object-top transition duration-500 group-hover:scale-[1.02] sm:h-[242px]" draggable={false} src={doctor.imageUrl} /> : null}
+                  {hasImage ? <CmsImage alt={doctor.imageAlt || doctor.name} className="pointer-events-none h-[226px] w-full bg-[#eaf2f6] object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[242px]" draggable={false} presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} /> : null}
                 <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'h-[100px]' : 'min-h-[176px]'}`}>
                   <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{doctor.name}</h3>
                   <p className="mt-1.5 text-[13px] font-semibold leading-4 text-[#168aad]">{doctor.specialty}</p>
@@ -679,7 +679,7 @@ function BranchesSection({ branches }: { branches: LandingBranch[] }) {
                 <div className="space-y-2 border-b border-[#edf2f7] pb-3 sm:space-y-3 sm:pb-4">
                   {branch.phones.map((phone) => (
                     <a
-                      className="flex items-center gap-2 text-[13px] font-semibold leading-4 text-[#005687] hover:underline sm:gap-3 sm:text-[14px] sm:leading-5"
+                      className="flex min-h-11 items-center gap-2 text-[13px] font-semibold leading-4 text-[#005687] hover:underline sm:gap-3 sm:text-[14px] sm:leading-5"
                       href={`tel:${phone.replaceAll(' ', '')}`}
                       key={phone}
                     >
@@ -696,7 +696,7 @@ function BranchesSection({ branches }: { branches: LandingBranch[] }) {
                   </span>
                 </p>
               </div>
-              {hasImage ? <img alt={branch.imageAlt || branch.name} className="h-full min-h-[212px] w-full bg-[#e5e7eb] object-cover object-center md:min-h-0" src={branch.imageUrl} /> : null}
+              {hasImage ? <CmsImage alt={branch.imageAlt || branch.name} className="h-full min-h-[212px] w-full bg-[#e5e7eb] object-cover md:min-h-0" presentation={branch.imagePresentation} src={branch.imageUrl} /> : null}
             </Card>
           );
         })}
@@ -732,12 +732,12 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
                   className="group block overflow-hidden rounded-xl border border-white/10 bg-white/[0.05] p-2 transition duration-200 hover:bg-white/[0.10] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                   to={`/showcases/${item.slug}`}
                 >
-                  {item.imageUrl ? <img alt={item.imageAlt || item.title} className="h-[212px] w-full rounded-lg object-cover object-center transition duration-500 group-hover:scale-[1.02]" src={item.imageUrl} /> : null}
+                  {item.imageUrl ? <CmsImage alt={item.imageAlt || item.title} className="h-[212px] w-full rounded-lg object-cover transition duration-500 group-hover:scale-[1.02]" presentation={item.imagePresentation} src={item.imageUrl} /> : null}
                   <h3 className="px-2 pb-3 pt-4 text-[18px] font-bold leading-6 text-white group-hover:underline">{item.title}</h3>
                 </Link>
               ) : (
                 <>
-                  {item.imageUrl ? <img alt={item.imageAlt || item.title} className="h-[212px] w-full rounded-lg object-cover object-center" src={item.imageUrl} /> : null}
+                  {item.imageUrl ? <CmsImage alt={item.imageAlt || item.title} className="h-[212px] w-full rounded-lg object-cover" presentation={item.imagePresentation} src={item.imageUrl} /> : null}
                   <h3 className="px-2 pb-3 pt-4 text-[18px] font-bold leading-6 text-white">{item.title}</h3>
                 </>
               )}

@@ -40,6 +40,7 @@ export function useBranchesPageQuery() {
             hoursDays: hours.days,
             hoursTime: hours.hours,
             imageAlt: branch.name,
+            imagePresentation: branch.branchImagePresentation,
             imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
             mapLabel: 'View on Map',
             mapUrl: branch.googleMapsUrl ?? '#',
