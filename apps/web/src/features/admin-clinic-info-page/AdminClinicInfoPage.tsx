@@ -223,6 +223,8 @@ export function AdminClinicInfoPage({
     primaryPhone: '',
     secondaryPhone: '',
     primaryEmail: '',
+    addressEn: '',
+    addressKm: '',
     businessHoursEn: '',
     businessHoursKm: '',
     mainGoogleMapsUrl: '',
@@ -1549,6 +1551,14 @@ export function AdminClinicInfoPage({
             <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
               <h2 className="text-[18px] font-bold text-[#182238]">Business Hours &amp; Location</h2>
               <div className="mt-6 space-y-5">
+                <div>
+                  <label className="block text-[12.5px] font-bold text-[#182238]">Address (English)</label>
+                  <textarea className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]" maxLength={1000} onChange={(e) => setContactSettings((p) => ({ ...p, addressEn: e.target.value }))} value={contactSettings.addressEn} />
+                </div>
+                <div>
+                  <label className="block text-[12.5px] font-bold text-[#182238]">Address (Khmer)</label>
+                  <textarea className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]" maxLength={1000} onChange={(e) => setContactSettings((p) => ({ ...p, addressKm: e.target.value }))} value={contactSettings.addressKm} />
+                </div>
                 <div>
                   <label className="block text-[12.5px] font-bold text-[#182238]">Business Hours (English)</label>
                   <textarea className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]" maxLength={1000} onChange={(e) => setContactSettings((p) => ({ ...p, businessHoursEn: e.target.value }))} value={contactSettings.businessHoursEn} />

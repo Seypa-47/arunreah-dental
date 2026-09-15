@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { optionalMediaKeySchema } from './media';
+import { imagePresentationSchema } from './image-presentation';
 
 const optionalText = (maxLength: number) => z.string().trim().max(maxLength).nullable().optional();
 
@@ -9,7 +11,8 @@ const clinicSettingsFields = {
   taglineKm: optionalText(300),
   shortAboutEn: optionalText(5_000),
   shortAboutKm: optionalText(5_000),
-  logoKey: optionalText(1_024),
+  logoKey: optionalMediaKeySchema,
+  logoImagePresentation: imagePresentationSchema.optional(),
   yearsExperience: z.number().int().min(0).max(200).nullable().optional(),
   successfulCases: z.number().int().min(0).max(100_000_000).nullable().optional(),
   patientSatisfaction: z.number().int().min(0).max(100).nullable().optional(),
@@ -26,6 +29,7 @@ export const updateClinicSettingsSchema = z
     shortAboutEn: clinicSettingsFields.shortAboutEn,
     shortAboutKm: clinicSettingsFields.shortAboutKm,
     logoKey: clinicSettingsFields.logoKey,
+    logoImagePresentation: clinicSettingsFields.logoImagePresentation,
     yearsExperience: clinicSettingsFields.yearsExperience,
     successfulCases: clinicSettingsFields.successfulCases,
     patientSatisfaction: clinicSettingsFields.patientSatisfaction,

@@ -9,3 +9,10 @@ export const imagePresentationSchema = z.object({
 
 export type ImagePresentation = z.infer<typeof imagePresentationSchema>;
 export const defaultImagePresentation: ImagePresentation = { positionX: 50, positionY: 50, zoom: 1 };
+
+/** Stable polymorphic identifiers; metadata stays in one reusable table. */
+export const imagePresentationOwnerTypeValues = [
+  'PAGE_MEDIA', 'CLINIC_SETTINGS', 'BRANCH', 'SERVICE', 'SERVICE_DETAIL_SECTION',
+  'DOCTOR', 'SHOWCASE', 'SHOWCASE_SECTION',
+] as const;
+export type ImagePresentationOwnerType = (typeof imagePresentationOwnerTypeValues)[number];

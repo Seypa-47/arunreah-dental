@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { optionalMediaKeySchema } from './media';
+import { imagePresentationSchema } from './image-presentation';
 
 export const branchStatusValues = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 export const publicBranchLanguageValues = ['en', 'km'] as const;
@@ -57,8 +59,10 @@ const branchFields = {
   phone: z.string().trim().min(6).max(32).regex(phonePattern),
   secondaryPhone: optionalPhone(),
   googleMapsUrl: optionalUrl(),
-  heroImageKey: optionalText(1_024),
-  branchImageKey: optionalText(1_024),
+  heroImageKey: optionalMediaKeySchema,
+  branchImageKey: optionalMediaKeySchema,
+  heroImagePresentation: imagePresentationSchema.optional(),
+  branchImagePresentation: imagePresentationSchema.optional(),
   heroHeadlineEn: optionalText(300),
   heroHeadlineKm: optionalText(300),
   heroSupportingTextEn: optionalText(1_000),
@@ -101,6 +105,8 @@ export const updateBranchSchema = z
     googleMapsUrl: branchFields.googleMapsUrl,
     heroImageKey: branchFields.heroImageKey,
     branchImageKey: branchFields.branchImageKey,
+    heroImagePresentation: branchFields.heroImagePresentation,
+    branchImagePresentation: branchFields.branchImagePresentation,
     heroHeadlineEn: branchFields.heroHeadlineEn,
     heroHeadlineKm: branchFields.heroHeadlineKm,
     heroSupportingTextEn: branchFields.heroSupportingTextEn,

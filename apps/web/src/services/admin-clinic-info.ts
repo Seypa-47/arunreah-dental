@@ -59,6 +59,8 @@ export type ContactSettings = {
   primaryPhone: string;
   secondaryPhone: string;
   primaryEmail: string;
+  addressEn: string;
+  addressKm: string;
   businessHoursEn: string;
   businessHoursKm: string;
   mainGoogleMapsUrl: string;
@@ -184,7 +186,7 @@ const adminClinicInfoContent: AdminClinicInfoContent = {
     logoUrl: '/assets/landing/footer-logo-cropped.png',
   },
   contactSettings: {
-    primaryPhone: '', secondaryPhone: '', primaryEmail: '', businessHoursEn: '', businessHoursKm: '',
+    primaryPhone: '', secondaryPhone: '', primaryEmail: '', addressEn: '', addressKm: '', businessHoursEn: '', businessHoursKm: '',
     mainGoogleMapsUrl: '', facebookUrl: '', instagramUrl: '', telegramUrl: '',
   },
   footer: {
@@ -295,6 +297,8 @@ function toContactSettings(contact: ContactSettingsAdminRead): ContactSettings {
     primaryPhone: contact.primaryPhone,
     secondaryPhone: contact.secondaryPhone ?? '',
     primaryEmail: contact.primaryEmail ?? '',
+    addressEn: contact.addressEn ?? '',
+    addressKm: contact.addressKm ?? '',
     businessHoursEn: contact.businessHoursEn ?? '',
     businessHoursKm: contact.businessHoursKm ?? '',
     mainGoogleMapsUrl: contact.mainGoogleMapsUrl ?? '',
@@ -379,6 +383,8 @@ export async function saveContactSettings(settings: ContactSettings): Promise<Co
     primaryPhone: settings.primaryPhone.trim(),
     secondaryPhone: nullableText(settings.secondaryPhone),
     primaryEmail: nullableText(settings.primaryEmail),
+    addressEn: nullableText(settings.addressEn),
+    addressKm: nullableText(settings.addressKm),
     businessHoursEn: nullableText(settings.businessHoursEn),
     businessHoursKm: nullableText(settings.businessHoursKm),
     mainGoogleMapsUrl: nullableText(settings.mainGoogleMapsUrl),

@@ -7,18 +7,18 @@ import type {
 import type { DatabaseClient } from '../db/client';
 import * as repository from '../repositories/doctor.repository';
 import { HttpError } from '../shared/http-error';
+import { localize as localizeText } from '../shared/localize';
 
 type DoctorRecord = NonNullable<Awaited<ReturnType<typeof repository.findDoctorById>>>;
 
 function localize(doctor: DoctorRecord, language: DoctorLanguage) {
-  const isKhmer = language === 'km';
   return {
     id: doctor.id,
     slug: doctor.slug,
-    name: isKhmer ? doctor.nameKm : doctor.nameEn,
-    title: isKhmer ? doctor.roleKm : doctor.roleEn,
-    specialty: isKhmer ? doctor.specialtyKm : doctor.specialtyEn,
-    shortBio: isKhmer ? doctor.shortBioKm : doctor.shortBioEn,
+    name: localizeText(doctor.nameEn, doctor.nameKm, language) ?? doctor.nameEn,
+    title: localizeText(doctor.roleEn, doctor.roleKm, language),
+    specialty: localizeText(doctor.specialtyEn, doctor.specialtyKm, language),
+    shortBio: localizeText(doctor.shortBioEn, doctor.shortBioKm, language),
     photoKey: doctor.photoKey,
     featured: doctor.featured,
   };
@@ -152,7 +152,6 @@ export async function getPublicDoctor(
 ) {
   const doctor = await repository.findPublicDoctorBySlug(database, slug);
   if (!doctor) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
-  const isKhmer = language === 'km';
   const [expertise, education, relatedDoctors] = await Promise.all([
     repository.getExpertise(database, doctor.id),
     repository.getEducation(database, doctor.id),
@@ -160,19 +159,19 @@ export async function getPublicDoctor(
   ]);
   return {
     ...localize(doctor, language),
-    about: isKhmer ? doctor.biographyKm : doctor.biographyEn,
+    about: localizeText(doctor.biographyEn, doctor.biographyKm, language),
     statistics: {
       yearsExperience: doctor.yearsExperience,
       successfulProcedures: doctor.successfulProcedures,
       patientSatisfaction: doctor.patientSatisfaction,
     },
     expertise: expertise.map((item) => ({
-      title: isKhmer ? item.nameKm : item.nameEn,
+      title: localizeText(item.nameEn, item.nameKm, language) ?? item.nameEn,
       displayOrder: item.displayOrder,
     })),
     education: education.map((item) => ({
-      qualification: isKhmer ? item.degreeKm : item.degreeEn,
-      institution: isKhmer ? item.institutionKm : item.institutionEn,
+      qualification: localizeText(item.degreeEn, item.degreeKm, language) ?? item.degreeEn,
+      institution: localizeText(item.institutionEn, item.institutionKm, language) ?? item.institutionEn,
       yearLabel: item.yearLabel,
       displayOrder: item.displayOrder,
     })),

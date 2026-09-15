@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { imagePresentationSchema } from './image-presentation';
+import { mediaKeySchema } from './media';
 
 export const pageMediaPlacementValues = ['HOME_PROMOTIONS', 'ABOUT_PROFESSIONAL_DEVELOPMENT', 'ABOUT_ADVANCED_FACILITIES', 'DOCTORS_HERO', 'DOCTORS_PATIENT_EDUCATION'] as const;
 export const pageMediaPlacementSchema = z.enum(pageMediaPlacementValues);
@@ -13,7 +14,7 @@ const base = z.object({
   benefitsEn: z.string().trim().max(600).nullable().optional(), benefitsKm: z.string().trim().max(600).nullable().optional(),
   validUntil: z.string().date().nullable().optional(),
   imagePresentation: imagePresentationSchema.optional(),
-  imageKey: z.string().regex(/^clinic\/[a-z0-9][a-z0-9-]*\.(jpg|png|webp)$/),
+  imageKey: mediaKeySchema,
   displayOrder: z.number().int().min(0).max(999).default(0),
 });
 export const createPageMediaSchema = base.strict();

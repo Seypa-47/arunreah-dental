@@ -7,6 +7,8 @@ type ContactRecord = {
   primaryPhone: string;
   secondaryPhone: string | null;
   primaryEmail: string | null;
+  addressEn: string | null;
+  addressKm: string | null;
   businessHoursEn: string | null;
   businessHoursKm: string | null;
   mainGoogleMapsUrl: string | null;
@@ -95,6 +97,8 @@ function contactFixture(): ContactRecord {
     primaryPhone: '069 978 997',
     secondaryPhone: '+855 12 964 200',
     primaryEmail: 'info@arunreah.example',
+    addressEn: '123 Street, Phnom Penh',
+    addressKm: 'ផ្លូវ ១២៣ ភ្នំពេញ',
     businessHoursEn: 'Mon-Sun, 8:00 AM-8:00 PM',
     businessHoursKm: 'ចន្ទ-អាទិត្យ, ៨:០០ ព្រឹក-៨:០០ ល្ងាច',
     mainGoogleMapsUrl: 'https://maps.google.com/?q=Arunreah',
@@ -126,6 +130,8 @@ describe('contact settings API routes', () => {
           primaryPhone: '069 978 997',
           secondaryPhone: '+855 12 964 200',
           primaryEmail: 'info@arunreah.example',
+          addressEn: '123 Street, Phnom Penh',
+          addressKm: 'ផ្លូវ ១២៣ ភ្នំពេញ',
           businessHoursEn: 'Mon-Sun, 8:00 AM-8:00 PM',
           businessHoursKm: 'ចន្ទ-អាទិត្យ, ៨:០០ ព្រឹក-៨:០០ ល្ងាច',
           mainGoogleMapsUrl: 'https://maps.google.com/?q=Arunreah',

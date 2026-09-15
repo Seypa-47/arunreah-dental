@@ -7,6 +7,7 @@ import type {
 import { showcaseRelated, showcaseSections, showcases } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
 import { inTransaction } from '../db/transaction';
+import { upsert } from './image-presentation.repository';
 type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 
 function toShowcaseRow(input: UpdateShowcaseInput) {
@@ -15,10 +16,12 @@ function toShowcaseRow(input: UpdateShowcaseInput) {
     relatedShowcaseIds: _relatedShowcaseIds,
     summaryEn,
     summaryKm,
+    coverImagePresentation: _coverImagePresentation,
     ...row
   } = input;
   void _sections;
   void _relatedShowcaseIds;
+  void _coverImagePresentation;
   return {
     ...row,
     ...(summaryEn !== undefined ? { excerptEn: summaryEn } : {}),
@@ -32,10 +35,12 @@ function toCreatedShowcaseRow(input: CreateShowcaseInput) {
     relatedShowcaseIds: _relatedShowcaseIds,
     summaryEn,
     summaryKm,
+    coverImagePresentation: _coverImagePresentation,
     ...row
   } = input;
   void _sections;
   void _relatedShowcaseIds;
+  void _coverImagePresentation;
   return { ...row, excerptEn: summaryEn, excerptKm: summaryKm };
 }
 
@@ -71,6 +76,7 @@ export async function createShowcase(database: DatabaseClient, input: CreateShow
       .values({ id, ...toCreatedShowcaseRow(input), createdAt: now, updatedAt: now });
     await replaceSections(transaction, id, input.sections);
     await replaceRelatedShowcases(transaction, id, input.relatedShowcaseIds);
+    if (input.coverImagePresentation) await upsert(transaction, { ownerType: 'SHOWCASE', ownerId: id, slot: 'PRIMARY' }, input.coverImagePresentation);
   });
   return findShowcaseById(database, id);
 }
@@ -92,6 +98,7 @@ export async function updateShowcase(
     if (input.relatedShowcaseIds !== undefined) {
       await replaceRelatedShowcases(transaction, id, input.relatedShowcaseIds);
     }
+    if (input.coverImagePresentation) await upsert(transaction, { ownerType: 'SHOWCASE', ownerId: id, slot: 'PRIMARY' }, input.coverImagePresentation);
   });
   return findShowcaseById(database, id);
 }
@@ -160,10 +167,13 @@ export async function showcasesExist(database: DatabaseClient, ids: string[]) {
 }
 
 export async function deleteShowcase(database: DatabaseClient, id: string) {
-  await database.delete(showcaseRelated).where(eq(showcaseRelated.showcaseId, id));
-  await database.delete(showcaseRelated).where(eq(showcaseRelated.relatedShowcaseId, id));
-  await database.delete(showcaseSections).where(eq(showcaseSections.showcaseId, id));
-  await database.delete(showcases).where(eq(showcases.id, id));
+  await inTransaction(database, async (transaction) => {
+    await transaction.delete(showcaseRelated).where(
+      or(eq(showcaseRelated.showcaseId, id), eq(showcaseRelated.relatedShowcaseId, id)),
+    );
+    await transaction.delete(showcaseSections).where(eq(showcaseSections.showcaseId, id));
+    await transaction.delete(showcases).where(eq(showcases.id, id));
+  });
 }
 
 function buildFilters(query: AdminShowcaseListQuery): SQL | undefined {

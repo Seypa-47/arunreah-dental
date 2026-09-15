@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { optionalMediaKeySchema } from './media';
+import { imagePresentationSchema } from './image-presentation';
 
 export const doctorStatusValues = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 
@@ -54,7 +56,8 @@ const doctorFields = {
   shortBioKm: optionalText(2_000),
   aboutEn: optionalText(10_000),
   aboutKm: optionalText(10_000),
-  photoKey: optionalText(1_024),
+  photoKey: optionalMediaKeySchema,
+  photoImagePresentation: imagePresentationSchema.optional(),
   yearsExperience: z.number().int().min(0).max(100).nullable().optional(),
   successfulProcedures: z.number().int().min(0).max(10_000_000).nullable().optional(),
   patientSatisfaction: z.number().int().min(0).max(100).nullable().optional(),
@@ -87,6 +90,7 @@ export const updateDoctorSchema = z
     aboutEn: doctorFields.aboutEn,
     aboutKm: doctorFields.aboutKm,
     photoKey: doctorFields.photoKey,
+    photoImagePresentation: doctorFields.photoImagePresentation,
     yearsExperience: doctorFields.yearsExperience,
     successfulProcedures: doctorFields.successfulProcedures,
     patientSatisfaction: doctorFields.patientSatisfaction,

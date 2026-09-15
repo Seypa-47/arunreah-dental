@@ -19,6 +19,7 @@ import {
   updateBranch,
 } from '../repositories/branch.repository';
 import { HttpError } from '../shared/http-error';
+import { localize } from '../shared/localize';
 
 type BranchRecord = NonNullable<Awaited<ReturnType<typeof findBranchById>>>;
 
@@ -67,19 +68,18 @@ function toAdminBranch(branch: BranchRecord): AdminBranchRead {
 }
 
 function toPublicBranch(branch: BranchRecord, language: PublicBranchLanguage): PublicBranchRead {
-  const isKhmer = language === 'km';
   const includeHero = branch.includeInHomepageHero;
 
   return {
     id: branch.id,
     slug: branch.slug,
-    name: isKhmer ? branch.nameKm : branch.nameEn,
-    badge: isKhmer ? branch.badgeKm : branch.badgeEn,
-    address: isKhmer ? branch.addressKm : branch.addressEn,
+    name: localize(branch.nameEn, branch.nameKm, language) ?? branch.nameEn,
+    badge: localize(branch.badgeEn, branch.badgeKm, language),
+    address: localize(branch.addressEn, branch.addressKm, language) ?? branch.addressEn,
     cityProvince: branch.cityProvince,
-    shortLocationLabel: isKhmer ? branch.shortLocationLabelKm : branch.shortLocationLabelEn,
-    openingHours: isKhmer ? branch.openingHoursKm : branch.openingHoursEn,
-    openingDays: isKhmer ? branch.openingDaysKm : branch.openingDaysEn,
+    shortLocationLabel: localize(branch.shortLocationLabelEn, branch.shortLocationLabelKm, language),
+    openingHours: localize(branch.openingHoursEn, branch.openingHoursKm, language),
+    openingDays: localize(branch.openingDaysEn, branch.openingDaysKm, language),
     openingTime: branch.openingTime,
     closingTime: branch.closingTime,
     phone: branch.phone,
@@ -87,12 +87,10 @@ function toPublicBranch(branch: BranchRecord, language: PublicBranchLanguage): P
     googleMapsUrl: branch.googleMapsUrl,
     heroImageKey: includeHero ? branch.heroImageKey : null,
     branchImageKey: branch.branchImageKey,
-    heroHeadline: includeHero ? (isKhmer ? branch.heroHeadlineKm : branch.heroHeadlineEn) : null,
-    heroSupportingText: includeHero
-      ? (isKhmer ? branch.heroSupportingTextKm : branch.heroSupportingTextEn)
-      : null,
-    heroCtaLabel: includeHero ? (isKhmer ? branch.heroCtaLabelKm : branch.heroCtaLabelEn) : null,
-    shortSummary: isKhmer ? branch.shortSummaryKm : branch.shortSummaryEn,
+    heroHeadline: includeHero ? localize(branch.heroHeadlineEn, branch.heroHeadlineKm, language) : null,
+    heroSupportingText: includeHero ? localize(branch.heroSupportingTextEn, branch.heroSupportingTextKm, language) : null,
+    heroCtaLabel: includeHero ? localize(branch.heroCtaLabelEn, branch.heroCtaLabelKm, language) : null,
+    shortSummary: localize(branch.shortSummaryEn, branch.shortSummaryKm, language),
     featured: branch.featured,
     acceptsAppointments: branch.acceptsAppointments,
     showOnHomepage: branch.showOnHomepage,
