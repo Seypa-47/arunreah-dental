@@ -232,7 +232,11 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
     if (service) updateStatus.mutate(service);
   };
   const deleteService = () => {
-    if (selectedId) deleteMutation.mutate(selectedId);
+    if (!selectedId) return;
+    const service = services.find((item) => item.id === selectedId);
+    if (window.confirm(`Delete ${service?.name ?? 'this service'}? This cannot be undone.`)) {
+      deleteMutation.mutate(selectedId);
+    }
   };
   return (
     <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
