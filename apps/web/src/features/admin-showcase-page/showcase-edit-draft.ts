@@ -18,6 +18,7 @@ export type ShowcaseEditDraft = Required<
     | 'bodyEn'
     | 'bodyKm'
     | 'coverImageKey'
+    | 'coverImagePresentation'
     | 'metaTitleEn'
     | 'metaTitleKm'
     | 'metaDescriptionEn'
@@ -47,6 +48,7 @@ export function createShowcaseEditDraft(input: ShowcaseEditDraftInput): Showcase
     bodyEn: nullableText(input.bodyEn),
     bodyKm: nullableText(input.bodyKm),
     coverImageKey: input.coverImageKey ?? null,
+    coverImagePresentation: input.coverImagePresentation,
     metaTitleEn: nullableText(input.metaTitleEn),
     metaTitleKm: nullableText(input.metaTitleKm),
     metaDescriptionEn: nullableText(input.metaDescriptionEn),

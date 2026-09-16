@@ -30,7 +30,7 @@ function localize(showcase: ShowcaseRecord, language: ShowcaseLanguage, presenta
   };
 }
 
-function toAdminShowcase(showcase: ShowcaseRecord) {
+function toAdminShowcase(showcase: ShowcaseRecord, coverImagePresentation: ImagePresentation = defaultImagePresentation) {
   return {
     id: showcase.id,
     slug: showcase.slug,
@@ -46,6 +46,7 @@ function toAdminShowcase(showcase: ShowcaseRecord) {
     bodyEn: showcase.bodyEn,
     bodyKm: showcase.bodyKm,
     coverImageKey: showcase.coverImageKey,
+    coverImagePresentation,
     metaTitleEn: showcase.metaTitleEn,
     metaTitleKm: showcase.metaTitleKm,
     metaDescriptionEn: showcase.metaDescriptionEn,
@@ -53,6 +54,11 @@ function toAdminShowcase(showcase: ShowcaseRecord) {
     createdAt: showcase.createdAt,
     updatedAt: showcase.updatedAt,
   };
+}
+
+async function toAdminShowcaseWithPresentation(database: DatabaseClient, showcase: ShowcaseRecord) {
+  const presentations = await listForOwners(database, [{ ownerType: 'SHOWCASE', ownerId: showcase.id, slot: 'PRIMARY' }]);
+  return toAdminShowcase(showcase, presentationFor(presentations, showcase.id));
 }
 
 async function validateRelated(
@@ -80,7 +86,7 @@ export async function createManagedShowcase(database: DatabaseClient, input: Cre
   await validateRelated(database, undefined, input.relatedShowcaseIds);
   const showcase = await repository.createShowcase(database, input);
   if (!showcase) throw new Error('Created showcase could not be loaded.');
-  return toAdminShowcase(showcase);
+  return toAdminShowcaseWithPresentation(database, showcase);
 }
 
 export async function updateManagedShowcase(
@@ -99,18 +105,19 @@ export async function updateManagedShowcase(
   await validateRelated(database, id, input.relatedShowcaseIds);
   const showcase = await repository.updateShowcase(database, id, input);
   if (!showcase) throw new Error('Updated showcase could not be loaded.');
-  return toAdminShowcase(showcase);
+  return toAdminShowcaseWithPresentation(database, showcase);
 }
 
 export async function getAdminShowcase(database: DatabaseClient, id: string) {
   const showcase = await repository.findShowcaseById(database, id);
   if (!showcase) throw new HttpError(404, 'NOT_FOUND', 'Showcase not found.');
-  const [sections, relatedShowcases] = await Promise.all([
+  const [sections, relatedShowcases, presentations] = await Promise.all([
     repository.getSections(database, id),
     repository.getRelatedShowcases(database, id),
+    listForOwners(database, [{ ownerType: 'SHOWCASE', ownerId: id, slot: 'PRIMARY' }]),
   ]);
   return {
-    ...toAdminShowcase(showcase),
+    ...toAdminShowcase(showcase, presentationFor(presentations, id)),
     sections,
     relatedShowcaseIds: relatedShowcases.map((item) => item.relation.relatedShowcaseId),
   };
@@ -121,8 +128,9 @@ export async function getAdminShowcaseList(
   query: AdminShowcaseListQuery,
 ) {
   const { items, total } = await repository.listAdminShowcases(database, query);
+  const presentations = await listForOwners(database, items.map((showcase) => ({ ownerType: 'SHOWCASE' as const, ownerId: showcase.id, slot: 'PRIMARY' })));
   return {
-    showcases: items.map(toAdminShowcase),
+    showcases: items.map((showcase) => toAdminShowcase(showcase, presentationFor(presentations, showcase.id))),
     meta: {
       page: query.page,
       limit: query.limit,
