@@ -32,6 +32,7 @@ type SessionRecord = {
   role: AuthenticatedAdmin['role'];
 };
 type ShowcaseInput = Partial<ShowcaseRecord> & {
+  coverImagePresentation?: { positionX: number; positionY: number; zoom: number };
   summaryEn?: string | null;
   summaryKm?: string | null;
   sections?: Array<Record<string, unknown>>;
@@ -40,12 +41,19 @@ type ShowcaseInput = Partial<ShowcaseRecord> & {
 
 const state = vi.hoisted(() => ({
   showcases: [] as ShowcaseRecord[],
+  presentations: new Map<string, { positionX: number; positionY: number; zoom: number }>(),
   sections: new Map<string, Array<Record<string, unknown>>>(),
   related: new Map<string, string[]>(),
   sessions: new Map<string, SessionRecord>(),
 }));
 
 vi.mock('../src/db/client', () => ({ createDbClient: () => ({}) }));
+vi.mock('../src/repositories/image-presentation.repository', () => ({
+  listForOwners: async (_database: unknown, owners: Array<{ ownerId: string; slot: string }>) => owners.flatMap((owner) => {
+    const presentation = state.presentations.get(owner.ownerId);
+    return presentation ? [{ ...owner, ...presentation }] : [];
+  }),
+}));
 vi.mock('../src/repositories/session.repository', () => ({
   findAuthenticatedSession: async (_database: unknown, tokenHash: string) =>
     state.sessions.get(tokenHash),
@@ -83,6 +91,7 @@ vi.mock('../src/repositories/showcase.repository', () => ({
     if (summaryKm !== undefined) showcase.excerptKm = summaryKm;
     if (sections !== undefined) state.sections.set(id, sections);
     if (relatedShowcaseIds !== undefined) state.related.set(id, relatedShowcaseIds);
+    if (input.coverImagePresentation) state.presentations.set(id, input.coverImagePresentation);
     return showcase;
   },
   getSections: async (_database: unknown, id: string) => state.sections.get(id) ?? [],
@@ -158,6 +167,7 @@ function payload(overrides: Record<string, unknown> = {}) {
 }
 beforeEach(() => {
   state.showcases = [];
+  state.presentations.clear();
   state.sections.clear();
   state.related.clear();
   state.sessions.clear();
@@ -291,6 +301,32 @@ describe('showcase API routes', () => {
       ).status,
     ).toBe(200);
     expect(state.sections.get('showcase-1')).toHaveLength(1);
+  });
+  it('returns saved cover-image framing to the admin editor', async () => {
+    state.showcases = [fixture()];
+    const cmsHeaders = await headers('CMS_ADMIN');
+    const framing = { positionX: 36, positionY: 22, zoom: 1.25 };
+    const update = await app.request(
+      'http://localhost/api/admin/showcases/showcase-1',
+      {
+        method: 'PATCH',
+        headers: { ...cmsHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coverImagePresentation: framing }),
+      },
+      bindings,
+    );
+    await expect(update.json()).resolves.toMatchObject({
+      data: { showcase: { coverImagePresentation: framing } },
+    });
+
+    const detail = await app.request(
+      'http://localhost/api/admin/showcases/showcase-1',
+      { headers: cmsHeaders },
+      bindings,
+    );
+    await expect(detail.json()).resolves.toMatchObject({
+      data: { showcase: { coverImagePresentation: framing } },
+    });
   });
   it('validates related showcases and cleans up relationships during deletion', async () => {
     state.showcases = [fixture(), fixture({ id: 'showcase-2', slug: 'implant-case' })];

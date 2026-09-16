@@ -2,10 +2,11 @@ import { AdminListDate, AdminListImage, AdminListEmpty, AdminListPagination, Adm
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useState, useMemo, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AdminShowcaseListQuery, UpdateShowcaseInput } from '@arunreah/shared';
+import { defaultImagePresentation, type AdminShowcaseListQuery, type ImagePresentation, type UpdateShowcaseInput } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { MediaUploader } from '@/components/admin/media-uploader';
+import { ImagePositionEditor } from '@/components/admin/image-position-editor';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAdminShowcasePageQuery } from './use-admin-showcase-page';
@@ -19,6 +20,7 @@ import { invalidateCmsDomain } from '@/services/cms-cache';
 import { queryKeys } from '@/lib/query-keys';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { createShowcaseEditDraft, isShowcaseEditDirty, type ShowcaseEditDraft } from './showcase-edit-draft';
+import { getPublicMediaUrl } from '@/services/media';
 
 function StatusBadge({ status }: { status: ShowcaseStatus }) { return <AdminPublicationStatus status={status} />; }
 
@@ -271,6 +273,7 @@ export function AdminShowcasePage() {
   const [editMetaDescription, setEditMetaDescription] = useState('');
   const [editMetaDescriptionKm, setEditMetaDescriptionKm] = useState('');
   const [editCoverImageKey, setEditCoverImageKey] = useState<string | null>(null);
+  const [editCoverImagePresentation, setEditCoverImagePresentation] = useState<ImagePresentation>(defaultImagePresentation);
   const [editSections, setEditSections] = useState<AdminShowcaseDetail['sections']>([]);
   const [editRelatedIds, setEditRelatedIds] = useState<string[]>([]);
   const [editDisplayOrder, setEditDisplayOrder] = useState(0);
@@ -327,13 +330,14 @@ export function AdminShowcasePage() {
     bodyEn: editBody,
     bodyKm: editBodyKm,
     coverImageKey: editCoverImageKey,
+    coverImagePresentation: editCoverImagePresentation,
     metaTitleEn: editMetaTitle,
     metaTitleKm: editMetaTitleKm,
     metaDescriptionEn: editMetaDescription,
     metaDescriptionKm: editMetaDescriptionKm,
     sections: editSections,
     relatedShowcaseIds: editRelatedIds,
-  }), [editBody, editBodyKm, editCategory, editCategoryKm, editCoverImageKey, editDisplayOrder, editHomepage, editMetaDescription, editMetaDescriptionKm, editMetaTitle, editMetaTitleKm, editRelatedIds, editSections, editSlug, editStatus, editSummary, editSummaryKm, editTitle, editTitleKm]);
+  }), [editBody, editBodyKm, editCategory, editCategoryKm, editCoverImageKey, editCoverImagePresentation, editDisplayOrder, editHomepage, editMetaDescription, editMetaDescriptionKm, editMetaTitle, editMetaTitleKm, editRelatedIds, editSections, editSlug, editStatus, editSummary, editSummaryKm, editTitle, editTitleKm]);
   const isDirty = isShowcaseEditDirty(isEditingSelected, editBaseline, editDraft);
   useUnsavedChangesGuard(isDirty);
 
@@ -344,13 +348,13 @@ export function AdminShowcasePage() {
     setEditHeadline(showcase.titleEn); setEditSummary(showcase.summaryEn ?? ''); setEditSummaryKm(showcase.summaryKm ?? '');
     setEditBody(showcase.bodyEn ?? ''); setEditBodyKm(showcase.bodyKm ?? ''); setEditCategory((showcase.categoryEn as ShowcaseCategory) || 'Treatment'); setEditCategoryKm(showcase.categoryKm ?? '');
     setEditMetaTitle(showcase.metaTitleEn ?? ''); setEditMetaTitleKm(showcase.metaTitleKm ?? ''); setEditMetaDescription(showcase.metaDescriptionEn ?? ''); setEditMetaDescriptionKm(showcase.metaDescriptionKm ?? '');
-    setEditCoverImageKey(showcase.coverImageKey); setEditSections(showcase.sections); setEditRelatedIds(showcase.relatedShowcaseIds); setEditDisplayOrder(showcase.displayOrder); setEditHomepage(showcase.showOnHomepage);
+    setEditCoverImageKey(showcase.coverImageKey); setEditCoverImagePresentation(showcase.coverImagePresentation ?? defaultImagePresentation); setEditSections(showcase.sections); setEditRelatedIds(showcase.relatedShowcaseIds); setEditDisplayOrder(showcase.displayOrder); setEditHomepage(showcase.showOnHomepage);
     setEditStatus(showcase.status === 'PUBLISHED' ? 'published' : showcase.status === 'ARCHIVED' ? 'hidden' : 'draft');
     setEditBaseline(createShowcaseEditDraft({
       slug: showcase.slug, status: showcase.status, showOnHomepage: showcase.showOnHomepage, displayOrder: showcase.displayOrder,
       titleEn: showcase.titleEn, titleKm: showcase.titleKm, categoryEn: showcase.categoryEn, categoryKm: showcase.categoryKm,
       summaryEn: showcase.summaryEn, summaryKm: showcase.summaryKm, bodyEn: showcase.bodyEn, bodyKm: showcase.bodyKm,
-      coverImageKey: showcase.coverImageKey, metaTitleEn: showcase.metaTitleEn, metaTitleKm: showcase.metaTitleKm,
+      coverImageKey: showcase.coverImageKey, coverImagePresentation: showcase.coverImagePresentation ?? defaultImagePresentation, metaTitleEn: showcase.metaTitleEn, metaTitleKm: showcase.metaTitleKm,
       metaDescriptionEn: showcase.metaDescriptionEn, metaDescriptionKm: showcase.metaDescriptionKm,
       sections: showcase.sections, relatedShowcaseIds: showcase.relatedShowcaseIds,
     }));
@@ -714,7 +718,8 @@ export function AdminShowcasePage() {
                     <label className="block text-[12.5px] font-bold text-[#182238]">Slug<input className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13px] font-normal" onChange={(e) => setEditSlug(e.target.value)} value={editSlug} /></label>
                     <label className="block text-[12.5px] font-bold text-[#182238]">Display order<input className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13px] font-normal" min="0" onChange={(e) => setEditDisplayOrder(Number(e.target.value) || 0)} type="number" value={editDisplayOrder} /></label>
                   </div>
-                  <MediaUploader category="showcases" label="Cover image" onClear={() => setEditCoverImageKey(null)} onUploaded={(key) => setEditCoverImageKey(key)} value={editCoverImageKey ?? undefined} />
+                  <MediaUploader category="showcases" label="Cover image" onClear={() => { setEditCoverImageKey(null); setEditCoverImagePresentation(defaultImagePresentation); }} onUploaded={(key) => { setEditCoverImageKey(key); setEditCoverImagePresentation(defaultImagePresentation); }} value={editCoverImageKey ?? undefined} />
+                  <ImagePositionEditor aspectClassName="aspect-[16/10]" onChange={setEditCoverImagePresentation} src={getPublicMediaUrl(editCoverImageKey)} value={editCoverImagePresentation} />
 
                   {/* Headline */}
                   <div>

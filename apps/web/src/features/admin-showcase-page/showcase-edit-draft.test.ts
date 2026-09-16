@@ -5,7 +5,7 @@ const baseDraft: ShowcaseEditDraft = {
   slug: 'family-smiles', status: 'PUBLISHED', showOnHomepage: true, displayOrder: 3,
   titleEn: 'Family smiles', titleKm: 'គ្រួសារញញឹម', categoryEn: 'Patient Education', categoryKm: null,
   summaryEn: 'A useful summary', summaryKm: null, bodyEn: 'A useful article body', bodyKm: null,
-  coverImageKey: 'showcases/family.jpg', metaTitleEn: null, metaTitleKm: null,
+  coverImageKey: 'showcases/family.jpg', coverImagePresentation: { positionX: 50, positionY: 50, zoom: 1 }, metaTitleEn: null, metaTitleKm: null,
   metaDescriptionEn: null, metaDescriptionKm: null, relatedShowcaseIds: ['related-one'],
   sections: [{ sectionType: 'TEXT', headingEn: 'Heading', headingKm: null, bodyEn: 'Body', bodyKm: null, imageKey: null, displayOrder: 0 }],
 };
@@ -44,6 +44,13 @@ describe('Showcase edit draft', () => {
     expect(areShowcaseEditDraftsEqual(baseDraft, { ...baseDraft, sections: [{
       sectionType: 'TEXT', headingEn: 'Heading', headingKm: null, bodyEn: 'Changed', bodyKm: null, imageKey: null, displayOrder: 0,
     }] })).toBe(false);
+  });
+
+  it('treats saved cover-image framing as persisted CMS content', () => {
+    expect(areShowcaseEditDraftsEqual(baseDraft, {
+      ...baseDraft,
+      coverImagePresentation: { positionX: 35, positionY: 20, zoom: 1.2 },
+    })).toBe(false);
   });
 
   it('uses the successful save draft as the new clean baseline while a failed save keeps the prior baseline', () => {
