@@ -12,6 +12,8 @@ describe('shared admin workspace', () => {
   it('provides a collapsed mobile menu, skip target, and one breadcrumb', () => {
     const html = render('/admin/services/new');
     expect(html).toContain('aria-expanded="false" aria-controls="admin-sidebar"');
+    expect(html).toContain('Collapse sidebar');
+    expect(html).toContain('data-sidebar-collapsed="false"');
     expect(html).toContain('id="admin-content" tabindex="-1"');
     expect(html.match(/aria-label="Breadcrumb"/g)).toHaveLength(1);
     expect(html).toContain('<h1>Add service</h1>');

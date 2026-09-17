@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminDoctorListQuery } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
+import { AdminToggle } from '@/components/admin/admin-toggle';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toAdminDoctorDetail, type AdminDoctor, type AdminDoctorsContent, type DoctorStatus } from '@/services/admin-doctors';
@@ -15,41 +16,6 @@ import { invalidateCmsDomain } from '@/services/cms-cache';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 
 function StatusBadge({ status }: { status: DoctorStatus }) { return <AdminPublicationStatus status={status} />; }
-
-function ToggleSwitch({
-  checked,
-  id,
-  label,
-  onChange,
-}: {
-  checked: boolean;
-  id?: string;
-  label: string;
-  onChange: (checked: boolean) => void;
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-[13px] font-semibold text-[#182238]">{label}</span>
-      <button
-        aria-checked={checked}
-        aria-label={label}
-        className={`relative h-6 w-11 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${
-          checked ? 'bg-[#2187a8]' : 'bg-[#d8e2ec]'
-        }`}
-        id={id}
-        onClick={() => onChange(!checked)}
-        role="switch"
-        type="button"
-      >
-        <span
-          className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform ${
-            checked ? 'left-[22px]' : 'left-0.5'
-          }`}
-        />
-      </button>
-    </div>
-  );
-}
 
 function DoctorAvatar({
   doctor,
@@ -400,15 +366,17 @@ function DoctorDetailPanel({
 
             {/* Switches: Show on Website & Featured Doctor */}
             <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-              <ToggleSwitch
+              <AdminToggle
                 checked={formData.showOnWebsite}
                 label="Show on Website"
                 onChange={(checked) => handleFieldChange('showOnWebsite', checked)}
+                showLabel
               />
-              <ToggleSwitch
+              <AdminToggle
                 checked={formData.featuredDoctor}
                 label="Featured Doctor"
                 onChange={(checked) => handleFieldChange('featuredDoctor', checked)}
+                showLabel
               />
             </div>
           </div>
@@ -870,15 +838,17 @@ function AddDoctorModal({
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-4 py-1">
-            <ToggleSwitch
+            <AdminToggle
               checked={showOnWebsite}
               label="Show on Website"
               onChange={setShowOnWebsite}
+              showLabel
             />
-            <ToggleSwitch
+            <AdminToggle
               checked={featuredDoctor}
               label="Featured Doctor"
               onChange={setFeaturedDoctor}
+              showLabel
             />
           </div>
 
