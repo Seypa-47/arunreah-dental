@@ -224,27 +224,14 @@ function BasicInformation({
             />
           </Field>
         </div>
-        <div>
-          <p className="text-[12px] font-bold text-[#61738d]">{content.editor.imageLabel}</p>
-          <div className="mt-1.5 flex items-center gap-4 rounded-xl border border-dashed border-[#d4e4ee] bg-[#fafbfd] p-3">
-            <img
-              alt={service.imageAlt}
-              className="h-[96px] w-[114px] rounded-lg border border-[#e8eff5] object-cover"
-              src={service.imageUrl}
-            />
-            <div>
-              <Button
-                className="h-8 rounded-lg border border-[#dce5ef] bg-white px-3 text-[11.5px] font-semibold text-[#182238] shadow-none hover:bg-[#f4f8fb]"
-                type="button"
-                variant="secondary"
-              >
-                <AdminIcon className="mr-1.5 size-3.5 text-[#2187a8]" name="upload" />
-                {content.editor.imageUploadLabel}
-              </Button>
-              <p className="mt-2 text-[10.5px] font-medium text-[#8a9ab0]">{content.editor.imageHelp}</p>
-            </div>
-          </div>
-        </div>
+        <MediaUploader
+          category="services"
+          help={`${content.editor.imageHelp} You can replace or remove it without deleting the stored media asset.`}
+          label={content.editor.imageLabel}
+          onClear={() => setService((current) => ({ ...current, imageUrl: '' }))}
+          onUploaded={(imageKey) => setService((current) => ({ ...current, imageUrl: imageKey }))}
+          value={service.imageUrl || undefined}
+        />
       </div>
     </Card>
   );

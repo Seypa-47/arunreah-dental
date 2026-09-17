@@ -6,6 +6,7 @@ import type { AdminDoctorListQuery } from '@arunreah/shared';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
+import { MediaUploader } from '@/components/admin/media-uploader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toAdminDoctorDetail, type AdminDoctor, type AdminDoctorsContent, type DoctorStatus } from '@/services/admin-doctors';
@@ -14,6 +15,7 @@ import { useAdminDoctorsPageQuery } from './use-admin-doctors-page';
 import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
+import { getPublicMediaUrl } from '@/services/media';
 
 function StatusBadge({ status }: { status: DoctorStatus }) { return <AdminPublicationStatus status={status} />; }
 
@@ -98,6 +100,16 @@ function DoctorDetailPanel({
 
   const handleFieldChange = (field: keyof AdminDoctor, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setSaveSuccess(false);
+    setIsDirty(true);
+  };
+
+  const handlePhotoChange = (photoKey: string | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      imageUrl: getPublicMediaUrl(photoKey),
+      photoKey,
+    }));
     setSaveSuccess(false);
     setIsDirty(true);
   };
@@ -226,6 +238,15 @@ function DoctorDetailPanel({
       <form className="mt-6 flex flex-1 flex-col justify-between" onSubmit={handleSubmit}>
         {activeTab === 'overview' && (
           <div className="space-y-5">
+            <MediaUploader
+              category="doctors"
+              help="Use a clear portrait image. You can replace or remove it without deleting the stored media asset."
+              label="Doctor profile photo"
+              onClear={() => handlePhotoChange(null)}
+              onUploaded={handlePhotoChange}
+              value={formData.photoKey ?? undefined}
+            />
+
             {/* Doctor Name & Role/Title */}
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
