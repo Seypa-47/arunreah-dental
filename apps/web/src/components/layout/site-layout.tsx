@@ -124,7 +124,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
       <header className="sticky top-0 z-40 border-b border-[#d9e9ee] bg-white/95 shadow-[0_2px_12px_rgba(10,63,90,0.05)] backdrop-blur-xl">
         <div className="ui-page-container flex h-[64px] items-center justify-between gap-2 sm:h-[74px] sm:gap-4">
           <Link aria-label="Arunreah Dental Clinic home" className="shrink-0 leading-none" to="/">
-            {logoUrl ? <img alt={clinicName ?? 'Arunreah Dental Clinic'} className="h-8 max-w-[86px] object-contain object-left sm:h-11 sm:max-w-[190px]" src={logoUrl} /> : <span className="block max-w-[86px] text-[13px] font-extrabold uppercase leading-4 tracking-[-0.25px] text-[#3695B9] sm:max-w-none sm:text-[20px] sm:leading-5">{clinicName ?? 'Arunreah Dental Clinic'}</span>}
+            {logoUrl ? <img alt={clinicName ?? 'Arunreah Dental Clinic'} className="h-10 max-w-[180px] object-contain object-left" src={logoUrl} /> : <span className="block text-[20px] font-extrabold uppercase leading-5 tracking-[-0.25px] text-[#3695B9]">{clinicName ?? 'Arunreah Dental Clinic'}</span>}
           </Link>
 
           <nav aria-label="Primary navigation" className="hidden items-center gap-4 lg:flex xl:gap-6">
