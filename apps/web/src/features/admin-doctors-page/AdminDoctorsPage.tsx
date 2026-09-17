@@ -3,7 +3,7 @@ import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminDoctorListQuery } from '@arunreah/shared';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
 import { Button } from '@/components/ui/button';
@@ -492,7 +492,7 @@ function DoctorDetailPanel({
   );
 }
 
-function NoDoctorSelectedPanel() {
+export function NoDoctorSelectedPanel() {
   return (
     <aside
       aria-label="No doctor selected"
@@ -887,12 +887,14 @@ type DoctorListState = Pick<AdminDoctorListQuery, 'page' | 'limit' | 'search' | 
 
 function DoctorsContent({ content, listState, onListStateChange, busy }: { busy: boolean; content: AdminDoctorsContent; listState: DoctorListState; onListStateChange: (next: DoctorListState) => void }) {
   const navigate = useNavigate();
+  const { doctorId } = useParams();
   const queryClient = useQueryClient();
   const [doctors, setDoctors] = useState<AdminDoctor[]>(content.doctors);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(doctorId ?? null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   useEffect(() => { setDoctors(content.doctors); }, [content.doctors]);
+  useEffect(() => { setSelectedId(doctorId ?? null); }, [doctorId]);
   const doctorDetailQuery = useQuery({
     enabled: selectedId !== null,
     queryFn: () => cmsApi.doctors.get(selectedId!),
@@ -948,6 +950,21 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
     onListStateChange({ ...listState, page: 1 });
   };
 
+  if (doctorId) {
+    return (
+      <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+        <div className="mx-auto w-full max-w-5xl">
+          {actionError ? <p className="mb-4 rounded-xl border border-[#fecaca] bg-[#fff1f2] p-3 text-sm text-[#b91c1c]" role="alert">{actionError}</p> : null}
+          <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <AdminPageHeading />
+            <Button onClick={() => navigate('/admin/doctors')} type="button" variant="secondary">Back to doctors</Button>
+          </header>
+          {doctorDetailQuery.isLoading ? <Card className="min-h-[32rem] animate-pulse rounded-[28px] bg-white" /> : selectedDoctor ? <DoctorDetailPanel doctor={selectedDoctor} onClose={() => navigate('/admin/doctors')} onDelete={handleDeleteDoctor} onSave={handleSaveDoctor} /> : <Card className="p-6"><p className="admin-feedback" role="alert">This doctor could not be found.</p><Button className="mt-4" onClick={() => navigate('/admin/doctors')} type="button" variant="secondary">Back to doctors</Button></Card>}
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
       <div className="mx-auto max-w-[1440px] w-full">
@@ -973,9 +990,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
       {content.meta.total === 0 && !listState.search && !listState.specialty && !listState.status ? (
         <DoctorsEmptyState onAddDoctor={() => navigate('/admin/doctors/new')} />
       ) : (
-      /* Main 2-Column Grid */
-      <div className="mt-8 grid gap-7 2xl:grid-cols-[minmax(0,1fr)_480px] xl:grid-cols-[minmax(0,1fr)_440px]">
-        {/* Left Column: Card containing Filters + Table + Pagination */}
+      <div className="mt-8">
         <Card className="flex flex-col overflow-hidden rounded-[28px] border-[#e1e8f0] bg-white p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
           {/* Filters inside card header */}
           <div className="admin-list-toolbar">
@@ -1042,17 +1057,11 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
               </thead>
               <tbody className="divide-y divide-[#f0f4f8]">
                 {pageDoctors.map((doc) => {
-                  const isSelected = doc.id === selectedId;
                   return (
-                    <tr
-                      className={`cursor-pointer transition-colors hover:bg-[#f8fbfd] ${
-                        isSelected ? 'bg-[#f0f7fa]' : ''
-                      }`}
-                      key={doc.id}
-                    >
+                    <tr className="transition-colors hover:bg-[#f8fbfd]" key={doc.id}>
                       {/* Doctor info */}
                       <td className="py-4 pr-4">
-                        <button type="button" className="flex items-center gap-3.5 text-left" aria-pressed={isSelected} aria-label={`View details for ${doc.name}`} onClick={() => setSelectedId(isSelected ? null : doc.id)}>
+                        <button type="button" className="flex items-center gap-3.5 text-left" aria-label={`Edit ${doc.name}`} onClick={() => navigate(`/admin/doctors/${doc.id}/edit`)}>
                           <DoctorAvatar doctor={doc} size="md" />
                           <div>
                             <span className="block text-[15px] font-bold text-[#182238]">
@@ -1090,17 +1099,6 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
           <AdminListPagination busy={busy} noun="doctors" page={effectivePage} totalPages={totalPages} total={content.meta.total} limit={content.meta.limit} count={pageDoctors.length} onPageChange={(page) => onListStateChange({ ...listState, page })} />
         </Card>
 
-        {/* Right Column: Doctor Detail & Edit Panel OR No Selection State */}
-        {selectedDoctor ? (
-          <DoctorDetailPanel
-            doctor={selectedDoctor}
-            onClose={() => setSelectedId(null)}
-            onDelete={handleDeleteDoctor}
-            onSave={handleSaveDoctor}
-          />
-        ) : (
-          <NoDoctorSelectedPanel />
-        )}
       </div>
       )} {/* end doctors.length === 0 ternary */}
 

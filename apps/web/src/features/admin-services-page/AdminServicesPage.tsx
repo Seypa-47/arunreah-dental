@@ -1,7 +1,6 @@
 import { AdminListDate, AdminListImage, AdminListEmpty, AdminListPagination, AdminPublicationStatus } from '@/components/admin/admin-list';
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useEffect, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ServiceListQuery } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
@@ -9,8 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import type { AdminService, AdminServicesContent } from '@/services/admin-services';
 import { useAdminServicesPageQuery } from './use-admin-services-page';
-import { cmsApi } from '@/services/cms';
-import { invalidateCmsDomain } from '@/services/cms-cache';
 
 function StatusBadge({ status }: { status: AdminService['status'] }) { return <AdminPublicationStatus status={status} />; }
 
@@ -32,7 +29,7 @@ function ServicesFooter({ footer }: { footer: AdminServicesContent['footer'] }) 
   );
 }
 
-function ServiceDetails({
+export function ServiceDetails({
   service,
   onClose,
   onDelete,
@@ -194,10 +191,7 @@ type ServiceListState = Pick<ServiceListQuery, 'page' | 'limit' | 'search' | 'st
 
 function ServicesContent({ content, listState, onListStateChange, busy }: { busy: boolean; content: AdminServicesContent; listState: ServiceListState; onListStateChange: (state: ServiceListState) => void }) {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [services, setServices] = useState(content.services);
-  const [selectedId, setSelectedId] = useState<string | undefined>(services[0]?.id);
-  const [actionError, setActionError] = useState<string | null>(null);
   useEffect(() => {
     setServices(content.services);
   }, [content.services]);
@@ -206,42 +200,9 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
     ...Array.from(new Set([...(listState.category ? [listState.category] : []), ...services.map((service) => service.category)])),
   ];
   const visible = services;
-  const selected = services.find((service) => service.id === selectedId);
-  const updateStatus = useMutation({
-    mutationFn: (service: AdminService) =>
-      cmsApi.services.update(service.id, {
-        status: service.status === 'published' ? 'DRAFT' : 'PUBLISHED',
-      }),
-    onSuccess: () => {
-      setActionError(null);
-      void invalidateCmsDomain(queryClient, 'services');
-    },
-    onError: () => setActionError('Unable to update this service. Please try again.'),
-  });
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => cmsApi.services.delete(id),
-    onSuccess: () => {
-      setSelectedId(undefined);
-      setActionError(null);
-      void invalidateCmsDomain(queryClient, 'services');
-    },
-    onError: (error: unknown) => setActionError(error instanceof Error && 'code' in error && error.code === 'SERVICE_IN_USE' ? 'This service is referenced by appointment history. Unpublish it instead.' : 'Unable to delete this service.'),
-  });
-  const toggleStatus = () => {
-    const service = services.find((item) => item.id === selectedId);
-    if (service) updateStatus.mutate(service);
-  };
-  const deleteService = () => {
-    if (!selectedId) return;
-    const service = services.find((item) => item.id === selectedId);
-    if (window.confirm(`Delete ${service?.name ?? 'this service'}? This cannot be undone.`)) {
-      deleteMutation.mutate(selectedId);
-    }
-  };
   return (
     <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
       <div className="mx-auto max-w-[1440px] w-full">
-        {actionError ? <p className="mb-4 rounded-xl border border-[#fecaca] bg-[#fff1f2] p-3 text-sm text-[#b91c1c]" role="alert">{actionError}</p> : null}
         <header className="flex flex-wrap items-end justify-between gap-5">
           <div>
             <AdminPageHeading />
@@ -302,7 +263,7 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
           </div>
 
         </Card>
-        <div className="mt-8 grid gap-8 2xl:grid-cols-[minmax(0,1fr)_400px]">
+        <div className="mt-8">
           <Card className="overflow-hidden rounded-[32px] border-[#dce5ef]">
             {busy ? <p role="status" className="admin-helper px-4">Updating services…</p> : null}<div aria-busy={busy} className="admin-table-scroll" role="region" aria-label="Services table, scroll horizontally for more columns" tabIndex={0}>
               <table className="admin-management-table w-full min-w-[780px] border-collapse text-left">
@@ -317,14 +278,11 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
                 </thead>
                 <tbody>
                   {visible.map((service) => (
-                    <tr
-                      className={`border-t border-[#e1e8f0] transition hover:bg-[#f8fbfd] ${service.id === selectedId ? 'bg-[#eef9ff]' : ''}`}
-                      key={service.id}
-                    >
+                    <tr className="border-t border-[#e1e8f0] transition hover:bg-[#f8fbfd]" key={service.id}>
                       <td className="px-7 py-5">
                         <button
-                          aria-pressed={service.id === selectedId} aria-label={`View details for ${service.name}`} className="flex items-center gap-4 text-left"
-                          onClick={() => setSelectedId(service.id)}
+                          aria-label={`Edit ${service.name}`} className="flex items-center gap-4 text-left"
+                          onClick={() => navigate(`/admin/services/${service.id}/edit`)}
                           type="button"
                         >
                           <AdminListImage src={service.imageUrl} />
@@ -365,19 +323,6 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
             {visible.length === 0 ? <AdminListEmpty noun="services" filtered={Boolean(listState.search || listState.status || listState.category || (listState.page ?? 1) > 1)} onClear={() => onListStateChange({ ...listState, search: undefined, status: undefined, category: undefined, page: 1 })} /> : null}
             <AdminListPagination busy={busy} noun="services" page={content.meta.page} totalPages={content.meta.totalPages} total={content.meta.total} limit={content.meta.limit} count={visible.length} onPageChange={(page) => onListStateChange({ ...listState, page })} />
           </Card>
-          {selected ? (
-            <ServiceDetails
-              onClose={() => setSelectedId(undefined)}
-              onDelete={deleteService}
-              onEdit={() => navigate(`/admin/services/${selected.id}/edit`)}
-              onToggleStatus={toggleStatus}
-              service={selected}
-            />
-          ) : (
-            <Card className="grid min-h-[520px] place-items-center p-6 text-center">
-              <p className="text-[#71839e]">Select a service to view its details.</p>
-            </Card>
-          )}
         </div>
         <ServicesFooter footer={content.footer} />
       </div>

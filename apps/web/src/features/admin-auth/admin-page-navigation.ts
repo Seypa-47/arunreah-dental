@@ -48,7 +48,7 @@ export function getAdminPageInfo(pathname: string): PageInfo {
   for (const [segment, name] of [['services', 'service'], ['doctors', 'doctor'], ['showcase', 'showcase']] as const) {
     const parent = { title: pages[`/admin/${segment}`]!.title, to: `/admin/${segment}` };
     if (pathname === `/admin/${segment}/new`) return { title: `Add ${name}`, description: `Complete the ${name} details, review your changes, then save.`, parent };
-    if (segment === 'services' && /^\/admin\/services\/[^/]+\/edit$/.test(pathname)) return { title: 'Edit service', description: 'Review service content and publication settings before saving.', parent };
+    if (new RegExp(`^/admin/${segment}/[^/]+/edit$`).test(pathname)) return { title: `Edit ${name}`, description: `Review ${name} content and publication settings before saving.`, parent };
   }
   return pages[pathname] ?? { title: 'Admin CMS', description: 'Manage clinic content and operations.' };
 }
