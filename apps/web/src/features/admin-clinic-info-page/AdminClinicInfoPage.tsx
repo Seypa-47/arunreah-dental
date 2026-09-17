@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminBranchListQuery, CreateBranchInput } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
+import { AdminToggle } from '@/components/admin/admin-toggle';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -24,37 +25,6 @@ import { ApiClientError } from '@/lib/api';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 import { queryKeys } from '@/lib/query-keys';
 import { getPublicMediaUrl, uploadMedia } from '@/services/media';
-
-function ToggleSwitch({
-  checked,
-  id,
-  label,
-  onChange,
-}: {
-  checked: boolean;
-  id?: string;
-  label?: string;
-  onChange: (checked: boolean) => void;
-}) {
-  return (
-    <button
-      aria-label={label ?? 'Toggle switch'}
-      aria-pressed={checked}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#2187a8] focus:ring-offset-2 ${
-        checked ? 'bg-[#2187a8]' : 'bg-[#dce5ef]'
-      }`}
-      id={id}
-      onClick={() => onChange(!checked)}
-      type="button"
-    >
-      <span
-        className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-          checked ? 'translate-x-5' : 'translate-x-0'
-        }`}
-      />
-    </button>
-  );
-}
 
 type NewBranchForm = Pick<CreateBranchInput, 'addressEn' | 'addressKm' | 'nameEn' | 'nameKm' | 'phone' | 'slug'>;
 type BranchListState = Pick<AdminBranchListQuery, 'limit' | 'order' | 'page' | 'search' | 'sort' | 'status'>;
@@ -856,8 +826,9 @@ export function AdminClinicInfoPage({
                       </Button>
                       <div className="flex items-center gap-2">
                       <span>Status</span>
-                      <ToggleSwitch
+                      <AdminToggle
                         checked={selectedBranch.status === 'PUBLISHED'}
+                        label="Publication status"
                         onChange={(checked) =>
                           setBranches((prev) =>
                             prev.map((b) =>
@@ -1157,8 +1128,9 @@ export function AdminClinicInfoPage({
                       <div className="grid gap-3.5 sm:grid-cols-2 text-[13px]">
                         <div>
                           <div className="flex items-center gap-3">
-                            <ToggleSwitch
+                            <AdminToggle
                               checked={selectedBranch.showOnBranchesPage}
+                              label="Show on Branches Page"
                               onChange={(checked) =>
                                 setBranches((prev) =>
                                   prev.map((b) =>
@@ -1172,15 +1144,17 @@ export function AdminClinicInfoPage({
                           <p className="mt-1 pl-[52px] text-[11.5px] leading-4 text-[#71839e]">Controls whether this branch appears on the public /branches page.</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <ToggleSwitch
+                          <AdminToggle
                             checked={selectedBranch.featured}
+                            label="Featured branch"
                             onChange={(checked) => updateBranch(selectedBranch.id, { featured: checked })}
                           />
                           <span className="text-[#182238]">Featured branch</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <ToggleSwitch
+                          <AdminToggle
                             checked={selectedBranch.enableBookButton}
+                            label="Enable Book at this Branch button"
                             onChange={(checked) =>
                               setBranches((prev) =>
                                 prev.map((b) =>
@@ -1193,8 +1167,9 @@ export function AdminClinicInfoPage({
                         </div>
                         <div>
                           <div className="flex items-center gap-3">
-                            <ToggleSwitch
+                            <AdminToggle
                               checked={selectedBranch.showOnHomepageSection}
+                              label="Show on Homepage Branch Section"
                               onChange={(checked) =>
                                 setBranches((prev) =>
                                   prev.map((b) =>
@@ -1209,8 +1184,9 @@ export function AdminClinicInfoPage({
                         </div>
                         <div>
                           <div className="flex items-center gap-3">
-                            <ToggleSwitch
+                            <AdminToggle
                               checked={selectedBranch.includeInHeroCarousel}
+                              label="Include in Homepage Hero Carousel"
                               onChange={(checked) =>
                                 setBranches((prev) =>
                                   prev.map((b) =>

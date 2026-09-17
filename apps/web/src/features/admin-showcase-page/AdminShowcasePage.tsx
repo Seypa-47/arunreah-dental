@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { defaultImagePresentation, type AdminShowcaseListQuery, type ImagePresentation, type UpdateShowcaseInput } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
+import { AdminToggle } from '@/components/admin/admin-toggle';
 import { MediaUploader } from '@/components/admin/media-uploader';
 import { ImagePositionEditor } from '@/components/admin/image-position-editor';
 import { Button } from '@/components/ui/button';
@@ -23,38 +24,6 @@ import { createShowcaseEditDraft, isShowcaseEditDirty, type ShowcaseEditDraft } 
 import { getPublicMediaUrl } from '@/services/media';
 
 function StatusBadge({ status }: { status: ShowcaseStatus }) { return <AdminPublicationStatus status={status} />; }
-
-function ToggleSwitch({
-  checked,
-  label,
-  onChange,
-}: {
-  checked: boolean;
-  label?: string;
-  onChange: (checked: boolean) => void;
-}) {
-  return (
-    <button
-      aria-label={label ?? 'Toggle switch'}
-      role="switch"
-      aria-checked={checked}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#2187a8] focus:ring-offset-2 ${
-        checked ? 'bg-[#2187a8]' : 'bg-[#dce5ef]'
-      }`}
-      onClick={(e) => {
-        e.stopPropagation();
-        onChange(!checked);
-      }}
-      type="button"
-    >
-      <span
-        className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-          checked ? 'translate-x-5' : 'translate-x-0'
-        }`}
-      />
-    </button>
-  );
-}
 
 function AddShowcaseModal({
   isOpen,
@@ -187,7 +156,7 @@ function AddShowcaseModal({
 
           <div className="flex items-center justify-between rounded-xl border border-[#edf2f7] bg-[#f8fbfe] p-3.5">
             <span className="text-[13px] font-bold text-[#182238]">Homepage Visibility</span>
-            <ToggleSwitch checked={homepageVisibility} onChange={setHomepageVisibility} />
+            <AdminToggle checked={homepageVisibility} label="Show article on homepage" onChange={setHomepageVisibility} />
           </div>
 
           <div className="mt-6 flex justify-end gap-3 pt-2">
@@ -598,10 +567,11 @@ export function AdminShowcasePage() {
                         {/* Homepage Visibility */}
                         <td className="py-4 pr-4">
                           <div className="flex items-center gap-2.5">
-                            <ToggleSwitch
+                            <AdminToggle
                               checked={article.homepageVisibility}
                               label={`Toggle homepage visibility for ${article.title}`}
                               onChange={(checked) => handleToggleVisibility(article.id, checked)}
+                              stopPropagation
                             />
                             <span
                               className={`text-[13px] font-semibold ${
@@ -885,7 +855,7 @@ export function AdminShowcasePage() {
                   </div>
                   <div className="rounded-lg border border-[#edf2f7] p-3">
                     <div className="flex items-center justify-between text-[12.5px] font-bold text-[#182238]">
-                      Show on Homepage <ToggleSwitch checked={editHomepage} onChange={setEditHomepage} />
+                      Show on Homepage <AdminToggle checked={editHomepage} label="Show article on homepage" onChange={setEditHomepage} />
                     </div>
                     <p className="mt-1 text-[11.5px] font-normal leading-4 text-[#71839e]">
                       Featured in the "Latest Showcase" section on the homepage. This does not affect whether it appears in the full Showcases list.
@@ -1085,7 +1055,7 @@ export function AdminShowcasePage() {
                     <span className="text-[14px] font-bold text-[#182238]">
                       Show on Homepage
                     </span>
-                    <ToggleSwitch
+                    <AdminToggle
                       checked={selectedArticle.homepageVisibility}
                       label="Show on homepage toggle"
                       onChange={(checked) =>

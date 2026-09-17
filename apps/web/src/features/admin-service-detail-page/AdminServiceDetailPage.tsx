@@ -3,6 +3,7 @@ import { useMemo, useState, type Dispatch, type ReactNode, type SetStateAction }
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
+import { AdminToggle } from '@/components/admin/admin-toggle';
 import { MediaUploader } from '@/components/admin/media-uploader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -88,26 +89,6 @@ function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
       {...props}
       className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
     />
-  );
-}
-
-function Toggle({ checked, label, onChange }: { checked: boolean; label: string; onChange: () => void }) {
-  return (
-    <button
-      aria-pressed={checked}
-      className={`relative h-6 w-11 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] ${
-        checked ? 'bg-[#2187a8]' : 'bg-[#dce5ef]'
-      }`}
-      onClick={onChange}
-      type="button"
-    >
-      <span className="sr-only">{label}</span>
-      <span
-        className={`absolute top-0.5 size-5 rounded-full bg-white shadow-sm transition-transform ${
-          checked ? 'left-[22px]' : 'left-0.5'
-        }`}
-      />
-    </button>
   );
 }
 
@@ -217,10 +198,10 @@ function BasicInformation({
         <div className="xl:col-start-3">
           <p className="text-[12px] font-bold text-[#61738d]">{content.editor.featuredLabel}</p>
           <div className="mt-2.5">
-            <Toggle
+            <AdminToggle
               checked={service.featured}
               label={content.editor.featuredLabel}
-              onChange={() => setService((current) => ({ ...current, featured: !current.featured }))}
+              onChange={(featured) => setService((current) => ({ ...current, featured }))}
             />
           </div>
         </div>

@@ -16,6 +16,7 @@ export type AdminIconName =
   | 'heart'
   | 'info'
   | 'lock'
+  | 'logout'
   | 'search'
   | 'shield'
   | 'smile'
@@ -42,6 +43,7 @@ export function AdminIcon({ className = 'size-5', name }: { className?: string; 
     inbox: <><path d="M5 7h14l1 11H4L5 7Z" /><path d="M4.5 14h4l1 2h5l1-2h4" /></>,
     info: <><circle cx="12" cy="12" r="8" /><path d="M12 11v4M12 8.2v.2" /></>,
     lock: <><path d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10" /><path d="M6 10h12v10H6z" /></>,
+    logout: <><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" /><path d="m14 8 4 4-4 4M18 12H9" /></>,
     search: <><circle cx="10.7" cy="10.7" r="5.7" /><path d="m15 15 4.2 4.2" /></>,
     services: <><path d="m8 7 1.7-2.5 2.3 2.3 2.3-2.3L16 7" /><path d="M4.5 17.5h15M6.5 17.5 8 9h8l1.5 8.5" /><path d="M10.5 12.5h3" /></>,
     shield: <path d="M12 3.5 5.5 6v4.6c0 4.3 2.7 7.6 6.5 9.4 3.8-1.8 6.5-5.1 6.5-9.4V6L12 3.5Z" />,
@@ -69,7 +71,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
         <p className="admin-nav-group-label" data-active={group.items.some((item) => isAdminNavigationActive(pathname, item.to))}>{group.label}</p>
         <ul>{group.items.map((item) => {
           const active = isAdminNavigationActive(pathname, item.to);
-          return <li key={item.to}><Link className="admin-nav-link" aria-current={active ? (pathname === item.to ? 'page' : 'location') : undefined} to={item.to} onClick={onNavigate}>
+          return <li key={item.to}><Link aria-label={item.label} className="admin-nav-link" aria-current={active ? (pathname === item.to ? 'page' : 'location') : undefined} to={item.to} onClick={onNavigate}>
             <AdminIcon className="size-5 shrink-0" name={item.icon} /><span>{item.label}</span>
           </Link></li>;
         })}</ul>
@@ -77,10 +79,10 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
     </nav>
     <div className="admin-sidebar-footer">
       {logoutFailed ? <p role="alert">We could not sign you out. Please try again.</p> : null}
-      <button type="button" disabled={isLoggingOut} onClick={() => {
+      <button aria-label="Sign out" type="button" disabled={isLoggingOut} onClick={() => {
         setLogoutFailed(false);
         void logout().then(() => navigate('/admin/login', { replace: true })).catch(() => setLogoutFailed(true));
-      }}>{isLoggingOut ? 'Signing out…' : 'Sign out'}</button>
+      }}><AdminIcon className="admin-sidebar-footer-icon size-5" name="logout" /><span>{isLoggingOut ? 'Signing out…' : 'Sign out'}</span></button>
     </div>
   </aside>;
 }
