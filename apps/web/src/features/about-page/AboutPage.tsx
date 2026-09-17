@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, ContentBlocks } from '@/components/layout/public-ui';
+import { CmsImage, ContentBlocks, ResilientImage } from '@/components/layout/public-ui';
 import type { AboutPageContent } from '@/features/landing-page/types';
 import { useAboutPageQuery } from './use-about-page';
 import { getPublicMediaUrl } from '@/services/media';
@@ -33,7 +33,7 @@ function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8"><div className="relative grid min-h-[300px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#00546f] sm:min-h-[360px]">
-        <img alt={imageAlt} className="absolute inset-0 h-full w-full object-cover object-center" src={imageUrl} />
+        <ResilientImage alt={imageAlt} className="absolute inset-0 h-full w-full object-cover object-center" fallbackSrc="/assets/landing/hero-clinic.png" src={imageUrl} />
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,52,78,0.9)_0%,rgba(5,52,78,0.62)_52%,rgba(5,52,78,0.12)_100%)]" />
         <div className="relative flex max-w-[720px] items-end p-6 text-white sm:p-10 lg:p-12">
           <div>{hero.eyebrow ? <p className="text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#b7e7f4]">{hero.eyebrow}</p> : null}
@@ -64,7 +64,7 @@ function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPag
         <div className={`grid gap-8 py-8 sm:gap-10 ${featuredDoctor ? 'lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.18fr)_minmax(160px,0.42fr)]' : 'mx-auto max-w-[760px]'}`}>
           {featuredDoctor?.imageUrl ? (
             <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#f8fbfc]">
-              <img alt={featuredDoctor.imageAlt || featuredDoctor.name} className="h-[320px] w-full object-cover object-top sm:h-[400px]" src={featuredDoctor.imageUrl} />
+              <ResilientImage alt={featuredDoctor.imageAlt || featuredDoctor.name} className="h-[320px] w-full object-cover object-top sm:h-[400px]" fallbackSrc="/assets/landing/doctor-chea-kimly.png" src={featuredDoctor.imageUrl} />
               <div className="border-t border-[#dceaf0] px-5 py-5">
                 <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3695B9]">{featuredDoctor.specialty}</p>
                 <h3 className="mt-2 text-[21px] font-extrabold leading-6 text-[#073f60]">{featuredDoctor.name}</h3>
@@ -109,7 +109,7 @@ function ClinicGallery({ editorial, images }: { editorial: AboutPageContent['edi
         <div className="mt-7 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {images.map((image, index) => (
             <figure className={`overflow-hidden rounded-xl border border-[#e1ebef] bg-white ${index === 0 ? 'sm:col-span-2 lg:col-span-2' : ''}`} key={image.imageUrl}>
-              <img alt={image.imageAlt || editorial.galleryTitle} className={`w-full object-cover ${index === 0 ? 'h-[230px] sm:h-[300px]' : 'h-[190px] sm:h-[300px]'}`} src={image.imageUrl} />
+              <ResilientImage alt={image.imageAlt || editorial.galleryTitle} className={`w-full object-cover ${index === 0 ? 'h-[230px] sm:h-[300px]' : 'h-[190px] sm:h-[300px]'}`} fallbackSrc="/assets/landing/branches-clinic.png" src={image.imageUrl} />
               {image.imageAlt ? <figcaption className="ui-caption px-4 pb-3">{image.imageAlt}</figcaption> : null}
             </figure>
           ))}
@@ -121,7 +121,7 @@ function ClinicGallery({ editorial, images }: { editorial: AboutPageContent['edi
 
 function ProfessionalDevelopment({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['professionalMedia']> }) {
   if (items.length === 0) return null;
-  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <CmsImage alt={item.title || editorial.professionalTitle} className="h-[240px] w-full sm:h-[280px]" presentation={item.imagePresentation} src={url} /> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
+  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <CmsImage alt={item.title || editorial.professionalTitle} className="h-[240px] w-full sm:h-[280px]" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
 }
 
 function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['timeline']> }) {

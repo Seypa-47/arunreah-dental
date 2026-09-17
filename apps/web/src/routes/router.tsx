@@ -56,6 +56,10 @@ export const router = createBrowserRouter([
     element: protectedAdminRoute(<AdminCalendarPage />),
   },
   {
+    path: '/admin/calendar',
+    element: protectedAdminRoute(<AdminCalendarPage />),
+  },
+  {
     path: '/admin/appointments',
     element: protectedAdminRoute(<AdminAllAppointmentsPage />),
   },
@@ -89,6 +93,10 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/showcase',
+    element: protectedAdminRoute(<AdminShowcasePage />),
+  },
+  {
+    path: '/admin/showcases',
     element: protectedAdminRoute(<AdminShowcasePage />),
   },
   {

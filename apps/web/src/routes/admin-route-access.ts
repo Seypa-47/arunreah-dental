@@ -13,7 +13,6 @@ const adminManagementPathPrefix = '/admin/admins';
 
 export function canAccessAdminPath(role: AdminRole, pathname: string): boolean {
   if (pathname === '/admin/dashboard') return true;
-  if (pathname === '/admin/appointments/calendar') return false;
 
   if (pathname.startsWith(appointmentPathPrefix)) {
     return role === 'RECEPTIONIST' || role === 'SUPER_ADMIN';

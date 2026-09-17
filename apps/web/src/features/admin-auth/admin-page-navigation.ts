@@ -4,6 +4,7 @@ import { canAccessAdminPath } from '@/routes/admin-route-access';
 
 const routes: Record<string, string> = {
   Dashboard: '/admin/dashboard', Inbox: '/admin/appointments/inbox',
+  Calendar: '/admin/appointments/calendar',
   'All Appointments': '/admin/appointments', Services: '/admin/services',
   'Doctor Management': '/admin/doctors', Showcase: '/admin/showcase',
   'Clinic Settings': '/admin/clinic-info', 'Branches / Locations': '/admin/clinic-info/branches',
@@ -14,7 +15,7 @@ const routes: Record<string, string> = {
 export function getAdminNavigationGroups(role: AdminRole) {
   const definitions = [
     { label: 'Overview', labels: ['Dashboard'] },
-    { label: 'Appointments', labels: ['Inbox', 'All Appointments'] },
+    { label: 'Appointments', labels: ['Inbox', 'Calendar', 'All Appointments'] },
     { label: 'Website content', labels: ['Services', 'Doctor Management', 'Showcase', 'Page Media', 'About Timeline'] },
     { label: 'Clinic settings', labels: ['Clinic Settings', 'Branches / Locations', 'Contact Settings'] },
     { label: 'Administration', labels: ['Admin Management'] },
@@ -31,6 +32,7 @@ type PageInfo = { title: string; description: string; parent?: { title: string; 
 const pages: Record<string, PageInfo> = {
   '/admin/dashboard': { title: 'Dashboard', description: 'Review recent activity and choose the work that needs your attention.' },
   '/admin/appointments': { title: 'All appointments', description: 'Find appointment requests and review their current status.' },
+  '/admin/appointments/calendar': { title: 'Appointment calendar', description: 'Schedule and track patient visits by date.' },
   '/admin/appointments/inbox': { title: 'Appointment inbox', description: 'Review patient requests and choose the next appropriate action.' },
   '/admin/services': { title: 'Services', description: 'Manage service content, images, and publication status.' },
   '/admin/doctors': { title: 'Doctors', description: 'Manage doctor profiles and their website visibility.' },

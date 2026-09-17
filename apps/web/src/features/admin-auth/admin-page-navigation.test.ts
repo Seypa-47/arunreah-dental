@@ -9,7 +9,11 @@ describe('admin navigation presentation', () => {
     const links = groups.flatMap((group) => group.items);
     expect(links.every((item) => canAccessAdminPath(role, item.to))).toBe(true);
     expect(new Set(links.map((item) => item.to)).size).toBe(links.length);
-    expect(links.some((item) => item.to.includes('calendar'))).toBe(false);
+    if (role === 'CMS_ADMIN') {
+      expect(links.some((item) => item.to.includes('calendar'))).toBe(false);
+    } else {
+      expect(links.some((item) => item.to.includes('calendar'))).toBe(true);
+    }
   });
   it('retains all CMS destinations without duplicate create links', () => {
     const links = getAdminNavigationGroups('CMS_ADMIN').flatMap((group) => group.items.map((item) => item.to));
