@@ -19,4 +19,14 @@ describe('public CMS image primitives', () => {
     expect(html).toContain('object-position:32% 18%');
     expect(html).toContain('scale(1.15)');
   });
+
+  it('falls back to default clinic asset when src is not provided', () => {
+    const html = renderToStaticMarkup(<CmsImage alt="Clinic fallback" />);
+    expect(html).toContain('src="/assets/landing/hero-clinic.png"');
+  });
+
+  it('uses custom fallbackSrc when provided without src', () => {
+    const html = renderToStaticMarkup(<CmsImage alt="Custom" fallbackSrc="/custom-fallback.png" />);
+    expect(html).toContain('src="/custom-fallback.png"');
+  });
 });

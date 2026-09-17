@@ -12,6 +12,7 @@ const dashboard: AdminNavigationItem = { icon: 'dashboard', label: 'Dashboard' }
 const appointmentNavigation: AdminNavigationItem[] = [
   { icon: 'appointments', label: 'Appointments', section: 'appointments' },
   { icon: 'inbox', label: 'Inbox', section: 'appointments' },
+  { icon: 'calendar', label: 'Calendar', section: 'appointments' },
   { icon: 'appointments', label: 'All Appointments', section: 'appointments' },
 ];
 

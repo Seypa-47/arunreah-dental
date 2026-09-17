@@ -118,7 +118,14 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
       <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:px-8 lg:h-[530px] lg:pb-0">
         <div className="relative h-full">
           <div className="relative h-[264px] overflow-hidden rounded-[20px] bg-[#dfe9ee] shadow-[0_8px_22px_rgba(15,61,84,0.08)] sm:h-[330px] md:h-[400px] lg:absolute lg:inset-x-0 lg:top-3 lg:h-[438px] lg:rounded-[24px]">
-            <CmsImage alt={hero.imageAlt || 'Arunreah Dental Clinic'} className="h-full w-full object-cover" loading="eager" presentation={hero.imagePresentation} src={imageUrl} />
+            <CmsImage
+              alt={hero.imageAlt || 'Arunreah Dental Clinic'}
+              className="h-full w-full object-cover"
+              fallbackSrc="/assets/landing/hero-clinic.png"
+              loading="eager"
+              presentation={hero.imagePresentation}
+              src={imageUrl}
+            />
           </div>
           <div className="relative mx-2 -mt-7 grid overflow-hidden rounded-xl border border-[#dcebef] bg-white text-[#005687] shadow-[0_8px_22px_rgba(15,61,84,0.09)] sm:mx-4 sm:grid-cols-2 lg:absolute lg:left-1/2 lg:top-[398px] lg:mx-0 lg:mt-0 lg:w-[calc(100%-4rem)] lg:-translate-x-1/2 lg:grid-cols-[minmax(0,1.35fr)_auto_minmax(0,0.85fr)] xl:w-[920px]">
             <div className="order-2 flex items-center gap-3 px-5 py-4 sm:px-6 sm:py-5 lg:order-none">
@@ -255,7 +262,7 @@ function PromotionsSection({
           {promotions.map((promotion) => (
             <article className="group overflow-hidden rounded-2xl border border-[#dceaf0] bg-white shadow-[0_2px_12px_rgba(15,61,84,0.06)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,61,84,0.12)]" key={`${promotion.title}-${promotion.imageUrl}`}>
               <div className="relative overflow-hidden bg-[#eaf2f6]">
-                <CmsImage alt={promotion.imageAlt} className="aspect-[16/10] w-full transition duration-500 group-hover:scale-[1.03]" presentation={promotion.imagePresentation} src={promotion.imageUrl} />
+                <CmsImage alt={promotion.imageAlt} className="aspect-[16/10] w-full transition duration-500 group-hover:scale-[1.03]" fallbackSrc="/assets/landing/hero-clinic.png" presentation={promotion.imagePresentation} src={promotion.imageUrl} />
                 {promotion.badge ? <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-bold text-[#07577f] shadow-sm">{promotion.badge}</span> : null}
               </div>
               <div className="p-5 sm:p-6">
@@ -539,7 +546,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                   }}
                   to={`/services/${slug}`}
                 >
-                  {hasImage ? <CmsImage alt={service.imageAlt || service.name} className="pointer-events-none h-[182px] w-full bg-[#eaf2f6] object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[196px]" draggable={false} presentation={service.imagePresentation} src={service.imageUrl} /> : null}
+                  {hasImage ? <CmsImage alt={service.imageAlt || service.name} className="pointer-events-none h-[182px] w-full bg-[#eaf2f6] object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[196px]" draggable={false} fallbackSrc="/assets/landing/service-general.png" presentation={service.imagePresentation} src={service.imageUrl} /> : null}
                   <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'h-[136px] sm:h-[138px]' : 'min-h-[176px]'}`}>
                     <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{service.name}</h3>
                     <p className="mt-2 line-clamp-2 text-[13px] font-medium leading-[19px] text-[#607486]">
@@ -643,7 +650,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
                 }}
                 to={doctor.detail?.profileHref || '/doctors'}
               >
-                  {hasImage ? <CmsImage alt={doctor.imageAlt || doctor.name} className="pointer-events-none h-[226px] w-full bg-[#eaf2f6] object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[242px]" draggable={false} presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} /> : null}
+                  {hasImage ? <CmsImage alt={doctor.imageAlt || doctor.name} className="pointer-events-none h-[226px] w-full bg-[#eaf2f6] object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[242px]" draggable={false} fallbackSrc="/assets/landing/doctor-chea-kimly.png" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} /> : null}
                 <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'h-[100px]' : 'min-h-[176px]'}`}>
                   <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{doctor.name}</h3>
                   <p className="mt-1.5 text-[13px] font-semibold leading-4 text-[#168aad]">{doctor.specialty}</p>
@@ -696,7 +703,7 @@ export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch
                   </span>
                 </p>
               </div>
-              {hasImage ? <CmsImage alt={branch.imageAlt || branch.name} className="h-full min-h-[212px] w-full bg-[#e5e7eb] object-cover md:min-h-0" presentation={branch.imagePresentation} src={branch.imageUrl} /> : null}
+              {hasImage ? <CmsImage alt={branch.imageAlt || branch.name} className="h-full min-h-[212px] w-full bg-[#e5e7eb] object-cover md:min-h-0" fallbackSrc="/assets/landing/branch-card-clinic.png" presentation={branch.imagePresentation} src={branch.imageUrl} /> : null}
             </Card>
           );
         })}
@@ -732,12 +739,12 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
                   className="group block overflow-hidden rounded-xl border border-white/10 bg-white/[0.05] p-2 transition duration-200 hover:bg-white/[0.10] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                   to={`/showcases/${item.slug}`}
                 >
-                  {item.imageUrl ? <CmsImage alt={item.imageAlt || item.title} className="h-[212px] w-full rounded-lg object-cover transition duration-500 group-hover:scale-[1.02]" presentation={item.imagePresentation} src={item.imageUrl} /> : null}
+                  {item.imageUrl ? <CmsImage alt={item.imageAlt || item.title} className="h-[212px] w-full rounded-lg object-cover transition duration-500 group-hover:scale-[1.02]" fallbackSrc="/assets/landing/showcase-family.png" presentation={item.imagePresentation} src={item.imageUrl} /> : null}
                   <h3 className="px-2 pb-3 pt-4 text-[18px] font-bold leading-6 text-white group-hover:underline">{item.title}</h3>
                 </Link>
               ) : (
                 <>
-                  {item.imageUrl ? <CmsImage alt={item.imageAlt || item.title} className="h-[212px] w-full rounded-lg object-cover" presentation={item.imagePresentation} src={item.imageUrl} /> : null}
+                  {item.imageUrl ? <CmsImage alt={item.imageAlt || item.title} className="h-[212px] w-full rounded-lg object-cover" fallbackSrc="/assets/landing/showcase-family.png" presentation={item.imagePresentation} src={item.imageUrl} /> : null}
                   <h3 className="px-2 pb-3 pt-4 text-[18px] font-bold leading-6 text-white">{item.title}</h3>
                 </>
               )}

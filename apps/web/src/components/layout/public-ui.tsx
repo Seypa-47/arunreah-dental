@@ -1,7 +1,9 @@
-import { useState, type ElementType, type HTMLAttributes, type ImgHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useState, type ElementType, type HTMLAttributes, type ImgHTMLAttributes, type ReactNode } from 'react';
 import { defaultImagePresentation, type ImagePresentation } from '@arunreah/shared';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/cn';
+
+export const DEFAULT_FALLBACK_IMAGE = '/assets/landing/hero-clinic.png';
 
 export function PageContainer({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div className={cn('ui-page-container', className)} {...props} />;
@@ -36,7 +38,7 @@ export function SectionIntro({
 export function ImageFrame({
   alt,
   className,
-  fallbackSrc,
+  fallbackSrc = DEFAULT_FALLBACK_IMAGE,
   loading = 'lazy',
   presentation = defaultImagePresentation,
   src,
@@ -48,9 +50,15 @@ export function ImageFrame({
   presentation?: ImagePresentation;
   src?: string | null;
 }) {
-  const [imageSrc, setImageSrc] = useState(src || fallbackSrc);
+  const [imageSrc, setImageSrc] = useState<string | null>(src || fallbackSrc);
+  const [hasFailed, setHasFailed] = useState(false);
 
-  if (!imageSrc) return <div aria-hidden="true" className={cn('ui-image-frame', className)} />;
+  useEffect(() => {
+    setImageSrc(src || fallbackSrc);
+    setHasFailed(false);
+  }, [src, fallbackSrc]);
+
+  if (!imageSrc || hasFailed) return <div aria-hidden="true" className={cn('ui-image-frame', className)} />;
 
   return (
     <div className={cn('ui-image-frame', className)}>
@@ -59,10 +67,18 @@ export function ImageFrame({
         decoding="async"
         loading={loading}
         onError={() => {
-          if (fallbackSrc && imageSrc !== fallbackSrc) setImageSrc(fallbackSrc);
+          if (imageSrc !== fallbackSrc) {
+            setImageSrc(fallbackSrc);
+          } else {
+            setHasFailed(true);
+          }
         }}
         src={imageSrc}
-        style={{ objectPosition: `${presentation.positionX}% ${presentation.positionY}%`, transform: presentation.zoom > 1 ? `scale(${presentation.zoom})` : undefined, transformOrigin: `${presentation.positionX}% ${presentation.positionY}%` }}
+        style={{
+          objectPosition: `${presentation.positionX}% ${presentation.positionY}%`,
+          transform: presentation.zoom > 1 ? `scale(${presentation.zoom})` : undefined,
+          transformOrigin: `${presentation.positionX}% ${presentation.positionY}%`,
+        }}
       />
     </div>
   );
@@ -72,7 +88,7 @@ export function ImageFrame({
 export function ResilientImage({
   alt,
   className,
-  fallbackSrc,
+  fallbackSrc = DEFAULT_FALLBACK_IMAGE,
   loading = 'lazy',
   src,
 }: {
@@ -82,9 +98,15 @@ export function ResilientImage({
   loading?: 'eager' | 'lazy';
   src?: string | null;
 }) {
-  const [imageSrc, setImageSrc] = useState(src || fallbackSrc);
+  const [imageSrc, setImageSrc] = useState<string | null>(src || fallbackSrc);
+  const [hasFailed, setHasFailed] = useState(false);
 
-  if (!imageSrc) return <div aria-hidden="true" className={className} />;
+  useEffect(() => {
+    setImageSrc(src || fallbackSrc);
+    setHasFailed(false);
+  }, [src, fallbackSrc]);
+
+  if (!imageSrc || hasFailed) return <div aria-hidden="true" className={className} />;
 
   return (
     <img
@@ -93,7 +115,11 @@ export function ResilientImage({
       decoding="async"
       loading={loading}
       onError={() => {
-        if (fallbackSrc && imageSrc !== fallbackSrc) setImageSrc(fallbackSrc);
+        if (imageSrc !== fallbackSrc) {
+          setImageSrc(fallbackSrc);
+        } else {
+          setHasFailed(true);
+        }
       }}
       src={imageSrc}
     />
@@ -104,7 +130,7 @@ export function ResilientImage({
 export function CmsImage({
   alt,
   className,
-  fallbackSrc,
+  fallbackSrc = DEFAULT_FALLBACK_IMAGE,
   fit = 'cover',
   loading = 'lazy',
   presentation = defaultImagePresentation,
@@ -117,12 +143,40 @@ export function CmsImage({
   presentation?: ImagePresentation;
   src?: string | null;
 }) {
-  const [imageSrc, setImageSrc] = useState(src || fallbackSrc);
+  const [imageSrc, setImageSrc] = useState<string | null>(src || fallbackSrc);
+  const [hasFailed, setHasFailed] = useState(false);
   const { positionX, positionY, zoom } = presentation;
 
-  if (!imageSrc) return <div aria-hidden="true" className={className} />;
+  useEffect(() => {
+    setImageSrc(src || fallbackSrc);
+    setHasFailed(false);
+  }, [src, fallbackSrc]);
 
-  return <img alt={alt} className={className} decoding="async" loading={loading} onError={() => { if (fallbackSrc && imageSrc !== fallbackSrc) setImageSrc(fallbackSrc); }} src={imageSrc} style={{ objectFit: fit, objectPosition: `${positionX}% ${positionY}%`, transform: zoom > 1 ? `scale(${zoom})` : undefined, transformOrigin: `${positionX}% ${positionY}%` }} {...props} />;
+  if (!imageSrc || hasFailed) return <div aria-hidden="true" className={className} />;
+
+  return (
+    <img
+      alt={alt}
+      className={className}
+      decoding="async"
+      loading={loading}
+      onError={() => {
+        if (imageSrc !== fallbackSrc) {
+          setImageSrc(fallbackSrc);
+        } else {
+          setHasFailed(true);
+        }
+      }}
+      src={imageSrc}
+      style={{
+        objectFit: fit,
+        objectPosition: `${positionX}% ${positionY}%`,
+        transform: zoom > 1 ? `scale(${zoom})` : undefined,
+        transformOrigin: `${positionX}% ${positionY}%`,
+      }}
+      {...props}
+    />
+  );
 }
 
 /** Keeps split heroes useful on small screens, where an opaque copy panel would otherwise hide the photo. */

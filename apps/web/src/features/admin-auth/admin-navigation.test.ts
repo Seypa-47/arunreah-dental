@@ -9,6 +9,7 @@ describe('role-based admin navigation', () => {
     const labels = labelsFor('RECEPTIONIST');
     expect(labels).toContain('Appointments');
     expect(labels).toContain('Inbox');
+    expect(labels).toContain('Calendar');
     expect(labels).not.toContain('Services');
     expect(labels).not.toContain('Clinic Info');
     expect(labels).not.toContain('Admin Management');
@@ -22,14 +23,15 @@ describe('role-based admin navigation', () => {
     expect(labels).toContain('Page Media');
     expect(labels).not.toContain('Appointments');
     expect(labels).not.toContain('Inbox');
+    expect(labels).not.toContain('Calendar');
     expect(labels).not.toContain('Admin Management');
   });
 
-  it('gives super admins both navigation groups and hides unimplemented calendar navigation', () => {
+  it('gives super admins both navigation groups including calendar navigation', () => {
     const labels = labelsFor('SUPER_ADMIN');
     expect(labels).toContain('Appointments');
+    expect(labels).toContain('Calendar');
     expect(labels).toContain('Services');
     expect(labels).toContain('Admin Management');
-    expect(labels).not.toContain('Calendar');
   });
 });

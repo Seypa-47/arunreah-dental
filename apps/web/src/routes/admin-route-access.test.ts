@@ -18,11 +18,10 @@ describe('admin route access', () => {
     expect(canAccessAdminPath('RECEPTIONIST', '/admin/page-media')).toBe(false);
   });
 
-  it('allows the dashboard to all authenticated roles but keeps calendar unavailable', () => {
-    for (const role of ['RECEPTIONIST', 'CMS_ADMIN', 'SUPER_ADMIN'] as const) {
-      expect(canAccessAdminPath(role, '/admin/dashboard')).toBe(true);
-      expect(canAccessAdminPath(role, '/admin/appointments/calendar')).toBe(false);
-    }
+  it('allows receptionist and super-admin to access appointments calendar', () => {
+    expect(canAccessAdminPath('RECEPTIONIST', '/admin/appointments/calendar')).toBe(true);
+    expect(canAccessAdminPath('SUPER_ADMIN', '/admin/appointments/calendar')).toBe(true);
+    expect(canAccessAdminPath('CMS_ADMIN', '/admin/appointments/calendar')).toBe(false);
   });
 
   it('preserves only safe admin return paths after login', () => {

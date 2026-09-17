@@ -24,7 +24,7 @@ function ShowcaseCard({ showcase }: { showcase: PublicShowcaseSummary }) {
   return (
     <Card className="group overflow-hidden rounded-xl border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-0.5 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
       <Link className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]" to={`/showcases/${showcase.slug}`}>
-        <ImageFrame alt={showcase.title} className="h-[220px] w-full rounded-none border-0 bg-[#edf5f8] shadow-none" presentation={showcase.coverImagePresentation} src={imageUrl} />
+        <ImageFrame alt={showcase.title} className="h-[220px] w-full rounded-none border-0 bg-[#edf5f8] shadow-none" fallbackSrc="/assets/landing/showcase-family.png" presentation={showcase.coverImagePresentation} src={imageUrl} />
         <div className="flex min-w-0 flex-1 flex-col p-4 sm:min-h-[184px] sm:p-5">
           {showcase.category ? <Badge className="w-fit bg-[#eef8fb] text-[11px] font-bold text-[#005687]">{showcase.category}</Badge> : null}
           <h2 className="mt-2 line-clamp-2 text-[16px] font-extrabold leading-5 tracking-[-0.015em] text-[#005687] transition group-hover:text-[#167ea7] sm:text-[18px] sm:leading-6">{showcase.title}</h2>
