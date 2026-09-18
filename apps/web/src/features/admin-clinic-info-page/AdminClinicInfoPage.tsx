@@ -521,47 +521,60 @@ export function AdminClinicInfoPage({
                 </div>
               </Card>
 
-              {/* Card 2: Business Hours */}
-              <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
-                <h2 className="text-[18px] font-bold text-[#182238]">Clinic Statistics</h2>
-
-                <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+              {/* Card 2: Clinical Experience */}
+              <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)] sm:p-7">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <label className="block text-[13px] font-bold text-[#182238]">Years of Experience</label>
-                    <div className="relative mt-1.5">
-                      <input className="h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]" min="0" onChange={(e) => setGeneralInfo((prev) => ({ ...prev, yearsExperience: e.target.value }))} type="number" value={generalInfo.yearsExperience} />
+                    <h2 className="text-[18px] font-bold text-[#182238]">Years of Experience</h2>
+                    <p className="mt-1 text-[13px] text-[#71839e]">
+                      The clinic&apos;s established track record and heritage featured as the core trust metric.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-[#eef7fb] px-3 py-1 text-[11.5px] font-extrabold text-[#087b9f]">
+                    Primary Trust Anchor
+                  </span>
+                </div>
+
+                <div className="mt-6 grid gap-6 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-[13px] font-bold text-[#182238]">
+                      Clinical Experience (Years)
+                    </label>
+                    <div className="relative mt-2">
+                      <input
+                        className="h-14 w-full rounded-2xl border-2 border-[#dce5ef] bg-[#fcfdfe] pl-5 pr-20 text-[26px] font-black tracking-tight text-[#075d83] outline-none transition focus:border-[#2187a8] focus:bg-white"
+                        max="150"
+                        min="0"
+                        onChange={(e) => setGeneralInfo((prev) => ({ ...prev, yearsExperience: e.target.value }))}
+                        placeholder="26"
+                        type="number"
+                        value={generalInfo.yearsExperience}
+                      />
+                      <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-[13px] font-extrabold uppercase tracking-wider text-[#087b9f]">
+                        Years
+                      </span>
                     </div>
+                    <p className="mt-2 text-[12px] text-[#71839e]">
+                      Displayed prominently on the public About page as the core clinic trust spotlight.
+                    </p>
                   </div>
 
-                  <div>
-                    <label className="block text-[13px] font-bold text-[#182238]">Cases and Satisfaction</label>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <input
-                          className="h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[13.5px] text-[#182238] outline-none focus:border-[#2187a8]"
-                          onChange={(e) =>
-                            setGeneralInfo((prev) => ({ ...prev, successfulCases: e.target.value }))
-                          }
-                          min="0" type="number" value={generalInfo.successfulCases}
-                        />
-                        <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-[#8a9bb2]">
-                          🕒
-                        </span>
-                      </div>
-                      <span className="text-[#8a9bb2]">-</span>
-                      <div className="relative flex-1">
-                        <input
-                          className="h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[13.5px] text-[#182238] outline-none focus:border-[#2187a8]"
-                          onChange={(e) =>
-                            setGeneralInfo((prev) => ({ ...prev, patientSatisfaction: e.target.value }))
-                          }
-                          max="100" min="0" type="number" value={generalInfo.patientSatisfaction}
-                        />
-                        <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-[#8a9bb2]">
-                          🕒
-                        </span>
-                      </div>
+                  <div className="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-[#cbe4ee] bg-gradient-to-br from-[#f0f8fb] via-[#e6f4f8] to-[#d6eff7] p-5 text-center shadow-sm">
+                    <span className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#087b9f]">
+                      Public Web Preview
+                    </span>
+                    <div className="mt-1.5 flex items-baseline justify-center gap-1">
+                      <span className="text-[42px] font-black leading-none tracking-tight text-[#075d83]">
+                        {generalInfo.yearsExperience || '26'}
+                      </span>
+                      <span className="text-[24px] font-extrabold leading-none text-[#3695b9]">+</span>
                     </div>
+                    <p className="mt-1 text-[13px] font-extrabold uppercase tracking-[0.06em] text-[#073f60]">
+                      Years of experience
+                    </p>
+                    <p className="mt-0.5 text-[11px] font-medium text-[#506e80]">
+                      Dedicated dental care &amp; expertise
+                    </p>
                   </div>
                 </div>
               </Card>

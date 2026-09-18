@@ -61,7 +61,7 @@ function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPag
           <div className="mt-5 h-1 w-16 rounded-full bg-[#3695B9]" />
         </div>
 
-        <div className={`grid gap-8 py-8 sm:gap-10 ${featuredDoctor ? 'lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.18fr)_minmax(160px,0.42fr)]' : 'mx-auto max-w-[760px]'}`}>
+        <div className={`grid gap-8 py-8 sm:gap-10 ${featuredDoctor ? 'lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.18fr)_minmax(200px,0.5fr)]' : 'mx-auto max-w-[760px]'}`}>
           {featuredDoctor?.imageUrl ? (
             <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#f8fbfc]">
               <ResilientImage alt={featuredDoctor.imageAlt || featuredDoctor.name} className="h-[320px] w-full object-cover object-top sm:h-[400px]" fallbackSrc="/assets/landing/doctor-chea-kimly.png" src={featuredDoctor.imageUrl} />
@@ -82,14 +82,50 @@ function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPag
             </div>
           </div>
 
-          <aside className="grid content-start gap-3 border-t border-[#d6e5eb] pt-5 sm:grid-cols-3 sm:border-t-0 sm:pt-0 lg:grid-cols-1 lg:border-l lg:pl-6">
-            {stats.map((stat) => (
-              <div className="border-b border-[#dce9ee] pb-4 last:border-b-0" key={stat.label}>
-                <p className="text-[28px] font-extrabold leading-8 tracking-[-0.035em] text-[#087b9f]">{stat.value}</p>
-                <p className="mt-1 text-[11px] font-bold uppercase leading-4 tracking-[0.1em] text-[#607486]">{stat.label}</p>
-              </div>
-            ))}
-          </aside>
+          {stats.length > 0 ? (
+            <aside className="mx-auto flex w-full max-w-[340px] flex-col justify-start border-t border-[#d6e5eb] pt-6 sm:max-w-[400px] lg:mx-0 lg:max-w-none lg:border-l lg:border-t-0 lg:border-[#dceaf0] lg:pl-8">
+              {stats.map((stat) => {
+                const isKm = stat.label === 'ឆ្នាំនៃបទពិសោធន៍';
+                return (
+                  <div
+                    className="group relative overflow-hidden rounded-[26px] border border-[#bfe0ec] bg-gradient-to-b from-[#f0f8fb] via-[#e6f4f8] to-[#d6eff7] p-6 text-center shadow-[0_8px_30px_rgba(7,93,131,0.08)] transition hover:shadow-[0_12px_36px_rgba(7,93,131,0.12)] sm:p-7"
+                    key={stat.label}
+                  >
+                    <div className="pointer-events-none absolute -right-6 -top-6 size-24 rounded-full bg-[#3695b9]/15 blur-2xl" />
+                    <div className="pointer-events-none absolute -bottom-6 -left-6 size-24 rounded-full bg-[#087b9f]/10 blur-2xl" />
+
+                    <div className="relative mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-[#3695b9]/20">
+                      <img
+                        alt=""
+                        aria-hidden="true"
+                        className="size-7 object-contain"
+                        src={stat.iconUrl || '/assets/landing/about-stat-experience.svg'}
+                      />
+                    </div>
+
+                    <div className="relative flex items-baseline justify-center gap-1">
+                      <span className="text-[64px] font-black leading-none tracking-[-0.04em] text-[#075d83] sm:text-[76px]">
+                        {stat.value}
+                      </span>
+                      <span className="text-[36px] font-extrabold leading-none text-[#3695b9]">+</span>
+                    </div>
+
+                    <p className="relative mt-3 text-[15px] font-extrabold uppercase tracking-[0.08em] text-[#073f60] sm:text-[16px]">
+                      {stat.label}
+                    </p>
+
+                    <div className="relative mx-auto mt-4 h-1 w-12 rounded-full bg-[#3695b9]/40" />
+
+                    <p className="relative mt-3 text-[12px] font-medium leading-relaxed text-[#506e80]">
+                      {isKm
+                        ? 'ការថែទាំធ្មេញប្រកបដោយការយកចិត្តទុកដាក់ និងជំនាញទុកចិត្តបាន'
+                        : 'Dedicated dental care & trusted clinical expertise'}
+                    </p>
+                  </div>
+                );
+              })}
+            </aside>
+          ) : null}
         </div>
       </div>
     </section>

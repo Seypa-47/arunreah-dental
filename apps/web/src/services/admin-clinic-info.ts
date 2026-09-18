@@ -330,8 +330,8 @@ export async function saveClinicInfo(info: ClinicGeneralInfo): Promise<ClinicGen
     shortAboutKm: nullableText(info.shortAboutKm),
     logoKey: nullableText(info.logoKey),
     yearsExperience: nullableInteger(info.yearsExperience),
-    successfulCases: nullableInteger(info.successfulCases),
-    patientSatisfaction: nullableInteger(info.patientSatisfaction),
+    successfulCases: null,
+    patientSatisfaction: null,
   });
   return info;
 }
