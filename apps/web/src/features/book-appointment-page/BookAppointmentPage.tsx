@@ -17,6 +17,13 @@ import {
   AppointmentSuccessModal,
   type AppointmentSuccessBookingDetails,
 } from './appointment-success-modal';
+import {
+  clearAppointmentHistory,
+  getStoredAppointmentHistory,
+  saveAppointmentReceipt,
+  type StoredAppointmentReceipt,
+} from './appointment-history';
+import { AppointmentHistorySection } from './appointment-history-section';
 
 
 const skeletonNavigation = [
@@ -668,6 +675,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
   const idempotencyKey = useRef(createIdempotencyKey());
   const [acknowledgement, setAcknowledgement] = useState<{ reference: string; status: string; message: string } | null>(null);
   const [bookingDetails, setBookingDetails] = useState<AppointmentSuccessBookingDetails | null>(null);
+  const [history, setHistory] = useState<StoredAppointmentReceipt[]>(() => getStoredAppointmentHistory());
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [formResetSignal, setFormResetSignal] = useState(0);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -707,8 +715,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
       serviceId: selectedService,
       turnstileToken: turnstileToken ?? undefined,
     }).then((response) => {
-      setAcknowledgement(response);
-      setBookingDetails({
+      const details: AppointmentSuccessBookingDetails = {
         patientName: values.patientName,
         phone: values.phone,
         email: values.email.trim() || undefined,
@@ -718,7 +725,16 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
         doctorName: doctor.name,
         dateLabel: dateLabel(content, selectedDate),
         time: selectedTime,
+      };
+      setAcknowledgement(response);
+      setBookingDetails(details);
+      const updatedHistory = saveAppointmentReceipt({
+        reference: response.reference,
+        status: response.status,
+        message: response.message,
+        bookingDetails: details,
       });
+      setHistory(updatedHistory);
       setIsSuccessModalOpen(true);
       idempotencyKey.current = createIdempotencyKey();
     }).catch(() => undefined).finally(() => setTurnstileResetSignal((value) => value + 1));
@@ -734,6 +750,21 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
     setBookingDetails(null);
     setFormResetSignal((prev) => prev + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleClearHistory = () => {
+    clearAppointmentHistory();
+    setHistory([]);
+  };
+
+  const handleViewStoredReceipt = (receipt: StoredAppointmentReceipt) => {
+    setAcknowledgement({
+      reference: receipt.reference,
+      status: receipt.status,
+      message: receipt.message,
+    });
+    setBookingDetails(receipt.bookingDetails);
+    setIsSuccessModalOpen(true);
   };
 
   const requestError = submitMutation.error instanceof ApiClientError
@@ -776,33 +807,11 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
             selectedTime={selectedTime}
           />
         </section>
-        {acknowledgement && bookingDetails ? (
-          <section className="mx-auto max-w-[1180px] px-4 pb-12 sm:px-6 lg:px-8">
-            <Card className="flex flex-col justify-between gap-4 rounded-xl border border-[#b9e2ee] bg-[#f4fbfd] p-5 sm:flex-row sm:items-center">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="flex size-2 rounded-full bg-[#16a34a]" />
-                  <p className="font-bold text-[#005687]">Appointment request received</p>
-                  <span className="rounded-full border border-[#fde68a] bg-[#fef3c7] px-2.5 py-0.5 text-[11px] font-bold uppercase text-[#92400e]">
-                    {acknowledgement.status}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-[#475569]">{acknowledgement.message}</p>
-                <p className="mt-1 text-sm font-semibold text-[#005687]">
-                  Reference: <span className="font-mono">{acknowledgement.reference}</span>
-                </p>
-              </div>
-              <Button
-                className="min-h-10 self-start text-xs font-bold sm:self-center shrink-0"
-                onClick={() => setIsSuccessModalOpen(true)}
-                type="button"
-                variant="secondary"
-              >
-                View Request Receipt
-              </Button>
-            </Card>
-          </section>
-        ) : null}
+        <AppointmentHistorySection
+          history={history}
+          onClearHistory={handleClearHistory}
+          onViewReceipt={handleViewStoredReceipt}
+        />
       </main>
 
       {acknowledgement && bookingDetails ? (
