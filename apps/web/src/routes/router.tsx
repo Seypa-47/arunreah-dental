@@ -16,6 +16,7 @@ const AdminServicesPage = lazy(() => import('@/features/admin-services-page/Admi
 const AdminDoctorsPage = lazy(() => import('@/features/admin-doctors-page/AdminDoctorsPage').then(({ AdminDoctorsPage: Page }) => ({ default: Page })));
 const AdminAddDoctorPage = lazy(() => import('@/features/admin-add-doctor-page/AdminAddDoctorPage').then(({ AdminAddDoctorPage: Page }) => ({ default: Page })));
 const AdminShowcasePage = lazy(() => import('@/features/admin-showcase-page/AdminShowcasePage').then(({ AdminShowcasePage: Page }) => ({ default: Page })));
+const AdminShowcaseDetailPage = lazy(() => import('@/features/admin-showcase-page/AdminShowcaseDetailPage').then(({ AdminShowcaseDetailPage: Page }) => ({ default: Page })));
 const AdminAddShowcasePage = lazy(() => import('@/features/admin-add-showcase-page/AdminAddShowcasePage').then(({ AdminAddShowcasePage: Page }) => ({ default: Page })));
 const AdminClinicInfoPage = lazy(() => import('@/features/admin-clinic-info-page/AdminClinicInfoPage').then(({ AdminClinicInfoPage: Page }) => ({ default: Page })));
 const AdminManagementPage = lazy(() => import('@/features/admin-management-page/AdminManagementPage').then(({ AdminManagementPage: Page }) => ({ default: Page })));
@@ -96,6 +97,10 @@ export const router = createBrowserRouter([
     element: protectedAdminRoute(<AdminAddShowcasePage />),
   },
   {
+    path: '/admin/showcases/new',
+    element: protectedAdminRoute(<AdminAddShowcasePage />),
+  },
+  {
     path: '/admin/showcase',
     element: protectedAdminRoute(<AdminShowcasePage />),
   },
@@ -104,8 +109,20 @@ export const router = createBrowserRouter([
     element: protectedAdminRoute(<AdminShowcasePage />),
   },
   {
+    path: '/admin/showcase/:showcaseId',
+    element: protectedAdminRoute(<AdminShowcaseDetailPage />),
+  },
+  {
     path: '/admin/showcase/:showcaseId/edit',
-    element: protectedAdminRoute(<AdminShowcasePage />),
+    element: protectedAdminRoute(<AdminShowcaseDetailPage />),
+  },
+  {
+    path: '/admin/showcases/:showcaseId',
+    element: protectedAdminRoute(<AdminShowcaseDetailPage />),
+  },
+  {
+    path: '/admin/showcases/:showcaseId/edit',
+    element: protectedAdminRoute(<AdminShowcaseDetailPage />),
   },
   {
     path: '/admin/clinic-info',
