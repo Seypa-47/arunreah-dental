@@ -19,6 +19,7 @@ export function initialPublicLanguage(storedValue: string | null | undefined, do
 
 function readStoredLanguage(): PublicLanguage | undefined {
   try {
+    if (typeof window === 'undefined') return undefined;
     return storedPublicLanguage(window.localStorage.getItem(publicLanguageStorageKey));
   } catch {
     return undefined;
@@ -27,13 +28,17 @@ function readStoredLanguage(): PublicLanguage | undefined {
 
 export function PublicLanguageProvider({ children }: PropsWithChildren) {
   const [language, setLanguage] = useState<PublicLanguage>(
-    () => initialPublicLanguage(readStoredLanguage(), document.documentElement.lang),
+    () => initialPublicLanguage(readStoredLanguage(), typeof document !== 'undefined' ? document.documentElement.lang : undefined),
   );
 
   useEffect(() => {
-    document.documentElement.lang = language;
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language;
+    }
     try {
-      window.localStorage.setItem(publicLanguageStorageKey, language);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(publicLanguageStorageKey, language);
+      }
     } catch {
       // Private browsing or browser policy can block storage; English remains the safe default on reload.
     }
