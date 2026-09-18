@@ -103,32 +103,45 @@
 .admin-ui .admin-list-toolbar label:has(input[type='search']) { flex: 1 1 15rem; }
 .admin-ui .admin-list-toolbar label,
 .admin-ui label:has(> input[type='search']),
-.admin-ui label:has(> svg + input) {
+.admin-ui label:has(> svg + input),
+.admin-ui span:has(> input[class*='bg-transparent']),
+.admin-ui :is(label, span):has(> svg):has(> :is(input, select)) {
   transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
 }
 .admin-ui .admin-list-toolbar label:hover,
 .admin-ui label:has(> input[type='search']):hover,
-.admin-ui label:has(> svg + input):hover {
+.admin-ui label:has(> svg + input):hover,
+.admin-ui span:has(> input[class*='bg-transparent']):hover,
+.admin-ui :is(label, span):has(> svg):has(> :is(input, select)):hover {
   border-color: #b0c2d4;
 }
 .admin-ui .admin-list-toolbar label:focus-within,
 .admin-ui label:has(> input[type='search']):focus-within,
-.admin-ui label:has(> svg + input):focus-within {
+.admin-ui label:has(> svg + input):focus-within,
+.admin-ui span:has(> input[class*='bg-transparent']):focus-within,
+.admin-ui :is(label, span):has(> svg):has(> :is(input, select)):focus-within {
   border-color: #2187a8 !important;
   box-shadow: 0 0 0 3px rgba(33, 135, 168, 0.15) !important;
   background-color: #ffffff !important;
 }
+.admin-ui :is(input, select, textarea):is([class*='bg-transparent'], [class*='border-0'], [class*='border-none']),
 .admin-ui .admin-list-toolbar label > :is(input, select),
 .admin-ui .admin-list-toolbar label :is(input, select),
 .admin-ui label:has(> input[type='search']) > input,
-.admin-ui label:has(> svg + input) > input {
+.admin-ui label:has(> svg + input) > input,
+.admin-ui span:has(> input) > input,
+.admin-ui :is(label, span):has(> svg):has(> :is(input, select)) > :is(input, select) {
   border: 0 !important;
+  border-radius: 0 !important;
   box-shadow: none !important;
   outline: none !important;
   background: transparent !important;
+  background-color: transparent !important;
   min-width: 0;
   width: 100%;
 }
+.admin-ui :is(input, select, textarea):is([class*='bg-transparent'], [class*='border-0'], [class*='border-none']):focus,
+.admin-ui :is(input, select, textarea):is([class*='bg-transparent'], [class*='border-0'], [class*='border-none']):focus-visible,
 .admin-ui .admin-list-toolbar label > :is(input, select):focus,
 .admin-ui .admin-list-toolbar label > :is(input, select):focus-visible,
 .admin-ui .admin-list-toolbar label :is(input, select):focus,
@@ -136,7 +149,11 @@
 .admin-ui label:has(> input[type='search']) > input:focus,
 .admin-ui label:has(> input[type='search']) > input:focus-visible,
 .admin-ui label:has(> svg + input) > input:focus,
-.admin-ui label:has(> svg + input) > input:focus-visible {
+.admin-ui label:has(> svg + input) > input:focus-visible,
+.admin-ui span:has(> input) > input:focus,
+.admin-ui span:has(> input) > input:focus-visible,
+.admin-ui :is(label, span):has(> svg):has(> :is(input, select)) > :is(input, select):focus,
+.admin-ui :is(label, span):has(> svg):has(> :is(input, select)) > :is(input, select):focus-visible {
   border: 0 !important;
   box-shadow: none !important;
   outline: none !important;
@@ -210,7 +227,7 @@
 .admin-ui .admin-form-actions-status { min-height: 1.5rem; color: var(--admin-muted); font-size: 0.875rem; }
 .admin-ui .admin-form-actions-buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 
-.admin-ui :is(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+.admin-ui :is(input:not([type='checkbox']):not([type='radio']):not([class*='bg-transparent']):not([class*='border-0']):not([class*='border-none']), select:not([class*='bg-transparent']):not([class*='border-0']):not([class*='border-none']), textarea:not([class*='bg-transparent'])) {
   max-width: 100%;
   border: 1px solid var(--admin-border);
   border-radius: 0.5rem;
@@ -221,12 +238,12 @@
   line-height: 1.6;
   transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
 }
-.admin-ui :is(input:not([type='checkbox']):not([type='radio']), select) { min-height: 2.75rem; padding-block: 0.5rem; }
-.admin-ui :is(input:not([type='checkbox']):not([type='radio']), select, textarea):hover:not(:disabled) {
+.admin-ui :is(input:not([type='checkbox']):not([type='radio']):not([class*='bg-transparent']):not([class*='border-0']):not([class*='border-none']), select:not([class*='bg-transparent']):not([class*='border-0']):not([class*='border-none'])) { min-height: 2.75rem; padding-block: 0.5rem; }
+.admin-ui :is(input:not([type='checkbox']):not([type='radio']):not([class*='bg-transparent']):not([class*='border-0']):not([class*='border-none']), select:not([class*='bg-transparent']):not([class*='border-0']):not([class*='border-none']), textarea:not([class*='bg-transparent'])):hover:not(:disabled) {
   border-color: #a3b8cb;
 }
-.admin-ui :is(input:not([type='checkbox']):not([type='radio']), select, textarea):focus,
-.admin-ui :is(input:not([type='checkbox']):not([type='radio']), select, textarea):focus-visible {
+.admin-ui :is(input:not([type='checkbox']):not([type='radio']):not([class*='bg-transparent']):not([class*='border-0']):not([class*='border-none']), select:not([class*='bg-transparent']):not([class*='border-0']):not([class*='border-none']), textarea:not([class*='bg-transparent'])):focus,
+.admin-ui :is(input:not([type='checkbox']):not([type='radio']):not([class*='bg-transparent']):not([class*='border-0']):not([class*='border-none']), select:not([class*='bg-transparent']):not([class*='border-0']):not([class*='border-none']), textarea:not([class*='bg-transparent'])):focus-visible {
   outline: none;
   border-color: #2187a8;
   box-shadow: 0 0 0 3px rgba(33, 135, 168, 0.15);
