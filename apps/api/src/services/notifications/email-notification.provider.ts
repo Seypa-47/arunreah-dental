@@ -1,4 +1,8 @@
-import { appointmentEmailSubject, appointmentEmailText } from './notification-formatters';
+import {
+  appointmentEmailHtml,
+  appointmentEmailSubject,
+  appointmentEmailText,
+} from './notification-formatters';
 import type {
   AppointmentNotificationPayload,
   NotificationProvider,
@@ -42,6 +46,7 @@ export class EmailNotificationProvider implements NotificationProvider {
         to: [recipient],
         subject: appointmentEmailSubject(payload),
         text: appointmentEmailText(payload),
+        html: appointmentEmailHtml(payload),
       }),
       signal: AbortSignal.timeout(NOTIFICATION_TIMEOUT_MS),
     });

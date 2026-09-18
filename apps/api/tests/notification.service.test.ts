@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EmailNotificationProvider } from '../src/services/notifications/email-notification.provider';
 import {
+  appointmentEmailHtml,
   appointmentEmailSubject,
   appointmentEmailText,
   appointmentTelegramText,
@@ -97,6 +98,11 @@ describe('notification formatters', () => {
     expect(appointmentEmailText(payload)).toContain(
       'Clinic review and manual confirmation are required.',
     );
+    expect(appointmentEmailHtml(payload)).toContain('Arunreah Dental Clinic');
+    expect(appointmentEmailHtml(payload)).toContain('AR-20990101-ABC123');
+    expect(appointmentEmailHtml(payload)).toContain('Pending');
+    expect(appointmentEmailHtml(payload)).toContain('Sok Dara &lt;script&gt;');
+    expect(appointmentEmailHtml(payload)).toContain('No preference');
     expect(appointmentTelegramText(payload)).toContain('Doctor: No preference');
     expect(appointmentTelegramText(payload)).toContain('Sok Dara <script>');
   });
