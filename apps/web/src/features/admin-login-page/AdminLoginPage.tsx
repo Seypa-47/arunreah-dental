@@ -90,11 +90,11 @@ function AdminLoginForm({ content }: { content: AdminLoginContent }) {
         <div className="mt-7 space-y-5">
           <label className="block" htmlFor="admin-email">
             <span className="mb-2 block text-[15px] font-medium text-[#71839e]">{content.fields.email.label}</span>
-            <span className="flex h-[58px] items-center gap-3 rounded-xl border border-[#d9e3ee] px-4 text-[#97a8be] transition focus-within:border-[#2388a9] focus-within:ring-2 focus-within:ring-[#2388a9]/20">
+            <span className="flex h-[58px] items-center gap-3 rounded-xl border border-[#d9e3ee] bg-white px-4 text-[#97a8be] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <UserIcon />
               <input
                 autoComplete="email"
-                className="min-w-0 flex-1 bg-transparent text-[16px] text-[#1f2a40] outline-none placeholder:text-[#a9b7c9]"
+                className="min-w-0 flex-1 border-0 bg-transparent text-[16px] text-[#1f2a40] outline-none placeholder:text-[#a9b7c9]"
                 id="admin-email"
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder={content.fields.email.placeholder}
@@ -112,11 +112,11 @@ function AdminLoginForm({ content }: { content: AdminLoginContent }) {
                 {content.form.forgotPasswordLabel}
               </a>
             </span>
-            <span className="flex h-[58px] items-center gap-3 rounded-xl border border-[#d9e3ee] px-4 text-[#97a8be] transition focus-within:border-[#2388a9] focus-within:ring-2 focus-within:ring-[#2388a9]/20">
+            <span className="flex h-[58px] items-center gap-3 rounded-xl border border-[#d9e3ee] bg-white px-4 text-[#97a8be] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <LockIcon />
               <input
                 autoComplete="current-password"
-                className="min-w-0 flex-1 bg-transparent text-[16px] text-[#1f2a40] outline-none placeholder:text-[#a9b7c9]"
+                className="min-w-0 flex-1 border-0 bg-transparent text-[16px] text-[#1f2a40] outline-none placeholder:text-[#a9b7c9]"
                 id="admin-password"
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder={content.fields.password.placeholder}
@@ -126,7 +126,7 @@ function AdminLoginForm({ content }: { content: AdminLoginContent }) {
               />
               <button
                 aria-label={passwordVisible ? 'Hide password' : 'Show password'}
-                className="grid size-11 place-items-center rounded transition hover:text-[#2388a9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2388a9]"
+                className="grid size-11 place-items-center rounded transition hover:text-[#2187a8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8]"
                 onClick={() => setPasswordVisible((visible) => !visible)}
                 type="button"
               >
