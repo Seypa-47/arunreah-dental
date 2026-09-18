@@ -45,6 +45,39 @@ function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
   );
 }
 
+function ExperienceBadgeIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-7 text-[#087b9f]"
+      fill="none"
+      viewBox="0 0 28 28"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle
+        cx="14"
+        cy="11"
+        r="7"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2.2"
+      />
+      <path
+        d="M14 7.8l1 2.2 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3 1-2.2z"
+        fill="currentColor"
+      />
+      <path
+        d="M10.2 16.5L8.5 24l5.5-2.8 5.5 2.8-1.7-7.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2.2"
+      />
+    </svg>
+  );
+}
+
 function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPageContent, 'editorial' | 'featuredDoctor' | 'stats' | 'story'>) {
   return (
     <section className="bg-white py-12 sm:py-16">
@@ -95,12 +128,7 @@ function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPag
                     <div className="pointer-events-none absolute -bottom-6 -left-6 size-24 rounded-full bg-[#087b9f]/10 blur-2xl" />
 
                     <div className="relative mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-[#3695b9]/20">
-                      <img
-                        alt=""
-                        aria-hidden="true"
-                        className="size-7 object-contain"
-                        src={stat.iconUrl || '/assets/landing/about-stat-experience.svg'}
-                      />
+                      <ExperienceBadgeIcon />
                     </div>
 
                     <div className="relative flex items-baseline justify-center gap-1">

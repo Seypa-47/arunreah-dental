@@ -560,14 +560,27 @@ export function AdminClinicInfoPage({
                   </div>
 
                   <div className="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-[#cbe4ee] bg-gradient-to-br from-[#f0f8fb] via-[#e6f4f8] to-[#d6eff7] p-5 text-center shadow-sm">
+                    <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-white shadow-xs ring-1 ring-[#3695b9]/20">
+                      <svg
+                        aria-hidden="true"
+                        className="size-5 text-[#087b9f]"
+                        fill="none"
+                        viewBox="0 0 28 28"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <circle cx="14" cy="11" r="7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
+                        <path d="M14 7.8l1 2.2 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3 1-2.2z" fill="currentColor" />
+                        <path d="M10.2 16.5L8.5 24l5.5-2.8 5.5 2.8-1.7-7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
+                      </svg>
+                    </div>
                     <span className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#087b9f]">
                       Public Web Preview
                     </span>
-                    <div className="mt-1.5 flex items-baseline justify-center gap-1">
-                      <span className="text-[42px] font-black leading-none tracking-tight text-[#075d83]">
+                    <div className="mt-1 flex items-baseline justify-center gap-1">
+                      <span className="text-[38px] font-black leading-none tracking-tight text-[#075d83]">
                         {generalInfo.yearsExperience || '26'}
                       </span>
-                      <span className="text-[24px] font-extrabold leading-none text-[#3695b9]">+</span>
+                      <span className="text-[22px] font-extrabold leading-none text-[#3695b9]">+</span>
                     </div>
                     <p className="mt-1 text-[13px] font-extrabold uppercase tracking-[0.06em] text-[#073f60]">
                       Years of experience
