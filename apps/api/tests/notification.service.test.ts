@@ -156,6 +156,38 @@ describe('HTTP notification providers', () => {
     });
   });
 
+  it('falls back to onboarding@resend.dev when custom domain returns 403', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            statusCode: 403,
+            name: 'validation_error',
+            message: 'Domain not verified. Please verify your domain at https://resend.com/domains',
+          }),
+          { status: 403 },
+        ),
+      )
+      .mockResolvedValueOnce(new Response('{"id":"fallback-id"}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const provider = new EmailNotificationProvider({
+      enabled: true,
+      recipient: 'clinic@example.com',
+      fromAddress: 'Arunreah Dental Clinic <appointments@send.mekhla.digital>',
+      apiKey: 'test-secret',
+    });
+
+    await expect(provider.sendAppointmentRequest(payload)).resolves.toEqual({
+      provider: 'email',
+      success: true,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const secondCallBody = JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body));
+    expect(secondCallBody.from).toBe('Arunreah Dental Clinic <onboarding@resend.dev>');
+  });
+
   it('reports a timeout without exposing a provider error', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
