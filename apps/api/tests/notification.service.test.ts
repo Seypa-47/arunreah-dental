@@ -5,6 +5,9 @@ import {
   appointmentEmailSubject,
   appointmentEmailText,
   appointmentTelegramText,
+  patientAppointmentEmailHtml,
+  patientAppointmentEmailSubject,
+  patientAppointmentEmailText,
 } from '../src/services/notifications/notification-formatters';
 import { NotificationService } from '../src/services/notifications/notification.service';
 import { TelegramNotificationProvider } from '../src/services/notifications/telegram-notification.provider';
@@ -106,16 +109,41 @@ describe('notification formatters', () => {
     expect(appointmentTelegramText(payload)).toContain('Doctor: No preference');
     expect(appointmentTelegramText(payload)).toContain('Sok Dara <script>');
   });
+
+  it('creates patient-facing acknowledgment content with clear PENDING status and escaping', () => {
+    expect(patientAppointmentEmailSubject(payload)).toBe(
+      'Appointment Request Received — AR-20990101-ABC123 | Arunreah Dental Clinic',
+    );
+    const textContent = patientAppointmentEmailText(payload);
+    expect(textContent).toContain('Dear Sok Dara <script>,');
+    expect(textContent).toContain('Appointment Reference: AR-20990101-ABC123');
+    expect(textContent).toContain('Status: PENDING REVIEW');
+    expect(textContent).toContain('Doctor: No preference');
+    expect(textContent).toContain('WHAT HAPPENS NEXT?');
+    expect(textContent).toContain('Toul Tompoung Branch: 098 701 302 / 012 964 200');
+    expect(textContent).toContain('Psa Chas Branch: 069 978 997 / 061 978 997');
+
+    const htmlContent = patientAppointmentEmailHtml(payload);
+    expect(htmlContent).toContain('Arunreah Dental Clinic');
+    expect(htmlContent).toContain('Dear Sok Dara &lt;script&gt;,');
+    expect(htmlContent).toContain('AR-20990101-ABC123');
+    expect(htmlContent).toContain('Pending Review');
+    expect(htmlContent).toContain('This is a request acknowledgment. Your appointment is pending clinic review');
+    expect(htmlContent).toContain('What Happens Next?');
+    expect(htmlContent).toContain('Need Direct Assistance?');
+    expect(htmlContent).toContain('098 701 302');
+    expect(htmlContent).toContain('069 978 997');
+  });
 });
 
 describe('HTTP notification providers', () => {
-  it('sends a configured email through the Resend HTTP API', async () => {
+  it('sends both clinic and patient emails when patient email is provided', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}', { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     const provider = new EmailNotificationProvider({
       enabled: true,
       recipient: 'clinic@example.com',
-      fromAddress: 'Appointments <appointments@example.com>',
+      fromAddress: 'Appointments <appointments@send.mekhla.digital>',
       apiKey: 'test-secret',
     });
 
@@ -123,15 +151,71 @@ describe('HTTP notification providers', () => {
       provider: 'email',
       success: true,
     });
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.resend.com/emails',
-      expect.objectContaining({ method: 'POST' }),
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const calls = fetchMock.mock.calls.map((call) => JSON.parse(String(call[1]?.body)));
+    const clinicCall = calls.find((c) => c.to[0] === 'clinic@example.com');
+    const patientCall = calls.find((c) => c.to[0] === 'patient@example.com');
+
+    expect(clinicCall).toBeDefined();
+    expect(clinicCall?.subject).toBe('New Appointment Request — AR-20990101-ABC123');
+
+    expect(patientCall).toBeDefined();
+    expect(patientCall?.subject).toBe(
+      'Appointment Request Received — AR-20990101-ABC123 | Arunreah Dental Clinic',
     );
-    const options = fetchMock.mock.calls[0]?.[1];
-    expect(JSON.parse(String(options?.body))).toMatchObject({
-      to: ['clinic@example.com'],
-      subject: 'New Appointment Request — AR-20990101-ABC123',
+    expect(patientCall?.html).toContain('Dear Sok Dara &lt;script&gt;,');
+  });
+
+  it('sends only clinic email when patient email is omitted or empty', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const provider = new EmailNotificationProvider({
+      enabled: true,
+      recipient: 'clinic@example.com',
+      fromAddress: 'Appointments <appointments@send.mekhla.digital>',
+      apiKey: 'test-secret',
     });
+
+    const payloadWithoutEmail = { ...payload, email: '   ' };
+    await expect(provider.sendAppointmentRequest(payloadWithoutEmail)).resolves.toEqual({
+      provider: 'email',
+      success: true,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const clinicBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(clinicBody.to).toEqual(['clinic@example.com']);
+  });
+
+  it('tolerates patient email delivery failure without failing clinic notification', async () => {
+    const logSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (_url, options) => {
+      const body = JSON.parse(String(options?.body));
+      if (body.to[0] === 'patient@example.com') {
+        return new Response(JSON.stringify({ error: 'Mailbox not found' }), { status: 400 });
+      }
+      return new Response('{}', { status: 200 });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const provider = new EmailNotificationProvider({
+      enabled: true,
+      recipient: 'clinic@example.com',
+      fromAddress: 'Appointments <appointments@send.mekhla.digital>',
+      apiKey: 'test-secret',
+    });
+
+    await expect(provider.sendAppointmentRequest(payload)).resolves.toEqual({
+      provider: 'email',
+      success: true,
+    });
+    expect(logSpy).toHaveBeenCalledWith(
+      'Resend patient email delivery failed',
+      expect.objectContaining({
+        recipient: '[redacted]',
+        status: 400,
+      }),
+    );
   });
 
   it('fails safely when email is not configured or its provider fails', async () => {
@@ -185,7 +269,8 @@ describe('HTTP notification providers', () => {
       apiKey: 'test-secret',
     });
 
-    await expect(provider.sendAppointmentRequest(payload)).resolves.toEqual({
+    const payloadWithoutEmail = { ...payload, email: '' };
+    await expect(provider.sendAppointmentRequest(payloadWithoutEmail)).resolves.toEqual({
       provider: 'email',
       success: true,
     });

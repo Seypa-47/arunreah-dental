@@ -2,6 +2,9 @@ import {
   appointmentEmailHtml,
   appointmentEmailSubject,
   appointmentEmailText,
+  patientAppointmentEmailHtml,
+  patientAppointmentEmailSubject,
+  patientAppointmentEmailText,
 } from './notification-formatters';
 import type {
   AppointmentNotificationPayload,
@@ -20,6 +23,11 @@ type EmailNotificationConfig = {
   apiKey: string | undefined;
 };
 
+type DeliveryResult = {
+  success: boolean;
+  errorCode?: 'PROVIDER_TIMEOUT' | 'PROVIDER_REQUEST_FAILED';
+};
+
 export class EmailNotificationProvider implements NotificationProvider {
   public readonly name = 'email' as const;
 
@@ -33,7 +41,9 @@ export class EmailNotificationProvider implements NotificationProvider {
     from: string,
     recipient: string,
     apiKey: string,
-    payload: AppointmentNotificationPayload,
+    subject: string,
+    text: string,
+    html: string,
   ) {
     const response = await fetch(RESEND_EMAILS_URL, {
       method: 'POST',
@@ -44,9 +54,9 @@ export class EmailNotificationProvider implements NotificationProvider {
       body: JSON.stringify({
         from,
         to: [recipient],
-        subject: appointmentEmailSubject(payload),
-        text: appointmentEmailText(payload),
-        html: appointmentEmailHtml(payload),
+        subject,
+        text,
+        html,
       }),
       signal: AbortSignal.timeout(NOTIFICATION_TIMEOUT_MS),
     });
@@ -59,6 +69,59 @@ export class EmailNotificationProvider implements NotificationProvider {
     return { ok: false, status: response.status, statusText: response.statusText, errorBody };
   }
 
+  private async deliverEmailWithFallback(
+    fromAddress: string,
+    recipient: string,
+    apiKey: string,
+    subject: string,
+    text: string,
+    html: string,
+    targetType: 'clinic' | 'patient',
+  ): Promise<DeliveryResult> {
+    try {
+      let result = await this.postResend(fromAddress, recipient, apiKey, subject, text, html);
+
+      if (!result.ok) {
+        console.error(`Resend ${targetType} email delivery failed`, {
+          status: result.status,
+          statusText: result.statusText,
+          from: fromAddress,
+          recipient: targetType === 'clinic' ? recipient : '[redacted]',
+          error: result.errorBody,
+        });
+
+        // When the custom domain is not yet verified in Resend (HTTP 403), try the default sandbox sender.
+        const isDomainError = result.status === 403 || result.errorBody?.toLowerCase().includes('domain');
+        if (isDomainError && fromAddress !== RESEND_FALLBACK_FROM) {
+          console.warn(`Attempting Resend ${targetType} email delivery fallback with onboarding@resend.dev`);
+          result = await this.postResend(RESEND_FALLBACK_FROM, recipient, apiKey, subject, text, html);
+          if (result.ok) {
+            return { success: true };
+          }
+          console.error(`Resend fallback ${targetType} email delivery failed`, {
+            status: result.status,
+            statusText: result.statusText,
+            error: result.errorBody,
+          });
+        }
+
+        return { success: false, errorCode: 'PROVIDER_REQUEST_FAILED' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      const isTimeout = error instanceof DOMException && error.name === 'TimeoutError';
+      const errorCode = isTimeout ? 'PROVIDER_TIMEOUT' : 'PROVIDER_REQUEST_FAILED';
+
+      console.error(`Resend ${targetType} email delivery exception`, {
+        errorCode,
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      return { success: false, errorCode };
+    }
+  }
+
   public async sendAppointmentRequest(
     payload: AppointmentNotificationPayload,
   ): Promise<NotificationResult> {
@@ -67,54 +130,44 @@ export class EmailNotificationProvider implements NotificationProvider {
       return { provider: this.name, success: false, errorCode: 'NOT_CONFIGURED' };
     }
 
-    try {
-      let result = await this.postResend(fromAddress, recipient, apiKey, payload);
+    const patientEmail = payload.email?.trim();
+    const tasks: [Promise<DeliveryResult>, Promise<DeliveryResult>?] = [
+      this.deliverEmailWithFallback(
+        fromAddress,
+        recipient,
+        apiKey,
+        appointmentEmailSubject(payload),
+        appointmentEmailText(payload),
+        appointmentEmailHtml(payload),
+        'clinic',
+      ),
+    ];
 
-      if (!result.ok) {
-        console.error('Resend email delivery failed', {
-          status: result.status,
-          statusText: result.statusText,
-          from: fromAddress,
-          recipient,
-          error: result.errorBody,
-        });
+    if (patientEmail) {
+      tasks.push(
+        this.deliverEmailWithFallback(
+          fromAddress,
+          patientEmail,
+          apiKey,
+          patientAppointmentEmailSubject(payload),
+          patientAppointmentEmailText(payload),
+          patientAppointmentEmailHtml(payload),
+          'patient',
+        ),
+      );
+    }
 
-        // When the custom domain is not yet verified in Resend (HTTP 403), try the default sandbox sender.
-        const isDomainError = result.status === 403 || result.errorBody?.toLowerCase().includes('domain');
-        if (isDomainError && fromAddress !== RESEND_FALLBACK_FROM) {
-          console.warn('Attempting Resend email delivery fallback with onboarding@resend.dev');
-          result = await this.postResend(RESEND_FALLBACK_FROM, recipient, apiKey, payload);
-          if (result.ok) {
-            return { provider: this.name, success: true };
-          }
-          console.error('Resend fallback email delivery failed', {
-            status: result.status,
-            statusText: result.statusText,
-            error: result.errorBody,
-          });
-        }
+    const [clinicResult] = await Promise.all(tasks);
 
-        return { provider: this.name, success: false, errorCode: 'PROVIDER_REQUEST_FAILED' };
-      }
-
-      return { provider: this.name, success: true };
-    } catch (error) {
-      const errorCode =
-        error instanceof DOMException && error.name === 'TimeoutError'
-          ? 'PROVIDER_TIMEOUT'
-          : 'PROVIDER_REQUEST_FAILED';
-
-      console.error('Resend email delivery exception', {
-        errorCode,
-        error: error instanceof Error ? error.message : String(error),
-      });
-
+    if (!clinicResult.success) {
       return {
         provider: this.name,
         success: false,
-        errorCode,
+        errorCode: clinicResult.errorCode ?? 'PROVIDER_REQUEST_FAILED',
       };
     }
+
+    return { provider: this.name, success: true };
   }
 }
 
