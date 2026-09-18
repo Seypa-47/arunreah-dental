@@ -146,8 +146,10 @@ function BasicInformation({
   return (
     <Card className="rounded-[18px] border-[#dce5ef] p-6 shadow-none">
       <h2 className="text-[16px] font-bold text-[#182238]">{content.editor.basicTitle}</h2>
-      <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_1fr_0.8fr]">
-        <div className="grid gap-4 xl:col-span-2 sm:grid-cols-2">
+
+      <div className="mt-5 space-y-5">
+        {/* Bilingual Service Names */}
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label={`${content.editor.nameLabel} · English`}>
             <TextInput
               onChange={(event) =>
@@ -169,69 +171,102 @@ function BasicInformation({
             />
           </Field>
         </div>
-        <Field label={content.editor.slugLabel}>
-          <TextInput
-            onChange={(event) => setService((current) => ({ ...current, slug: event.target.value }))}
-            value={service.slug}
-          />
-        </Field>
-        <StatusSwitch
-          draftLabel={content.editor.statusDraftLabel}
-          label={content.editor.statusLabel}
-          onChange={(newStatus) => setService((current) => ({ ...current, status: newStatus }))}
-          publishedLabel={content.editor.statusPublishedLabel}
-          status={service.status}
-        />
-        <Field label={content.editor.categoryLabel}>
-          <select
-            className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-            onChange={(event) => setService((current) => ({ ...current, category: event.target.value }))}
-            value={service.category}
-          >
-            {content.editor.categoryOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <div className="xl:col-start-3">
-          <p className="text-[12px] font-bold text-[#61738d]">{content.editor.featuredLabel}</p>
-          <div className="mt-2.5">
-            <AdminToggle
-              checked={service.featured}
-              label={content.editor.featuredLabel}
-              onChange={(featured) => setService((current) => ({ ...current, featured }))}
+
+        {/* URL Slug & Category */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={content.editor.slugLabel}>
+            <TextInput
+              onChange={(event) => setService((current) => ({ ...current, slug: event.target.value }))}
+              value={service.slug}
             />
+          </Field>
+          <Field label={content.editor.categoryLabel}>
+            <select
+              className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+              onChange={(event) => setService((current) => ({ ...current, category: event.target.value }))}
+              value={service.category}
+            >
+              {content.editor.categoryOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
+        {/* Publishing Status, Sort Order, and Featured Flag */}
+        <div className="grid gap-5 rounded-xl border border-[#edf2f7] bg-[#fbfcfd] p-4 sm:grid-cols-3 items-start">
+          <div>
+            <StatusSwitch
+              draftLabel={content.editor.statusDraftLabel}
+              label={content.editor.statusLabel}
+              onChange={(newStatus) => setService((current) => ({ ...current, status: newStatus }))}
+              publishedLabel={content.editor.statusPublishedLabel}
+              status={service.status}
+            />
+            <p className="mt-1 text-[11.5px] leading-tight text-[#71839e]">
+              Control whether patients can see this service.
+            </p>
+          </div>
+
+          <Field label={content.ordering.sortLabel || 'Sort Order'}>
+            <TextInput
+              min={1}
+              onChange={(event) =>
+                setService((current) => ({ ...current, order: Number(event.target.value) || 1 }))
+              }
+              type="number"
+              value={service.order}
+            />
+            <p className="mt-1 text-[11.5px] leading-tight text-[#71839e]">
+              Lower numbers appear first in the public services list.
+            </p>
+          </Field>
+
+          <div>
+            <p className="text-[12px] font-bold text-[#61738d]">{content.editor.featuredLabel}</p>
+            <div className="mt-1.5 flex h-10 items-center">
+              <AdminToggle
+                checked={service.featured}
+                label={content.editor.featuredLabel}
+                onChange={(featured) => setService((current) => ({ ...current, featured }))}
+              />
+            </div>
+            <p className="mt-1 text-[11.5px] leading-tight text-[#71839e]">
+              Feature this service on homepage highlights.
+            </p>
           </div>
         </div>
-      </div>
-      <div className="mt-6 grid gap-5 xl:grid-cols-[1fr_0.6fr]">
-        <div className="grid gap-4 sm:grid-cols-2 xl:col-span-1">
-          <Field label={`${content.editor.descriptionLabel} · English`}>
-            <textarea
-              className="h-[120px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-              onChange={(event) => setService((current) => ({ ...current, description: event.target.value }))}
-              value={service.description}
-            />
-          </Field>
-          <Field label="ពិពណ៌នាខ្លី · ខ្មែរ">
-            <textarea
-              className="h-[120px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-              lang="km"
-              onChange={(event) => setService((current) => ({ ...current, descriptionKm: event.target.value }))}
-              value={service.descriptionKm}
-            />
-          </Field>
+
+        {/* Short Descriptions & Thumbnail Card Image */}
+        <div className="grid gap-5 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px]">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={`${content.editor.descriptionLabel} · English`}>
+              <textarea
+                className="h-[130px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                onChange={(event) => setService((current) => ({ ...current, description: event.target.value }))}
+                value={service.description}
+              />
+            </Field>
+            <Field label="ពិពណ៌នាខ្លី · ខ្មែរ">
+              <textarea
+                className="h-[130px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                lang="km"
+                onChange={(event) => setService((current) => ({ ...current, descriptionKm: event.target.value }))}
+                value={service.descriptionKm}
+              />
+            </Field>
+          </div>
+          <MediaUploader
+            category="services"
+            help={`${content.editor.imageHelp} You can replace or remove it without deleting the stored media asset.`}
+            label={content.editor.imageLabel}
+            onClear={() => setService((current) => ({ ...current, imageUrl: '' }))}
+            onUploaded={(imageKey) => setService((current) => ({ ...current, imageUrl: imageKey }))}
+            value={service.imageUrl || undefined}
+          />
         </div>
-        <MediaUploader
-          category="services"
-          help={`${content.editor.imageHelp} You can replace or remove it without deleting the stored media asset.`}
-          label={content.editor.imageLabel}
-          onClear={() => setService((current) => ({ ...current, imageUrl: '' }))}
-          onUploaded={(imageKey) => setService((current) => ({ ...current, imageUrl: imageKey }))}
-          value={service.imageUrl || undefined}
-        />
       </div>
     </Card>
   );
@@ -637,168 +672,7 @@ function SectionRows({
   );
 }
 
-function LivePreview({ content, service }: { content: AdminServiceDetailContent; service: EditableService }) {
-  return (
-    <Card className="rounded-[18px] border-[#dce5ef] p-5 shadow-none">
-      <h2 className="text-[16px] font-bold text-[#182238]">Live Page Preview</h2>
-      <div className="mt-3.5 rounded-xl border border-[#dce5ef] bg-white p-3.5 shadow-sm">
-        {/* Hero Section Preview */}
-        <span className="inline-block rounded bg-[#eef8fb] px-2 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-[#2187a8]">
-          {service.slug.replaceAll('-', ' ').toUpperCase()}
-        </span>
-        <div className="mt-2.5 flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h3 className="text-[17px] font-extrabold leading-tight text-[#005687]">
-              {service.heroHeading || `${content.preview.titlePrefix} ${service.name}`}
-            </h3>
-            <p className="mt-2 line-clamp-3 text-[10.5px] leading-relaxed text-[#71839e]">
-              {service.heroSummary || service.description}
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-1.5">
-              <span className="rounded-md bg-[#2187a8] px-2.5 py-1 text-[8.5px] font-bold text-white shadow-none">
-                {service.heroPrimaryCta || 'Book an Appointment'}
-              </span>
-              <span className="rounded-md border border-[#dce5ef] bg-white px-2.5 py-1 text-[8.5px] font-bold text-[#2187a8]">
-                {service.heroSecondaryCta || content.preview.requestLabel}
-              </span>
-            </div>
-          </div>
-          <img
-            alt="Patient smiling"
-            className="h-[105px] w-[130px] shrink-0 rounded-xl object-cover"
-            src={service.heroImageUrl}
-          />
-        </div>
 
-        {/* About Section Preview */}
-        <div className="mt-3.5 border-t border-[#edf2f7] pt-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <h4 className="text-[12px] font-extrabold text-[#005687]">
-                {service.aboutTitle || `${content.preview.aboutTitle} ${service.name}`}
-              </h4>
-              <p className="mt-1 text-[9.5px] leading-relaxed text-[#71839e]">
-                {service.aboutContent || content.preview.aboutDescription}
-              </p>
-            </div>
-            <img
-              alt="Dental implant treatment"
-              className="h-[60px] w-[105px] shrink-0 rounded-lg object-cover"
-              src={service.aboutImageUrl}
-            />
-          </div>
-
-          {/* Benefits Grid */}
-          <div className="mt-3 grid grid-cols-6 gap-1 border-t border-[#edf2f7] pt-2.5">
-            {service.benefits.map((benefit) => (
-              <div className="flex flex-col items-center text-center" key={benefit.title}>
-                <span className="grid size-6 place-items-center rounded-md bg-[#eef8fb] text-[#2187a8]">
-                  <AdminIcon className="size-3.5" name={benefit.icon} />
-                </span>
-                <p className="mt-1 text-[7.5px] font-bold leading-tight text-[#005687]">{benefit.title}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function PublishingCard({ content, service }: { content: AdminServiceDetailContent; service: EditableService }) {
-  return (
-    <Card className="rounded-[18px] border-[#dce5ef] p-5 shadow-none">
-      <h2 className="text-[15px] font-bold text-[#182238]">{content.publishing.title}</h2>
-      <dl className="mt-4 space-y-3 text-[12.5px]">
-        <div className="flex items-center justify-between gap-4">
-          <dt className="font-semibold text-[#71839e]">{content.publishing.statusLabel}</dt>
-          <dd>
-            <span
-              className={`inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${
-                service.status === 'published'
-                  ? 'border-[#b9f1d0] bg-[#effdf5] text-[#13ad63]'
-                  : 'border-[#fde8b2] bg-[#fff8e8] text-[#e58900]'
-              }`}
-            >
-              {service.status === 'published' ? 'Published' : 'Draft'}
-            </span>
-          </dd>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <dt className="font-semibold text-[#71839e]">{content.publishing.lastUpdatedLabel}</dt>
-          <dd className="text-right font-medium text-[#182238]">{content.publishing.lastUpdatedValue}</dd>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <dt className="font-semibold text-[#71839e]">{content.publishing.updatedByLabel}</dt>
-          <dd className="font-medium text-[#182238]">{content.publishing.updatedByValue}</dd>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <dt className="font-semibold text-[#71839e]">{content.publishing.publishedLabel}</dt>
-          <dd className="text-right font-medium text-[#182238]">{content.publishing.publishedOnLabel}</dd>
-        </div>
-      </dl>
-    </Card>
-  );
-}
-
-function OrderingCard({
-  content,
-  service,
-  setService,
-}: {
-  content: AdminServiceDetailContent;
-  service: EditableService;
-  setService: Dispatch<SetStateAction<EditableService>>;
-}) {
-  return (
-    <Card className="rounded-[18px] border-[#dce5ef] p-5 shadow-none">
-      <h2 className="text-[15px] font-bold text-[#182238]">{content.ordering.title}</h2>
-      <p className="mt-1 text-[12px] text-[#71839e]">Lower numbers appear first in the public services list.</p>
-      <div className="mt-4 flex items-center gap-2">
-        <span className="text-[12.5px] font-semibold text-[#71839e]">{content.ordering.sortLabel}</span>
-        <input
-          className="h-9 w-14 rounded-lg border border-[#dce5ef] bg-white text-center text-[13px] font-bold text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-          min={1}
-          onChange={(event) =>
-            setService((current) => ({ ...current, order: Number(event.target.value) || 1 }))
-          }
-          type="number"
-          value={service.order}
-        />
-      </div>
-    </Card>
-  );
-}
-
-function ChecklistCard({ checklist }: { checklist: AdminServiceDetailContent['checklist'] }) {
-  return (
-    <Card className="rounded-[18px] border-[#dce5ef] p-5 shadow-none">
-      <h2 className="text-[15px] font-bold text-[#182238]">{checklist.title}</h2>
-      <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-        <div className="space-y-2.5">
-          {checklist.column1.map((item) => (
-            <span className="flex items-center gap-2.5 text-[12px] font-medium text-[#52647d]" key={item}>
-              <span className="grid size-4 place-items-center rounded-full border border-[#85dcb0] bg-[#edfbf3] text-[#13ad63]">
-                <AdminIcon className="size-2.5" name="check" />
-              </span>
-              {item}
-            </span>
-          ))}
-        </div>
-        <div className="space-y-2.5">
-          {checklist.column2.map((item) => (
-            <span className="flex items-center gap-2.5 text-[12px] font-medium text-[#52647d]" key={item}>
-              <span className="grid size-4 place-items-center rounded-full border border-[#85dcb0] bg-[#edfbf3] text-[#13ad63]">
-                <AdminIcon className="size-2.5" name="check" />
-              </span>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Card>
-  );
-}
 
 function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent & { service: AdminService } }) {
   const queryClient = useQueryClient();
@@ -878,7 +752,7 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
 
   return (
     <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
-      <div className="mx-auto max-w-[1440px] w-full">
+      <div className="mx-auto max-w-[1200px] w-full">
       {notification ? (
         <div
           aria-live="polite"
@@ -932,8 +806,8 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
         </div>
       </header>
 
-      <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_480px] 2xl:grid-cols-[minmax(0,1.2fr)_510px]">
-        <section aria-label="Service editor">
+      <div className="mt-6">
+        <section aria-label="Service editor" className="space-y-4">
           <BasicInformation content={content} service={service} setService={setService} />
           <PagePresentation service={service} setService={setService} />
           <DetailSectionsEditor service={service} setService={setService} />
@@ -943,12 +817,6 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
             setService={setService}
           />
         </section>
-        <aside className="space-y-4">
-          <LivePreview content={content} service={service} />
-          <PublishingCard content={content} service={service} />
-          <OrderingCard content={content} service={service} setService={setService} />
-          <ChecklistCard checklist={content.checklist} />
-        </aside>
       </div>
 
       <AdminFooter footer={content.footer} />
@@ -960,11 +828,14 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
 function LoadingState() {
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
-      <main aria-busy="true" aria-label="Loading service editor" className="min-h-screen flex-1 p-7 lg:p-10">
-        <div className="h-8 w-64 animate-pulse rounded bg-[#e7edf3]" />
-        <div className="mt-8 grid gap-6 2xl:grid-cols-[1fr_510px]">
-          <div className="h-[520px] animate-pulse rounded-[18px] bg-white" />
-          <div className="h-[720px] animate-pulse rounded-[18px] bg-white" />
+      <main aria-busy="true" aria-label="Loading service editor" className="min-h-screen flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+        <div className="mx-auto max-w-[1200px] w-full">
+          <div className="h-8 w-64 animate-pulse rounded bg-[#e7edf3]" />
+          <div className="mt-8 space-y-4">
+            <div className="h-[420px] animate-pulse rounded-[18px] bg-white" />
+            <div className="h-[220px] animate-pulse rounded-[18px] bg-white" />
+            <div className="h-[260px] animate-pulse rounded-[18px] bg-white" />
+          </div>
         </div>
       </main>
     </div>
