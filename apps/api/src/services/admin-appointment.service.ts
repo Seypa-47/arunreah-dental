@@ -7,7 +7,10 @@ import type { DatabaseClient } from '../db/client';
 import * as repository from '../repositories/appointment.repository';
 import { HttpError } from '../shared/http-error';
 import type { Bindings } from '../types/env';
-import { notifyPatientOfStatusChange } from './appointment-notification.service';
+import {
+  notifyClinicOfStatusChange,
+  notifyPatientOfStatusChange,
+} from './appointment-notification.service';
 
 const allowedTransitions: Record<AppointmentStatus, readonly AppointmentStatus[]> = {
   PENDING: ['CONFIRMED', 'CANCELLED'],
@@ -151,28 +154,37 @@ export async function changeAppointmentStatus(
 
   if (
     environment &&
-    (input.status === 'CONFIRMED' || input.status === 'CANCELLED') &&
-    updated.patientEmail
+    (input.status === 'CONFIRMED' || input.status === 'CANCELLED')
   ) {
-    try {
-      await notifyPatientOfStatusChange(
-        {
+    const statusPayload = {
+      reference: updated.reference,
+      patientName: updated.patientName,
+      phone: updated.patientPhone,
+      email: updated.patientEmail ?? '',
+      serviceName: updated.serviceNameSnapshot,
+      doctorName: updated.doctorNameSnapshot,
+      branchName: updated.branchNameSnapshot,
+      preferredDate: updated.preferredDate,
+      preferredTime: updated.preferredTime,
+      status: input.status,
+      notes: updated.patientNote,
+    };
+
+    if (updated.patientEmail) {
+      try {
+        await notifyPatientOfStatusChange(statusPayload, environment);
+      } catch {
+        console.error('Patient appointment status email delivery failed', {
           reference: updated.reference,
-          patientName: updated.patientName,
-          phone: updated.patientPhone,
-          email: updated.patientEmail,
-          serviceName: updated.serviceNameSnapshot,
-          doctorName: updated.doctorNameSnapshot,
-          branchName: updated.branchNameSnapshot,
-          preferredDate: updated.preferredDate,
-          preferredTime: updated.preferredTime,
           status: input.status,
-          notes: updated.patientNote,
-        },
-        environment,
-      );
+        });
+      }
+    }
+
+    try {
+      await notifyClinicOfStatusChange(statusPayload, environment);
     } catch {
-      console.error('Patient appointment status email delivery failed', {
+      console.error('Clinic Telegram status update delivery failed', {
         reference: updated.reference,
         status: input.status,
       });
