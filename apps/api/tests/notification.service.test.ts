@@ -8,11 +8,15 @@ import {
   patientAppointmentEmailHtml,
   patientAppointmentEmailSubject,
   patientAppointmentEmailText,
+  patientAppointmentStatusEmailHtml,
+  patientAppointmentStatusEmailSubject,
+  patientAppointmentStatusEmailText,
 } from '../src/services/notifications/notification-formatters';
 import { NotificationService } from '../src/services/notifications/notification.service';
 import { TelegramNotificationProvider } from '../src/services/notifications/telegram-notification.provider';
 import type {
   AppointmentNotificationPayload,
+  AppointmentStatusUpdatePayload,
   NotificationProvider,
 } from '../src/services/notifications/types';
 
@@ -133,6 +137,73 @@ describe('notification formatters', () => {
     expect(htmlContent).toContain('Need Direct Assistance?');
     expect(htmlContent).toContain('098 701 302');
     expect(htmlContent).toContain('069 978 997');
+  });
+
+  it('creates patient-facing CONFIRMED status content with visiting guidelines', () => {
+    const confirmedPayload: AppointmentStatusUpdatePayload = {
+      reference: 'AR-20990101-ABC123',
+      patientName: 'Sok Dara <script>',
+      phone: '+855 12 345 678',
+      email: 'patient@example.com',
+      serviceName: 'Dental Implants',
+      doctorName: null,
+      branchName: 'Toul Tompoung Branch',
+      preferredDate: '2099-01-01',
+      preferredTime: '10:30',
+      status: 'CONFIRMED',
+      notes: 'Need morning appointment.',
+    };
+
+    expect(patientAppointmentStatusEmailSubject(confirmedPayload)).toBe(
+      'Appointment Confirmed — AR-20990101-ABC123 | Arunreah Dental Clinic',
+    );
+    const text = patientAppointmentStatusEmailText(confirmedPayload);
+    expect(text).toContain('Dear Sok Dara <script>,');
+    expect(text).toContain('Status: CONFIRMED');
+    expect(text).toContain('Doctor: Assigned upon arrival');
+    expect(text).toContain('IMPORTANT VISITING INFORMATION');
+    expect(text).toContain('Toul Tompoung Branch: 098 701 302 / 012 964 200');
+
+    const html = patientAppointmentStatusEmailHtml(confirmedPayload);
+    expect(html).toContain('Appointment Confirmed');
+    expect(html).toContain('Dear Sok Dara &lt;script&gt;,');
+    expect(html).toContain('AR-20990101-ABC123');
+    expect(html).toContain('Confirmed');
+    expect(html).toContain('Important Visiting Guidelines');
+    expect(html).toContain('Need morning appointment.');
+  });
+
+  it('creates patient-facing CANCELLED status content with rescheduling options', () => {
+    const cancelledPayload: AppointmentStatusUpdatePayload = {
+      reference: 'AR-20990101-XYZ789',
+      patientName: 'Chan Vanna',
+      phone: '+855 98 765 432',
+      email: 'chan@example.com',
+      serviceName: 'General Dentistry',
+      doctorName: 'Dr. Chea Roth',
+      branchName: 'Psa Chas Branch',
+      preferredDate: '2099-01-02',
+      preferredTime: '14:00',
+      status: 'CANCELLED',
+      notes: null,
+    };
+
+    expect(patientAppointmentStatusEmailSubject(cancelledPayload)).toBe(
+      'Appointment Request Cancelled — AR-20990101-XYZ789 | Arunreah Dental Clinic',
+    );
+    const text = patientAppointmentStatusEmailText(cancelledPayload);
+    expect(text).toContain('Dear Chan Vanna,');
+    expect(text).toContain('Status: CANCELLED');
+    expect(text).toContain('Doctor: Dr. Chea Roth');
+    expect(text).toContain('LOOKING TO RESCHEDULE?');
+    expect(text).toContain('Psa Chas Branch: 069 978 997 / 061 978 997');
+
+    const html = patientAppointmentStatusEmailHtml(cancelledPayload);
+    expect(html).toContain('Request Cancelled');
+    expect(html).toContain('Dear Chan Vanna,');
+    expect(html).toContain('AR-20990101-XYZ789');
+    expect(html).toContain('Cancelled');
+    expect(html).toContain('Looking to Choose Another Time?');
   });
 });
 
@@ -324,5 +395,73 @@ describe('HTTP notification providers', () => {
       success: false,
       errorCode: 'PROVIDER_REQUEST_FAILED',
     });
+  });
+
+  it('sends patient email on appointment status update when email is provided', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const provider = new EmailNotificationProvider({
+      enabled: true,
+      recipient: 'clinic@example.com',
+      fromAddress: 'Arunreah Dental Clinic <appointments@send.mekhla.digital>',
+      apiKey: 'test-secret',
+    });
+
+    const statusPayload: AppointmentStatusUpdatePayload = {
+      reference: 'AR-20990101-ABC123',
+      patientName: 'Sok Dara',
+      phone: '+855 12 345 678',
+      email: 'patient@example.com',
+      serviceName: 'Dental Implants',
+      doctorName: 'Dr. John',
+      branchName: 'Main Branch',
+      preferredDate: '2099-01-01',
+      preferredTime: '10:30',
+      status: 'CONFIRMED',
+      notes: null,
+    };
+
+    await expect(provider.sendAppointmentStatusUpdate(statusPayload)).resolves.toEqual({
+      provider: 'email',
+      success: true,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const callBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(callBody.to).toEqual(['patient@example.com']);
+    expect(callBody.subject).toBe(
+      'Appointment Confirmed — AR-20990101-ABC123 | Arunreah Dental Clinic',
+    );
+    expect(callBody.html).toContain('Appointment Confirmed');
+  });
+
+  it('skips status update email delivery cleanly when patient email is blank', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const provider = new EmailNotificationProvider({
+      enabled: true,
+      recipient: 'clinic@example.com',
+      fromAddress: 'Arunreah Dental Clinic <appointments@send.mekhla.digital>',
+      apiKey: 'test-secret',
+    });
+
+    const statusPayload: AppointmentStatusUpdatePayload = {
+      reference: 'AR-20990101-ABC123',
+      patientName: 'Sok Dara',
+      phone: '+855 12 345 678',
+      email: '   ',
+      serviceName: 'Dental Implants',
+      doctorName: null,
+      branchName: 'Main Branch',
+      preferredDate: '2099-01-01',
+      preferredTime: '10:30',
+      status: 'CANCELLED',
+      notes: null,
+    };
+
+    await expect(provider.sendAppointmentStatusUpdate(statusPayload)).resolves.toEqual({
+      provider: 'email',
+      success: true,
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

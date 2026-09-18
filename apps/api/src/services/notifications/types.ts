@@ -20,6 +20,20 @@ export type NotificationResult = {
   errorCode?: 'NOT_CONFIGURED' | 'PROVIDER_REQUEST_FAILED' | 'PROVIDER_TIMEOUT';
 };
 
+export type AppointmentStatusUpdatePayload = {
+  reference: string;
+  patientName: string;
+  phone: string;
+  email: string;
+  serviceName: string;
+  doctorName: string | null;
+  branchName: string;
+  preferredDate: string;
+  preferredTime: string;
+  status: 'CONFIRMED' | 'CANCELLED';
+  notes: string | null;
+};
+
 export interface NotificationProvider {
   readonly name: NotificationProviderName;
   isEnabled(): boolean;
