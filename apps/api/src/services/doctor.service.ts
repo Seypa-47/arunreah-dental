@@ -13,9 +13,17 @@ import { listForOwners } from '../repositories/image-presentation.repository';
 
 type DoctorRecord = NonNullable<Awaited<ReturnType<typeof repository.findDoctorById>>>;
 
+// Portrait source images are commonly taller than the card frame. Keep the
+// face visible for records that predate focal-point metadata; any CMS-saved
+// position always takes precedence.
+const defaultDoctorPhotoPresentation: ImagePresentation = {
+  ...defaultImagePresentation,
+  positionY: 0,
+};
+
 function presentationFor(rows: Awaited<ReturnType<typeof listForOwners>>, ownerId: string): ImagePresentation {
   const row = rows.find((item) => item.ownerId === ownerId && item.slot === 'PRIMARY');
-  return row ? { positionX: row.positionX, positionY: row.positionY, zoom: row.zoom } : defaultImagePresentation;
+  return row ? { positionX: row.positionX, positionY: row.positionY, zoom: row.zoom } : defaultDoctorPhotoPresentation;
 }
 
 function localize(doctor: DoctorRecord, language: DoctorLanguage, presentations: Awaited<ReturnType<typeof listForOwners>> = []) {
