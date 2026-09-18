@@ -3,7 +3,7 @@ import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useState, useMemo, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { defaultImagePresentation, type AdminShowcaseListQuery, type ImagePresentation, type UpdateShowcaseInput } from '@arunreah/shared';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
 import { MediaUploader } from '@/components/admin/media-uploader';
@@ -213,6 +213,7 @@ type ShowcaseListState = Pick<
 
 export function AdminShowcasePage() {
   const navigate = useNavigate();
+  const { showcaseId } = useParams();
   const queryClient = useQueryClient();
   const [listState, setListState] = useState<ShowcaseListState>({
     page: 1,
@@ -223,7 +224,7 @@ export function AdminShowcasePage() {
   const { data, isError, isLoading, isFetching, refetch } = useAdminShowcasePageQuery(listState);
 
   const [articles, setArticles] = useState<ShowcaseArticle[]>([]);
-  const [selectedId, setSelectedId] = useState<string>('');
+  const [selectedId, setSelectedId] = useState<string>(showcaseId ?? '');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Edit selected text states
@@ -265,11 +266,9 @@ export function AdminShowcasePage() {
   useEffect(() => {
     if (data?.articles) {
       setArticles(data.articles);
-      if (data.articles[0] && !selectedId) {
-        setSelectedId(data.articles[0].id);
-      }
+      setSelectedId(showcaseId ?? '');
     }
-  }, [data?.articles, selectedId]);
+  }, [data?.articles, showcaseId]);
 
   const updateMutation = useMutation({
     mutationFn: ({ article, patch }: { article: ShowcaseArticle; patch: UpdateShowcaseInput }) => cmsApi.showcases.update(article.id, patch),
@@ -372,13 +371,6 @@ export function AdminShowcasePage() {
 
   const confirmDiscardEditing = () => !isDirty || window.confirm('You have unsaved changes. Leave this page without saving?');
 
-  const handleSelectArticle = (id: string) => {
-    if (id === selectedId) return;
-    if (!confirmDiscardEditing()) return;
-    discardEditing();
-    setSelectedId(id);
-  };
-
   const handleCancelEditing = () => {
     if (!confirmDiscardEditing()) return;
     discardEditing();
@@ -427,14 +419,14 @@ export function AdminShowcasePage() {
               <AdminPageHeading />
             </div>
 
-            <Button onClick={() => navigate('/admin/showcase/new')} icon={<span aria-hidden="true">+</span>}>
+            {showcaseId ? <Button onClick={() => navigate('/admin/showcase')} type="button" variant="secondary">Back to showcases</Button> : <Button onClick={() => navigate('/admin/showcase/new')} icon={<span aria-hidden="true">+</span>}>
               {data.controls.addLabel}
-            </Button>
+            </Button>}
           </header>
         </div>
 
         {/* Filter & Controls Bar */}
-        <div className="admin-list-toolbar mt-7">
+        {!showcaseId ? <div className="admin-list-toolbar mt-7">
           <div className="flex flex-1 flex-wrap items-center gap-3">
             {/* Search Input */}
             <label className="flex h-11 min-w-[240px] flex-1 max-w-md items-center gap-3 rounded-xl border border-[#dce5ef] bg-white px-4 text-[#9badc5] shadow-xs focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#d9f0f7]">
@@ -509,12 +501,12 @@ export function AdminShowcasePage() {
             </label>
           </div>
 
-        </div>
+        </div> : null}
 
         {/* Main 2-Column Grid */}
-        <div className="mt-6 grid gap-7 xl:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)] 2xl:grid-cols-[minmax(0,1.9fr)_minmax(0,1.05fr)]">
+        <div className={`mt-6 grid gap-7 ${showcaseId ? 'mx-auto max-w-5xl grid-cols-1' : 'grid-cols-1'}`}>
           {/* Left Column: Showcase Articles Table Card */}
-          <Card className="flex flex-col overflow-hidden rounded-[26px] border-[#e1e8f0] bg-white p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
+          <Card className={`${showcaseId ? 'hidden' : 'flex'} flex-col overflow-hidden rounded-[26px] border-[#e1e8f0] bg-white p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)]`}>
             {/* Card Header with drag hint */}
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#f0f4f8] pb-5">
               <h2 className="text-[18px] font-bold text-[#182238]">
@@ -538,20 +530,14 @@ export function AdminShowcasePage() {
                 </thead>
                 <tbody className="divide-y divide-[#f0f4f8]">
                   {filteredArticles.map((article) => {
-                    const isSelected = article.id === selectedArticle?.id;
                     return (
-                      <tr
-                        className={`group cursor-pointer transition-colors hover:bg-[#f8fbfd] ${
-                          isSelected ? 'bg-[#f0f7fa]' : ''
-                        }`}
-                        key={article.id}
-                      >
+                      <tr className="group transition-colors hover:bg-[#f8fbfd]" key={article.id}>
                         {/* Article Info */}
                         <td className="py-4 pr-4">
                           <div className="flex items-center gap-3.5">
                             <AdminListImage src={article.imageUrl} />
                             <div className="min-w-0">
-                              <button type="button" className="admin-row-action text-left" aria-pressed={isSelected} onClick={() => handleSelectArticle(article.id)}>{article.title}</button>
+                              <button type="button" className="admin-row-action text-left" aria-label={`Edit ${article.title}`} onClick={() => navigate(`/admin/showcase/${article.id}/edit`)}>{article.title}</button>
                               <span className="block truncate text-[12.5px] text-[#8a9bb2]">
                                 {article.subtitle}
                               </span>
@@ -602,10 +588,7 @@ export function AdminShowcasePage() {
                             <button
                               aria-label={`Preview ${article.title}`}
                               className="admin-row-action"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSelectArticle(article.id);
-                              }}
+                              onClick={() => navigate(`/admin/showcase/${article.id}/edit`)}
                               title="Preview article"
                               type="button"
                             >
@@ -614,13 +597,7 @@ export function AdminShowcasePage() {
                             <button
                               aria-label={`Edit ${article.title}`}
                               className="admin-row-action"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if ((article.id !== selectedId || isEditingSelected) && !confirmDiscardEditing()) return;
-                                if (article.id !== selectedId || isEditingSelected) discardEditing();
-                                setSelectedId(article.id);
-                                startEditing(article);
-                              }}
+                              onClick={() => navigate(`/admin/showcase/${article.id}/edit`)}
                               title="Edit article text"
                               type="button"
                             >Edit

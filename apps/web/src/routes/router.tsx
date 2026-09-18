@@ -88,6 +88,10 @@ export const router = createBrowserRouter([
     element: protectedAdminRoute(<AdminDoctorsPage />),
   },
   {
+    path: '/admin/doctors/:doctorId/edit',
+    element: protectedAdminRoute(<AdminDoctorsPage />),
+  },
+  {
     path: '/admin/showcase/new',
     element: protectedAdminRoute(<AdminAddShowcasePage />),
   },
@@ -97,6 +101,10 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/showcases',
+    element: protectedAdminRoute(<AdminShowcasePage />),
+  },
+  {
+    path: '/admin/showcase/:showcaseId/edit',
     element: protectedAdminRoute(<AdminShowcasePage />),
   },
   {
