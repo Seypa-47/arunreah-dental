@@ -15,6 +15,7 @@ import { invalidateCmsDomain } from '@/services/cms-cache';
 import { getPublicMediaUrl } from '@/services/media';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { CreateServiceInput } from '@arunreah/shared';
+import { toMediaKey } from './media-key';
 
 type EditableService = AdminService & {
   aboutContent: string;
@@ -707,7 +708,7 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     recovery: '3 - 6 Months',
     relatedCategory: content.service.category,
     relatedServices: ['Teeth Whitening', 'Routine Cleaning', 'Orthodontics'],
-    slug: content.service.id,
+    slug: content.service.slug || content.service.id,
   }));
   const setService: typeof setServiceState = (value) => {
     setIsDirty(true);
@@ -715,39 +716,70 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
   };
   useUnsavedChangesGuard(isDirty);
 
-  const [notification, setNotification] = useState<string | undefined>();
+  const [notification, setNotification] = useState<{ message: string; tone: 'success' | 'error' } | undefined>();
   const saveMutation = useMutation({
     mutationFn: (status: 'DRAFT' | 'PUBLISHED') => cmsApi.services.update(content.service.id, {
-      status, slug: service.slug, nameEn: service.name, nameKm: service.nameKm, category: service.category || null, summaryEn: service.description || null, summaryKm: service.descriptionKm || null,
-      descriptionEn: service.heroSummary || null, imageKey: service.imageUrl || null, featured: service.featured, displayOrder: service.order,
-      heroTitleEn: service.heroHeading || null, heroSummaryEn: service.heroSummary || null, heroImageKey: service.heroImageUrl || null,
-      aboutTitleEn: service.aboutTitle || null, aboutBodyEn: service.aboutContent || null, aboutImageKey: service.aboutImageUrl || null,
-      editorialLabelEn: service.editorialLabelEn || null, editorialLabelKm: service.editorialLabelKm || null,
-      editorialTitleEn: service.editorialTitleEn || null, editorialTitleKm: service.editorialTitleKm || null,
+      status,
+      slug: service.slug,
+      nameEn: service.name,
+      nameKm: service.nameKm,
+      category: service.category || null,
+      summaryEn: service.description || null,
+      summaryKm: service.descriptionKm || null,
+      descriptionEn: service.heroSummary || null,
+      imageKey: toMediaKey(service.imageUrl),
+      featured: service.featured,
+      displayOrder: service.order,
+      heroTitleEn: service.heroHeading || null,
+      heroSummaryEn: service.heroSummary || null,
+      heroImageKey: toMediaKey(service.heroImageUrl),
+      aboutTitleEn: service.aboutTitle || null,
+      aboutBodyEn: service.aboutContent || null,
+      aboutImageKey: toMediaKey(service.aboutImageUrl),
+      editorialLabelEn: service.editorialLabelEn || null,
+      editorialLabelKm: service.editorialLabelKm || null,
+      editorialTitleEn: service.editorialTitleEn || null,
+      editorialTitleKm: service.editorialTitleKm || null,
       detailPresentation: service.detailPresentation,
-      detailSections: service.detailSections,
-      metaTitleEn: service.metaTitle || null, metaDescriptionEn: service.metaDescription || null,
+      detailSections: (service.detailSections || []).map((section, index) => ({
+        sectionType: section.sectionType ?? 'TEXT',
+        headingEn: section.headingEn || null,
+        headingKm: section.headingKm || null,
+        bodyEn: section.bodyEn || null,
+        bodyKm: section.bodyKm || null,
+        imageKey: toMediaKey(section.imageKey),
+        imagePresentation: section.imagePresentation,
+        displayOrder: typeof section.displayOrder === 'number' ? section.displayOrder : index,
+      })),
+      metaTitleEn: service.metaTitle || null,
+      metaDescriptionEn: service.metaDescription || null,
     }),
-    onSuccess: async () => { setIsDirty(false); await invalidateCmsDomain(queryClient, 'services'); },
-    onError: () => showNotification('Unable to save this service. Please check the fields and try again.'),
+    onSuccess: async () => {
+      setIsDirty(false);
+      await invalidateCmsDomain(queryClient, 'services');
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Unable to save this service. Please check the fields and try again.';
+      showNotification(message || 'Unable to save this service. Please check the fields and try again.', 'error');
+    },
   });
   const previewHref = useMemo(() => `/services/${service.slug}`, [service.slug]);
 
-  const showNotification = (message: string) => {
-    setNotification(message);
+  const showNotification = (message: string, tone: 'success' | 'error' = 'success') => {
+    setNotification({ message, tone });
     setTimeout(() => {
       setNotification(undefined);
-    }, 4000);
+    }, 5000);
   };
 
   const handleSaveDraft = () => {
     setService((current) => ({ ...current, status: 'draft' }));
-    saveMutation.mutate('DRAFT', { onSuccess: () => showNotification('Service draft saved successfully.') });
+    saveMutation.mutate('DRAFT', { onSuccess: () => showNotification('Service draft saved successfully.', 'success') });
   };
 
   const handleUpdateService = () => {
     setService((current) => ({ ...current, status: 'published' }));
-    saveMutation.mutate('PUBLISHED', { onSuccess: () => showNotification('Service updated and published successfully.') });
+    saveMutation.mutate('PUBLISHED', { onSuccess: () => showNotification('Service updated and published successfully.', 'success') });
   };
 
   return (
@@ -756,15 +788,19 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       {notification ? (
         <div
           aria-live="polite"
-          className="mb-5 flex items-center justify-between rounded-xl border border-[#b9f1d0] bg-[#effdf5] px-4 py-3 text-[13px] font-semibold text-[#13ad63]"
+          className={`mb-5 flex items-center justify-between rounded-xl border px-4 py-3 text-[13px] font-semibold ${
+            notification.tone === 'error'
+              ? 'border-[#fecdca] bg-[#fef3f2] text-[#b42318]'
+              : 'border-[#b9f1d0] bg-[#effdf5] text-[#13ad63]'
+          }`}
         >
           <span className="inline-flex items-center gap-2">
-            <AdminIcon className="size-4" name="check" />
-            {notification}
+            <AdminIcon className="size-4" name={notification.tone === 'error' ? 'info' : 'check'} />
+            {notification.message}
           </span>
           <button
             aria-label="Dismiss notification"
-            className="text-[#13ad63] hover:text-[#0b7944]"
+            className={notification.tone === 'error' ? 'text-[#b42318] hover:text-[#7a271a]' : 'text-[#13ad63] hover:text-[#0b7944]'}
             onClick={() => setNotification(undefined)}
             type="button"
           >

@@ -196,6 +196,7 @@ export async function fetchAdminServiceDetailContent(serviceId: string | undefin
   const { service: detail } = await cmsApi.services.get(serviceId);
   const service: AdminService = {
     id: detail.id,
+    slug: detail.slug,
     name: detail.nameEn,
     nameKm: detail.nameKm,
     category: detail.category ?? 'Uncategorized',
