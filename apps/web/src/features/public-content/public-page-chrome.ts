@@ -131,9 +131,11 @@ export function publicAboutContent(
     hero: { eyebrow: '', imageAlt: '', imageUrl: '', subtitle: tagline ?? '', title: clinicName },
     mission: { description: '', iconUrl: '', title: '' },
     stats: [
-      { iconUrl: '/assets/landing/about-stat-experience.svg', label: language === 'km' ? 'ឆ្នាំនៃបទពិសោធន៍' : 'Years of experience', value: String(clinic.yearsExperience) },
-      { iconUrl: '/assets/landing/about-stat-cases.svg', label: language === 'km' ? 'ករណីដែលបានថែទាំ' : 'Cases cared for', value: String(clinic.successfulCases) },
-      { iconUrl: '/assets/landing/about-stat-satisfaction.svg', label: language === 'km' ? 'ការពេញចិត្តរបស់អ្នកជំងឺ' : 'Patient satisfaction', value: `${clinic.patientSatisfaction}%` },
+      {
+        iconUrl: '/assets/landing/about-stat-experience.svg',
+        label: language === 'km' ? 'ឆ្នាំនៃបទពិសោធន៍' : 'Years of experience',
+        value: String(clinic.yearsExperience ?? 26),
+      },
     ],
     story: { eyebrow: '', imageAlt: '', imageUrl: '', paragraphs: shortAbout ? shortAbout.replace(/\\n/g, '\n').split(/\n{2,}/).filter(Boolean) : [], title: clinicName },
     vision: { description: '', iconUrl: '', title: '' },
