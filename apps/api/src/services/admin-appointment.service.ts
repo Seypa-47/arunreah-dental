@@ -6,6 +6,8 @@ import type {
 import type { DatabaseClient } from '../db/client';
 import * as repository from '../repositories/appointment.repository';
 import { HttpError } from '../shared/http-error';
+import type { Bindings } from '../types/env';
+import { notifyPatientOfStatusChange } from './appointment-notification.service';
 
 const allowedTransitions: Record<AppointmentStatus, readonly AppointmentStatus[]> = {
   PENDING: ['CONFIRMED', 'CANCELLED'],
@@ -119,6 +121,7 @@ export async function changeAppointmentStatus(
   id: string,
   input: UpdateAppointmentStatusInput,
   adminId: string,
+  environment?: Bindings,
 ) {
   const current = await repository.findAppointmentById(database, id);
   if (!current) throw new HttpError(404, 'NOT_FOUND', 'Appointment not found.');
@@ -145,5 +148,36 @@ export async function changeAppointmentStatus(
       'Appointment status was changed by another staff member. Reload and try again.',
     );
   }
+
+  if (
+    environment &&
+    (input.status === 'CONFIRMED' || input.status === 'CANCELLED') &&
+    updated.patientEmail
+  ) {
+    try {
+      await notifyPatientOfStatusChange(
+        {
+          reference: updated.reference,
+          patientName: updated.patientName,
+          phone: updated.patientPhone,
+          email: updated.patientEmail,
+          serviceName: updated.serviceNameSnapshot,
+          doctorName: updated.doctorNameSnapshot,
+          branchName: updated.branchNameSnapshot,
+          preferredDate: updated.preferredDate,
+          preferredTime: updated.preferredTime,
+          status: input.status,
+          notes: updated.patientNote,
+        },
+        environment,
+      );
+    } catch {
+      console.error('Patient appointment status email delivery failed', {
+        reference: updated.reference,
+        status: input.status,
+      });
+    }
+  }
+
   return updated;
 }

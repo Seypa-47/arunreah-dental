@@ -63,6 +63,7 @@ export async function updateAdminAppointmentStatusController(context: Context<Ap
     id,
     input,
     admin.id,
+    context.env,
   );
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ appointment }));

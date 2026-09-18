@@ -57,6 +57,7 @@ const state = vi.hoisted(() => ({
   sessions: new Map<string, SessionRecord>(),
   rateLimits: new Map<string, { attempts: number; windowStartedAt: string }>(),
   notificationReferences: [] as string[],
+  patientStatusNotifications: [] as { reference: string; status: string }[],
 }));
 
 vi.mock('../src/db/client', () => ({ createDbClient: () => ({}) }));
@@ -238,6 +239,15 @@ vi.mock('../src/services/appointment-notification.service', () => ({
   notifyClinicOfAppointment: async ({ reference }: { reference: string }) => {
     state.notificationReferences.push(reference);
   },
+  notifyPatientOfStatusChange: async ({
+    reference,
+    status,
+  }: {
+    reference: string;
+    status: string;
+  }) => {
+    state.patientStatusNotifications.push({ reference, status });
+  },
 }));
 
 const { app } = await import('../src/app');
@@ -394,6 +404,10 @@ describe('appointment lifecycle workflow', () => {
     expect(state.appointments[0]).toMatchObject({
       status: 'COMPLETED',
       statusUpdatedByAdminId: 'RECEPTIONIST-admin',
+    });
+    expect(state.patientStatusNotifications).toContainEqual({
+      reference: submitted.data.reference,
+      status: 'CONFIRMED',
     });
 
     const afterCompletion = await request('/api/admin/dashboard', { headers: receptionistHeaders });

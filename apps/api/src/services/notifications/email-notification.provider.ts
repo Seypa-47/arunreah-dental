@@ -5,9 +5,13 @@ import {
   patientAppointmentEmailHtml,
   patientAppointmentEmailSubject,
   patientAppointmentEmailText,
+  patientAppointmentStatusEmailHtml,
+  patientAppointmentStatusEmailSubject,
+  patientAppointmentStatusEmailText,
 } from './notification-formatters';
 import type {
   AppointmentNotificationPayload,
+  AppointmentStatusUpdatePayload,
   NotificationProvider,
   NotificationResult,
 } from './types';
@@ -164,6 +168,40 @@ export class EmailNotificationProvider implements NotificationProvider {
         provider: this.name,
         success: false,
         errorCode: clinicResult.errorCode ?? 'PROVIDER_REQUEST_FAILED',
+      };
+    }
+
+    return { provider: this.name, success: true };
+  }
+
+  public async sendAppointmentStatusUpdate(
+    payload: AppointmentStatusUpdatePayload,
+  ): Promise<NotificationResult> {
+    const { fromAddress, apiKey } = this.config;
+    if (!fromAddress || !apiKey) {
+      return { provider: this.name, success: false, errorCode: 'NOT_CONFIGURED' };
+    }
+
+    const patientEmail = payload.email?.trim();
+    if (!patientEmail) {
+      return { provider: this.name, success: true };
+    }
+
+    const result = await this.deliverEmailWithFallback(
+      fromAddress,
+      patientEmail,
+      apiKey,
+      patientAppointmentStatusEmailSubject(payload),
+      patientAppointmentStatusEmailText(payload),
+      patientAppointmentStatusEmailHtml(payload),
+      'patient',
+    );
+
+    if (!result.success) {
+      return {
+        provider: this.name,
+        success: false,
+        errorCode: result.errorCode ?? 'PROVIDER_REQUEST_FAILED',
       };
     }
 

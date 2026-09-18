@@ -1,10 +1,15 @@
 import { EmailNotificationProvider } from './notifications/email-notification.provider';
 import { NotificationService } from './notifications/notification.service';
 import { TelegramNotificationProvider } from './notifications/telegram-notification.provider';
-import type { AppointmentNotificationPayload, NotificationResult } from './notifications/types';
+import type {
+  AppointmentNotificationPayload,
+  AppointmentStatusUpdatePayload,
+  NotificationResult,
+} from './notifications/types';
 import type { Bindings } from '../types/env';
 
 export type AppointmentNotification = AppointmentNotificationPayload;
+export type AppointmentStatusUpdateNotification = AppointmentStatusUpdatePayload;
 
 /**
  * This boundary deliberately keeps provider details out of appointment
@@ -30,4 +35,22 @@ export async function notifyClinicOfAppointment(
   ]);
 
   return notificationService.notifyAppointmentRequest(appointment);
+}
+
+export async function notifyPatientOfStatusChange(
+  appointment: AppointmentStatusUpdateNotification,
+  environment: Bindings,
+): Promise<NotificationResult | undefined> {
+  const emailProvider = new EmailNotificationProvider({
+    enabled: environment.EMAIL_NOTIFICATIONS_ENABLED === 'true',
+    recipient: environment.EMAIL_NOTIFICATION_RECIPIENT,
+    fromAddress: environment.EMAIL_FROM_ADDRESS,
+    apiKey: environment.RESEND_API_KEY,
+  });
+
+  if (!emailProvider.isEnabled()) {
+    return undefined;
+  }
+
+  return emailProvider.sendAppointmentStatusUpdate(appointment);
 }
