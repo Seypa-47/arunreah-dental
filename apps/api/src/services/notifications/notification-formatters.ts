@@ -3,7 +3,7 @@ import type {
   AppointmentStatusUpdatePayload,
 } from './types';
 
-function doctorName(payload: AppointmentNotificationPayload) {
+function doctorName(payload: { doctorName: string | null }) {
   return payload.doctorName ?? 'No preference';
 }
 
@@ -254,6 +254,90 @@ export function appointmentTelegramText(payload: AppointmentNotificationPayload)
 
   if (payload.notes) lines.push(`Notes: ${payload.notes.slice(0, 600)}`);
   return lines.join('\n');
+}
+
+export function appointmentTelegramHtml(payload: AppointmentNotificationPayload): string {
+  const patientNotes = payload.notes
+    ? escapeHtml(payload.notes.slice(0, 600))
+    : 'None';
+
+  return [
+    '📋 <b>NEW APPOINTMENT REQUEST</b>',
+    '───────────────',
+    `🆔 <b>Reference:</b> <code>${escapeHtml(payload.reference)}</code>`,
+    '🟡 <b>Status:</b> <b>PENDING</b> <i>(Needs Reception Review)</i>',
+    '',
+    '👤 <b>Patient Information</b>',
+    `• <b>Name:</b> ${escapeHtml(payload.patientName)}`,
+    `• <b>Phone:</b> <code>${escapeHtml(payload.phone)}</code>`,
+    `• <b>Email:</b> ${escapeHtml(payload.email || 'None')}`,
+    '',
+    '🏥 <b>Booking Details</b>',
+    `• <b>Service:</b> ${escapeHtml(payload.serviceName)}`,
+    `• <b>Doctor:</b> ${escapeHtml(doctorName(payload))}`,
+    `• <b>Branch:</b> ${escapeHtml(payload.branchName)}`,
+    `• <b>Date:</b> ${escapeHtml(payload.preferredDate)}`,
+    `• <b>Time:</b> ${escapeHtml(payload.preferredTime)}`,
+    '',
+    '💬 <b>Notes from Patient:</b>',
+    patientNotes,
+    '───────────────',
+    '⚡ <i>Arunreah Dental Clinic • Staff Notification</i>',
+  ].join('\n');
+}
+
+export function appointmentStatusTelegramHtml(payload: AppointmentStatusUpdatePayload): string {
+  const isConfirmed = payload.status === 'CONFIRMED';
+  const header = isConfirmed
+    ? '✅ <b>APPOINTMENT CONFIRMED</b>'
+    : '❌ <b>APPOINTMENT CANCELLED</b>';
+  const statusBadge = isConfirmed
+    ? '🟢 <b>CONFIRMED</b> <i>(Accepted by Reception)</i>'
+    : '🔴 <b>CANCELLED</b>';
+  const detailsTitle = isConfirmed
+    ? '🏥 <b>Confirmed Details</b>'
+    : '🏥 <b>Original Booking Details</b>';
+
+  return [
+    header,
+    '───────────────',
+    `🆔 <b>Reference:</b> <code>${escapeHtml(payload.reference)}</code>`,
+    `<b>Status:</b> ${statusBadge}`,
+    '',
+    '👤 <b>Patient Information</b>',
+    `• <b>Name:</b> ${escapeHtml(payload.patientName)}`,
+    `• <b>Phone:</b> <code>${escapeHtml(payload.phone)}</code>`,
+    `• <b>Email:</b> ${escapeHtml(payload.email || 'None')}`,
+    '',
+    detailsTitle,
+    `• <b>Service:</b> ${escapeHtml(payload.serviceName)}`,
+    `• <b>Doctor:</b> ${escapeHtml(doctorName(payload))}`,
+    `• <b>Branch:</b> ${escapeHtml(payload.branchName)}`,
+    `• <b>Date:</b> ${escapeHtml(payload.preferredDate)}`,
+    `• <b>Time:</b> ${escapeHtml(payload.preferredTime)}`,
+    '───────────────',
+    '⚡ <i>Arunreah Dental Clinic • Staff Notification</i>',
+  ].join('\n');
+}
+
+export function appointmentStatusTelegramText(payload: AppointmentStatusUpdatePayload): string {
+  const isConfirmed = payload.status === 'CONFIRMED';
+  const header = isConfirmed ? 'APPOINTMENT CONFIRMED' : 'APPOINTMENT CANCELLED';
+
+  return [
+    `Arunreah Dental Clinic - ${header}`,
+    '------------------------------------------------------------',
+    `Ref: ${payload.reference}`,
+    `Status: ${payload.status}`,
+    `Patient: ${payload.patientName}`,
+    `Phone: ${payload.phone}`,
+    `Email: ${payload.email || 'None'}`,
+    `Service: ${payload.serviceName}`,
+    `Doctor: ${doctorName(payload)}`,
+    `Branch: ${payload.branchName}`,
+    `Date: ${payload.preferredDate}`,
+    `Time: ${payload.preferredTime}`,
+  ].join('\n');
 }
 
 export function patientAppointmentEmailSubject(payload: AppointmentNotificationPayload) {

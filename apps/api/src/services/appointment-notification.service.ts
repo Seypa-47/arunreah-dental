@@ -54,3 +54,20 @@ export async function notifyPatientOfStatusChange(
 
   return emailProvider.sendAppointmentStatusUpdate(appointment);
 }
+
+export async function notifyClinicOfStatusChange(
+  appointment: AppointmentStatusUpdateNotification,
+  environment: Bindings,
+): Promise<NotificationResult | undefined> {
+  const telegramProvider = new TelegramNotificationProvider({
+    enabled: environment.TELEGRAM_NOTIFICATIONS_ENABLED === 'true',
+    botToken: environment.TELEGRAM_BOT_TOKEN,
+    chatId: environment.TELEGRAM_CHAT_ID,
+  });
+
+  if (!telegramProvider.isEnabled()) {
+    return undefined;
+  }
+
+  return telegramProvider.sendAppointmentStatusUpdate(appointment);
+}

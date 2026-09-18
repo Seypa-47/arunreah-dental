@@ -4,6 +4,9 @@ import {
   appointmentEmailHtml,
   appointmentEmailSubject,
   appointmentEmailText,
+  appointmentStatusTelegramHtml,
+  appointmentStatusTelegramText,
+  appointmentTelegramHtml,
   appointmentTelegramText,
   patientAppointmentEmailHtml,
   patientAppointmentEmailSubject,
@@ -13,7 +16,10 @@ import {
   patientAppointmentStatusEmailText,
 } from '../src/services/notifications/notification-formatters';
 import { NotificationService } from '../src/services/notifications/notification.service';
-import { TelegramNotificationProvider } from '../src/services/notifications/telegram-notification.provider';
+import {
+  normalizeTelegramChatIds,
+  TelegramNotificationProvider,
+} from '../src/services/notifications/telegram-notification.provider';
 import type {
   AppointmentNotificationPayload,
   AppointmentStatusUpdatePayload,
@@ -369,13 +375,26 @@ describe('HTTP notification providers', () => {
     });
   });
 
-  it('sends Telegram as simple text and returns provider failures safely', async () => {
+  it('normalizes Telegram chat IDs from various formats including Web URLs', () => {
+    expect(normalizeTelegramChatIds('-1001234567890')).toEqual(['-1001234567890']);
+    expect(normalizeTelegramChatIds('909395067')).toEqual(['909395067']);
+    expect(normalizeTelegramChatIds('https://web.telegram.org/a/#-5593770369')).toEqual([
+      '-1005593770369',
+    ]);
+    expect(normalizeTelegramChatIds('-5593770369')).toEqual(['-1005593770369']);
+    expect(normalizeTelegramChatIds('-1005593770369, 909395067')).toEqual([
+      '-1005593770369',
+      '909395067',
+    ]);
+  });
+
+  it('sends Telegram appointment requests with clean HTML formatting and handles failures safely', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}', { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     const provider = new TelegramNotificationProvider({
       enabled: true,
       botToken: 'test-token',
-      chatId: '-100123',
+      chatId: '-1005593770369',
     });
 
     await expect(provider.sendAppointmentRequest(payload)).resolves.toEqual({
@@ -384,10 +403,12 @@ describe('HTTP notification providers', () => {
     });
     expect(fetchMock.mock.calls[0]?.[0]).toBe('https://api.telegram.org/bottest-token/sendMessage');
     const options = fetchMock.mock.calls[0]?.[1];
-    expect(JSON.parse(String(options?.body))).toMatchObject({
-      chat_id: '-100123',
-      text: expect.stringContaining('Status: PENDING'),
-    });
+    const body = JSON.parse(String(options?.body));
+    expect(body.chat_id).toBe('-1005593770369');
+    expect(body.parse_mode).toBe('HTML');
+    expect(body.text).toBe(appointmentTelegramHtml(payload));
+    expect(body.text).toContain('NEW APPOINTMENT REQUEST');
+    expect(body.text).toContain('PENDING');
 
     fetchMock.mockRejectedValueOnce(new Error('network failure'));
     await expect(provider.sendAppointmentRequest(payload)).resolves.toEqual({
@@ -395,6 +416,80 @@ describe('HTTP notification providers', () => {
       success: false,
       errorCode: 'PROVIDER_REQUEST_FAILED',
     });
+  });
+
+  it('sends Telegram status updates with distinct formatting for CONFIRMED and CANCELLED', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const provider = new TelegramNotificationProvider({
+      enabled: true,
+      botToken: 'test-token',
+      chatId: '-1005593770369',
+    });
+
+    const statusConfirmedPayload: AppointmentStatusUpdatePayload = {
+      reference: 'AR-20990101-ABC123',
+      patientName: 'Sok Dara',
+      phone: '+855 12 345 678',
+      email: 'patient@example.com',
+      serviceName: 'Dental Implants',
+      doctorName: 'Dr. John',
+      branchName: 'Main Branch',
+      preferredDate: '2099-01-01',
+      preferredTime: '10:30',
+      status: 'CONFIRMED',
+      notes: null,
+    };
+
+    await expect(provider.sendAppointmentStatusUpdate(statusConfirmedPayload)).resolves.toEqual({
+      provider: 'telegram',
+      success: true,
+    });
+    const confirmedBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(confirmedBody.chat_id).toBe('-1005593770369');
+    expect(confirmedBody.text).toBe(appointmentStatusTelegramHtml(statusConfirmedPayload));
+    expect(confirmedBody.text).toContain('APPOINTMENT CONFIRMED');
+    expect(confirmedBody.text).toContain('CONFIRMED');
+    expect(appointmentStatusTelegramText(statusConfirmedPayload)).toContain('APPOINTMENT CONFIRMED');
+
+    const statusCancelledPayload: AppointmentStatusUpdatePayload = {
+      ...statusConfirmedPayload,
+      status: 'CANCELLED',
+    };
+
+    await expect(provider.sendAppointmentStatusUpdate(statusCancelledPayload)).resolves.toEqual({
+      provider: 'telegram',
+      success: true,
+    });
+    const cancelledBody = JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body));
+    expect(cancelledBody.chat_id).toBe('-1005593770369');
+    expect(cancelledBody.text).toBe(appointmentStatusTelegramHtml(statusCancelledPayload));
+    expect(cancelledBody.text).toContain('APPOINTMENT CANCELLED');
+    expect(cancelledBody.text).toContain('CANCELLED');
+    expect(appointmentStatusTelegramText(statusCancelledPayload)).toContain('APPOINTMENT CANCELLED');
+  });
+
+  it('falls back to plain text if Telegram rejects HTML formatting', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response('{"ok":false,"description":"Bad Request: can\'t parse entities"}', { status: 400 }))
+      .mockResolvedValueOnce(new Response('{"ok":true}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const provider = new TelegramNotificationProvider({
+      enabled: true,
+      botToken: 'test-token',
+      chatId: '-1005593770369',
+    });
+
+    await expect(provider.sendAppointmentRequest(payload)).resolves.toEqual({
+      provider: 'telegram',
+      success: true,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const fallbackBody = JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body));
+    expect(fallbackBody.parse_mode).toBeUndefined();
+    expect(fallbackBody.text).toContain('Status: PENDING');
   });
 
   it('sends patient email on appointment status update when email is provided', async () => {
