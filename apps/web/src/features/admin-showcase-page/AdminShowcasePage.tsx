@@ -156,7 +156,7 @@ function ShowcaseListContent({
         {/* Filters & Search Toolbar */}
         <Card className="mt-9 rounded-[26px] border-[#dce5ef] p-6">
           <div className="admin-list-toolbar">
-            <label className="flex h-[46px] min-w-[220px] flex-1 items-center gap-3 rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-4 text-[#9badc5]">
+            <label className="flex h-[46px] min-w-[220px] flex-1 items-center gap-3 rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-4 text-[#9badc5] transition focus-within:border-[#2187a8] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <AdminIcon className="size-5" name="search" />
               <span className="sr-only">Search showcase articles</span>
               <input
@@ -174,10 +174,10 @@ function ShowcaseListContent({
               />
             </label>
 
-            <label className="flex h-[46px] items-center rounded-xl border border-[#dce5ef] bg-white px-3 text-[#71839e]">
+            <label className="flex h-[46px] items-center rounded-xl border border-[#dce5ef] bg-white px-3 text-[#71839e] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <span className="sr-only">Filter by category</span>
               <select
-                className="bg-transparent text-[14px] font-medium outline-none"
+                className="cursor-pointer bg-transparent text-[14px] font-medium outline-none"
                 onChange={(event) =>
                   onListStateChange({
                     ...listState,
@@ -196,7 +196,7 @@ function ShowcaseListContent({
               </select>
             </label>
 
-            <label className="flex h-[46px] items-center rounded-xl border border-[#dce5ef] bg-white px-3 text-[#71839e]">
+            <label className="flex h-[46px] items-center rounded-xl border border-[#dce5ef] bg-white px-3 text-[#71839e] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <span className="sr-only">Filter by status</span>
               <select
                 className="bg-transparent text-[14px] font-medium outline-none"

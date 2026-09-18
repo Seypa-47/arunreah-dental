@@ -67,8 +67,12 @@ textarea {
 }
 
 :focus-visible {
-  outline: 3px solid #168aad;
-  outline-offset: 3px;
+  outline: 2px solid #168aad;
+  outline-offset: 2px;
+}
+
+:is(input:not([type='checkbox']):not([type='radio']), select, textarea):focus-visible {
+  outline: none;
 }
 
 /* Khmer needs a slightly more generous rhythm than Latin text. */

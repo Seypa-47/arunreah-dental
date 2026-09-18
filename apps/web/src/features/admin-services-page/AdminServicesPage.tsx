@@ -224,7 +224,7 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
         </header>
         <Card className="mt-9 rounded-[26px] border-[#dce5ef] p-6">
           <div className="admin-list-toolbar">
-            <label className="flex h-[46px] min-w-[220px] flex-1 items-center gap-3 rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-4 text-[#9badc5]">
+            <label className="flex h-[46px] min-w-[220px] flex-1 items-center gap-3 rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-4 text-[#9badc5] transition focus-within:border-[#2187a8] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <AdminIcon className="size-5" name="search" />
               <span className="sr-only">Search services</span>
               <input
@@ -235,10 +235,10 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
                 value={listState.search ?? ''}
               />
             </label>
-            <label className="flex h-[46px] items-center rounded-xl border border-[#dce5ef] bg-white px-3 text-[#71839e]">
+            <label className="flex h-[46px] items-center rounded-xl border border-[#dce5ef] bg-white px-3 text-[#71839e] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <span className="sr-only">Filter by category</span>
               <select
-                className="bg-transparent text-[14px] font-medium outline-none"
+                className="cursor-pointer bg-transparent text-[14px] font-medium outline-none"
                 onChange={(event) => onListStateChange({ ...listState, category: event.target.value === content.controls.allCategories ? undefined : event.target.value, page: 1 })}
                 value={listState.category ?? content.controls.allCategories}
               >
@@ -247,10 +247,10 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
                 ))}
               </select>
             </label>
-            <label className="flex h-[46px] items-center rounded-xl border border-[#dce5ef] bg-white px-3 text-[#71839e]">
+            <label className="flex h-[46px] items-center rounded-xl border border-[#dce5ef] bg-white px-3 text-[#71839e] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <span className="sr-only">Filter by status</span>
               <select
-                className="bg-transparent text-[14px] font-medium outline-none"
+                className="cursor-pointer bg-transparent text-[14px] font-medium outline-none"
                 onChange={(event) => onListStateChange({ ...listState, status: event.target.value === content.controls.allStatuses ? undefined : event.target.value.toUpperCase() as ServiceListQuery['status'], page: 1 })}
                 value={listState.status ? `${listState.status[0]}${listState.status.slice(1).toLowerCase()}` : content.controls.allStatuses}
               >

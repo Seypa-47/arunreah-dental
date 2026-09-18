@@ -1016,7 +1016,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
           {/* Filters inside card header */}
           <div className="admin-list-toolbar">
             {/* Search Input */}
-            <label className="flex h-11 min-w-[200px] flex-1 items-center gap-3 rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-4 text-[#9badc5] focus-within:border-[#2187a8] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#d9f0f7]">
+            <label className="flex h-11 min-w-[200px] flex-1 items-center gap-3 rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-4 text-[#9badc5] transition focus-within:border-[#2187a8] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <AdminIcon className="size-4 shrink-0 text-[#9badc5]" name="search" />
               <span className="sr-only">Search doctors</span>
               <input
@@ -1031,7 +1031,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
             </label>
 
             {/* Specialties Dropdown */}
-            <label className="flex h-11 items-center rounded-xl border border-[#e1e8f0] bg-white px-3.5 text-[#71839e] focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#d9f0f7]">
+            <label className="flex h-11 items-center rounded-xl border border-[#e1e8f0] bg-white px-3.5 text-[#71839e] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <span className="sr-only">Filter by specialty</span>
               <select
                 className="cursor-pointer bg-transparent text-[14px] font-medium text-[#182238] outline-none"
@@ -1049,7 +1049,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
             </label>
 
             {/* Status Dropdown */}
-            <label className="flex h-11 items-center rounded-xl border border-[#e1e8f0] bg-white px-3.5 text-[#71839e] focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#d9f0f7]">
+            <label className="flex h-11 items-center rounded-xl border border-[#e1e8f0] bg-white px-3.5 text-[#71839e] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <span className="sr-only">Filter by status</span>
               <select
                 className="cursor-pointer bg-transparent text-[14px] font-medium text-[#182238] outline-none"
