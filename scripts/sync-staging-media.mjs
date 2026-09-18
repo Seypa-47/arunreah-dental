@@ -11,7 +11,7 @@ const MEDIA_MAPPINGS = [
   // Clinic logo
   {
     key: 'clinic/8d0d3c50-9bfd-4aa4-9a8f-8ee5a2a9b4f3-clinic-logo.png',
-    file: join(PUBLIC_ASSETS, 'footer-logo.png'),
+    file: join(PUBLIC_ASSETS, 'footer-logo-cropped.png'),
     contentType: 'image/png'
   },
   // Branches
