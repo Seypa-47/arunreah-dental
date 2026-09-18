@@ -101,7 +101,46 @@
 .admin-ui .admin-list-image-empty { display: grid; place-items: center; background: #eef2f6; color: var(--admin-muted); font-size: 0.6875rem; text-align: center; padding: 0.25rem; }
 .admin-ui .admin-list-toolbar > label { min-height: 2.75rem; }
 .admin-ui .admin-list-toolbar label:has(input[type='search']) { flex: 1 1 15rem; }
-.admin-ui .admin-list-toolbar label > :is(input, select) { border: 0; box-shadow: none; background: transparent; min-width: 0; width: 100%; }
+.admin-ui .admin-list-toolbar label,
+.admin-ui label:has(> input[type='search']),
+.admin-ui label:has(> svg + input) {
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+.admin-ui .admin-list-toolbar label:hover,
+.admin-ui label:has(> input[type='search']):hover,
+.admin-ui label:has(> svg + input):hover {
+  border-color: #b0c2d4;
+}
+.admin-ui .admin-list-toolbar label:focus-within,
+.admin-ui label:has(> input[type='search']):focus-within,
+.admin-ui label:has(> svg + input):focus-within {
+  border-color: #2187a8 !important;
+  box-shadow: 0 0 0 3px rgba(33, 135, 168, 0.15) !important;
+  background-color: #ffffff !important;
+}
+.admin-ui .admin-list-toolbar label > :is(input, select),
+.admin-ui .admin-list-toolbar label :is(input, select),
+.admin-ui label:has(> input[type='search']) > input,
+.admin-ui label:has(> svg + input) > input {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent !important;
+  min-width: 0;
+  width: 100%;
+}
+.admin-ui .admin-list-toolbar label > :is(input, select):focus,
+.admin-ui .admin-list-toolbar label > :is(input, select):focus-visible,
+.admin-ui .admin-list-toolbar label :is(input, select):focus,
+.admin-ui .admin-list-toolbar label :is(input, select):focus-visible,
+.admin-ui label:has(> input[type='search']) > input:focus,
+.admin-ui label:has(> input[type='search']) > input:focus-visible,
+.admin-ui label:has(> svg + input) > input:focus,
+.admin-ui label:has(> svg + input) > input:focus-visible {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
 .admin-ui .admin-table-scroll { overflow-x: auto; max-width: 100%; overscroll-behavior-inline: contain; border-radius: 0.5rem; }
 .admin-ui .admin-management-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
 .admin-ui .admin-management-table :is(th, td) { padding: 0.875rem 1rem; vertical-align: middle; }
@@ -180,15 +219,31 @@
   font-size: 0.9375rem;
   font-weight: 400;
   line-height: 1.6;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
 }
 .admin-ui :is(input:not([type='checkbox']):not([type='radio']), select) { min-height: 2.75rem; padding-block: 0.5rem; }
+.admin-ui :is(input:not([type='checkbox']):not([type='radio']), select, textarea):hover:not(:disabled) {
+  border-color: #a3b8cb;
+}
+.admin-ui :is(input:not([type='checkbox']):not([type='radio']), select, textarea):focus,
+.admin-ui :is(input:not([type='checkbox']):not([type='radio']), select, textarea):focus-visible {
+  outline: none;
+  border-color: #2187a8;
+  box-shadow: 0 0 0 3px rgba(33, 135, 168, 0.15);
+}
 .admin-ui input[type='file'] { padding: 0.5rem; }
 .admin-ui input::file-selector-button { background: #eaf3f7; border: 1px solid var(--admin-border); border-radius: 0.375rem; color: var(--admin-primary); padding: 0.375rem 0.625rem; margin-right: 0.75rem; font: inherit; }
 .admin-ui textarea { min-height: 7rem; resize: vertical; padding: 0.75rem; }
 .admin-ui :is(input, textarea)::placeholder { color: #617284; opacity: 1; }
-.admin-ui :is(input[type='checkbox'], input[type='radio']) { accent-color: var(--admin-primary); }
-.admin-ui :is(button, a, input, select, textarea, [tabindex]):focus-visible { outline: 3px solid #096b89; outline-offset: 3px; box-shadow: 0 0 0 2px white; }
+.admin-ui :is(input[type='checkbox'], input[type='radio']) { accent-color: var(--admin-primary); cursor: pointer; }
+.admin-ui :is(button:not([role='switch']), a, [tabindex]):focus-visible { outline: 2px solid var(--admin-primary); outline-offset: 2px; }
+.admin-ui :is(input[type='checkbox'], input[type='radio']):focus-visible { outline: 2px solid var(--admin-primary); outline-offset: 2px; }
 .admin-ui :is(input, select, textarea)[aria-invalid='true'] { border-color: #b42318; }
+.admin-ui :is(input, select, textarea)[aria-invalid='true']:focus,
+.admin-ui :is(input, select, textarea)[aria-invalid='true']:focus-visible {
+  border-color: #b42318;
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.15);
+}
 .admin-ui :is(button, input, select, textarea):disabled { cursor: not-allowed; opacity: 0.65; }
 .admin-ui button:not([role='switch']) { border-radius: 0.5rem; }
 .admin-ui .admin-toggle { display: inline-grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; border-radius: 0.625rem; color: var(--admin-primary); }

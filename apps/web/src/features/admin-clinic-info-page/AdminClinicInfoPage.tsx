@@ -706,7 +706,7 @@ export function AdminClinicInfoPage({
 
                 {/* Filters */}
                 <div className="admin-list-toolbar mt-4">
-                  <label className="flex h-10 flex-1 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-3 text-[13.5px] text-[#9badc5] focus-within:border-[#2187a8]">
+                  <label className="flex h-10 flex-1 items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-3 text-[13.5px] text-[#9badc5] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
                     <AdminIcon className="size-3.5 text-[#9badc5]" name="search" />
                     <input
                       className="w-full bg-transparent text-[#182238] outline-none placeholder:text-[#a9b7c9]"
@@ -722,7 +722,7 @@ export function AdminClinicInfoPage({
                   </label>
                   <select
                     aria-label="Filter branches by status"
-                    className="h-10 rounded-xl border border-[#dce5ef] bg-white px-3 text-[13px] text-[#71839e] outline-none"
+                    className="cursor-pointer h-10 rounded-xl border border-[#dce5ef] bg-white px-3 text-[13px] text-[#71839e] outline-none transition focus:border-[#2187a8] focus:ring-2 focus:ring-[#2187a8]/20"
                     onChange={(e) => setBranchListState((previous) => ({
                       ...previous,
                       page: 1,
