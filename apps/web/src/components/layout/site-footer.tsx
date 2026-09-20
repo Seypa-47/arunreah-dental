@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { LandingFooterLinkGroup, LandingPageContent } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { queryKeys } from '@/lib/query-keys';
-import { getPublicClinic, getPublicContact } from '@/services/public-content';
+import { getPublicBranches, getPublicClinic, getPublicContact } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
 
 const asset = (name: string) => `/assets/landing/${name}`;
@@ -44,6 +44,7 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
   const { language } = usePublicLanguage();
   const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic() });
   const contactQuery = useQuery({ queryKey: queryKeys.public.contact(), queryFn: () => getPublicContact() });
+  const branchesQuery = useQuery({ queryKey: queryKeys.public.branches(language), queryFn: () => getPublicBranches(language) });
   const clinic = clinicQuery.data;
   const contact = contactQuery.data;
   const logoUrl = getPublicMediaUrl(clinic?.logoKey);
@@ -56,6 +57,16 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
     { href: contact?.telegramUrl, icon: 'footer-messenger.svg', label: 'Contact the clinic on Telegram' },
     { href: contact?.instagramUrl, icon: 'footer-instagram.svg', label: 'Visit the clinic on Instagram' },
   ].filter((link): link is { href: string; icon: string; label: string } => Boolean(link.href));
+
+  const queryBranchLinks = branchesQuery.data?.branches?.map((branch) => ({
+    href: '/branches',
+    label: branch.name,
+  }));
+  const effectiveBranchLinks =
+    queryBranchLinks && queryBranchLinks.length > 0
+      ? queryBranchLinks
+      : (branchLinks ?? []);
+
   return (
     <footer className="border-t border-[#d9e9ee] bg-[#f7fafc] pb-8 pt-8 sm:pb-9 sm:pt-10" id="about">
       <div className="ui-page-container grid gap-8 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.55fr)_minmax(150px,0.75fr)_repeat(2,minmax(130px,0.6fr))] lg:gap-10">
@@ -68,7 +79,7 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
         <div>
           <h2 className="mb-3 text-[15px] font-extrabold leading-6 text-[#075d83]">Our Branches</h2>
           <ul className="space-y-2.5">
-            {branchLinks.map((link) => (
+            {effectiveBranchLinks.map((link) => (
             <li className="flex min-h-11 items-center gap-3 text-[#6b7280]" key={link.label}>
                 <img alt="" aria-hidden="true" className="size-5 shrink-0" src={asset('branch-card-pin-alt.svg')} />
                 <Link className="inline-flex min-h-11 items-center text-[14px] font-medium leading-6 text-[#607486] hover:text-[#087b9f] hover:underline hover:underline-offset-4" to={link.href}>
