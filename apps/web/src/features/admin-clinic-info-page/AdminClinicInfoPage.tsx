@@ -3,7 +3,7 @@ import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useState, useEffect, useMemo, useRef, type ChangeEvent, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminBranchListQuery, CreateBranchInput } from '@arunreah/shared';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
 import { Button } from '@/components/ui/button';
@@ -103,14 +103,37 @@ function CreateBranchModal({
   );
 }
 
+export function resolveClinicInfoTab(
+  pathname: string,
+  fallback: 'clinic' | 'branches' | 'contact' = 'clinic',
+): 'clinic' | 'branches' | 'contact' {
+  if (pathname === '/admin/clinic-info/branches' || pathname.startsWith('/admin/clinic-info/branches/')) {
+    return 'branches';
+  }
+  if (pathname === '/admin/clinic-info/contact' || pathname.startsWith('/admin/clinic-info/contact/')) {
+    return 'contact';
+  }
+  if (pathname === '/admin/clinic-info' || pathname.startsWith('/admin/clinic-info/')) {
+    return 'clinic';
+  }
+  return fallback;
+}
+
 export function AdminClinicInfoPage({
   initialTab = 'clinic',
 }: {
   initialTab?: 'clinic' | 'branches' | 'contact';
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'clinic' | 'branches' | 'contact'>(initialTab);
+  const resolvedTab = resolveClinicInfoTab(location.pathname, initialTab);
+  const [activeTab, setActiveTab] = useState<'clinic' | 'branches' | 'contact'>(resolvedTab);
+
+  useEffect(() => {
+    const nextTab = resolveClinicInfoTab(location.pathname, initialTab);
+    setActiveTab(nextTab);
+  }, [location.pathname, initialTab]);
   const { data, isLoading } = useAdminClinicInfoPageQuery();
   const [branchListState, setBranchListState] = useState<BranchListState>({
     limit: 20,
@@ -210,12 +233,15 @@ export function AdminClinicInfoPage({
     if (data) {
       setGeneralInfo(data.generalInfo);
       setContactSettings(data.contactSettings);
-      if (activeTab !== 'branches') {
-        setBranches(data.branches);
-        setSelectedBranchId((current) => current || data.branches[0]?.id || '');
-      }
     }
-  }, [activeTab, data]);
+  }, [data]);
+
+  useEffect(() => {
+    if (data) {
+      setBranches((previous) => (previous.length > 0 ? previous : data.branches));
+      setSelectedBranchId((current) => current || data.branches[0]?.id || '');
+    }
+  }, [data]);
 
   useEffect(() => {
     if (!branchListQuery.data) return;
@@ -350,6 +376,7 @@ export function AdminClinicInfoPage({
             className="mt-6 flex gap-8 border-b border-[#e2e8f0] text-[14.5px] font-semibold"
           >
             <button
+              aria-current={activeTab === 'clinic' ? 'page' : undefined}
               className={`pb-3 transition-colors ${
                 activeTab === 'clinic'
                   ? 'border-b-2 border-[#2187a8] font-bold text-[#2187a8]'
@@ -361,6 +388,7 @@ export function AdminClinicInfoPage({
               Clinic Information
             </button>
             <button
+              aria-current={activeTab === 'branches' ? 'page' : undefined}
               className={`pb-3 transition-colors ${
                 activeTab === 'branches'
                   ? 'border-b-2 border-[#2187a8] font-bold text-[#2187a8]'
@@ -372,6 +400,7 @@ export function AdminClinicInfoPage({
               Branches / Locations
             </button>
             <button
+              aria-current={activeTab === 'contact' ? 'page' : undefined}
               className={`pb-3 transition-colors ${
                 activeTab === 'contact'
                   ? 'border-b-2 border-[#2187a8] font-bold text-[#2187a8]'
