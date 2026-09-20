@@ -14,18 +14,23 @@ const slug = z
 const optionalText = (maxLength: number) => z.string().trim().max(maxLength).nullable().optional();
 const optionalPhone = () =>
   z
-    .string()
-    .trim()
-    .transform((value) => (value === '' ? null : value))
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((value) => {
+      if (value === undefined) return undefined;
+      if (value === null) return null;
+      const trimmed = value.trim();
+      return trimmed === '' ? null : trimmed;
+    })
     .pipe(
       z
         .string()
         .min(6)
         .max(32)
         .regex(/^[0-9+()\-\s]+$/)
-        .nullable(),
-    )
-    .optional();
+        .nullable()
+        .optional(),
+    );
 const displayOrder = z.number().int().min(0).max(1_000_000);
 const expertise = z.object({
   titleEn: z.string().trim().min(1).max(160),

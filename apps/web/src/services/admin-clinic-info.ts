@@ -336,6 +336,23 @@ export async function saveClinicInfo(info: ClinicGeneralInfo): Promise<ClinicGen
   return info;
 }
 
+function normalizeUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const iframeMatch = trimmed.match(/src=["'](https?:\/\/[^"']+)["']/i);
+  if (iframeMatch && iframeMatch[1]) {
+    return iframeMatch[1];
+  }
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+  return trimmed;
+}
+
 export async function saveBranch(branch: ClinicBranch): Promise<ClinicBranch> {
   await cmsApi.branches.update(branch.id, {
     addressEn: branch.address,
@@ -348,7 +365,7 @@ export async function saveBranch(branch: ClinicBranch): Promise<ClinicBranch> {
     displayOrder: branch.displayOrder,
     featured: branch.featured,
     closingTime: branch.closingTime || null,
-    googleMapsUrl: branch.googleMapsLink || null,
+    googleMapsUrl: normalizeUrl(branch.googleMapsLink),
     heroCtaLabelEn: branch.heroCtaLabel || null,
     heroCtaLabelKm: branch.heroCtaLabelKm || null,
     heroHeadlineEn: branch.heroHeadline || null,
@@ -387,10 +404,10 @@ export async function saveContactSettings(settings: ContactSettings): Promise<Co
     addressKm: nullableText(settings.addressKm),
     businessHoursEn: nullableText(settings.businessHoursEn),
     businessHoursKm: nullableText(settings.businessHoursKm),
-    mainGoogleMapsUrl: nullableText(settings.mainGoogleMapsUrl),
-    facebookUrl: nullableText(settings.facebookUrl),
-    telegramUrl: nullableText(settings.telegramUrl),
-    instagramUrl: nullableText(settings.instagramUrl),
+    mainGoogleMapsUrl: normalizeUrl(settings.mainGoogleMapsUrl),
+    facebookUrl: normalizeUrl(settings.facebookUrl),
+    telegramUrl: normalizeUrl(settings.telegramUrl),
+    instagramUrl: normalizeUrl(settings.instagramUrl),
   });
   return settings;
 }

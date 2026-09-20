@@ -174,7 +174,7 @@ export function AdminClinicInfoPage({
       const message = error instanceof ApiClientError && error.status === 409
         ? 'That branch slug is already in use. Choose a different URL slug.'
         : 'Unable to create a new branch. Please check the required bilingual fields and try again.';
-      showToast(message);
+      showToast(message, 'error');
     },
   });
   const deleteBranchMutation = useMutation({
@@ -189,7 +189,7 @@ export function AdminClinicInfoPage({
       const message = error instanceof ApiClientError && error.status === 409
         ? 'This branch is referenced by appointment history. Deactivate or unpublish it instead.'
         : 'Unable to delete this branch. Please try again.';
-      showToast(message);
+      showToast(message, 'error');
     },
   });
 
@@ -226,7 +226,7 @@ export function AdminClinicInfoPage({
     instagramUrl: '',
   });
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; tone: 'success' | 'error' } | null>(null);
 
   // Sync initial query data
   useEffect(() => {
@@ -264,40 +264,55 @@ export function AdminClinicInfoPage({
 
   const branchStatusLabel = (status: ClinicBranch['status']) => status.charAt(0) + status.slice(1).toLowerCase();
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 2500);
+  const showToast = (message: string, tone: 'success' | 'error' = 'success') => {
+    setToast({ message, tone });
+    setTimeout(() => setToast(null), 3500);
   };
+
+  const isSaving =
+    updateInfoMutation.isPending ||
+    updateBranchMutation.isPending ||
+    updateContactMutation.isPending;
 
   const handleSaveAll = () => {
     if (activeTab === 'clinic') {
+      if (!generalInfo.clinicNameEn.trim() || !generalInfo.clinicNameKm.trim()) {
+        showToast('Clinic name in English and Khmer are required.', 'error');
+        return;
+      }
       updateInfoMutation.mutate(generalInfo, {
-        onSuccess: () => showToast('Clinic Information saved successfully!'),
+        onSuccess: () => showToast('Clinic Information saved successfully!', 'success'),
         onError: (error: unknown) => {
           const message = error instanceof ApiClientError && error.status === 403
             ? 'You do not have permission to update clinic information.'
             : 'Unable to save clinic information. Please review the required English and Khmer fields.';
-          showToast(message);
+          showToast(message, 'error');
         },
       });
     } else if (activeTab === 'branches' && selectedBranch) {
       updateBranchMutation.mutate(selectedBranch, {
-        onSuccess: () => showToast('Branch details saved successfully!'),
+        onSuccess: () => showToast('Branch details saved successfully!', 'success'),
         onError: (error: unknown) => {
           const message = error instanceof ApiClientError && error.status === 409
             ? 'That branch slug is already in use. Choose a different URL slug.'
             : 'Unable to save branch details. Please review the fields and try again.';
-          showToast(message);
+          showToast(message, 'error');
         },
       });
     } else if (activeTab === 'contact') {
+      if (!contactSettings.primaryPhone.trim()) {
+        showToast('Primary phone number is required.', 'error');
+        return;
+      }
       updateContactMutation.mutate(contactSettings, {
-        onSuccess: () => showToast('Contact settings saved successfully!'),
+        onSuccess: () => showToast('Contact settings saved successfully!', 'success'),
         onError: (error: unknown) => {
           const message = error instanceof ApiClientError && error.status === 403
             ? 'You do not have permission to update contact settings.'
-            : 'Unable to save contact settings. Please review the phone, email, and URL values.';
-          showToast(message);
+            : error instanceof ApiClientError && error.message
+              ? error.message
+              : 'Unable to save contact settings. Please review the phone, email, and URL values.';
+          showToast(message, 'error');
         },
       });
     }
@@ -317,7 +332,7 @@ export function AdminClinicInfoPage({
 
   const imageUpload = useMutation({
     mutationFn: ({ category, file }: { category: 'branches' | 'clinic'; file: File }) => uploadMedia(category, file),
-    onError: () => showToast('Image upload failed. Use a JPEG, PNG, or WEBP image under 5 MB.'),
+    onError: () => showToast('Image upload failed. Use a JPEG, PNG, or WEBP image under 5 MB.', 'error'),
   });
   const uploadImage = (file: File, callback: (key: string) => void, category: 'branches' | 'clinic') => {
     imageUpload.mutate({ category, file }, { onSuccess: (media) => callback(media.key) });
@@ -346,16 +361,29 @@ export function AdminClinicInfoPage({
       <main className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
         <div className="mx-auto max-w-[1440px] w-full">
         {/* Toast notification */}
-        {toastMessage && (
-          <div className="fixed top-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-[#bbf7d0] bg-[#f0fdf4] p-4 text-[14px] font-semibold text-[#15803d] shadow-lg">
-            <svg className="size-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                clipRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                fillRule="evenodd"
-              />
-            </svg>
-            <span>{toastMessage}</span>
+        {toast && (
+          <div
+            role="status"
+            className={`fixed top-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border p-4 text-[14px] font-semibold shadow-lg transition-all ${
+              toast.tone === 'error'
+                ? 'border-[#fecaca] bg-[#fef2f2] text-[#991b1b]'
+                : 'border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]'
+            }`}
+          >
+            {toast.tone === 'error' ? (
+              <svg className="size-5 shrink-0 text-[#dc2626]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            ) : (
+              <svg className="size-5 shrink-0 text-[#15803d]" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  clipRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  fillRule="evenodd"
+                />
+              </svg>
+            )}
+            <span>{toast.message}</span>
           </div>
         )}
 
@@ -1564,15 +1592,6 @@ export function AdminClinicInfoPage({
                         value={contactSettings.instagramUrl}
                       />
                     </div>
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">Main Google Maps URL</label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, mainGoogleMapsUrl: e.target.value }))}
-                        type="url"
-                      value={contactSettings.mainGoogleMapsUrl}
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -1620,13 +1639,14 @@ export function AdminClinicInfoPage({
           </Button>
           <Button
             className="flex h-11 items-center gap-2 rounded-xl bg-[#2187a8] px-6 text-[14px] font-bold text-white shadow-[0_4px_14px_rgba(33,135,168,0.25)] hover:bg-[#1a718c]"
+            disabled={isSaving}
             onClick={handleSaveAll}
             type="button"
           >
             <svg className="size-4" fill="currentColor" viewBox="0 0 20 20">
               <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l6-6a1 1 0 00-1.414-1.414l-5.293 5.293-2.293-2.293z" />
             </svg>
-            <span>Save Changes</span>
+            <span>{isSaving ? 'Saving…' : 'Save Changes'}</span>
           </Button>
         </div>
         </div>
