@@ -145,10 +145,10 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
   const { language } = usePublicLanguage();
   const copy = language === 'km'
     ? {
-      about: 'អំពីទន្តបណ្ឌិត', appointment: 'ស្នើសុំការណាត់ជួប', appointmentBody: `ផ្ញើសំណើ ដើម្បីពិភាក្សាអំពីបញ្ហាមាត់ធ្មេញរបស់អ្នកជាមួយ ${doctor.name}។`, education: 'ការសិក្សា និងការអភិវឌ្ឍវិជ្ជាជីវៈ', expertise: 'ផ្នែកជំនាញ', profile: 'ប្រវត្តិវិជ្ជាជីវៈ', qualifications: 'គុណវុឌ្ឍិ និងវគ្គបណ្តុះបណ្តាល',
+      about: 'អំពីទន្តបណ្ឌិត', appointment: 'ស្នើសុំការណាត់ជួប', appointmentBody: `ផ្ញើសំណើ ដើម្បីពិភាក្សាអំពីបញ្ហាមាត់ធ្មេញរបស់អ្នកជាមួយ ${doctor.name}។`, bookAppointment: 'កក់ការណាត់ជួប', education: 'ការសិក្សា និងការអភិវឌ្ឍវិជ្ជាជីវៈ', expertise: 'ផ្នែកជំនាញ', profile: 'ប្រវត្តិវិជ្ជាជីវៈ', qualifications: 'គុណវុឌ្ឍិ និងវគ្គបណ្តុះបណ្តាល',
     }
     : {
-      about: 'About the Doctor', appointment: 'Request an Appointment', appointmentBody: `Send a request to discuss your dental concerns with ${doctor.name}.`, education: 'Education & Professional Development', expertise: 'Clinical Focus', profile: 'Professional Profile', qualifications: 'Qualifications & Training',
+      about: 'About the Doctor', appointment: 'Request an Appointment', appointmentBody: `Send a request to discuss your dental concerns with ${doctor.name}.`, bookAppointment: 'Book Appointment', education: 'Education & Professional Development', expertise: 'Clinical Focus', profile: 'Professional Profile', qualifications: 'Qualifications & Training',
     };
 
   return (
@@ -199,10 +199,11 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
               {copy.appointmentBody}
             </p>
             <Button
-              className="mt-4 min-h-12 w-full rounded-full bg-white text-[14px] font-bold text-[#167ea7] shadow-none hover:bg-[#eef8fb] sm:min-h-11"
+              className="mt-4 min-h-12 w-full rounded-full border-none !bg-white text-[14px] font-bold !text-[#167ea7] shadow-none hover:!bg-[#eef8fb] sm:min-h-11"
               onClick={() => navigate('/book-appointment')}
+              variant="secondary"
             >
-              {copy.appointment}
+              {copy.bookAppointment}
             </Button>
           </Card>
         </aside>
