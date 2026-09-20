@@ -192,4 +192,22 @@ describe('sanitizeDoctorUpdatePayload', () => {
     });
     expect(archivedPreserved.status).toBe('ARCHIVED');
   });
+
+  it('allows empty statistics and contact phone as null values that pass updateDoctorSchema', () => {
+    const payload = sanitizeDoctorUpdatePayload({
+      ...baseDoctor,
+      yearsExp: '',
+      procedures: '',
+      satisfaction: '',
+      contactPhone: '',
+    });
+
+    expect(payload.yearsExperience).toBeNull();
+    expect(payload.successfulProcedures).toBeNull();
+    expect(payload.patientSatisfaction).toBeNull();
+    expect(payload.phone).toBeNull();
+
+    const parsed = updateDoctorSchema.safeParse(payload);
+    expect(parsed.success).toBe(true);
+  });
 });

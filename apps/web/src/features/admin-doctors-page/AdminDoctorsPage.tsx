@@ -371,36 +371,33 @@ function DoctorDetailPanel({
             <div className="grid grid-cols-3 gap-3">
               <label className="block">
                 <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Years Exp *
+                  Years Exp
                 </span>
                 <input
                   className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
                   onChange={(e) => handleFieldChange('yearsExp', e.target.value)}
-                  required
                   type="text"
                   value={formData.yearsExp}
                 />
               </label>
               <label className="block">
                 <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Procedures *
+                  Procedures
                 </span>
                 <input
                   className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
                   onChange={(e) => handleFieldChange('procedures', e.target.value)}
-                  required
                   type="text"
                   value={formData.procedures}
                 />
               </label>
               <label className="block">
                 <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Satisfaction *
+                  Satisfaction
                 </span>
                 <input
                   className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
                   onChange={(e) => handleFieldChange('satisfaction', e.target.value)}
-                  required
                   type="text"
                   value={formData.satisfaction}
                 />
@@ -411,7 +408,7 @@ function DoctorDetailPanel({
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Contact Phone *
+                  Contact Phone
                 </span>
                 <div className="relative mt-1.5">
                   <span
@@ -423,7 +420,6 @@ function DoctorDetailPanel({
                   <input
                     className="h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] pl-9 pr-3.5 text-[14px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
                     onChange={(e) => handleFieldChange('contactPhone', e.target.value)}
-                    required
                     type="tel"
                     value={formData.contactPhone}
                   />

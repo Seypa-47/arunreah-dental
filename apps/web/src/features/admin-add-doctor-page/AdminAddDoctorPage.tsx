@@ -92,7 +92,6 @@ export function AdminAddDoctorPage() {
     if (!nameKm.trim()) newErrors.nameKm = 'Khmer full name is required';
     if (!roleTitle.trim()) newErrors.roleTitle = 'Position/Title is required';
     if (!specialty.trim()) newErrors.specialty = 'Specialization is required';
-    if (!yearsExp.trim()) newErrors.yearsExp = 'Experience is required';
     if (!shortIntro.trim()) newErrors.shortIntro = 'Short bio is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -113,9 +112,9 @@ export function AdminAddDoctorPage() {
       name,
       nameKm,
       photoUrl: photoPreview || '',
-      procedures: procedures || '0',
+      procedures,
       roleTitle,
-      satisfaction: satisfaction || '100%',
+      satisfaction,
       shortIntro,
       showOnWebsite,
       specialty,
@@ -590,7 +589,7 @@ export function AdminAddDoctorPage() {
                       <svg className="size-4 text-[#2187a8]" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
-                      <span>Years of Experience <span className="text-[#ef4444]">*</span></span>
+                      <span>Years of Experience</span>
                     </label>
                     <div className="relative mt-1.5">
                       <input
@@ -612,7 +611,7 @@ export function AdminAddDoctorPage() {
                       <svg className="size-4 text-[#2187a8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                       </svg>
-                      <span>Successful Procedures <span className="text-[#ef4444]">*</span></span>
+                      <span>Successful Procedures</span>
                     </label>
                     <div className="relative mt-1.5">
                       <input
@@ -635,7 +634,7 @@ export function AdminAddDoctorPage() {
                         <circle cx="12" cy="12" r="10" strokeWidth="2" />
                         <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                       </svg>
-                      <span>Patient Satisfaction <span className="text-[#ef4444]">*</span></span>
+                      <span>Patient Satisfaction</span>
                     </label>
                     <div className="relative mt-1.5">
                       <input

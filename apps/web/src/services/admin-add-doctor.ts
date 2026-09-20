@@ -127,7 +127,7 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
   });
   const doctor = response.doctor;
   const createdDoctor: AdminDoctor = {
-    contactPhone: formData.contactPhone || '+855 23 456 789',
+    contactPhone: formData.contactPhone || '',
     content: formData.content,
     ctaButtonText: 'Book Now',
     education: ['Doctor of Dental Surgery (DDS)'],
