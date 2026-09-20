@@ -294,53 +294,174 @@ function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] })
   );
 }
 
-function AppointmentCalendar({
+export const DEFAULT_HOURS = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
+export const MINUTE_OPTIONS = ['00', '15', '30', '45'];
+
+export function formatDisplayTime(timeStr: string): string {
+  if (!timeStr) return '';
+  const parts = timeStr.split(':');
+  const hours = Number(parts[0]);
+  const minutes = parts[1] ?? '00';
+  if (Number.isNaN(hours)) return timeStr;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${String(displayHours).padStart(2, '0')}:${minutes} ${ampm}`;
+}
+
+export function toDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function AppointmentCalendar({
   calendar,
   onSelectDate,
   selectedDate,
 }: {
-  calendar: BookAppointmentPageContent['calendar'];
+  calendar?: BookAppointmentPageContent['calendar'];
   onSelectDate: (date: string) => void;
   selectedDate: string;
 }) {
   const { language } = usePublicLanguage();
+
+  const [viewDate, setViewDate] = useState(() => {
+    const initialKey = selectedDate || calendar?.selectedDateKey;
+    if (initialKey) {
+      const parts = initialKey.split('-').map(Number);
+      if (parts[0] && parts[1]) {
+        return new Date(parts[0], parts[1] - 1, 1);
+      }
+    }
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+
+  const today = new Date();
+  const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const maxMonthStart = new Date(today.getFullYear() + 1, today.getMonth(), 1);
+
+  const canGoPrev = viewDate > currentMonthStart;
+  const canGoNext = viewDate < maxMonthStart;
+
+  const handlePrevMonth = () => {
+    if (!canGoPrev) return;
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    if (!canGoNext) return;
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+  };
+
+  const monthLabel = useMemo(() => {
+    return new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', {
+      month: 'long',
+      year: 'numeric',
+    }).format(viewDate);
+  }, [language, viewDate]);
+
+  const weekdays = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', { weekday: 'short' });
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(2026, 8, 20 + i);
+      return formatter.format(d);
+    });
+  }, [language]);
+
+  const calendarDates = useMemo(() => {
+    const now = new Date();
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const monthStart = new Date(year, month, 1);
+    const startDay = monthStart.getDay();
+    const gridStart = new Date(year, month, 1 - startDay);
+
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + index);
+      const key = toDateKey(date);
+      const isPast = date < todayMidnight;
+      const isCurrentMonth = date.getMonth() === month;
+      return {
+        date,
+        day: date.getDate(),
+        disabled: isPast,
+        key,
+        muted: !isCurrentMonth,
+      };
+    });
+  }, [viewDate]);
+
   const dateFormatter = new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', { dateStyle: 'full' });
+
+  const handleSelectDate = (item: (typeof calendarDates)[number]) => {
+    if (item.disabled) return;
+    onSelectDate(item.key);
+    if (item.muted) {
+      setViewDate(new Date(item.date.getFullYear(), item.date.getMonth(), 1));
+    }
+  };
+
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <button aria-label="Previous month unavailable" className="grid size-11 place-items-center rounded-full text-[#cbd5e1]" disabled type="button">
+        <button
+          aria-label={canGoPrev ? 'Previous month' : 'Previous month unavailable'}
+          className={`grid size-11 place-items-center rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3695b9] ${
+            canGoPrev
+              ? 'text-[#005687] hover:bg-[#edf7fb] hover:text-[#3695b9]'
+              : 'cursor-not-allowed text-[#cbd5e1] opacity-40'
+          }`}
+          disabled={!canGoPrev}
+          onClick={handlePrevMonth}
+          type="button"
+        >
           <ChevronIcon direction="left" />
         </button>
-        <h3 className="text-[15px] font-extrabold leading-6 text-[#005687]">{calendar.monthLabel}</h3>
-        <button aria-label="Next month unavailable" className="grid size-11 place-items-center rounded-full text-[#cbd5e1]" disabled type="button">
+        <h3 className="text-[15px] font-extrabold leading-6 text-[#005687]">{monthLabel}</h3>
+        <button
+          aria-label={canGoNext ? 'Next month' : 'Next month unavailable'}
+          className={`grid size-11 place-items-center rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3695b9] ${
+            canGoNext
+              ? 'text-[#005687] hover:bg-[#edf7fb] hover:text-[#3695b9]'
+              : 'cursor-not-allowed text-[#cbd5e1] opacity-40'
+          }`}
+          disabled={!canGoNext}
+          onClick={handleNextMonth}
+          type="button"
+        >
           <ChevronIcon direction="right" />
         </button>
       </div>
       <div className="grid grid-cols-7 gap-y-2 text-center sm:gap-y-3">
-        {calendar.weekdays.map((day) => (
+        {weekdays.map((day) => (
           <span className="text-[12px] font-bold leading-4 text-[#6b7280]" key={day}>
             {day}
           </span>
         ))}
-        {calendar.dates.map((date) => {
-          const isSelected = date.key === selectedDate;
+        {calendarDates.map((item) => {
+          const isSelected = item.key === selectedDate;
           return (
             <button
-              aria-label={dateFormatter.format(new Date(`${date.key}T12:00:00`))}
+              aria-label={dateFormatter.format(new Date(`${item.key}T12:00:00`))}
               aria-pressed={isSelected}
               className={`mx-auto grid aspect-square w-full max-w-10 place-items-center rounded-full text-[13px] font-bold transition sm:max-w-8 ${
                 isSelected
-                  ? 'bg-[#3695b9] text-white'
-                  : date.muted
-                    ? 'text-[#d5dce3]'
-                    : 'text-[#6b7280] hover:bg-[#edf7fb] hover:text-[#3695b9]'
+                  ? 'bg-[#3695b9] text-white shadow-sm'
+                  : item.muted
+                    ? 'text-[#d5dce3] hover:text-[#94a3b8]'
+                    : item.disabled
+                      ? 'cursor-not-allowed text-[#cbd5e1] opacity-40'
+                      : 'text-[#6b7280] hover:bg-[#edf7fb] hover:text-[#3695b9]'
               }`}
-              disabled={date.disabled}
-              key={date.key}
-              onClick={() => onSelectDate(date.key)}
+              disabled={item.disabled}
+              key={item.key}
+              onClick={() => handleSelectDate(item)}
               type="button"
             >
-              {date.day}
+              {item.day}
             </button>
           );
         })}
@@ -349,7 +470,7 @@ function AppointmentCalendar({
   );
 }
 
-function AvailableTimes({
+export function AvailableTimes({
   onSelectTime,
   selectedTime,
   times,
@@ -358,27 +479,75 @@ function AvailableTimes({
   selectedTime: string;
   times: string[];
 }) {
+  const baseTimes = times && times.length > 0 ? times : DEFAULT_HOURS;
+  const baseHours = Array.from(new Set(baseTimes.map((t) => t.split(':')[0] ?? t)));
+
+  const selectedParts = selectedTime ? selectedTime.split(':') : [];
+  const selectedHour = selectedParts[0] ?? baseHours[0] ?? '08';
+  const selectedMinute = selectedParts[1] ?? '00';
+
   return (
     <div>
       <h3 className="mb-5 text-center text-[15px] font-extrabold leading-6 text-[#005687]">Available Time</h3>
       <div className="space-y-2.5">
-        {times.map((time) => {
-          const isSelected = time === selectedTime;
+        {baseHours.map((hour) => {
+          const isHourActive = selectedHour === hour;
+          const formattedHourLabel = formatDisplayTime(`${hour}:00`);
+
           return (
-            <button
-              aria-label={`Select ${time}`}
-              aria-pressed={isSelected}
-              className={`min-h-12 w-full rounded-lg border text-[14px] font-bold transition sm:min-h-[42px] sm:text-[13px] ${
-                isSelected
-                  ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-none'
-                  : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
-              }`}
-              key={time}
-              onClick={() => onSelectTime(time)}
-              type="button"
-            >
-              {time}
-            </button>
+            <div key={hour} className="space-y-2">
+              <button
+                aria-label={`Select ${formattedHourLabel}`}
+                aria-pressed={isHourActive}
+                className={`min-h-12 w-full rounded-lg border text-[14px] font-bold transition sm:min-h-[42px] sm:text-[13px] ${
+                  isHourActive
+                    ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-none'
+                    : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
+                }`}
+                onClick={() => {
+                  onSelectTime(`${hour}:${selectedMinute || '00'}`);
+                }}
+                type="button"
+              >
+                {isHourActive ? formatDisplayTime(selectedTime) : formattedHourLabel}
+              </button>
+
+              {isHourActive ? (
+                <div className="rounded-xl border border-[#bce0ed] bg-[#f2f9fb] p-3 shadow-inner">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[12px] font-bold text-[#005687]">Select Minute</span>
+                    <span className="rounded-full bg-[#3695b9]/10 px-2 py-0.5 text-[11px] font-extrabold text-[#087b9f]">
+                      {formatDisplayTime(selectedTime)}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {MINUTE_OPTIONS.map((minute) => {
+                      const slotTime = `${hour}:${minute}`;
+                      const isSlotSelected = selectedTime === slotTime;
+                      return (
+                        <button
+                          key={minute}
+                          type="button"
+                          aria-label={formatDisplayTime(slotTime)}
+                          aria-pressed={isSlotSelected}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectTime(slotTime);
+                          }}
+                          className={`h-9 rounded-lg text-[13px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3695b9] ${
+                            isSlotSelected
+                              ? 'bg-[#3695b9] text-white shadow-sm ring-2 ring-[#3695b9]/30'
+                              : 'border border-[#d2e4ec] bg-white text-[#005687] hover:border-[#3695b9] hover:bg-[#eaf4f8] hover:text-[#3695b9]'
+                          }`}
+                        >
+                          :{minute}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           );
         })}
       </div>
@@ -590,7 +759,7 @@ function AppointmentSummary({
         <SummaryRow icon="service" label="Service" value={selectedServiceName} />
         <SummaryRow icon="doctor" label="Doctor" value={selectedDoctorName} />
         <SummaryRow icon="calendar" label="Date" value={selectedDateLabel} />
-        <SummaryRow icon="clock" label="Time" value={selectedTime} />
+        <SummaryRow icon="clock" label="Time" value={formatDisplayTime(selectedTime)} />
         {content.summary.duration ? <SummaryRow icon="hourglass" label="Duration" value={content.summary.duration} /> : null}
       </div>
 
@@ -627,13 +796,12 @@ function AppointmentSummary({
   );
 }
 
-function dateLabel(content: BookAppointmentPageContent, selectedDate: string) {
-  if (selectedDate === content.calendar.selectedDateKey) {
-    return content.calendar.selectedDateLabel;
-  }
-
+export function dateLabel(selectedDate: string, language: 'en' | 'km') {
   const date = new Date(`${selectedDate}T00:00:00`);
-  return new Intl.DateTimeFormat('en-US', {
+  if (Number.isNaN(date.getTime())) {
+    return selectedDate;
+  }
+  return new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', {
     day: 'numeric',
     month: 'long',
     weekday: 'long',
@@ -642,11 +810,12 @@ function dateLabel(content: BookAppointmentPageContent, selectedDate: string) {
 }
 
 function BookAppointmentView({ content }: { content: BookAppointmentPageContent }) {
+  const { language } = usePublicLanguage();
   const [selectedBranch, setSelectedBranch] = useState(content.branches[0]?.id ?? '');
   const [selectedService, setSelectedService] = useState(content.servicesList[0]?.value ?? '');
   const [selectedDoctor, setSelectedDoctor] = useState(content.doctors[0]?.value ?? '');
   const [selectedDate, setSelectedDate] = useState(content.calendar.selectedDateKey);
-  const [selectedTime, setSelectedTime] = useState(content.times[2] ?? content.times[0] ?? '');
+  const [selectedTime, setSelectedTime] = useState(content.times[2] ?? content.times[0] ?? '10:00');
   const idempotencyKey = useRef(createIdempotencyKey());
   const [acknowledgement, setAcknowledgement] = useState<{ reference: string; status: string; message: string } | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -724,7 +893,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
           <AppointmentSummary
             branch={branch}
             content={content}
-            selectedDateLabel={dateLabel(content, selectedDate)}
+            selectedDateLabel={dateLabel(selectedDate, language)}
             selectedDoctorName={doctor.name}
             selectedServiceName={service.name}
             selectedTime={selectedTime}
