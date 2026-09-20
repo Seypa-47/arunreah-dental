@@ -6,6 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { cmsApi } from '@/services/cms';
+import { invalidateCmsDomain } from '@/services/cms-cache';
 import type { AdminService, AdminServicesContent } from '@/services/admin-services';
 import { useAdminServicesPageQuery } from './use-admin-services-page';
 
@@ -191,10 +194,39 @@ type ServiceListState = Pick<ServiceListQuery, 'page' | 'limit' | 'search' | 'st
 
 function ServicesContent({ content, listState, onListStateChange, busy }: { busy: boolean; content: AdminServicesContent; listState: ServiceListState; onListStateChange: (state: ServiceListState) => void }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [services, setServices] = useState(content.services);
+  const [notification, setNotification] = useState<{ message: string; tone: 'success' | 'error' } | undefined>();
+
   useEffect(() => {
     setServices(content.services);
   }, [content.services]);
+
+  const showNotification = (message: string, tone: 'success' | 'error' = 'success') => {
+    setNotification({ message, tone });
+    setTimeout(() => {
+      setNotification(undefined);
+    }, 5000);
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => cmsApi.services.delete(id),
+    onSuccess: async () => {
+      await invalidateCmsDomain(queryClient, 'services');
+      showNotification('Service deleted successfully.', 'success');
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Unable to delete service.';
+      showNotification(message, 'error');
+    },
+  });
+
+  const handleDelete = (id: string, name: string) => {
+    if (window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+      deleteMutation.mutate(id);
+    }
+  };
+
   const categories = [
     content.controls.allCategories,
     ...Array.from(new Set([...(listState.category ? [listState.category] : []), ...services.map((service) => service.category)])),
@@ -203,6 +235,29 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
   return (
     <main className="min-w-0 flex-1 bg-[#f6f8fb] px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
       <div className="mx-auto max-w-[1440px] w-full">
+        {notification ? (
+          <div
+            aria-live="polite"
+            className={`mb-5 flex items-center justify-between rounded-xl border px-4 py-3 text-[13px] font-semibold ${
+              notification.tone === 'error'
+                ? 'border-[#fecdca] bg-[#fef3f2] text-[#b42318]'
+                : 'border-[#b9f1d0] bg-[#effdf5] text-[#13ad63]'
+            }`}
+          >
+            <span className="inline-flex items-center gap-2">
+              <AdminIcon className="size-4" name={notification.tone === 'error' ? 'info' : 'check'} />
+              {notification.message}
+            </span>
+            <button
+              aria-label="Dismiss notification"
+              className={notification.tone === 'error' ? 'text-[#b42318] hover:text-[#7a271a]' : 'text-[#13ad63] hover:text-[#0b7944]'}
+              onClick={() => setNotification(undefined)}
+              type="button"
+            >
+              ✕
+            </button>
+          </div>
+        ) : null}
         <header className="flex flex-wrap items-end justify-between gap-5">
           <div>
             <AdminPageHeading />
@@ -306,14 +361,25 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
                       </td>
                       <td className="px-5 py-5 text-[14px] text-[#71839e]"><AdminListDate value={service.updatedAt} /></td>
                       <td className="px-7 py-5 text-right">
-                        <button
-                          aria-label={`Edit ${service.name}`}
-                          className="rounded-lg p-2 text-[#2187a8] hover:bg-[#edf7fb]"
-                          onClick={() => navigate(`/admin/services/${service.id}/edit`)}
-                          type="button"
-                        >
-                          Edit
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            aria-label={`Edit ${service.name}`}
+                            className="rounded-lg px-2.5 py-1.5 text-[13px] font-bold text-[#2187a8] hover:bg-[#edf7fb]"
+                            onClick={() => navigate(`/admin/services/${service.id}/edit`)}
+                            type="button"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            aria-label={`Delete ${service.name}`}
+                            className="rounded-lg px-2.5 py-1.5 text-[13px] font-bold text-[#b42318] hover:bg-[#fef3f2] disabled:opacity-50"
+                            disabled={deleteMutation.isPending}
+                            onClick={() => handleDelete(service.id, service.name)}
+                            type="button"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

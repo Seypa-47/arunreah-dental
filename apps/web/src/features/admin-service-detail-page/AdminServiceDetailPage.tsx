@@ -1,7 +1,7 @@
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
 import { MediaUploader } from '@/components/admin/media-uploader';
@@ -724,6 +724,7 @@ function SectionRows({
 
 
 function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent & { service: AdminService } }) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDirty, setIsDirty] = useState(false);
   const [service, setServiceState] = useState<EditableService>(() => ({
@@ -820,6 +821,25 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     }, 5000);
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: () => cmsApi.services.delete(content.service.id),
+    onSuccess: async () => {
+      setIsDirty(false);
+      await invalidateCmsDomain(queryClient, 'services');
+      navigate('/admin/services');
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Unable to delete this service.';
+      showNotification(message, 'error');
+    },
+  });
+
+  const handleDelete = () => {
+    if (window.confirm(`Are you sure you want to delete "${service.name}"? This action cannot be undone.`)) {
+      deleteMutation.mutate();
+    }
+  };
+
   const handleSaveDraft = () => {
     setService((current) => ({ ...current, status: 'draft' }));
     saveMutation.mutate('DRAFT', { onSuccess: () => showNotification('Service draft saved successfully.', 'success') });
@@ -873,7 +893,17 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
             {content.controls.previewLabel}
           </Button>
           <Button
+            className="h-9.5 rounded-xl border border-[#fecdca] bg-[#fff5f5] px-4 text-[12.5px] font-semibold text-[#b42318] shadow-none hover:bg-[#fee2e2]"
+            disabled={deleteMutation.isPending}
+            onClick={handleDelete}
+            type="button"
+            variant="secondary"
+          >
+            {deleteMutation.isPending ? 'Deleting…' : 'Delete Service'}
+          </Button>
+          <Button
             className="h-9.5 rounded-xl border border-[#dce5ef] bg-white px-4 text-[12.5px] font-semibold text-[#2187a8] shadow-none hover:bg-[#f4f8fb]"
+            disabled={saveMutation.isPending}
             onClick={handleSaveDraft}
             type="button"
             variant="secondary"
@@ -882,6 +912,7 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
           </Button>
           <Button
             className="h-9.5 rounded-xl bg-[#2187a8] px-4.5 text-[12.5px] font-bold text-white hover:bg-[#1a718c]"
+            disabled={saveMutation.isPending}
             onClick={handleUpdateService}
             type="button"
           >
