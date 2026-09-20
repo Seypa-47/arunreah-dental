@@ -362,6 +362,34 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
     }));
     setOpenIndex(service.detailSections.length);
   };
+  const deleteSection = (indexToDelete: number) => {
+    const target = service.detailSections[indexToDelete];
+    const hasContent = Boolean(
+      target?.headingEn?.trim() ||
+      target?.headingKm?.trim() ||
+      target?.bodyEn?.trim() ||
+      target?.bodyKm?.trim() ||
+      target?.imageKey
+    );
+    const title = target?.headingEn?.trim() || target?.headingKm?.trim() || `Section ${indexToDelete + 1}`;
+
+    if (hasContent && !window.confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setService((current) => ({
+      ...current,
+      detailSections: current.detailSections
+        .filter((_, index) => index !== indexToDelete)
+        .map((section, index) => ({ ...section, displayOrder: index })),
+    }));
+    setOpenIndex((current) => {
+      if (current === undefined) return undefined;
+      if (current === indexToDelete) return undefined;
+      if (current > indexToDelete) return current - 1;
+      return current;
+    });
+  };
 
   return (
     <Card className="mt-4 rounded-[18px] border-[#dce5ef] p-6 shadow-none">
@@ -387,9 +415,18 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
                     <span className="block truncate text-[14px] font-bold text-[#182238]">{section.headingEn?.trim() || section.headingKm?.trim() || 'Untitled section'}</span>
                     <span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[#71839e]"><span>{section.sectionType === 'IMAGE' ? 'Image-led section' : 'Text section'}</span><span>{sectionLanguageState(section)}</span></span>
                   </button>
-                  <div className="flex shrink-0 items-center gap-1" aria-label={`Section ${index + 1} ordering controls`}>
+                  <div className="flex shrink-0 items-center gap-1.5" aria-label={`Section ${index + 1} controls`}>
                     <Button aria-label={`Move section ${index + 1} earlier`} className="min-h-9 px-3 py-1" disabled={index === 0} onClick={() => moveSection(index, -1)} type="button" variant="secondary">↑</Button>
                     <Button aria-label={`Move section ${index + 1} later`} className="min-h-9 px-3 py-1" disabled={index === service.detailSections.length - 1} onClick={() => moveSection(index, 1)} type="button" variant="secondary">↓</Button>
+                    <button
+                      aria-label={`Delete section ${index + 1}: ${section.headingEn || section.headingKm || 'Untitled section'}`}
+                      className="inline-flex size-9 items-center justify-center rounded-lg border border-[#fecdca] bg-white text-[#b42318] transition hover:border-[#fda29b] hover:bg-[#fef3f2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318]"
+                      onClick={() => deleteSection(index)}
+                      title="Delete section"
+                      type="button"
+                    >
+                      <AdminIcon className="size-4" name="trash" />
+                    </button>
                   </div>
                 </div>
                 {isOpen ? (
@@ -411,6 +448,17 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
                     </div>
                     <div className="mt-4"><MediaUploader category="services" help="Optional. Add one image only when it helps patients understand this section." label="Section image" onClear={() => updateSection(index, { imageKey: null })} onUploaded={(imageKey) => updateSection(index, { imageKey })} value={section.imageKey ?? undefined} /></div>
                     {repeatedImage ? <p className="mt-3 rounded-lg border border-[#f0c36d] bg-[#fff8e8] px-3 py-2 text-[12px] leading-5 text-[#7a4900]" role="status">This image is also used in another detail section. That can be intentional, but consider using a different image if the sections cover different topics.</p> : null}
+                    <div className="mt-5 flex items-center justify-between border-t border-[#edf1f5] pt-4">
+                      <span className="text-[12px] text-[#71839e]">Section {index + 1} of {service.detailSections.length}</span>
+                      <button
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#fecdca] bg-white px-3 py-1.5 text-[13px] font-bold text-[#b42318] transition hover:border-[#fda29b] hover:bg-[#fef3f2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318]"
+                        onClick={() => deleteSection(index)}
+                        type="button"
+                      >
+                        <AdminIcon className="size-3.5" name="trash" />
+                        <span>Delete section</span>
+                      </button>
+                    </div>
                   </div>
                 ) : null}
               </li>
