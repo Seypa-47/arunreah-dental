@@ -77,6 +77,10 @@ export const router = createBrowserRouter([
     element: protectedAdminRoute(<AdminServiceCreatePage />),
   },
   {
+    path: '/admin/services/:serviceId',
+    element: protectedAdminRoute(<AdminServiceDetailPage />),
+  },
+  {
     path: '/admin/services/:serviceId/edit',
     element: protectedAdminRoute(<AdminServiceDetailPage />),
   },

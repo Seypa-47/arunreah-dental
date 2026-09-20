@@ -7,17 +7,11 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
 import type { BranchesPageContent } from '@/features/landing-page/types';
+import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
+import { getBranchCoordinates } from './branch-coordinates';
 import { useBranchesPageQuery } from './use-branches-page';
 
 const asset = (name: string) => `/assets/landing/${name}`;
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 function AssetIcon({ className, name }: { className: string; name: string }) {
   return <img alt="" aria-hidden="true" className={className} src={asset(name)} />;
@@ -158,11 +152,6 @@ function SectionIntro({
   );
 }
 
-const branchCoordinates: Record<string, { lat: number; lng: number }> = {
-  'Arunreah Dental Clinic - TTP': { lat: 11.53982, lng: 104.91421 },
-  'Arunreah Dental Clinic - Psa Chas': { lat: 11.57351, lng: 104.92552 },
-};
-
 function BranchCard({
   branch,
   flipped,
@@ -172,7 +161,7 @@ function BranchCard({
 }) {
   const [viewMode, setViewMode] = useState<'photo' | 'satellite'>('photo');
   const phoneHref = `tel:${branch.phones[0]?.replaceAll(' ', '') ?? ''}`;
-  const coords = branchCoordinates[branch.name] ?? { lat: 11.53982, lng: 104.91421 };
+  const coords = getBranchCoordinates(branch.name);
   const apiKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined)?.trim();
   const embedUrl = apiKey
     ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${coords.lat},${coords.lng}&maptype=satellite&zoom=17`
@@ -243,7 +232,7 @@ function BranchCard({
           </a>
           <Link
             className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#d8e6ee] bg-white px-5 text-[13px] font-bold text-[#3695B9] transition hover:border-[#3695B9] hover:bg-[#f9fcfd]"
-            to="/book-appointment"
+            to={branch.id ? `/book-appointment?branch=${encodeURIComponent(branch.id)}` : '/book-appointment'}
           >
             <AssetIcon className="size-3.5" name="hero-calendar.svg" />
             {branch.bookingLabel}

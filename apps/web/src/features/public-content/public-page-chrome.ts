@@ -5,7 +5,6 @@ import type {
   ContactPageContent,
   DoctorDetailContent,
   DoctorsPageContent,
-  LandingFooterLinkGroup,
   LandingNavigationItem,
   LandingPageContent,
   ServiceDetailContent,
@@ -17,8 +16,7 @@ import type { PublicDoctorSummary, PublicShowcaseDetail } from '@/services/publi
 
 // These values are interface copy and layout configuration. CMS-owned records
 // (clinic, contact, services, doctors, branches, showcases and images) are
-// deliberately supplied only by the public API mappers.
-const navigation: LandingNavigationItem[] = [
+export const skeletonNavigation: LandingNavigationItem[] = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
   { href: '/services', label: 'Services' },
@@ -27,23 +25,50 @@ const navigation: LandingNavigationItem[] = [
   { href: '/showcases', label: 'Showcases' },
 ];
 
-const linkGroups: LandingFooterLinkGroup[] = [
-  { title: 'Explore', links: [{ href: '/services', label: 'Services' }, { href: '/doctors', label: 'Doctors' }, { href: '/branches', label: 'Locations' }] },
-  { title: 'Contact', links: [{ href: '/contact', label: 'Contact Us' }, { href: '/book-appointment', label: 'Book Appointment' }] },
-];
-
-export function publicShell() {
+export function publicShell(language: 'en' | 'km' = 'en') {
+  const isKm = language === 'km';
   return {
-    actions: { appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' },
-    footer: { branchLinks: [], description: '', linkGroups, tagline: '' },
-    navigation,
+    actions: {
+      appointmentLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
+      contactLabel: isKm ? 'ទាក់ទងយើង' : 'Contact Us',
+    },
+    footer: {
+      branchLinks: [],
+      description: '',
+      linkGroups: [
+        {
+          title: isKm ? 'ស្វែងរក' : 'Explore',
+          links: [
+            { href: '/services', label: isKm ? 'សេវាកម្ម' : 'Services' },
+            { href: '/doctors', label: isKm ? 'វេជ្ជបណ្ឌិត' : 'Doctors' },
+            { href: '/branches', label: isKm ? 'សាខា' : 'Locations' },
+          ],
+        },
+        {
+          title: isKm ? 'ទំនាក់ទំនង' : 'Contact',
+          links: [
+            { href: '/contact', label: isKm ? 'ទាក់ទងយើង' : 'Contact Us' },
+            { href: '/book-appointment', label: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment' },
+          ],
+        },
+      ],
+      tagline: '',
+    },
+    navigation: [
+      { href: '/', label: isKm ? 'ទំព័រដើម' : 'Home' },
+      { href: '/about', label: isKm ? 'អំពីយើង' : 'About' },
+      { href: '/services', label: isKm ? 'សេវាកម្ម' : 'Services' },
+      { href: '/doctors', label: isKm ? 'វេជ្ជបណ្ឌិត' : 'Doctors' },
+      { href: '/branches', label: isKm ? 'សាខា' : 'Branches' },
+      { href: '/showcases', label: isKm ? 'ស្នាដៃ' : 'Showcases' },
+    ],
     services: [],
   };
 }
 
 export function publicLandingChrome(language: 'en' | 'km' = 'en'): LandingPageContent {
   return {
-    ...publicShell(),
+    ...publicShell(language),
     branches: [],
     branchesEditorial: language === 'km'
       ? { eyebrow: 'សាខារបស់យើង' }
@@ -69,7 +94,7 @@ export function publicAboutContent(
   const tagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
   const shortAbout = language === 'km' ? clinic.shortAboutKm : clinic.shortAboutEn;
   return {
-    ...publicShell(),
+    ...publicShell(language),
     clinicGallery: clinicShowcase
       ? [
           clinicShowcase.coverImageKey
@@ -142,61 +167,162 @@ export function publicAboutContent(
   };
 }
 
-export function publicServicesChrome(): ServicesPageContent {
+export function publicServicesChrome(language: 'en' | 'km' = 'en'): ServicesPageContent {
+  const isKm = language === 'km';
   return {
-    ...publicShell(),
-    cta: { consultationLabel: 'Book Appointment', contactLabel: 'Contact Us', description: 'Talk with our clinic team about the care that is right for you.', title: 'Ready to take the next step?' },
-    hero: { description: 'Explore the treatments currently offered by our clinic.', title: 'Our Services' },
+    ...publicShell(language),
+    cta: {
+      consultationLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
+      contactLabel: isKm ? 'ទាក់ទងយើង' : 'Contact Us',
+      description: isKm ? 'ពិភាក្សាជាមួយក្រុមការងារគ្លីនិករបស់យើងអំពីការព្យាបាលដែលសមស្របសម្រាប់អ្នក។' : 'Talk with our clinic team about the care that is right for you.',
+      title: isKm ? 'តើអ្នកត្រៀមខ្លួនរួចរាល់ហើយឬនៅ?' : 'Ready to take the next step?',
+    },
+    hero: {
+      description: isKm ? 'ស្វែងយល់ពីសេវាកម្មព្យាបាលធ្មេញដែលមាននៅគ្លីនិករបស់យើង។' : 'Explore the treatments currently offered by our clinic.',
+      title: isKm ? 'សេវាកម្មរបស់យើង' : 'Our Services',
+    },
   };
 }
 
-export function publicDoctorsChrome(): DoctorsPageContent {
-  return { ...publicShell(), doctors: [], hero: { description: 'Meet our clinic professionals.', title: 'Our Specialists' } };
-}
-
-export function publicServiceDetailChrome(): ServiceDetailContent {
-  return { ...publicShell(), otherServices: [], service: undefined };
-}
-
-export function publicDoctorDetailChrome(): DoctorDetailContent {
-  return { ...publicShell(), doctor: undefined, otherDoctors: [] };
-}
-
-export function publicBranchesChrome(): BranchesPageContent {
+export function publicDoctorsChrome(language: 'en' | 'km' = 'en'): DoctorsPageContent {
+  const isKm = language === 'km';
   return {
-    ...publicShell(),
+    ...publicShell(language),
+    doctors: [],
+    hero: {
+      description: isKm ? 'ជួបជាមួយក្រុមទន្តបណ្ឌិតឯកទេសរបស់យើង។' : 'Meet our clinic professionals.',
+      title: isKm ? 'ទន្តបណ្ឌិតឯកទេស' : 'Our Specialists',
+    },
+  };
+}
+
+export function publicServiceDetailChrome(language: 'en' | 'km' = 'en'): ServiceDetailContent {
+  return { ...publicShell(language), otherServices: [], service: undefined };
+}
+
+export function publicDoctorDetailChrome(language: 'en' | 'km' = 'en'): DoctorDetailContent {
+  return { ...publicShell(language), doctor: undefined, otherDoctors: [] };
+}
+
+export function publicBranchesChrome(language: 'en' | 'km' = 'en'): BranchesPageContent {
+  const isKm = language === 'km';
+  return {
+    ...publicShell(language),
     benefits: [],
     branches: [],
-    cta: { backgroundImageAlt: '', backgroundImageUrl: '', buttonLabel: 'Book Appointment', eyebrow: '', subtitle: 'Choose a branch and send an appointment request.', title: 'Visit Arunreah Dental Clinic' },
-    hero: { appointmentLabel: 'Book Appointment', backgroundImageAlt: '', backgroundImageUrl: '', eyebrow: '', highlights: [], metrics: [], subtitle: 'Find a clinic branch that works for you.', title: 'Our Locations' },
-    sections: { benefitsEyebrow: '', benefitsTitle: '', branchesDescription: '', branchesEyebrow: '', branchesTitle: 'Clinic Locations' },
+    cta: {
+      backgroundImageAlt: '',
+      backgroundImageUrl: '',
+      buttonLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
+      eyebrow: '',
+      subtitle: isKm ? 'ជ្រើសរើសសាខា និងផ្ញើសំណើណាត់ជួបរបស់អ្នក។' : 'Choose a branch and send an appointment request.',
+      title: isKm ? 'មកកាន់ គ្លីនិកធ្មេញ អារុណរះ' : 'Visit Arunreah Dental Clinic',
+    },
+    hero: {
+      appointmentLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
+      backgroundImageAlt: '',
+      backgroundImageUrl: '',
+      eyebrow: '',
+      highlights: [],
+      metrics: [],
+      subtitle: isKm ? 'ស្វែងរកសាខាគ្លីនិកដែលសមស្របសម្រាប់អ្នក។' : 'Find a clinic branch that works for you.',
+      title: isKm ? 'ទីតាំងរបស់យើង' : 'Our Locations',
+    },
+    sections: {
+      benefitsEyebrow: '',
+      benefitsTitle: '',
+      branchesDescription: '',
+      branchesEyebrow: '',
+      branchesTitle: isKm ? 'ទីតាំងគ្លីនិក' : 'Clinic Locations',
+    },
   };
 }
 
-export function publicContactChrome(): ContactPageContent {
+export function publicContactChrome(language: 'en' | 'km' = 'en'): ContactPageContent {
+  const isKm = language === 'km';
   return {
-    ...publicShell(),
+    ...publicShell(language),
     contactCards: [],
     form: {
-      branches: [], fields: { email: 'Email Address', fullName: 'Full Name', message: 'Message', phone: 'Phone Number', preferredBranch: 'Preferred Branch', preferredDate: 'Preferred Date', preferredTime: 'Preferred Time', service: 'Service' },
+      branches: [],
+      fields: {
+        email: isKm ? 'អាសយដ្ឋានអ៊ីមែល' : 'Email Address',
+        fullName: isKm ? 'ឈ្មោះពេញ' : 'Full Name',
+        message: isKm ? 'សារ' : 'Message',
+        phone: isKm ? 'លេខទូរស័ព្ទ' : 'Phone Number',
+        preferredBranch: isKm ? 'សាខាដែលពេញចិត្ត' : 'Preferred Branch',
+        preferredDate: isKm ? 'កាលបរិច្ឆេទដែលពេញចិត្ត' : 'Preferred Date',
+        preferredTime: isKm ? 'ពេលវេលាដែលពេញចិត្ត' : 'Preferred Time',
+        service: isKm ? 'សេវាកម្ម' : 'Service',
+      },
       messageLimit: 1000,
-      placeholders: { email: 'Enter your email address', fullName: 'Enter your name', message: 'Tell us how we can help', phone: 'Enter your phone number', preferredBranch: 'Select a branch', preferredDate: 'Select date', preferredTime: 'Select time', service: 'Select a service' },
-      services: [], submitLabel: 'Send Inquiry', times: [], title: 'Send Us a Message',
+      placeholders: {
+        email: isKm ? 'បញ្ចូលអ៊ីមែលរបស់អ្នក' : 'Enter your email address',
+        fullName: isKm ? 'បញ្ចូលឈ្មោះរបស់អ្នក' : 'Enter your name',
+        message: isKm ? 'ប្រាប់យើងពីអ្វីដែលយើងអាចជួយបាន' : 'Tell us how we can help',
+        phone: isKm ? 'បញ្ចូលលេខទូរស័ព្ទរបស់អ្នក' : 'Enter your phone number',
+        preferredBranch: isKm ? 'ជ្រើសរើសសាខា' : 'Select a branch',
+        preferredDate: isKm ? 'ជ្រើសរើសថ្ងៃ' : 'Select date',
+        preferredTime: isKm ? 'ជ្រើសរើសម៉ោង' : 'Select time',
+        service: isKm ? 'ជ្រើសរើសសេវាកម្ម' : 'Select a service',
+      },
+      services: [],
+      submitLabel: isKm ? 'ផ្ញើសំណួរ' : 'Send Inquiry',
+      times: [],
+      title: isKm ? 'ផ្ញើសារមកកាន់យើង' : 'Send Us a Message',
     },
-    hero: { backgroundImageAlt: '', backgroundImageUrl: '', eyebrow: 'Get In Touch', info: [], subtitle: 'Contact our clinic team for help with your care.', title: 'Contact Us' },
+    hero: {
+      backgroundImageAlt: '',
+      backgroundImageUrl: '',
+      eyebrow: isKm ? 'ទំនាក់ទំនង' : 'Get In Touch',
+      info: [],
+      subtitle: isKm ? 'ទាក់ទងមកកាន់ក្រុមការងារគ្លីនិករបស់យើងសម្រាប់ការជួយសម្រួលដល់ការព្យាបាលរបស់អ្នក។' : 'Contact our clinic team for help with your care.',
+      title: isKm ? 'ទាក់ទងមកយើង' : 'Contact Us',
+    },
     maps: [],
   };
 }
 
-export function publicBookingChrome(): BookAppointmentPageContent {
+export function publicBookingChrome(language: 'en' | 'km' = 'en'): BookAppointmentPageContent {
+  const isKm = language === 'km';
   return {
-    ...publicShell(),
+    ...publicShell(language),
     branches: [],
     calendar: { dates: [], monthLabel: '', selectedDateKey: '', selectedDateLabel: '', weekdays: [] },
     doctors: [],
-    form: { fields: { email: 'Email Address', fullName: 'Full Name', notes: 'Additional Notes (Optional)', phone: 'Phone Number' }, placeholders: { email: 'Enter your email address', fullName: 'Enter your full name', notes: 'Tell us more about your concern', phone: 'Enter your phone number' }, submitLabel: 'Send Appointment Request' },
-    help: { email: '', phone: '', subtitle: 'Our team is ready to assist you.', title: 'Need Help?' },
-    hero: { backgroundImageAlt: '', backgroundImageUrl: '', subtitle: 'Send a preferred appointment request and our clinic will review it.', title: 'Book an Appointment' },
-    information: [], servicesList: [], summary: { duration: '', title: 'Appointment Summary' }, times: [],
+    form: {
+      fields: {
+        email: isKm ? 'អាសយដ្ឋានអ៊ីមែល' : 'Email Address',
+        fullName: isKm ? 'ឈ្មោះពេញ' : 'Full Name',
+        notes: isKm ? 'ចំណាំបន្ថែម (ស្រេចចិត្ត)' : 'Additional Notes (Optional)',
+        phone: isKm ? 'លេខទូរស័ព្ទ' : 'Phone Number',
+      },
+      placeholders: {
+        email: isKm ? 'បញ្ចូលអ៊ីមែលរបស់អ្នក' : 'Enter your email address',
+        fullName: isKm ? 'បញ្ចូលឈ្មោះពេញរបស់អ្នក' : 'Enter your full name',
+        notes: isKm ? 'ប្រាប់យើងបន្ថែមពីបញ្ហារបស់អ្នក' : 'Tell us more about your concern',
+        phone: isKm ? 'បញ្ចូលលេខទូរស័ព្ទរបស់អ្នក' : 'Enter your phone number',
+      },
+      submitLabel: isKm ? 'ផ្ញើសំណើណាត់ជួប' : 'Send Appointment Request',
+    },
+    help: {
+      email: '',
+      phone: '',
+      subtitle: isKm ? 'ក្រុមការងាររបស់យើងត្រៀមខ្លួនជាស្រេចក្នុងការជួយអ្នក។' : 'Our team is ready to assist you.',
+      title: isKm ? 'ត្រូវការជំនួយ?' : 'Need Help?',
+    },
+    hero: {
+      backgroundImageAlt: '',
+      backgroundImageUrl: '',
+      subtitle: isKm ? 'ផ្ញើសំណើណាត់ជួបដែលអ្នកពេញចិត្ត ហើយគ្លីនិករបស់យើងនឹងពិនិត្យមើល។' : 'Send a preferred appointment request and our clinic will review it.',
+      title: isKm ? 'កក់ការណាត់ជួប' : 'Book an Appointment',
+    },
+    information: [],
+    servicesList: [],
+    summary: {
+      duration: '',
+      title: isKm ? 'សង្ខេបការណាត់ជួប' : 'Appointment Summary',
+    },
+    times: [],
   };
 }

@@ -20,8 +20,9 @@ export function useBranchesPageQuery() {
   const { language } = usePublicLanguage();
   return useQuery({
     queryFn: async () => {
+      const isKm = language === 'km';
       const response = await getPublicBranches(language);
-      const chrome = publicBranchesChrome();
+      const chrome = publicBranchesChrome(language);
       const publicBranches = response.branches;
       const primaryBranch = publicBranches[0];
       const appointmentBranches = publicBranches.filter((branch) => branch.acceptsAppointments);
@@ -34,18 +35,19 @@ export function useBranchesPageQuery() {
           return {
             address: branch.address,
             badge: branch.badge ?? branch.name,
-            bookingLabel: branch.heroCtaLabel ?? 'Book at this Branch',
-            directionsLabel: 'Get Directions',
+            bookingLabel: branch.heroCtaLabel ?? (isKm ? 'កក់នៅសាខានេះ' : 'Book at this Branch'),
+            directionsLabel: isKm ? 'ស្វែងរកផ្លូវ' : 'Get Directions',
             directionsUrl: branch.googleMapsUrl ?? '#',
             hoursDays: hours.days,
             hoursTime: hours.hours,
+            id: branch.id,
             imageAlt: branch.name,
             imagePresentation: branch.branchImagePresentation,
             imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
-            mapLabel: 'View on Map',
+            mapLabel: isKm ? 'មើលលើផែនទី' : 'View on Map',
             mapUrl: branch.googleMapsUrl ?? '#',
             name: branch.name,
-            phoneLabel: 'Call Now',
+            phoneLabel: isKm ? 'ទូរស័ព្ទឥឡូវ' : 'Call Now',
             phones: [branch.phone, branch.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
           };
         }),
@@ -61,15 +63,15 @@ export function useBranchesPageQuery() {
           eyebrow: primaryBranch?.badge ?? '',
           metrics: [
             {
-              description: `${publicBranches.length} published clinic location${publicBranches.length === 1 ? '' : 's'}`,
+              description: isKm ? `ទីតាំងគ្លីនិកទាំង ${publicBranches.length}` : `${publicBranches.length} published clinic location${publicBranches.length === 1 ? '' : 's'}`,
               iconUrl: '',
-              label: 'Locations',
+              label: isKm ? 'សាខា' : 'Locations',
               title: String(publicBranches.length),
             },
             {
-              description: 'available to receive appointment requests',
+              description: isKm ? 'ទទួលយកការស្នើសុំណាត់ជួប' : 'available to receive appointment requests',
               iconUrl: '',
-              label: 'Appointments',
+              label: isKm ? 'ការណាត់ជួប' : 'Appointments',
               title: String(appointmentBranches.length),
             },
           ],

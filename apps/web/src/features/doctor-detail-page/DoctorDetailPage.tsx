@@ -7,17 +7,10 @@ import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { DoctorDetailContent, LandingDoctor } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { useDoctorDetailPageQuery } from './use-doctor-detail-page';
 
 const asset = (name: string) => `/assets/landing/${name}`;
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 function CalendarIcon() {
   return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
@@ -74,7 +67,7 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
           <Button
             className="mt-5 min-h-12 w-full rounded-full bg-[#3695B9] px-6 text-[14px] font-bold shadow-none hover:bg-[#2c84a5] sm:min-h-11 sm:w-auto"
             icon={<CalendarIcon />}
-            onClick={() => navigate('/book-appointment')}
+            onClick={() => navigate(doctor.id ? `/book-appointment?doctor=${encodeURIComponent(doctor.id)}` : '/book-appointment')}
           >
             {appointmentLabel}
           </Button>
@@ -200,7 +193,7 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
             </p>
             <Button
               className="mt-4 min-h-12 w-full rounded-full border-none !bg-white text-[14px] font-bold !text-[#167ea7] shadow-none hover:!bg-[#eef8fb] sm:min-h-11"
-              onClick={() => navigate('/book-appointment')}
+              onClick={() => navigate(doctor.id ? `/book-appointment?doctor=${encodeURIComponent(doctor.id)}` : '/book-appointment')}
               variant="secondary"
             >
               {copy.bookAppointment}

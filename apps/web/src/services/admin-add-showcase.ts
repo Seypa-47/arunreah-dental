@@ -1,6 +1,7 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
 import type { ShowcaseArticle, ShowcaseCategory, ShowcaseStatus } from '@/services/admin-showcase';
 import { cmsApi } from '@/services/cms';
+import { toMediaKey } from '@/services/media';
 
 export type SectionBlock = {
   content: string;
@@ -145,7 +146,7 @@ export async function saveShowcaseArticle(
     summaryKm: null,
     bodyEn: formData.bodyContent || null,
     bodyKm: null,
-    coverImageKey: formData.coverImageUrl || null,
+    coverImageKey: toMediaKey(formData.coverImageUrl),
     metaTitleEn: formData.metaTitle || null,
     metaTitleKm: null,
     metaDescriptionEn: formData.metaDescription || null,

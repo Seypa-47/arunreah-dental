@@ -6,16 +6,9 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ContentBlocks, ResilientImage } from '@/components/layout/public-ui';
 import type { AboutPageContent } from '@/features/landing-page/types';
+import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { useAboutPageQuery } from './use-about-page';
 import { getPublicMediaUrl } from '@/services/media';
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 function ArrowIcon() {
   return (

@@ -7,15 +7,8 @@ import { SiteLayout } from '@/components/layout/site-layout';
 import { ImageFrame, PageContainer, PageFeedback, SectionIntro } from '@/components/layout/public-ui';
 import { getPublicMediaUrl } from '@/services/media';
 import type { PublicShowcaseSummary } from '@/services/public-content';
+import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { useShowcasesPageQuery } from './use-showcases-page';
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 
 function ShowcaseCard({ showcase }: { showcase: PublicShowcaseSummary }) {

@@ -1,6 +1,6 @@
 import type { AdminRole } from '@arunreah/shared';
 
-const appointmentPathPrefix = '/admin/appointments';
+const appointmentPathPrefixes = ['/admin/appointments', '/admin/calendar'] as const;
 const cmsPathPrefixes = [
   '/admin/services',
   '/admin/doctors',
@@ -14,7 +14,7 @@ const adminManagementPathPrefix = '/admin/admins';
 export function canAccessAdminPath(role: AdminRole, pathname: string): boolean {
   if (pathname === '/admin/dashboard') return true;
 
-  if (pathname.startsWith(appointmentPathPrefix)) {
+  if (appointmentPathPrefixes.some((prefix) => pathname.startsWith(prefix))) {
     return role === 'RECEPTIONIST' || role === 'SUPER_ADMIN';
   }
 

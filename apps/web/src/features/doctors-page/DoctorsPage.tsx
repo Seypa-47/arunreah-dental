@@ -6,19 +6,12 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage } from '@/components/layout/public-ui';
 import type { DoctorsPageContent, LandingDoctor } from '@/features/landing-page/types';
+import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { useDoctorsPageQuery } from './use-doctors-page';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 
 const asset = (name: string) => `/assets/landing/${name}`;
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 function CalendarIcon() {
   return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
@@ -58,6 +51,7 @@ function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; he
 }
 
 function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
+  const { language } = usePublicLanguage();
   const hasImage = Boolean(doctor.imageUrl);
 
   return (
@@ -82,7 +76,7 @@ function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
           </p>
           <span className="mt-auto inline-flex min-h-9 items-center justify-center gap-2 pt-3 text-left text-[12px] font-bold leading-4 text-[#167ea7] transition group-hover:text-[#005687] sm:mt-3 sm:min-h-0 sm:justify-start sm:pt-0">
             <CalendarIcon />
-            {doctor.bookingLabel ?? `Book with ${doctor.name}`}
+            {doctor.bookingLabel ?? (language === 'km' ? `កក់ជាមួយ ${doctor.name}` : `Book with ${doctor.name}`)}
           </span>
         </div>
       </Link>

@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,14 +14,7 @@ import { env } from '@/config/env';
 import { createPublicAppointment } from '@/services/public-content';
 import { TurnstileWidget } from './turnstile-widget';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
+import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 
 type IconName = 'calendar' | 'check' | 'clock' | 'doctor' | 'email' | 'hourglass' | 'location' | 'notes' | 'phone' | 'service' | 'user';
 
@@ -811,9 +805,72 @@ export function dateLabel(selectedDate: string, language: 'en' | 'km') {
 
 function BookAppointmentView({ content }: { content: BookAppointmentPageContent }) {
   const { language } = usePublicLanguage();
-  const [selectedBranch, setSelectedBranch] = useState(content.branches[0]?.id ?? '');
-  const [selectedService, setSelectedService] = useState(content.servicesList[0]?.value ?? '');
-  const [selectedDoctor, setSelectedDoctor] = useState(content.doctors[0]?.value ?? '');
+  const [searchParams] = useSearchParams();
+  const requestedBranch = searchParams.get('branch');
+  const requestedDoctor = searchParams.get('doctor');
+  const requestedService = searchParams.get('service');
+
+  const initialBranch = useMemo<string>(() => {
+    if (requestedBranch) {
+      const match = content.branches.find(
+        (b) => b.id === requestedBranch || b.name.toLowerCase() === requestedBranch.toLowerCase(),
+      );
+      if (match?.id) return match.id;
+    }
+    return content.branches[0]?.id ?? '';
+  }, [content.branches, requestedBranch]);
+
+  const initialService = useMemo<string>(() => {
+    if (requestedService) {
+      const match = content.servicesList.find(
+        (s) => s.value === requestedService || s.name.toLowerCase() === requestedService.toLowerCase(),
+      );
+      if (match?.value) return match.value;
+    }
+    return content.servicesList[0]?.value ?? '';
+  }, [content.servicesList, requestedService]);
+
+  const initialDoctor = useMemo<string>(() => {
+    if (requestedDoctor) {
+      const match = content.doctors.find(
+        (d) => d.value === requestedDoctor || d.name.toLowerCase() === requestedDoctor.toLowerCase(),
+      );
+      if (match?.value) return match.value;
+    }
+    return content.doctors[0]?.value ?? '';
+  }, [content.doctors, requestedDoctor]);
+
+  const [selectedBranch, setSelectedBranch] = useState<string>(initialBranch);
+  const [selectedService, setSelectedService] = useState<string>(initialService);
+  const [selectedDoctor, setSelectedDoctor] = useState<string>(initialDoctor);
+
+  useEffect(() => {
+    if (requestedBranch) {
+      const match = content.branches.find(
+        (b) => b.id === requestedBranch || b.name.toLowerCase() === requestedBranch.toLowerCase(),
+      );
+      if (match?.id) setSelectedBranch(match.id);
+    }
+  }, [content.branches, requestedBranch]);
+
+  useEffect(() => {
+    if (requestedService) {
+      const match = content.servicesList.find(
+        (s) => s.value === requestedService || s.name.toLowerCase() === requestedService.toLowerCase(),
+      );
+      if (match?.value) setSelectedService(match.value);
+    }
+  }, [content.servicesList, requestedService]);
+
+  useEffect(() => {
+    if (requestedDoctor) {
+      const match = content.doctors.find(
+        (d) => d.value === requestedDoctor || d.name.toLowerCase() === requestedDoctor.toLowerCase(),
+      );
+      if (match?.value) setSelectedDoctor(match.value);
+    }
+  }, [content.doctors, requestedDoctor]);
+
   const [selectedDate, setSelectedDate] = useState(content.calendar.selectedDateKey);
   const [selectedTime, setSelectedTime] = useState(content.times[2] ?? content.times[0] ?? '10:00');
   const idempotencyKey = useRef(createIdempotencyKey());

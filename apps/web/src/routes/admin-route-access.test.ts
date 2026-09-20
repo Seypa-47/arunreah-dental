@@ -22,6 +22,10 @@ describe('admin route access', () => {
     expect(canAccessAdminPath('RECEPTIONIST', '/admin/appointments/calendar')).toBe(true);
     expect(canAccessAdminPath('SUPER_ADMIN', '/admin/appointments/calendar')).toBe(true);
     expect(canAccessAdminPath('CMS_ADMIN', '/admin/appointments/calendar')).toBe(false);
+
+    expect(canAccessAdminPath('RECEPTIONIST', '/admin/calendar')).toBe(true);
+    expect(canAccessAdminPath('SUPER_ADMIN', '/admin/calendar')).toBe(true);
+    expect(canAccessAdminPath('CMS_ADMIN', '/admin/calendar')).toBe(false);
   });
 
   it('preserves only safe admin return paths after login', () => {

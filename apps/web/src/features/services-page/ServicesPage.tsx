@@ -5,15 +5,8 @@ import { ImageFrame, PageContainer, PageFeedback, SectionIntro } from '@/compone
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import type { LandingService, ServicesPageContent } from '@/features/landing-page/types';
+import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { useServicesPageQuery } from './use-services-page';
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 const serviceId = (name: string) =>
   `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;

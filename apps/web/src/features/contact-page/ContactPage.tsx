@@ -8,14 +8,7 @@ import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/p
 import type { ContactPageContent } from '@/features/landing-page/types';
 import { GoogleSatelliteMap } from './GoogleSatelliteMap';
 import { useContactPageQuery } from './use-contact-page';
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
+import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 
 type ContactIconName = ContactPageContent['contactCards'][number]['icon'];
 

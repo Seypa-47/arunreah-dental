@@ -24,6 +24,7 @@ export function useLandingPageQuery() {
       const publicBranches = branches.branches;
       const homepageBranches = publicBranches.filter((branch) => branch.showOnHomepage);
       const heroBranches = publicBranches.filter((branch) => branch.includeInHomepageHero);
+      const isKm = language === 'km';
       return {
         ...publicLandingChrome(language),
         branches: homepageBranches.map((branch) => ({
@@ -38,20 +39,20 @@ export function useLandingPageQuery() {
         footer: {
           ...publicLandingChrome(language).footer,
           branchLinks: publicBranches.map((branch) => ({ href: '/branches', label: branch.name })),
-          description: language === 'km' ? clinic.shortAboutKm ?? '' : clinic.shortAboutEn ?? '',
+          description: isKm ? clinic.shortAboutKm ?? '' : clinic.shortAboutEn ?? '',
           tagline: localizedTagline ?? localizedName,
         },
         heroes: heroBranches.map((branch) => ({
           address: branch.address,
-          appointmentLabel: 'Book Appointment',
-          callLabel: 'Call Us',
+          appointmentLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
+          callLabel: isKm ? 'ទូរស័ព្ទមកយើង' : 'Call Us',
           imageAlt: branch.name,
           imagePresentation: branch.heroImagePresentation,
           imageUrl: getPublicMediaUrl(branch.heroImageKey) ?? getPublicMediaUrl(branch.branchImageKey) ?? '',
-          locationLabel: 'Location',
+          locationLabel: isKm ? 'ទីតាំង' : 'Location',
           phones: [contact.primaryPhone, contact.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
           qrImageUrl: '/assets/landing/qr-code.png',
-          qrLabel: 'Clinic information',
+          qrLabel: isKm ? 'ព័ត៌មានគ្លីនិក' : 'Clinic information',
         })),
         promotions: promotions.items
           .map((promotion) => ({

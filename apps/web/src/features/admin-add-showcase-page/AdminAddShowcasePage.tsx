@@ -36,7 +36,7 @@ export function AdminAddShowcasePage() {
   const [homepageVisibility, setHomepageVisibility] = useState(true);
 
   // Cover Content
-  const [coverImageUrl, setCoverImageUrl] = useState<string>('/assets/landing/showcase-toothbrush.png');
+  const [coverImageUrl, setCoverImageUrl] = useState<string>('');
   const [headline, setHeadline] = useState('');
   const [shortSummary, setShortSummary] = useState('');
 

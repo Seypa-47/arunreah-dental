@@ -6,15 +6,8 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import { getPublicMediaUrl } from '@/services/media';
+import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { useShowcaseDetailPageQuery } from './use-showcase-detail-page';
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 export function ShowcaseDetailPage() {
   const { showcaseSlug } = useParams();

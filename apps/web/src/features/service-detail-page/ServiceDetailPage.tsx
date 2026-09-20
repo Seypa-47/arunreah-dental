@@ -7,15 +7,8 @@ import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ContentBlocks, EditorialImage } from '@/components/layout/public-ui';
 import type { LandingService, ServiceDetailContent } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { useServiceDetailPageQuery } from './use-service-detail-page';
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
 
@@ -140,7 +133,7 @@ function ServiceHero({ editorial, service }: { editorial: boolean; service: Serv
           </h1>
           <p className="mt-3 max-w-[540px] text-[16px] font-normal leading-7 text-[#607486]">{service.hero.subtitle}</p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button className="min-h-[46px] rounded-full px-7 text-[14px] font-bold shadow-[0_4px_12px_rgba(54,149,185,0.18)]" onClick={() => navigate('/book-appointment')}>
+            <Button className="min-h-[46px] rounded-full px-7 text-[14px] font-bold shadow-[0_4px_12px_rgba(54,149,185,0.18)]" onClick={() => navigate(service.id ? `/book-appointment?service=${encodeURIComponent(service.id)}` : '/book-appointment')}>
               {service.hero.appointmentLabel}
             </Button>
             <Button
@@ -498,7 +491,7 @@ function OtherServices({ services }: { services: LandingService[] }) {
   );
 }
 
-function ServiceCta({ cta }: { cta: ServiceDetail['cta'] }) {
+function ServiceCta({ cta, serviceId }: { cta: ServiceDetail['cta']; serviceId?: string }) {
   const navigate = useNavigate();
 
   return (
@@ -509,7 +502,7 @@ function ServiceCta({ cta }: { cta: ServiceDetail['cta'] }) {
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button
             className="min-h-[48px] w-full rounded-full bg-white px-8 text-[14px] text-[#087b9f] shadow-none hover:bg-[#eef8fb] sm:w-auto"
-            onClick={() => navigate('/book-appointment')}
+            onClick={() => navigate(serviceId ? `/book-appointment?service=${encodeURIComponent(serviceId)}` : '/book-appointment')}
             variant="secondary"
           >
             {cta.appointmentLabel}
@@ -537,7 +530,7 @@ function ServiceDetailView({ content }: { content: ServiceDetailContent & { serv
         {editorial ? <EditorialOverview service={service} /> : <><AboutService service={service} /><BenefitsSection benefits={service.benefits} title={service.name} /></>}
         <PurposeLedDetail service={service} />
         <OtherServices services={content.otherServices} />
-        <ServiceCta cta={service.cta} />
+        <ServiceCta cta={service.cta} serviceId={service.id} />
       </main>
       <SiteFooter {...content.footer} />
     </SiteLayout>

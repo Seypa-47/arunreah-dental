@@ -15,7 +15,7 @@ export function useBookAppointmentPageQuery() {
         getPublicBranches(language, 'appointments'),
         getPublicContact(),
       ]);
-      return mapBookingOptions(publicBookingChrome(), services.services, doctors.doctors, branches.branches, contact);
+      return mapBookingOptions(publicBookingChrome(language), services.services, doctors.doctors, branches.branches, contact, language);
     },
     queryKey: queryKeys.public.bookingOptions(language),
   });

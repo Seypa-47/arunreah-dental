@@ -17,6 +17,7 @@ export type LandingHero = {
 };
 
 export type LandingService = {
+  id?: string;
   description: string;
   iconAlt: string;
   iconUrl: string;
@@ -29,6 +30,7 @@ export type LandingService = {
 };
 
 export type LandingDoctor = {
+  id?: string;
   bookingLabel?: string;
   credential?: string;
   detail: {
