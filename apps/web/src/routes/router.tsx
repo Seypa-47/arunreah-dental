@@ -89,6 +89,10 @@ export const router = createBrowserRouter([
     element: protectedAdminRoute(<AdminDoctorsPage />),
   },
   {
+    path: '/admin/doctors/:doctorId',
+    element: protectedAdminRoute(<AdminDoctorsPage />),
+  },
+  {
     path: '/admin/doctors/:doctorId/edit',
     element: protectedAdminRoute(<AdminDoctorsPage />),
   },

@@ -16,6 +16,7 @@ import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { getPublicMediaUrl } from '@/services/media';
+import { sanitizeDoctorUpdatePayload } from './doctor-payload';
 
 function StatusBadge({ status }: { status: DoctorStatus }) { return <AdminPublicationStatus status={status} />; }
 
@@ -75,11 +76,17 @@ type TabType = 'overview' | 'content' | 'expertise' | 'education' | 'seo';
 
 function DoctorDetailPanel({
   doctor,
+  isSaving = false,
+  saveError = null,
+  saveSuccess = false,
   onClose,
   onDelete,
   onSave,
 }: {
   doctor: AdminDoctor;
+  isSaving?: boolean;
+  saveError?: string | null;
+  saveSuccess?: boolean;
   onClose?: () => void;
   onDelete: (id: string) => void;
   onSave: (updated: AdminDoctor) => void;
@@ -87,20 +94,24 @@ function DoctorDetailPanel({
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [formData, setFormData] = useState<AdminDoctor>(doctor);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   useUnsavedChangesGuard(isDirty);
 
   // Sync form when selected doctor changes
   useEffect(() => {
     setFormData(doctor);
-    setSaveSuccess(false);
     setIsDirty(false);
   }, [doctor]);
 
+  // When save succeeds, clear isDirty
+  useEffect(() => {
+    if (saveSuccess) {
+      setIsDirty(false);
+    }
+  }, [saveSuccess]);
+
   const handleFieldChange = (field: keyof AdminDoctor, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setSaveSuccess(false);
     setIsDirty(true);
   };
 
@@ -110,22 +121,17 @@ function DoctorDetailPanel({
       imageUrl: getPublicMediaUrl(photoKey),
       photoKey,
     }));
-    setSaveSuccess(false);
     setIsDirty(true);
   };
 
   const handleDiscard = () => {
     setFormData(doctor);
-    setSaveSuccess(false);
     setIsDirty(false);
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSave(formData);
-    setSaveSuccess(true);
-    setIsDirty(false);
-    setTimeout(() => setSaveSuccess(false), 3000);
   };
 
   return (
@@ -177,8 +183,10 @@ function DoctorDetailPanel({
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-[#f4f8fb]"
                 onClick={() => {
                   const newStatus = formData.status === 'published' ? 'draft' : 'published';
+                  const newShowOnWebsite = newStatus === 'published';
                   handleFieldChange('status', newStatus);
-                  onSave({ ...formData, status: newStatus });
+                  handleFieldChange('showOnWebsite', newShowOnWebsite);
+                  onSave({ ...formData, status: newStatus, showOnWebsite: newShowOnWebsite });
                   setMenuOpen(false);
                 }}
                 type="button"
@@ -278,36 +286,86 @@ function DoctorDetailPanel({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Doctor Name (Khmer) *</span>
-                <input className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]" onChange={(e) => handleFieldChange('nameKm', e.target.value)} required type="text" value={formData.nameKm ?? ''} />
+                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
+                  Specialty *
+                </span>
+                <input
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
+                  onChange={(e) => handleFieldChange('specialty', e.target.value)}
+                  placeholder="e.g. Dental Implantology"
+                  required
+                  type="text"
+                  value={formData.specialty}
+                />
               </label>
+
               <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Role / Title (Khmer)</span>
-                <input className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]" onChange={(e) => handleFieldChange('roleTitleKm', e.target.value)} type="text" value={formData.roleTitleKm ?? ''} />
+                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
+                  Specialty (Khmer)
+                </span>
+                <input
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
+                  onChange={(e) => handleFieldChange('specialtyKm', e.target.value)}
+                  type="text"
+                  value={formData.specialtyKm ?? ''}
+                />
               </label>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Specialty (Khmer)</span>
-                <input className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]" onChange={(e) => handleFieldChange('specialtyKm', e.target.value)} type="text" value={formData.specialtyKm ?? ''} />
+                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
+                  Doctor Name (Khmer)
+                </span>
+                <input
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
+                  onChange={(e) => handleFieldChange('nameKm', e.target.value)}
+                  placeholder={formData.name}
+                  type="text"
+                  value={formData.nameKm ?? ''}
+                />
               </label>
+
               <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Short Intro (Khmer)</span>
-                <textarea className="mt-1.5 min-h-[90px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]" onChange={(e) => handleFieldChange('shortIntroKm', e.target.value)} rows={3} value={formData.shortIntroKm ?? ''} />
+                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
+                  Role / Title (Khmer)
+                </span>
+                <input
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
+                  onChange={(e) => handleFieldChange('roleTitleKm', e.target.value)}
+                  type="text"
+                  value={formData.roleTitleKm ?? ''}
+                />
               </label>
             </div>
 
             {/* Short Intro / Hero Description */}
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                Short Intro / Hero Description *
-              </span>
-              <textarea
-                className="mt-1.5 min-h-[90px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                onChange={(e) => handleFieldChange('shortIntro', e.target.value)}
-                required
-                rows={3}
-                value={formData.shortIntro}
-              />
-            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
+                  Short Intro / Hero Description *
+                </span>
+                <textarea
+                  className="mt-1.5 min-h-[90px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
+                  onChange={(e) => handleFieldChange('shortIntro', e.target.value)}
+                  required
+                  rows={3}
+                  value={formData.shortIntro}
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
+                  Short Intro (Khmer)
+                </span>
+                <textarea
+                  className="mt-1.5 min-h-[90px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
+                  onChange={(e) => handleFieldChange('shortIntroKm', e.target.value)}
+                  rows={3}
+                  value={formData.shortIntroKm ?? ''}
+                />
+              </label>
+            </div>
 
             {/* Stats: Years Exp, Procedures, Satisfaction */}
             <div className="grid grid-cols-3 gap-3">
@@ -390,7 +448,10 @@ function DoctorDetailPanel({
               <AdminToggle
                 checked={formData.showOnWebsite}
                 label="Show on Website"
-                onChange={(checked) => handleFieldChange('showOnWebsite', checked)}
+                onChange={(checked) => {
+                  handleFieldChange('showOnWebsite', checked);
+                  handleFieldChange('status', checked ? 'published' : 'draft');
+                }}
                 showLabel
               />
               <AdminToggle
@@ -484,16 +545,23 @@ function DoctorDetailPanel({
         )}
 
         {/* Feedback message */}
-        {saveSuccess && (
-          <div className="mt-4 rounded-xl border border-[#c4f3d8] bg-[#effdf5] px-4 py-2 text-center text-[13px] font-bold text-[#13ad63]">
-            ✓ Specialist profile saved successfully!
+        {saveError ? (
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#fecdca] bg-[#fef3f2] px-4 py-2.5 text-[13px] font-medium text-[#b42318]" role="alert">
+            <AdminIcon className="size-4 shrink-0 text-[#b42318]" name="info" />
+            <span>{saveError}</span>
           </div>
-        )}
+        ) : null}
+        {saveSuccess ? (
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#c4f3d8] bg-[#effdf5] px-4 py-2.5 text-[13px] font-bold text-[#13ad63]" role="status">
+            <span>✓ Specialist profile saved successfully!</span>
+          </div>
+        ) : null}
 
         {/* Action Buttons */}
         <div className="mt-8 flex items-center justify-between gap-4 border-t border-[#e5edf5] pt-6">
           <Button
             className="h-11 rounded-xl border border-[#dce5ef] bg-white px-5 text-[14px] font-bold text-[#71839e] shadow-none hover:bg-[#f4f8fb]"
+            disabled={isSaving}
             onClick={handleDiscard}
             type="button"
             variant="secondary"
@@ -502,10 +570,11 @@ function DoctorDetailPanel({
           </Button>
 
           <Button
-            className="h-11 rounded-xl bg-[#2187a8] px-6 text-[14px] font-bold text-white shadow-none hover:bg-[#1a718c]"
+            className="h-11 rounded-xl bg-[#2187a8] px-6 text-[14px] font-bold text-white shadow-none hover:bg-[#1a718c] disabled:opacity-60"
+            disabled={isSaving}
             type="submit"
           >
-            Save Specialist
+            {isSaving ? 'Saving Specialist…' : 'Save Specialist'}
           </Button>
         </div>
       </form>
@@ -914,6 +983,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
   const [selectedId, setSelectedId] = useState<string | null>(doctorId ?? null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   useEffect(() => { setDoctors(content.doctors); }, [content.doctors]);
   useEffect(() => { setSelectedId(doctorId ?? null); }, [doctorId]);
   const doctorDetailQuery = useQuery({
@@ -939,18 +1009,24 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
   const selectedDoctor = doctorDetailQuery.data ? toAdminDoctorDetail(doctorDetailQuery.data.doctor) : null;
 
   const updateMutation = useMutation({
-    mutationFn: (doctor: AdminDoctor) => cmsApi.doctors.update(doctor.id, {
-      status: doctor.status === 'published' ? 'PUBLISHED' : doctor.status === 'archived' ? 'ARCHIVED' : 'DRAFT', featured: doctor.featuredDoctor,
-      slug: doctor.seo?.slug, displayOrder: doctor.displayOrder ?? 0, nameEn: doctor.name, nameKm: doctor.nameKm ?? '', titleEn: doctor.roleTitle || null, titleKm: doctor.roleTitleKm || null, specialtyEn: doctor.specialty || null, specialtyKm: doctor.specialtyKm || null,
-      shortBioEn: doctor.shortIntro || null, shortBioKm: doctor.shortIntroKm || null, aboutEn: doctor.content || null, aboutKm: doctor.contentKm || null, photoKey: doctor.photoKey ?? null,
-      yearsExperience: Number.parseInt(doctor.yearsExp, 10) || null, successfulProcedures: Number.parseInt(doctor.procedures, 10) || null,
-      patientSatisfaction: Number.parseInt(doctor.satisfaction, 10) || null, phone: doctor.contactPhone || null,
-      expertise: doctor.expertiseItems?.map((item, displayOrder) => ({ ...item, displayOrder })) ?? [],
-      education: doctor.educationItems?.map((item, displayOrder) => ({ ...item, displayOrder })) ?? [],
-      relatedDoctorIds: doctor.relatedDoctorIds ?? [],
-    }),
-    onSuccess: () => { setActionError(null); void invalidateCmsDomain(queryClient, 'doctors'); },
-    onError: () => setActionError('Unable to save this doctor. Please check the form and try again.'),
+    mutationFn: (doctor: AdminDoctor) => {
+      const payload = sanitizeDoctorUpdatePayload(doctor);
+      return cmsApi.doctors.update(doctor.id, payload);
+    },
+    onSuccess: () => {
+      setActionError(null);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+      void invalidateCmsDomain(queryClient, 'doctors');
+    },
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Unable to save this doctor. Please check the form and try again.';
+      setActionError(message || 'Unable to save this doctor. Please check the form and try again.');
+      setSaveSuccess(false);
+    },
   });
   const deleteMutation = useMutation({
     mutationFn: (id: string) => cmsApi.doctors.delete(id),
@@ -980,7 +1056,24 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
             <AdminPageHeading />
             <Button onClick={() => navigate('/admin/doctors')} type="button" variant="secondary">Back to doctors</Button>
           </header>
-          {doctorDetailQuery.isLoading ? <Card className="min-h-[32rem] animate-pulse rounded-[28px] bg-white" /> : selectedDoctor ? <DoctorDetailPanel doctor={selectedDoctor} onClose={() => navigate('/admin/doctors')} onDelete={handleDeleteDoctor} onSave={handleSaveDoctor} /> : <Card className="p-6"><p className="admin-feedback" role="alert">This doctor could not be found.</p><Button className="mt-4" onClick={() => navigate('/admin/doctors')} type="button" variant="secondary">Back to doctors</Button></Card>}
+          {doctorDetailQuery.isLoading ? (
+            <Card className="min-h-[32rem] animate-pulse rounded-[28px] bg-white" />
+          ) : selectedDoctor ? (
+            <DoctorDetailPanel
+              doctor={selectedDoctor}
+              isSaving={updateMutation.isPending}
+              onClose={() => navigate('/admin/doctors')}
+              onDelete={handleDeleteDoctor}
+              onSave={handleSaveDoctor}
+              saveError={actionError}
+              saveSuccess={saveSuccess}
+            />
+          ) : (
+            <Card className="p-6">
+              <p className="admin-feedback" role="alert">This doctor could not be found.</p>
+              <Button className="mt-4" onClick={() => navigate('/admin/doctors')} type="button" variant="secondary">Back to doctors</Button>
+            </Card>
+          )}
         </div>
       </main>
     );
@@ -1074,6 +1167,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
                   <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.specialty}</th>
                   <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.status}</th>
                   <th scope="col" className="pb-3.5 pt-1 text-right font-bold">{content.table.updated}</th>
+                  <th scope="col" className="pb-3.5 pt-1 pr-2 text-right font-bold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f0f4f8]">
@@ -1108,6 +1202,18 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
                       {/* Updated Date */}
                       <td className="py-4 text-right text-[13px] text-[#8a9bb2]">
                         <AdminListDate value={doc.updatedAt} />
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-4 pr-2 text-right">
+                        <button
+                          aria-label={`Edit ${doc.name}`}
+                          className="rounded-lg px-3 py-1.5 text-[13px] font-bold text-[#2187a8] transition hover:bg-[#edf7fb]"
+                          onClick={() => navigate(`/admin/doctors/${doc.id}/edit`)}
+                          type="button"
+                        >
+                          Edit
+                        </button>
                       </td>
                     </tr>
                   );
