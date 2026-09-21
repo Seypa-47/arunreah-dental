@@ -208,6 +208,18 @@ describe('media API routes', () => {
     expect((await upload('CMS_ADMIN', png, 'clinic')).status).toBe(201);
     expect((await upload('CMS_ADMIN', webp, 'services')).status).toBe(201);
     expect(state.objects.size).toBe(3);
+
+    // Should detect true MIME type when filename/declared type differs (e.g. Mac screenshot renamed to .jpg)
+    const renamedPng = new File(
+      [new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])],
+      '2026-09-21 10.56.16.jpg',
+      { type: 'image/jpeg' },
+    );
+    const renamedResponse = await upload('CMS_ADMIN', renamedPng, 'clinic');
+    expect(renamedResponse.status).toBe(201);
+    const renamedJson = await renamedResponse.json<{ data: { mimeType: string; key: string } }>();
+    expect(renamedJson.data.mimeType).toBe('image/png');
+    expect(renamedJson.data.key).toMatch(/\.png$/);
   });
 
   it('only deletes orphaned managed keys', async () => {

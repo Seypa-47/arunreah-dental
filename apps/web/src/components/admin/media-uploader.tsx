@@ -5,7 +5,8 @@ import { AdminFeedback } from './admin-feedback';
 import { Button } from '@/components/ui/button';
 import { getPublicMediaUrl, uploadMedia, type UploadedMedia } from '@/services/media';
 
-const acceptedTypes = ['image/jpeg', 'image/png', 'image/webp'] as const;
+const acceptedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'] as const;
+const acceptedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif'];
 const maxImageBytes = 5 * 1024 * 1024;
 
 type MediaUploaderProps = {
@@ -77,9 +78,13 @@ export function MediaUploader({
   const chooseFile = (file: File) => {
     setValidationMessage(null);
     setUploadedMedia(null);
-    if (!acceptedTypes.includes(file.type as (typeof acceptedTypes)[number])) {
+    const ext = file.name.split('.').at(-1)?.toLowerCase() ?? '';
+    const isMimeAccepted = acceptedTypes.includes(file.type as (typeof acceptedTypes)[number]);
+    const isExtAccepted = acceptedExtensions.includes(ext);
+
+    if (!isMimeAccepted && !isExtAccepted) {
       setLocalFile(null);
-      setValidationMessage('Choose a JPEG, PNG, or WEBP image.');
+      setValidationMessage('Choose a JPEG, PNG, WEBP, or AVIF image.');
       return;
     }
     if (file.size > maxImageBytes) {
@@ -106,7 +111,7 @@ export function MediaUploader({
       <div className="min-w-0">
         <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-[#9bc9da] bg-white px-4 text-sm font-semibold text-[#167ea7] transition hover:border-[#2187a8] hover:bg-[#edf7fb] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#2187a8] focus-within:ring-offset-2">
           <span>{value ? 'Replace image' : 'Choose image'}</span>
-          <input accept={acceptedTypes.join(',')} className="sr-only" disabled={upload.isPending} id={inputId} onChange={(event) => { const file = event.target.files?.[0]; event.currentTarget.value = ''; if (file) chooseFile(file); }} type="file" />
+          <input accept={`${acceptedTypes.join(',')},.jpg,.jpeg,.png,.webp,.avif,.gif`} className="sr-only" disabled={upload.isPending} id={inputId} onChange={(event) => { const file = event.target.files?.[0]; event.currentTarget.value = ''; if (file) chooseFile(file); }} type="file" />
         </label>
         {localFile ? <p className="mt-3 break-words text-xs text-[#52647d]"><span className="font-semibold">Selected:</span> {localFile.name} · {formatFileSize(localFile.size)}</p> : null}
         {assetName ? <p className="mt-3 break-words text-xs text-[#52647d]"><span className="font-semibold">Current asset:</span> {assetName}</p> : null}
@@ -124,7 +129,7 @@ export function MediaUploader({
       {validationMessage ? <AdminFeedback title="Choose a supported image" tone="error"><p>{validationMessage}</p></AdminFeedback> : null}
       {upload.isPending ? <AdminFeedback title="Uploading image…" tone="loading"><p>Please keep this page open while the image is uploaded.</p></AdminFeedback> : null}
       {upload.isSuccess ? <AdminFeedback title="Image ready" tone="success"><p>Save the form to apply this image to the content.</p></AdminFeedback> : null}
-      {upload.isError ? <AdminFeedback title="Image upload failed" tone="error"><p>Check the image type, size, and your access permissions, then try again.</p></AdminFeedback> : null}
+      {upload.isError ? <AdminFeedback title="Image upload failed" tone="error"><p>{(upload.error as Error)?.message || 'Check the image type, size, and your access permissions, then try again.'}</p></AdminFeedback> : null}
     </div>
   </fieldset>;
 }
