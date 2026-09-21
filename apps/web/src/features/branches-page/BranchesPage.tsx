@@ -68,19 +68,15 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
           presentation={hero.imagePresentation}
           src={imageUrl}
         />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-white/35 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.60)_0%,rgba(255,255,255,0.25)_28%,rgba(255,255,255,0)_48%)]"
-        />
         <div className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
           <div className="max-w-[560px] py-7">
-            <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px] [text-shadow:_0_1px_4px_rgba(255,255,255,0.9)]">
+            <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
               {hero.eyebrow}
             </p>
-            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px] [text-shadow:_0_1px_6px_rgba(255,255,255,0.9)]">
+            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
               {hero.title}
             </h1>
-            <p className="mt-3 max-w-[500px] text-[16px] font-medium leading-7 text-[#0e3b5e] [text-shadow:_0_1px_4px_rgba(255,255,255,0.9)]">{hero.subtitle}</p>
+            <p className="mt-3 max-w-[500px] text-[16px] font-medium leading-7 text-[#0e3b5e]">{hero.subtitle}</p>
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3">
               {hero.highlights.map((item) => (
                 <div className="flex items-center gap-3" key={item.label}>

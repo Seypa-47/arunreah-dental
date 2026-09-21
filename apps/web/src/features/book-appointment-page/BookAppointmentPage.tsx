@@ -274,15 +274,11 @@ function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] })
         presentation={hero.imagePresentation}
         src={imageUrl}
       />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[#f7fafc]/85 sm:bg-[linear-gradient(90deg,rgba(247,250,252,0.92)_0%,rgba(247,250,252,0.80)_42%,rgba(247,250,252,0.38)_75%,rgba(247,250,252,0.12)_100%)]"
-      />
       <div className="relative z-10 flex items-center py-8 sm:min-h-[250px] sm:py-10">
         <div className="max-w-[600px]">
           {eyebrow ? <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p> : null}
           <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">{hero.title}</h1>
-          <p className="mt-3 max-w-[560px] text-[16px] font-normal leading-7 text-[#64748b]">{hero.subtitle}</p>
+          <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e]">{hero.subtitle}</p>
         </div>
       </div>
       </div>

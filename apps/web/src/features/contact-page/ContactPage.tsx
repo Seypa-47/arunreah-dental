@@ -96,17 +96,13 @@ function ContactHero({ hero }: { hero: ContactPageContent['hero'] }) {
           presentation={hero.imagePresentation}
           src={imageUrl}
         />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-white/35 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.60)_0%,rgba(255,255,255,0.25)_28%,rgba(255,255,255,0)_48%)]"
-        />
         <div className="relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
           <div className="max-w-[620px]">
-            <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px] [text-shadow:_0_1px_4px_rgba(255,255,255,0.9)]">{hero.eyebrow}</p>
-            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px] [text-shadow:_0_1px_6px_rgba(255,255,255,0.9)]">
+            <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{hero.eyebrow}</p>
+            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
               {hero.title}
             </h1>
-            <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e] [text-shadow:_0_1px_4px_rgba(255,255,255,0.9)]">{hero.subtitle}</p>
+            <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e]">{hero.subtitle}</p>
           </div>
           <Card className="rounded-2xl border-[#d9e9ee] bg-white/95 p-5 shadow-[0_4px_20px_rgba(0,86,135,0.08)] backdrop-blur-md sm:p-6">
             <div className="space-y-4">
