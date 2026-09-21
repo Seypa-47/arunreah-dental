@@ -98,7 +98,7 @@ function ContactHero({ hero }: { hero: ContactPageContent['hero'] }) {
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-white/85 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.80)_42%,rgba(255,255,255,0.38)_75%,rgba(255,255,255,0.12)_100%)]"
+          className="pointer-events-none absolute inset-0 bg-white/75 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.72)_40%,rgba(255,255,255,0.20)_75%,rgba(255,255,255,0.05)_100%)]"
         />
         <div className="relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
           <div className="max-w-[620px]">

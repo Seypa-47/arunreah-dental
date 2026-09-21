@@ -70,7 +70,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-white/85 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.80)_42%,rgba(255,255,255,0.38)_75%,rgba(255,255,255,0.12)_100%)]"
+          className="pointer-events-none absolute inset-0 bg-white/75 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.72)_40%,rgba(255,255,255,0.20)_75%,rgba(255,255,255,0.05)_100%)]"
         />
         <div className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
           <div className="max-w-[560px] py-7">
