@@ -115,9 +115,9 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
 
   return (
     <article className="w-full shrink-0 snap-center">
-      <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:px-8 lg:h-[530px] lg:pb-0">
+      <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:px-8 lg:h-[600px] lg:pb-0">
         <div className="relative h-full">
-          <div className="relative h-[264px] overflow-hidden rounded-[20px] bg-[#dfe9ee] shadow-[0_8px_22px_rgba(15,61,84,0.08)] sm:h-[330px] md:h-[400px] lg:absolute lg:inset-x-0 lg:top-3 lg:h-[438px] lg:rounded-[24px]">
+          <div className="relative h-[320px] overflow-hidden rounded-[20px] bg-[#dfe9ee] shadow-[0_8px_22px_rgba(15,61,84,0.08)] sm:h-[390px] md:h-[460px] lg:absolute lg:inset-x-0 lg:top-3 lg:h-[510px] lg:rounded-[24px]">
             <CmsImage
               alt={hero.imageAlt || 'Arunreah Dental Clinic'}
               className="h-full w-full object-cover"
@@ -127,7 +127,7 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
               src={imageUrl}
             />
           </div>
-          <div className="relative mx-2 -mt-7 grid overflow-hidden rounded-xl border border-[#dcebef] bg-white text-[#005687] shadow-[0_8px_22px_rgba(15,61,84,0.09)] sm:mx-4 sm:grid-cols-2 lg:absolute lg:left-1/2 lg:top-[398px] lg:mx-0 lg:mt-0 lg:w-[calc(100%-4rem)] lg:-translate-x-1/2 lg:grid-cols-[minmax(0,1.35fr)_auto_minmax(0,0.85fr)] xl:w-[920px]">
+          <div className="relative mx-2 -mt-7 grid overflow-hidden rounded-xl border border-[#dcebef] bg-white text-[#005687] shadow-[0_8px_22px_rgba(15,61,84,0.09)] sm:mx-4 sm:grid-cols-2 lg:absolute lg:left-1/2 lg:top-[468px] lg:mx-0 lg:mt-0 lg:w-[calc(100%-4rem)] lg:-translate-x-1/2 lg:grid-cols-[minmax(0,1.35fr)_auto_minmax(0,0.85fr)] xl:w-[920px]">
             <div className="order-2 flex items-center gap-3 px-5 py-4 sm:px-6 sm:py-5 lg:order-none">
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#3695B9] sm:size-[43px]">
                 <AssetIcon className="h-[18px] w-[14px]" name="hero-location.svg" />
@@ -216,7 +216,7 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
       </div>
       {heroes.length > 1 ? (
         <>
-          <div className="pointer-events-none absolute inset-x-0 top-[142px] mx-auto flex w-full max-w-[1180px] items-center justify-between px-2 sm:top-[196px] sm:px-5 md:top-[230px]">
+          <div className="pointer-events-none absolute inset-x-0 top-[165px] mx-auto flex w-full max-w-[1180px] items-center justify-between px-2 sm:top-[215px] sm:px-5 md:top-[250px] lg:top-[265px]">
             <div className="pointer-events-auto">
               <HeroArrowButton direction="left" onClick={() => scrollToBranch(-1)} />
             </div>
