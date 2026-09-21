@@ -263,14 +263,16 @@ function SectionTitle({ number, title }: { number: string; title: string }) {
 
 function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] }) {
   const imageUrl = hero.backgroundImageUrl || '/assets/landing/figma-branches/image5_183_4173.jpg';
+  const eyebrow = hero.eyebrow ?? 'Appointment request';
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
-      <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg" src={hero.backgroundImageUrl} />
+      <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg" presentation={hero.imagePresentation} src={hero.backgroundImageUrl} />
       <ResilientImage
         alt={hero.backgroundImageAlt}
         className="absolute inset-y-0 right-0 hidden h-full w-[50%] object-cover object-center sm:block"
         fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg"
+        presentation={hero.imagePresentation}
         src={imageUrl}
       />
       <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[45%] bg-[#f7fafc] sm:block" />
@@ -278,7 +280,7 @@ function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] })
       <div aria-hidden="true" className="absolute inset-y-0 right-0 hidden w-[51%] bg-[linear-gradient(90deg,rgba(5,84,111,0.06),rgba(5,84,111,0.24))] sm:block" />
       <div className="relative flex items-center py-8 sm:min-h-[250px] sm:py-10">
         <div className="max-w-[600px]">
-          <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">Appointment request</p>
+          {eyebrow ? <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p> : null}
           <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">{hero.title}</h1>
           <p className="mt-3 max-w-[560px] text-[16px] font-normal leading-7 text-[#64748b]">{hero.subtitle}</p>
         </div>

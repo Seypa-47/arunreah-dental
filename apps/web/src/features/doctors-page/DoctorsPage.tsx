@@ -23,7 +23,7 @@ function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; he
   const fallbackImageUrl = '/assets/landing/hero-clinic.png';
   const title = heroMedia?.title ?? hero.title;
   const description = heroMedia?.body ?? hero.description;
-  const eyebrow = language === 'km' ? 'ក្រុមទន្តបណ្ឌិតរបស់យើង' : 'Our dental team';
+  const eyebrow = heroMedia?.badge || (language === 'km' ? 'ក្រុមទន្តបណ្ឌិតរបស់យើង' : 'Our dental team');
 
   return (
     <section className="border-b border-[#dceaf0] bg-[#f7fafc] py-5 sm:py-7">

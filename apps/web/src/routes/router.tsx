@@ -21,6 +21,7 @@ const AdminAddShowcasePage = lazy(() => import('@/features/admin-add-showcase-pa
 const AdminClinicInfoPage = lazy(() => import('@/features/admin-clinic-info-page/AdminClinicInfoPage').then(({ AdminClinicInfoPage: Page }) => ({ default: Page })));
 const AdminManagementPage = lazy(() => import('@/features/admin-management-page/AdminManagementPage').then(({ AdminManagementPage: Page }) => ({ default: Page })));
 const AdminPageMediaPage = lazy(() => import('@/features/admin-page-media-page/AdminPageMediaPage').then(({ AdminPageMediaPage: Page }) => ({ default: Page })));
+const AdminPageHeroesPage = lazy(() => import('@/features/admin-page-heroes-page/AdminPageHeroesPage').then(({ AdminPageHeroesPage: Page }) => ({ default: Page })));
 const AdminAboutTimelinePage = lazy(() => import('@/features/admin-about-timeline-page/AdminAboutTimelinePage').then(({ AdminAboutTimelinePage: Page }) => ({ default: Page })));
 const BookAppointmentPage = lazy(() => import('@/features/book-appointment-page/BookAppointmentPage').then(({ BookAppointmentPage: Page }) => ({ default: Page })));
 const BranchesPage = lazy(() => import('@/features/branches-page/BranchesPage').then(({ BranchesPage: Page }) => ({ default: Page })));
@@ -151,6 +152,10 @@ export const router = createBrowserRouter([
   {
     path: '/admin/page-media',
     element: protectedAdminRoute(<AdminPageMediaPage />),
+  },
+  {
+    path: '/admin/page-heroes',
+    element: protectedAdminRoute(<AdminPageHeroesPage />),
   },
   {
     path: '/admin/about-timeline',

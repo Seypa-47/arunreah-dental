@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ImageFrame, PageContainer, PageFeedback, SectionIntro } from '@/components/layout/public-ui';
+import { ImageFrame, PageContainer, PageFeedback, ResilientImage, SectionIntro } from '@/components/layout/public-ui';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import type { LandingService, ServicesPageContent } from '@/features/landing-page/types';
@@ -16,9 +16,23 @@ function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <PageContainer>
-        <div className="rounded-2xl border border-[#d9e9ee] bg-[linear-gradient(120deg,#fafdfe_0%,#edf7fa_100%)] px-5 py-11 text-center shadow-[0_5px_20px_rgba(15,61,84,0.04)] sm:px-8 sm:py-14">
-          <SectionIntro align="center" as="h1" description={hero.description} eyebrow="Our Treatments" title={hero.title} />
-        </div>
+        {hero.imageUrl ? (
+          <div className="relative grid min-h-[300px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#00546f] sm:min-h-[360px]">
+            <ResilientImage alt={hero.title} className="absolute inset-0 h-full w-full object-cover object-center" presentation={hero.imagePresentation} src={hero.imageUrl} />
+            <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,52,78,0.9)_0%,rgba(5,52,78,0.62)_52%,rgba(5,52,78,0.12)_100%)]" />
+            <div className="relative flex max-w-[720px] items-end p-6 text-white sm:p-10 lg:p-12">
+              <div>
+                {hero.eyebrow ? <p className="text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#b7e7f4]">{hero.eyebrow}</p> : null}
+                <h1 className={`${hero.eyebrow ? 'mt-3' : ''} text-[30px] font-extrabold leading-tight tracking-[-0.035em] sm:text-[42px]`}>{hero.title}</h1>
+                {hero.description ? <p className="mt-3 max-w-[580px] text-[16px] font-medium leading-7 text-white/90">{hero.description}</p> : null}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-[#d9e9ee] bg-[linear-gradient(120deg,#fafdfe_0%,#edf7fa_100%)] px-5 py-11 text-center shadow-[0_5px_20px_rgba(15,61,84,0.04)] sm:px-8 sm:py-14">
+            <SectionIntro align="center" as="h1" description={hero.description} eyebrow={hero.eyebrow ?? 'Our Treatments'} title={hero.title} />
+          </div>
+        )}
       </PageContainer>
     </section>
   );

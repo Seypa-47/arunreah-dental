@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { ImageFrame, PageContainer, PageFeedback, SectionIntro } from '@/components/layout/public-ui';
+import { ImageFrame, PageContainer, PageFeedback, ResilientImage, SectionIntro } from '@/components/layout/public-ui';
 import { getPublicMediaUrl } from '@/services/media';
 import type { PublicShowcaseSummary } from '@/services/public-content';
 import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
@@ -29,6 +29,37 @@ function ShowcaseCard({ showcase }: { showcase: PublicShowcaseSummary }) {
   );
 }
 
+function ShowcasesHero({ heroMedia }: { heroMedia?: { badge: string | null; body: string | null; imageKey: string; imagePresentation: import('@arunreah/shared').ImagePresentation; title: string | null } }) {
+  const imageUrl = heroMedia?.imageKey ? getPublicMediaUrl(heroMedia.imageKey) : null;
+  const eyebrow = heroMedia?.badge || 'Our work';
+  const title = heroMedia?.title || 'Latest Showcases';
+  const description = heroMedia?.body;
+
+  return (
+    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
+      <PageContainer>
+        {imageUrl ? (
+          <div className="relative grid min-h-[300px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#00546f] sm:min-h-[360px]">
+            <ResilientImage alt={title} className="absolute inset-0 h-full w-full object-cover object-center" presentation={heroMedia?.imagePresentation} src={imageUrl} />
+            <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,52,78,0.9)_0%,rgba(5,52,78,0.62)_52%,rgba(5,52,78,0.12)_100%)]" />
+            <div className="relative flex max-w-[720px] items-end p-6 text-white sm:p-10 lg:p-12">
+              <div>
+                {eyebrow ? <p className="text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#b7e7f4]">{eyebrow}</p> : null}
+                <h1 className={`${eyebrow ? 'mt-3' : ''} text-[30px] font-extrabold leading-tight tracking-[-0.035em] sm:text-[42px]`}>{title}</h1>
+                {description ? <p className="mt-3 max-w-[580px] text-[16px] font-medium leading-7 text-white/90">{description}</p> : null}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-[#d9e9ee] bg-[linear-gradient(120deg,#fafdfe_0%,#edf7fa_100%)] px-5 py-11 text-center shadow-[0_5px_20px_rgba(15,61,84,0.04)] sm:px-8 sm:py-14">
+            <SectionIntro align="center" as="h1" description={description ?? undefined} eyebrow={eyebrow} title={title} />
+          </div>
+        )}
+      </PageContainer>
+    </section>
+  );
+}
+
 export function ShowcasesPage() {
   const { data, isError, isLoading, refetch } = useShowcasesPageQuery();
 
@@ -38,9 +69,7 @@ export function ShowcasesPage() {
   return (
     <SiteLayout actions={data.chrome.actions} navigation={data.chrome.navigation} services={data.chrome.services}>
       <main className="bg-white">
-        <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
-          <PageContainer><div className="rounded-2xl border border-[#d9e9ee] bg-[linear-gradient(120deg,#fafdfe_0%,#edf7fa_100%)] px-5 py-11 text-center shadow-[0_5px_20px_rgba(15,61,84,0.04)] sm:px-8 sm:py-14"><SectionIntro align="center" as="h1" eyebrow="Our work" title="Latest Showcases" /></div></PageContainer>
-        </section>
+        <ShowcasesHero heroMedia={data.heroMedia} />
         <section className="py-10 sm:py-14"><PageContainer>
           {data.showcases.length === 0 ? <Card className="rounded-xl border-[#e1ebef] p-8 text-center text-[16px] text-[#64748b]">No showcases are available right now.</Card> : <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{data.showcases.map((showcase) => <ShowcaseCard key={showcase.slug} showcase={showcase} />)}</div>}
         </PageContainer></section>

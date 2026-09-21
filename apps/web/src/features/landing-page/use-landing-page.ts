@@ -10,7 +10,7 @@ export function useLandingPageQuery() {
   const { language } = usePublicLanguage();
   return useQuery({
     queryFn: async () => {
-      const [clinic, contact, services, doctors, branches, showcases, promotions] = await Promise.all([
+      const [clinic, contact, services, doctors, branches, showcases, promotions, homeHeroResponse] = await Promise.all([
         getPublicClinic(),
         getPublicContact(),
         getPublicServices(language),
@@ -18,6 +18,7 @@ export function useLandingPageQuery() {
         getPublicBranches(language, 'landing'),
         getPublicShowcases(language, true),
         getPublicPageMedia('HOME_PROMOTIONS', language).catch(() => ({ items: [] })),
+        getPublicPageMedia('HOME_HERO', language).catch(() => ({ items: [] })),
       ]);
       const localizedName = language === 'km' ? clinic.clinicNameKm : clinic.clinicNameEn;
       const localizedTagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
@@ -25,6 +26,35 @@ export function useLandingPageQuery() {
       const homepageBranches = publicBranches.filter((branch) => branch.showOnHomepage);
       const heroBranches = publicBranches.filter((branch) => branch.includeInHomepageHero);
       const isKm = language === 'km';
+      const heroItem = homeHeroResponse.items[0];
+      const cmsHeroSlide = heroItem
+        ? {
+            address: heroItem.body || (heroBranches[0]?.address ?? clinic.clinicNameEn),
+            appointmentLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
+            callLabel: isKm ? 'ទូរស័ព្ទមកយើង' : 'Call Us',
+            imageAlt: heroItem.title || clinic.clinicNameEn,
+            imagePresentation: heroItem.imagePresentation,
+            imageUrl: heroItem.imageKey ? (getPublicMediaUrl(heroItem.imageKey) ?? '') : (heroBranches[0]?.heroImageKey ? (getPublicMediaUrl(heroBranches[0].heroImageKey) ?? '') : '/assets/landing/hero-clinic.png'),
+            locationLabel: heroItem.badge || (isKm ? 'ទីតាំង' : 'Location'),
+            phones: [contact.primaryPhone, contact.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
+            qrImageUrl: '/assets/landing/qr-code.png',
+            qrLabel: isKm ? 'ព័ត៌មានគ្លីនិក' : 'Clinic information',
+          }
+        : null;
+
+      const branchHeroes = heroBranches.map((branch) => ({
+        address: branch.address,
+        appointmentLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
+        callLabel: isKm ? 'ទូរស័ព្ទមកយើង' : 'Call Us',
+        imageAlt: branch.name,
+        imagePresentation: branch.heroImagePresentation,
+        imageUrl: getPublicMediaUrl(branch.heroImageKey) ?? getPublicMediaUrl(branch.branchImageKey) ?? '',
+        locationLabel: isKm ? 'ទីតាំង' : 'Location',
+        phones: [contact.primaryPhone, contact.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
+        qrImageUrl: '/assets/landing/qr-code.png',
+        qrLabel: isKm ? 'ព័ត៌មានគ្លីនិក' : 'Clinic information',
+      }));
+
       return {
         ...publicLandingChrome(language),
         branches: homepageBranches.map((branch) => ({
@@ -42,18 +72,7 @@ export function useLandingPageQuery() {
           description: isKm ? clinic.shortAboutKm ?? '' : clinic.shortAboutEn ?? '',
           tagline: localizedTagline ?? localizedName,
         },
-        heroes: heroBranches.map((branch) => ({
-          address: branch.address,
-          appointmentLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
-          callLabel: isKm ? 'ទូរស័ព្ទមកយើង' : 'Call Us',
-          imageAlt: branch.name,
-          imagePresentation: branch.heroImagePresentation,
-          imageUrl: getPublicMediaUrl(branch.heroImageKey) ?? getPublicMediaUrl(branch.branchImageKey) ?? '',
-          locationLabel: isKm ? 'ទីតាំង' : 'Location',
-          phones: [contact.primaryPhone, contact.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
-          qrImageUrl: '/assets/landing/qr-code.png',
-          qrLabel: isKm ? 'ព័ត៌មានគ្លីនិក' : 'Clinic information',
-        })),
+        heroes: cmsHeroSlide ? [cmsHeroSlide, ...branchHeroes] : branchHeroes,
         promotions: promotions.items
           .map((promotion) => ({
             badge: promotion.badge ?? '',
@@ -77,6 +96,6 @@ export function useLandingPageQuery() {
         })),
       };
     },
-    queryKey: [...queryKeys.public.landing(language), queryKeys.public.pageMedia('HOME_PROMOTIONS', language)],
+    queryKey: [...queryKeys.public.landing(language), queryKeys.public.pageMedia('HOME_PROMOTIONS', language), queryKeys.public.pageMedia('HOME_HERO', language)],
   });
 }

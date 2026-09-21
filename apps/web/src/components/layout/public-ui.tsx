@@ -90,16 +90,19 @@ export function ResilientImage({
   className,
   fallbackSrc = DEFAULT_FALLBACK_IMAGE,
   loading = 'lazy',
+  presentation,
   src,
 }: {
   alt: string;
   className?: string;
   fallbackSrc?: string;
   loading?: 'eager' | 'lazy';
+  presentation?: ImagePresentation;
   src?: string | null;
 }) {
   const [imageSrc, setImageSrc] = useState<string | null>(src || fallbackSrc);
   const [hasFailed, setHasFailed] = useState(false);
+  const { positionX, positionY, zoom } = presentation ?? defaultImagePresentation;
 
   useEffect(() => {
     setImageSrc(src || fallbackSrc);
@@ -122,6 +125,11 @@ export function ResilientImage({
         }
       }}
       src={imageSrc}
+      style={{
+        objectPosition: `${positionX}% ${positionY}%`,
+        transform: zoom > 1 ? `scale(${zoom})` : undefined,
+        transformOrigin: `${positionX}% ${positionY}%`,
+      }}
     />
   );
 }
@@ -183,15 +191,17 @@ export function CmsImage({
 export function MobileHeroMedia({
   alt,
   fallbackSrc,
+  presentation,
   src,
 }: {
   alt: string;
   fallbackSrc: string;
+  presentation?: ImagePresentation;
   src?: string | null;
 }) {
   return (
     <div className="relative h-[160px] overflow-hidden sm:hidden">
-      <ResilientImage alt={alt} className="h-full w-full object-cover object-center" fallbackSrc={fallbackSrc} loading="eager" src={src} />
+      <ResilientImage alt={alt} className="h-full w-full object-cover object-center" fallbackSrc={fallbackSrc} loading="eager" presentation={presentation} src={src} />
       <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,84,111,0.08),rgba(0,84,111,0.28))]" />
     </div>
   );

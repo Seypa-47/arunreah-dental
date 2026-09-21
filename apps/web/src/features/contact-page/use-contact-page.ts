@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { publicContactChrome } from '@/features/public-content/public-page-chrome';
 import { queryKeys } from '@/lib/query-keys';
-import { getPublicBranches, getPublicContact, getPublicServices } from '@/services/public-content';
+import { getPublicBranches, getPublicContact, getPublicPageMedia, getPublicServices } from '@/services/public-content';
 import { toLandingService } from '@/services/public-page-mappers';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
@@ -12,11 +12,13 @@ export function useContactPageQuery() {
   return useQuery({
     queryFn: async () => {
       const isKm = language === 'km';
-      const [contact, branchResponse, serviceResponse] = await Promise.all([
+      const [contact, branchResponse, serviceResponse, heroMediaResponse] = await Promise.all([
         getPublicContact(),
         getPublicBranches(language),
         getPublicServices(language),
+        getPublicPageMedia('CONTACT_HERO', language).catch(() => ({ items: [] })),
       ]);
+      const heroItem = heroMediaResponse.items[0];
       const phones = [contact.primaryPhone, contact.secondaryPhone].filter((value): value is string => Boolean(value));
       const hours = isKm ? contact.businessHoursKm : contact.businessHoursEn;
       const branches = branchResponse.branches;
@@ -32,7 +34,16 @@ export function useContactPageQuery() {
         ...chrome,
         contactCards: info,
         form: { ...chrome.form, branches: branches.map((branch) => branch.name), services: serviceResponse.services.map((service) => service.name) },
-        hero: { ...chrome.hero, info },
+        hero: {
+          ...chrome.hero,
+          backgroundImageAlt: heroItem?.title || chrome.hero.backgroundImageAlt,
+          backgroundImageUrl: heroItem?.imageKey ? (getPublicMediaUrl(heroItem.imageKey) ?? '') : chrome.hero.backgroundImageUrl,
+          imagePresentation: heroItem?.imagePresentation,
+          eyebrow: heroItem?.badge || chrome.hero.eyebrow,
+          info,
+          subtitle: heroItem?.body || chrome.hero.subtitle,
+          title: heroItem?.title || chrome.hero.title,
+        },
         maps: branches.map((branch) => {
           const coords = getBranchCoordinates(branch.name ?? branch.slug);
           return {
@@ -53,6 +64,6 @@ export function useContactPageQuery() {
         services: serviceResponse.services.map(toLandingService),
       };
     },
-    queryKey: [...queryKeys.public.contact(), language],
+    queryKey: [...queryKeys.public.contact(), queryKeys.public.pageMedia('CONTACT_HERO', language), language],
   });
 }

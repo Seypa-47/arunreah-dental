@@ -89,11 +89,12 @@ function ContactHero({ hero }: { hero: ContactPageContent['hero'] }) {
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
-        <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png" src={hero.backgroundImageUrl} />
+        <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png" presentation={hero.imagePresentation} src={hero.backgroundImageUrl} />
         <ResilientImage
           alt={hero.backgroundImageAlt}
           className="absolute inset-y-0 right-0 hidden h-full w-[58%] object-cover object-center sm:block"
           fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
+          presentation={hero.imagePresentation}
           src={imageUrl}
         />
         <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[45%] bg-[#f7fafc] sm:block" />

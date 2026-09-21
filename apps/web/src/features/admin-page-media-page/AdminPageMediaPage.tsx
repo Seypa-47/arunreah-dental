@@ -1,6 +1,7 @@
 import { AdminListImage, AdminPublicationStatus } from '@/components/admin/admin-list';
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { defaultImagePresentation, type ImagePresentation, type PageMediaPlacement } from '@arunreah/shared';
 import { MediaUploader } from '@/components/admin/media-uploader';
@@ -111,6 +112,13 @@ export function AdminPageMediaPage() {
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2187a8]">CMS content blocks</p>
           <AdminPageHeading />
         </header>
+
+        <div className="mt-5 flex items-center justify-between rounded-xl border border-[#dce5ef] bg-[#edf7fb] px-4 py-3 text-xs font-semibold text-[#167ea7]">
+          <span>Looking to edit main website hero banners and headlines?</span>
+          <Link className="inline-flex items-center gap-1 font-bold text-[#2187a8] underline hover:text-[#1a718c]" to="/admin/page-heroes">
+            Go to Hero Sections Management ↗
+          </Link>
+        </div>
 
         <div className="mt-7 grid gap-6 xl:grid-cols-[0.82fr_1.18fr]">
           <Card className="overflow-hidden rounded-2xl border-[#dce5ef] bg-white p-5 shadow-none">

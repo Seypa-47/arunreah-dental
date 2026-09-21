@@ -8,15 +8,16 @@ const routes: Record<string, string> = {
   'All Appointments': '/admin/appointments', Services: '/admin/services',
   'Doctor Management': '/admin/doctors', Showcase: '/admin/showcase',
   'Clinic Settings': '/admin/clinic-info', 'Branches / Locations': '/admin/clinic-info/branches',
-  'Contact Settings': '/admin/clinic-info/contact', 'Page Media': '/admin/page-media',
-  'About Timeline': '/admin/about-timeline', 'Admin Management': '/admin/admins',
+  'Contact Settings': '/admin/clinic-info/contact', 'Hero Sections': '/admin/page-heroes',
+  'Page Media': '/admin/page-media', 'About Timeline': '/admin/about-timeline',
+  'Admin Management': '/admin/admins',
 };
 
 export function getAdminNavigationGroups(role: AdminRole) {
   const definitions = [
     { label: 'Overview', labels: ['Dashboard'] },
     { label: 'Appointments', labels: ['Inbox', 'Calendar', 'All Appointments'] },
-    { label: 'Website content', labels: ['Services', 'Doctor Management', 'Showcase', 'Page Media', 'About Timeline'] },
+    { label: 'Website content', labels: ['Services', 'Doctor Management', 'Showcase', 'Hero Sections', 'Page Media', 'About Timeline'] },
     { label: 'Clinic settings', labels: ['Clinic Settings', 'Branches / Locations', 'Contact Settings'] },
     { label: 'Administration', labels: ['Admin Management'] },
   ];
@@ -40,6 +41,7 @@ const pages: Record<string, PageInfo> = {
   '/admin/clinic-info': { title: 'Clinic information', description: 'Update the clinic identity and bilingual website information.' },
   '/admin/clinic-info/branches': { title: 'Branches and locations', description: 'Select a branch to update its details and location information.' },
   '/admin/clinic-info/contact': { title: 'Contact settings', description: 'Keep contact details, opening hours, and communication links up to date.' },
+  '/admin/page-heroes': { title: 'Hero sections', description: 'Manage the bilingual titles, subtitles, eyebrow badges, and hero images for all public website pages.' },
   '/admin/page-media': { title: 'Page media', description: 'Manage images and bilingual captions for existing website sections.' },
   '/admin/about-timeline': { title: 'About timeline', description: 'Manage the bilingual milestones that tell the clinic story.' },
   '/admin/admins': { title: 'Staff accounts', description: 'Manage staff accounts, assigned roles, and account access.' },

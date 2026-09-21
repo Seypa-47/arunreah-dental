@@ -61,11 +61,12 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
   return (
     <section className="relative bg-[#f7fafc] pb-0 pt-5 sm:pt-7">
       <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-white sm:min-h-[340px]">
-        <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png" src={hero.backgroundImageUrl} />
+        <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png" presentation={hero.imagePresentation} src={hero.backgroundImageUrl} />
         <ResilientImage
           alt={hero.backgroundImageAlt}
           className="absolute inset-y-0 right-0 hidden h-full w-[60%] object-cover object-center sm:block"
           fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
+          presentation={hero.imagePresentation}
           src={imageUrl}
         />
         <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[43%] bg-white sm:block" />

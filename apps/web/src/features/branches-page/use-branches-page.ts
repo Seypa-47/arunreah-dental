@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { publicBranchesChrome } from '@/features/public-content/public-page-chrome';
 import { queryKeys } from '@/lib/query-keys';
-import { getPublicBranches } from '@/services/public-content';
+import { getPublicBranches, getPublicPageMedia } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 
@@ -21,11 +21,15 @@ export function useBranchesPageQuery() {
   return useQuery({
     queryFn: async () => {
       const isKm = language === 'km';
-      const response = await getPublicBranches(language);
+      const [response, heroMediaResponse] = await Promise.all([
+        getPublicBranches(language),
+        getPublicPageMedia('BRANCHES_HERO', language).catch(() => ({ items: [] })),
+      ]);
       const chrome = publicBranchesChrome(language);
       const publicBranches = response.branches;
       const primaryBranch = publicBranches[0];
       const appointmentBranches = publicBranches.filter((branch) => branch.acceptsAppointments);
+      const heroItem = heroMediaResponse.items[0];
 
       return {
         ...chrome,
@@ -58,9 +62,11 @@ export function useBranchesPageQuery() {
         },
         hero: {
           ...chrome.hero,
-          backgroundImageAlt: primaryBranch?.name ?? '',
-          backgroundImageUrl: getPublicMediaUrl(primaryBranch?.heroImageKey) ?? '',
-          eyebrow: primaryBranch?.badge ?? '',
+          backgroundImageAlt: heroItem?.title || primaryBranch?.name || chrome.hero.backgroundImageAlt,
+          backgroundImageUrl: heroItem?.imageKey ? (getPublicMediaUrl(heroItem.imageKey) ?? '') : (getPublicMediaUrl(primaryBranch?.heroImageKey) ?? ''),
+          imagePresentation: heroItem?.imagePresentation,
+          eyebrow: heroItem?.badge || primaryBranch?.badge || chrome.hero.eyebrow,
+          title: heroItem?.title || chrome.hero.title,
           metrics: [
             {
               description: isKm ? `ទីតាំងគ្លីនិកទាំង ${publicBranches.length}` : `${publicBranches.length} published clinic location${publicBranches.length === 1 ? '' : 's'}`,
@@ -75,10 +81,10 @@ export function useBranchesPageQuery() {
               title: String(appointmentBranches.length),
             },
           ],
-          subtitle: primaryBranch?.heroSupportingText ?? chrome.hero.subtitle,
+          subtitle: heroItem?.body || primaryBranch?.heroSupportingText || chrome.hero.subtitle,
         },
       };
     },
-    queryKey: queryKeys.public.branches(language),
+    queryKey: [...queryKeys.public.branches(language), queryKeys.public.pageMedia('BRANCHES_HERO', language)],
   });
 }
