@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import {
   AppointmentCalendar,
+  AppointmentSuccessModal,
   AvailableTimes,
   dateLabel,
   formatDisplayTime,
@@ -135,10 +136,65 @@ describe('BookAppointmentPage Date & Time features', () => {
       expect(html).toContain(':15');
       expect(html).toContain(':30');
       expect(html).toContain(':45');
-      // The active hour button displays 10:30 AM
-      expect(html).toContain('10:30 AM');
       // The selected minute :30 has aria-pressed="true"
       expect(html).toContain('aria-label="10:30 AM" aria-pressed="true"');
+    });
+  });
+
+  describe('AppointmentSuccessModal', () => {
+    const defaultAcknowledgement = {
+      message: 'Your request has been received. Our team will contact you shortly.',
+      reference: 'ARUN-2026-9876',
+      status: 'PENDING',
+    };
+
+    const defaultDetails = {
+      branchName: 'Main Branch - Phnom Penh',
+      dateLabel: 'Friday, October 9, 2026',
+      doctorName: 'Dr. John Doe',
+      patientName: 'Sophea Pich',
+      phone: '012 345 678',
+      serviceName: 'General Consultation',
+      time: '10:30 AM',
+    };
+
+    it('renders confirmation details and reference code in English', () => {
+      const html = renderToStaticMarkup(
+        <AppointmentSuccessModal
+          acknowledgement={defaultAcknowledgement}
+          details={defaultDetails}
+          language="en"
+          onClose={vi.fn()}
+        />,
+      );
+
+      expect(html).toContain('Appointment Request Received');
+      expect(html).toContain('ARUN-2026-9876');
+      expect(html).toContain('Pending Confirmation');
+      expect(html).toContain('Main Branch - Phnom Penh');
+      expect(html).toContain('General Consultation');
+      expect(html).toContain('Dr. John Doe');
+      expect(html).toContain('Friday, October 9, 2026 — 10:30 AM');
+      expect(html).toContain('Sophea Pich (012 345 678)');
+      expect(html).toContain('Notice: Appointments are requests subject to confirmation');
+    });
+
+    it('renders confirmation details in Khmer', () => {
+      const html = renderToStaticMarkup(
+        <AppointmentSuccessModal
+          acknowledgement={defaultAcknowledgement}
+          details={defaultDetails}
+          language="km"
+          onClose={vi.fn()}
+        />,
+      );
+
+      expect(html).toContain('បានទទួលសំណើសុំការណាត់ជួប');
+      expect(html).toContain('ARUN-2026-9876');
+      expect(html).toContain('រង់ចាំការបញ្ជាក់');
+      expect(html).toContain('សាខា');
+      expect(html).toContain('សេវាកម្ម');
+      expect(html).toContain('ទន្តបណ្ឌិត');
     });
   });
 });

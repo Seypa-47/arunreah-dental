@@ -804,6 +804,151 @@ export function dateLabel(selectedDate: string, language: 'en' | 'km') {
   }).format(date);
 }
 
+export function AppointmentSuccessModal({
+  acknowledgement,
+  details,
+  language,
+  onClose,
+}: {
+  acknowledgement: { message: string; reference: string; status: string };
+  details: {
+    branchName: string;
+    dateLabel: string;
+    doctorName: string;
+    patientName: string;
+    phone: string;
+    serviceName: string;
+    time: string;
+  };
+  language: 'en' | 'km';
+  onClose: () => void;
+}) {
+  const isKhmer = language === 'km';
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(acknowledgement.reference);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Fallback
+    }
+  };
+
+  return (
+    <div
+      aria-labelledby="appointment-success-title"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm"
+      role="dialog"
+    >
+      <div
+        className="relative my-8 w-full max-w-[540px] overflow-hidden rounded-3xl border border-[#d6e7ee] bg-white p-6 shadow-2xl sm:p-8"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          aria-label={isKhmer ? 'បិទ' : 'Close'}
+          className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-[#3695B9]"
+          onClick={onClose}
+          type="button"
+        >
+          <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-[#a7f3d0] bg-[#ecfdf5] text-[#059669] shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+          <svg className="size-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+
+        <div className="mt-4 text-center">
+          <h2 className="text-[22px] font-extrabold leading-tight text-[#073f60] sm:text-[26px]" id="appointment-success-title">
+            {isKhmer ? 'បានទទួលសំណើសុំការណាត់ជួប' : 'Appointment Request Received'}
+          </h2>
+          <p className="mt-2 text-[14px] leading-relaxed text-[#597184] sm:text-[15px]">
+            {isKhmer
+              ? 'សូមអរគុណសម្រាប់ការជ្រើសរើស គ្លីនិកធ្មេញ អរុណរះ។ ក្រុមការងារយើងខ្ញុំនឹងទាក់ទងទៅលោកអ្នកក្នុងពេលឆាប់ៗដើម្បីបញ្ជាក់ការណាត់ជួប។'
+              : 'Thank you for choosing Arunreah Dental Clinic. Our receptionist will contact you shortly to confirm your booking.'}
+          </p>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-[#bce0ec] bg-[#f4fafd] p-4 text-center sm:p-5">
+          <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#2c84a5]">
+            {isKhmer ? 'លេខកូដសម្គាល់ការណាត់ជួប' : 'Booking Reference Code'}
+          </p>
+          <div className="mt-1 flex items-center justify-center gap-2">
+            <span className="font-mono text-[22px] font-extrabold tracking-wider text-[#005687] sm:text-[26px]">
+              {acknowledgement.reference}
+            </span>
+            <button
+              className="inline-flex items-center gap-1 rounded-lg border border-[#9fd1e3] bg-white px-2.5 py-1 text-[12px] font-semibold text-[#167ea7] transition hover:bg-[#edf7fb]"
+              onClick={handleCopy}
+              type="button"
+            >
+              {copied ? (isKhmer ? 'បានចម្លង!' : 'Copied!') : (isKhmer ? 'ចម្លង' : 'Copy')}
+            </button>
+          </div>
+          <div className="mt-2 flex items-center justify-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#fed7aa] bg-[#fffbeb] px-3 py-0.5 text-[11px] font-bold text-[#b45309]">
+              <span className="size-1.5 rounded-full bg-[#f59e0b]" />
+              {isKhmer ? 'ស្ថានភាព៖ រង់ចាំការបញ្ជាក់' : 'Status: Pending Confirmation'}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-5 divide-y divide-[#edf3f6] rounded-xl border border-[#e2edf2] bg-[#fafcfd] text-[13px] sm:text-[14px]">
+          <div className="flex justify-between px-4 py-2.5">
+            <span className="font-medium text-[#64748b]">{isKhmer ? 'សាខា' : 'Branch'}</span>
+            <span className="text-right font-bold text-[#073f60]">{details.branchName}</span>
+          </div>
+          <div className="flex justify-between px-4 py-2.5">
+            <span className="font-medium text-[#64748b]">{isKhmer ? 'សេវាកម្ម' : 'Service'}</span>
+            <span className="text-right font-bold text-[#073f60]">{details.serviceName}</span>
+          </div>
+          <div className="flex justify-between px-4 py-2.5">
+            <span className="font-medium text-[#64748b]">{isKhmer ? 'ទន្តបណ្ឌិត' : 'Doctor'}</span>
+            <span className="text-right font-bold text-[#073f60]">{details.doctorName}</span>
+          </div>
+          <div className="flex justify-between px-4 py-2.5">
+            <span className="font-medium text-[#64748b]">{isKhmer ? 'កាលបរិច្ឆេទ & ម៉ោង' : 'Date & Time'}</span>
+            <span className="text-right font-bold text-[#073f60]">{details.dateLabel} — {details.time}</span>
+          </div>
+          <div className="flex justify-between px-4 py-2.5">
+            <span className="font-medium text-[#64748b]">{isKhmer ? 'អ្នកជំងឺ' : 'Patient'}</span>
+            <span className="text-right font-bold text-[#073f60]">{details.patientName} ({details.phone})</span>
+          </div>
+        </div>
+
+        <p className="mt-4 text-center text-[12px] leading-relaxed text-[#768c9c]">
+          {isKhmer
+            ? 'ចំណាំ៖ ការស្នើសុំការណាត់ជួបមិនមែនជាការបញ្ជាក់ដោយស្វ័យប្រវត្តិនោះទេ។ គ្លីនិកនឹងទាក់ទងមកអ្នកដើម្បីបញ្ជាក់ពេលវេលាច្បាស់លាស់។'
+            : 'Notice: Appointments are requests subject to confirmation by our front desk team.'}
+        </p>
+
+        <div className="mt-6">
+          <Button
+            className="min-h-12 w-full rounded-xl bg-[#3695B9] text-[15px] font-bold text-white shadow-sm hover:bg-[#2c84a5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
+            onClick={onClose}
+          >
+            {isKhmer ? 'រួចរាល់' : 'Done'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BookAppointmentView({ content }: { content: BookAppointmentPageContent }) {
   const { language } = usePublicLanguage();
   const [searchParams] = useSearchParams();
@@ -874,8 +1019,18 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 
   const [selectedDate, setSelectedDate] = useState(content.calendar.selectedDateKey);
   const [selectedTime, setSelectedTime] = useState(content.times[2] ?? content.times[0] ?? '10:00');
+  const [formKey, setFormKey] = useState(0);
   const idempotencyKey = useRef(createIdempotencyKey());
-  const [acknowledgement, setAcknowledgement] = useState<{ reference: string; status: string; message: string } | null>(null);
+  const [acknowledgement, setAcknowledgement] = useState<{ message: string; reference: string; status: string } | null>(null);
+  const [submittedDetails, setSubmittedDetails] = useState<{
+    branchName: string;
+    dateLabel: string;
+    doctorName: string;
+    patientName: string;
+    phone: string;
+    serviceName: string;
+    time: string;
+  } | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
   const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
@@ -896,7 +1051,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
     return <BookAppointmentEmpty />;
   }
 
-  const submit = (values: { patientName: string; phone: string; email: string; notes: string }) => {
+  const submit = (values: { email: string; notes: string; patientName: string; phone: string }) => {
     if (env.turnstileSiteKey && !turnstileToken) {
       setTurnstileError('Please complete the verification challenge before sending your request.');
       return;
@@ -913,9 +1068,24 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
       serviceId: selectedService,
       turnstileToken: turnstileToken ?? undefined,
     }).then((response) => {
+      setSubmittedDetails({
+        branchName: branch.name,
+        dateLabel: dateLabel(selectedDate, language),
+        doctorName: doctor.name,
+        patientName: values.patientName,
+        phone: values.phone,
+        serviceName: service.name,
+        time: formatDisplayTime(selectedTime),
+      });
       setAcknowledgement(response);
       idempotencyKey.current = createIdempotencyKey();
     }).catch(() => undefined).finally(() => setTurnstileResetSignal((value) => value + 1));
+  };
+
+  const handleCloseModal = () => {
+    setAcknowledgement(null);
+    setSubmittedDetails(null);
+    setFormKey((previous) => previous + 1);
   };
 
   const requestError = submitMutation.error instanceof ApiClientError
@@ -932,19 +1102,20 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
         <section className="mx-auto grid w-full max-w-[1180px] gap-6 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:px-8">
           <AppointmentForm
             content={content}
+            isSubmitting={submitMutation.isPending}
+            key={formKey}
             onSelectBranch={setSelectedBranch}
             onSelectDate={setSelectedDate}
             onSelectDoctor={setSelectedDoctor}
             onSelectService={setSelectedService}
             onSelectTime={setSelectedTime}
+            onSubmit={submit}
+            onTurnstileToken={handleTurnstileToken}
             selectedBranch={selectedBranch}
             selectedDate={selectedDate}
             selectedDoctor={selectedDoctor}
             selectedService={selectedService}
             selectedTime={selectedTime}
-            isSubmitting={submitMutation.isPending}
-            onSubmit={submit}
-            onTurnstileToken={handleTurnstileToken}
             submissionError={submissionError}
             turnstileResetSignal={turnstileResetSignal}
           />
@@ -957,7 +1128,14 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
             selectedTime={selectedTime}
           />
         </section>
-        {acknowledgement ? <section className="mx-auto max-w-[1180px] px-4 pb-10 sm:px-6 lg:px-8"><Card className="rounded-xl border-[#b9e2ee] bg-[#f4fbfd] p-5"><p className="font-bold text-[#005687]">Appointment request received</p><p className="mt-1 text-sm text-[#64748b]">{acknowledgement.message}</p><p className="mt-1 text-sm text-[#64748b]">Reference: {acknowledgement.reference}. Status: {acknowledgement.status}.</p></Card></section> : null}
+        {acknowledgement && submittedDetails ? (
+          <AppointmentSuccessModal
+            acknowledgement={acknowledgement}
+            details={submittedDetails}
+            language={language}
+            onClose={handleCloseModal}
+          />
+        ) : null}
       </main>
       <SiteFooter {...content.footer} />
     </SiteLayout>
