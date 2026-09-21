@@ -28,28 +28,24 @@ function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; he
   return (
     <section className="border-b border-[#dceaf0] bg-[#f7fafc] py-5 sm:py-7">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="relative min-h-[320px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#063e5c] sm:min-h-[380px] lg:min-h-[440px]">
+        <div className="relative min-h-[360px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#063e5c] sm:min-h-[420px] lg:min-h-[480px]">
           <ResilientImage
             alt="Arunreah Dental Clinic team"
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.03] saturate-[1.03]"
             fallbackSrc={fallbackImageUrl}
             presentation={heroMedia?.imagePresentation}
             src={imageUrl}
           />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#021827]/90 via-[#021827]/40 to-transparent sm:bg-[linear-gradient(100deg,rgba(2,24,39,0.88)_0%,rgba(2,24,39,0.5)_42%,rgba(2,24,39,0.1)_70%,transparent_100%)]"
-          />
-          <div className="relative z-10 flex min-h-[320px] max-w-[720px] flex-col justify-end p-6 sm:min-h-[380px] sm:p-10 lg:min-h-[440px] lg:p-12">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-[11px] font-bold uppercase tracking-[1.8px] text-[#7ee1f8] backdrop-blur-md sm:text-[12px]">
+          <div className="relative z-10 flex min-h-[360px] flex-col justify-end p-4 sm:min-h-[420px] sm:p-6 lg:min-h-[480px] lg:p-8">
+            <div className="max-w-[480px] rounded-2xl border border-white/25 bg-[#021827]/75 p-5 shadow-[0_8px_32px_rgba(2,24,39,0.36)] backdrop-blur-md sm:max-w-[500px] sm:p-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-[11px] font-bold uppercase tracking-[1.8px] text-[#7ee1f8] sm:text-[12px]">
                 <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
                 <span>{eyebrow}</span>
               </div>
-              <h1 className="mt-3.5 text-[28px] font-extrabold leading-[1.18] tracking-[-0.03em] text-white sm:text-[38px] lg:text-[44px]">
+              <h1 className="mt-2.5 text-[22px] font-extrabold leading-tight tracking-[-0.025em] text-white sm:text-[28px] lg:text-[32px]">
                 {title}
               </h1>
-              <p className="mt-3.5 max-w-[600px] text-[15px] font-normal leading-relaxed text-[#e1f0f5] sm:text-[16px] sm:leading-7">
+              <p className="mt-2 text-[13px] font-normal leading-relaxed text-[#e1f0f5] sm:text-[14px] sm:leading-6">
                 {description}
               </p>
             </div>

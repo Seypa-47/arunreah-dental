@@ -442,26 +442,49 @@ export function AdminPageHeroesPage() {
                         transform: `scale(${form.imagePresentation.zoom})`,
                       }}
                     />
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#021827]/90 via-[#021827]/40 to-transparent sm:bg-[linear-gradient(100deg,rgba(2,24,39,0.88)_0%,rgba(2,24,39,0.5)_42%,rgba(2,24,39,0.1)_70%,transparent_100%)]"
-                    />
-                    <div className="relative z-10 flex min-h-[220px] max-w-[640px] flex-col justify-end p-6 text-white sm:min-h-[280px] sm:p-8">
-                      {previewEyebrow ? (
-                        <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-0.5 text-[11px] font-bold uppercase tracking-[1.5px] text-[#7ee1f8] backdrop-blur-md">
-                          <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
-                          <span>{previewEyebrow}</span>
+                    {activePage.placement === 'DOCTORS_HERO' ? (
+                      <div className="relative z-10 flex min-h-[220px] flex-col justify-end p-3 sm:min-h-[280px] sm:p-5">
+                        <div className="max-w-[420px] rounded-xl border border-white/20 bg-[#021827]/75 p-3.5 shadow-lg backdrop-blur-md sm:p-4">
+                          {previewEyebrow ? (
+                            <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[1.5px] text-[#7ee1f8]">
+                              <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
+                              <span>{previewEyebrow}</span>
+                            </div>
+                          ) : null}
+                          <h3 className={`${previewEyebrow ? 'mt-2' : ''} text-[16px] font-extrabold leading-tight tracking-[-0.02em] text-white sm:text-[20px]`}>
+                            {previewTitle}
+                          </h3>
+                          {previewSubtitle ? (
+                            <p className="mt-1.5 text-[11px] leading-relaxed text-[#e1f0f5] sm:text-[12px]">
+                              {previewSubtitle}
+                            </p>
+                          ) : null}
                         </div>
-                      ) : null}
-                      <h3 className={`${previewEyebrow ? 'mt-2.5' : ''} text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-white sm:text-[30px]`}>
-                        {previewTitle}
-                      </h3>
-                      {previewSubtitle ? (
-                        <p className="mt-2 text-[13px] leading-relaxed text-[#e1f0f5] sm:text-[14px] sm:leading-6">
-                          {previewSubtitle}
-                        </p>
-                      ) : null}
-                    </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#021827]/90 via-[#021827]/40 to-transparent sm:bg-[linear-gradient(100deg,rgba(2,24,39,0.88)_0%,rgba(2,24,39,0.5)_42%,rgba(2,24,39,0.1)_70%,transparent_100%)]"
+                        />
+                        <div className="relative z-10 flex min-h-[220px] max-w-[640px] flex-col justify-end p-6 text-white sm:min-h-[280px] sm:p-8">
+                          {previewEyebrow ? (
+                            <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-0.5 text-[11px] font-bold uppercase tracking-[1.5px] text-[#7ee1f8] backdrop-blur-md">
+                              <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
+                              <span>{previewEyebrow}</span>
+                            </div>
+                          ) : null}
+                          <h3 className={`${previewEyebrow ? 'mt-2.5' : ''} text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-white sm:text-[30px]`}>
+                            {previewTitle}
+                          </h3>
+                          {previewSubtitle ? (
+                            <p className="mt-2 text-[13px] leading-relaxed text-[#e1f0f5] sm:text-[14px] sm:leading-6">
+                              {previewSubtitle}
+                            </p>
+                          ) : null}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </Card>
