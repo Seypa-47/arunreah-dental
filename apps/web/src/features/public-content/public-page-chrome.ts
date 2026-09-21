@@ -153,7 +153,13 @@ export function publicAboutContent(
         title: item.title ?? '',
       }))
       .filter((facility) => Boolean(facility.imageUrl)),
-    hero: { eyebrow: '', imageAlt: '', imageUrl: '', subtitle: tagline ?? '', title: clinicName },
+    hero: {
+      eyebrow: language === 'km' ? 'អំពីយើង' : 'ABOUT US',
+      imageAlt: clinicName,
+      imageUrl: '',
+      subtitle: tagline ?? (language === 'km' ? 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ ដើម្បីស្នាមញញឹមមានសុខភាពល្អ និងទំនុកចិត្ត។' : 'Thoughtful dental care for a healthier, more confident smile.'),
+      title: language === 'km' ? 'អំពី គ្លីនិកធ្មេញ អរុណរះ' : 'About Arunreah Dental Clinic',
+    },
     mission: { description: '', iconUrl: '', title: '' },
     stats: [
       {

@@ -277,3 +277,57 @@ export function PageFeedback({
     </main>
   );
 }
+
+export function renderHeroTitle(title: string, language?: 'en' | 'km'): ReactNode {
+  const trimmed = title.trim();
+  if (!trimmed) return null;
+
+  if (language === 'km') {
+    if (trimmed.includes('អរុណរះ')) {
+      const idx = trimmed.indexOf('អរុណរះ');
+      const firstPart = trimmed.slice(0, idx).trim();
+      const secondPart = trimmed.slice(idx).trim();
+      return (
+        <>
+          <span>{firstPart || 'គ្លីនិកធ្មេញ'}</span>
+          <span className="block text-[#0080c8]">{secondPart}</span>
+        </>
+      );
+    }
+    return <span>{trimmed}</span>;
+  }
+
+  // English: look for common brand phrases
+  for (const phrase of ['dental clinic', 'dental team', 'dental care']) {
+    const lower = trimmed.toLowerCase();
+    if (lower.includes(phrase)) {
+      const idx = lower.indexOf(phrase);
+      const firstPart = trimmed.slice(0, idx).trim();
+      const secondPart = trimmed.slice(idx, idx + phrase.length);
+      const rest = trimmed.slice(idx + phrase.length);
+      if (firstPart) {
+        return (
+          <>
+            <span>{firstPart}</span>
+            <span className="block text-[#0080c8]">{secondPart}{rest}</span>
+          </>
+        );
+      }
+    }
+  }
+
+  // Generic split: if 3 or more words, put the last 2 words in brand blue on line 2
+  const words = trimmed.split(/\s+/);
+  if (words.length >= 3) {
+    const firstPart = words.slice(0, -2).join(' ');
+    const secondPart = words.slice(-2).join(' ');
+    return (
+      <>
+        <span>{firstPart}</span>
+        <span className="block text-[#0080c8]">{secondPart}</span>
+      </>
+    );
+  }
+
+  return <span>{trimmed}</span>;
+}

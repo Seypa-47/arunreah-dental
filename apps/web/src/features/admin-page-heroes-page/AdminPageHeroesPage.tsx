@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { queryKeys } from '@/lib/query-keys';
 import { cmsApi, type AdminPageMediaRecord } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
+import { renderHeroTitle } from '@/components/layout/public-ui';
 
 export type HeroPageConfig = {
   aspectRatio: string;
@@ -48,13 +49,13 @@ export const HERO_PAGES: HeroPageConfig[] = [
   },
   {
     aspectRatio: 'aspect-[21/9]',
-    defaultEyebrowEn: 'About Arunreah',
-    defaultEyebrowKm: 'អំពី អរុណរះ',
+    defaultEyebrowEn: 'ABOUT US',
+    defaultEyebrowKm: 'អំពីយើង',
     defaultImage: '/assets/landing/hero-clinic.png',
-    defaultSubtitleEn: 'Modern dentistry rooted in empathy, patient comfort, and continuous learning.',
-    defaultSubtitleKm: 'ទន្តសាស្ត្រទំនើបផ្អែកលើការយល់ចិត្ត ផាសុកភាព និងការរៀនសូត្រឥតឈប់ឈរ។',
-    defaultTitleEn: 'Arunreah Dental Clinic',
-    defaultTitleKm: 'គ្លីនិកធ្មេញ អរុណរះ',
+    defaultSubtitleEn: 'Thoughtful dental care for a healthier, more confident smile.',
+    defaultSubtitleKm: 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ ដើម្បីស្នាមញញឹមមានសុខភាពល្អ និងទំនុកចិត្ត។',
+    defaultTitleEn: 'About Arunreah Dental Clinic',
+    defaultTitleKm: 'អំពី គ្លីនិកធ្មេញ អរុណរះ',
     icon: 'clinicInfo',
     id: 'about',
     name: 'About Us',
@@ -442,25 +443,60 @@ export function AdminPageHeroesPage() {
                         transform: `scale(${form.imagePresentation.zoom})`,
                       }}
                     />
-                    {activePage.placement === 'DOCTORS_HERO' || activePage.placement === 'ABOUT_HERO' ? (
-                      <div className="relative z-10 flex min-h-[220px] flex-col justify-end p-3 sm:min-h-[280px] sm:p-5">
-                        <div className="max-w-[420px] rounded-xl border border-white/10 bg-[linear-gradient(135deg,rgba(2,24,39,0.12)_0%,rgba(2,24,39,0.04)_100%)] p-3.5 shadow-sm backdrop-blur-sm sm:p-4">
-                          {previewEyebrow ? (
-                            <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[1.5px] text-[#7ee1f8]">
-                              <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
-                              <span>{previewEyebrow}</span>
-                            </div>
-                          ) : null}
-                          <h3 className={`${previewEyebrow ? 'mt-2' : ''} text-[16px] font-extrabold leading-tight tracking-[-0.02em] text-white [text-shadow:_0_1px_4px_rgba(0,0,0,0.9),_0_2px_10px_rgba(0,0,0,0.7)] sm:text-[20px]`}>
-                            {previewTitle}
-                          </h3>
-                          {previewSubtitle ? (
-                            <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-white [text-shadow:_0_1px_4px_rgba(0,0,0,0.9)] sm:text-[12px]">
-                              {previewSubtitle}
-                            </p>
-                          ) : null}
+                    {activePage.placement === 'ABOUT_HERO' ? (
+                      <>
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/95 via-white/85 to-white/40 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.92)_24%,rgba(255,255,255,0.78)_40%,rgba(255,255,255,0.25)_56%,transparent_72%)]"
+                        />
+                        <div className="relative z-10 flex min-h-[220px] sm:min-h-[280px] flex-col justify-center p-4 sm:p-6">
+                          <div className="max-w-[340px] sm:max-w-[420px]">
+                            {previewEyebrow ? (
+                              <div className="flex items-center gap-2">
+                                <span aria-hidden="true" className="h-[2px] w-5 rounded-full bg-[#0080c8]" />
+                                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#0080c8]">
+                                  {previewEyebrow}
+                                </span>
+                              </div>
+                            ) : null}
+                            <h3 className={`${previewEyebrow ? 'mt-2' : ''} text-[18px] sm:text-[22px] font-black leading-[1.15] tracking-[-0.03em] text-[#073f60]`}>
+                              {renderHeroTitle(previewTitle, previewLanguage)}
+                            </h3>
+                            {previewSubtitle ? (
+                              <p className="mt-1.5 text-[11px] sm:text-[12px] font-medium leading-relaxed text-[#526477]">
+                                {previewSubtitle}
+                              </p>
+                            ) : null}
+                          </div>
                         </div>
-                      </div>
+                      </>
+                    ) : activePage.placement === 'DOCTORS_HERO' ? (
+                      <>
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/95 via-white/80 to-transparent sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.85)_24%,rgba(255,255,255,0.60)_38%,rgba(255,255,255,0.15)_52%,transparent_65%)]"
+                        />
+                        <div className="relative z-10 flex min-h-[220px] sm:min-h-[280px] flex-col justify-end p-4 sm:p-6">
+                          <div className="max-w-[340px] sm:max-w-[420px]">
+                            {previewEyebrow ? (
+                              <div className="flex items-center gap-2">
+                                <span aria-hidden="true" className="h-[2px] w-5 rounded-full bg-[#0080c8]" />
+                                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#0080c8]">
+                                  {previewEyebrow}
+                                </span>
+                              </div>
+                            ) : null}
+                            <h3 className={`${previewEyebrow ? 'mt-2' : ''} text-[18px] sm:text-[22px] font-black leading-[1.15] tracking-[-0.03em] text-[#073f60]`}>
+                              {renderHeroTitle(previewTitle, previewLanguage)}
+                            </h3>
+                            {previewSubtitle ? (
+                              <p className="mt-1.5 text-[11px] sm:text-[12px] font-medium leading-relaxed text-[#526477]">
+                                {previewSubtitle}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                      </>
                     ) : (
                       <>
                         <div
