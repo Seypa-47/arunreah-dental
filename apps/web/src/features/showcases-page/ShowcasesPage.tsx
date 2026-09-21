@@ -41,8 +41,7 @@ function ShowcasesHero({ heroMedia }: { heroMedia?: { badge: string | null; body
         {imageUrl ? (
           <div className="relative grid min-h-[300px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#00546f] sm:min-h-[360px]">
             <ResilientImage alt={title} className="absolute inset-0 h-full w-full object-cover object-center" presentation={heroMedia?.imagePresentation} src={imageUrl} />
-            <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,52,78,0.9)_0%,rgba(5,52,78,0.62)_52%,rgba(5,52,78,0.12)_100%)]" />
-            <div className="relative flex max-w-[720px] items-end p-6 text-white sm:p-10 lg:p-12">
+            <div className="relative flex max-w-[720px] items-end p-6 text-white [text-shadow:_0_2px_8px_rgba(0,0,0,0.85),_0_1px_3px_rgba(0,0,0,0.95)] sm:p-10 lg:p-12">
               <div>
                 {eyebrow ? <p className="text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#b7e7f4]">{eyebrow}</p> : null}
                 <h1 className={`${eyebrow ? 'mt-3' : ''} text-[30px] font-extrabold leading-tight tracking-[-0.035em] sm:text-[42px]`}>{title}</h1>

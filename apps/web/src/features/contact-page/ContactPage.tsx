@@ -99,7 +99,6 @@ function ContactHero({ hero }: { hero: ContactPageContent['hero'] }) {
         />
         <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[45%] bg-[#f7fafc] sm:block" />
         <div aria-hidden="true" className="absolute inset-y-0 left-[41%] hidden w-[22%] bg-[linear-gradient(90deg,#f7fafc_0%,rgba(247,250,252,0.82)_52%,rgba(247,250,252,0)_100%)] sm:block" />
-        <div aria-hidden="true" className="absolute inset-y-0 right-0 hidden w-[59%] bg-[linear-gradient(90deg,rgba(5,84,111,0.12),rgba(5,84,111,0.42))] sm:block" />
         <div className="relative grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
           <div className="max-w-[620px]">
             <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{hero.eyebrow}</p>

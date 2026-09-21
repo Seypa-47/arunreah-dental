@@ -277,7 +277,6 @@ function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] })
       />
       <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[45%] bg-[#f7fafc] sm:block" />
       <div aria-hidden="true" className="absolute inset-y-0 left-[41%] hidden w-[22%] bg-[linear-gradient(90deg,#f7fafc_0%,rgba(247,250,252,0.82)_52%,rgba(247,250,252,0)_100%)] sm:block" />
-      <div aria-hidden="true" className="absolute inset-y-0 right-0 hidden w-[51%] bg-[linear-gradient(90deg,rgba(5,84,111,0.06),rgba(5,84,111,0.24))] sm:block" />
       <div className="relative flex items-center py-8 sm:min-h-[250px] sm:py-10">
         <div className="max-w-[600px]">
           {eyebrow ? <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p> : null}

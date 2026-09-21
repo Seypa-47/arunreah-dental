@@ -71,7 +71,6 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
         />
         <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[43%] bg-white sm:block" />
         <div aria-hidden="true" className="absolute inset-y-0 left-[39%] hidden w-[23%] bg-[linear-gradient(90deg,#fff_0%,rgba(255,255,255,0.82)_52%,rgba(255,255,255,0)_100%)] sm:block" />
-        <div aria-hidden="true" className="absolute inset-y-0 right-0 hidden w-[61%] bg-[linear-gradient(90deg,rgba(5,84,111,0.05),rgba(5,84,111,0.2))] sm:block" />
         <div className="relative mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
           <div className="max-w-[560px] py-7">
             <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">

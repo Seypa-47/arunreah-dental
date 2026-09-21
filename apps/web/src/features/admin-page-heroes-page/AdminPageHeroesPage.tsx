@@ -443,11 +443,7 @@ export function AdminPageHeroesPage() {
                         transform: `scale(${form.imagePresentation.zoom})`,
                       }}
                     />
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,52,78,0.92)_0%,rgba(5,52,78,0.65)_50%,rgba(5,52,78,0.15)_100%)]"
-                    />
-                    <div className="relative z-10 flex min-h-[200px] max-w-[640px] flex-col justify-end p-6 text-white sm:min-h-[250px] sm:p-8">
+                    <div className="relative z-10 flex min-h-[200px] max-w-[640px] flex-col justify-end p-6 text-white [text-shadow:_0_2px_8px_rgba(0,0,0,0.85),_0_1px_3px_rgba(0,0,0,0.95)] sm:min-h-[250px] sm:p-8">
                       {previewEyebrow ? (
                         <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#b7e7f4]">
                           {previewEyebrow}

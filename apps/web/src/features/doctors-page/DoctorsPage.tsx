@@ -30,8 +30,7 @@ function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; he
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="relative min-h-[330px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#063e5c] sm:min-h-[430px]">
           <CmsImage alt="Arunreah Dental Clinic team" className="h-[200px] w-full sm:absolute sm:inset-0 sm:h-full" fallbackSrc={fallbackImageUrl} presentation={heroMedia?.imagePresentation} src={imageUrl} />
-          <div aria-hidden="true" className="absolute inset-0 hidden bg-[linear-gradient(90deg,rgba(5,52,78,0.88)_0%,rgba(5,52,78,0.61)_48%,rgba(5,52,78,0.08)_100%)] sm:block" />
-          <div className="relative z-10 flex max-w-[690px] items-end p-5 sm:min-h-[430px] sm:p-10 lg:p-12">
+          <div className="relative z-10 flex max-w-[690px] items-end p-5 [text-shadow:_0_2px_8px_rgba(0,0,0,0.85),_0_1px_3px_rgba(0,0,0,0.95)] sm:min-h-[430px] sm:p-10 lg:p-12">
             <div>
               <p className="text-[11px] font-bold uppercase leading-4 tracking-[3px] text-[#b7e7f4] sm:text-[12px] sm:tracking-[3.6px]">
                 {eyebrow}

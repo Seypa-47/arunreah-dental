@@ -202,7 +202,6 @@ export function MobileHeroMedia({
   return (
     <div className="relative h-[160px] overflow-hidden sm:hidden">
       <ResilientImage alt={alt} className="h-full w-full object-cover object-center" fallbackSrc={fallbackSrc} loading="eager" presentation={presentation} src={src} />
-      <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,84,111,0.08),rgba(0,84,111,0.28))]" />
     </div>
   );
 }
