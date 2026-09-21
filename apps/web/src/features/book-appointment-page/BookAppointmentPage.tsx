@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { BookAppointmentPageContent } from '@/features/landing-page/types';
 import { useBookAppointmentPageQuery } from './use-book-appointment-page';
 import { ApiClientError } from '@/lib/api';
@@ -267,17 +267,18 @@ function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] })
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
-      <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg" presentation={hero.imagePresentation} src={hero.backgroundImageUrl} />
       <ResilientImage
         alt={hero.backgroundImageAlt}
-        className="absolute inset-y-0 right-0 hidden h-full w-[50%] object-cover object-center sm:block"
+        className="absolute inset-0 h-full w-full object-cover object-center"
         fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg"
         presentation={hero.imagePresentation}
         src={imageUrl}
       />
-      <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[45%] bg-[#f7fafc] sm:block" />
-      <div aria-hidden="true" className="absolute inset-y-0 left-[41%] hidden w-[22%] bg-[linear-gradient(90deg,#f7fafc_0%,rgba(247,250,252,0.82)_52%,rgba(247,250,252,0)_100%)] sm:block" />
-      <div className="relative flex items-center py-8 sm:min-h-[250px] sm:py-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[#f7fafc]/85 sm:bg-[linear-gradient(90deg,rgba(247,250,252,0.92)_0%,rgba(247,250,252,0.80)_42%,rgba(247,250,252,0.38)_75%,rgba(247,250,252,0.12)_100%)]"
+      />
+      <div className="relative z-10 flex items-center py-8 sm:min-h-[250px] sm:py-10">
         <div className="max-w-[600px]">
           {eyebrow ? <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p> : null}
           <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">{hero.title}</h1>

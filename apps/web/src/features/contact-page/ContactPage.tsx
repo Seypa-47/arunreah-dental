@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { ContactPageContent } from '@/features/landing-page/types';
 import { GoogleSatelliteMap } from './GoogleSatelliteMap';
 import { useContactPageQuery } from './use-contact-page';
@@ -89,25 +89,26 @@ function ContactHero({ hero }: { hero: ContactPageContent['hero'] }) {
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
-        <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png" presentation={hero.imagePresentation} src={hero.backgroundImageUrl} />
         <ResilientImage
           alt={hero.backgroundImageAlt}
-          className="absolute inset-y-0 right-0 hidden h-full w-[58%] object-cover object-center sm:block"
+          className="absolute inset-0 h-full w-full object-cover object-center"
           fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
           presentation={hero.imagePresentation}
           src={imageUrl}
         />
-        <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[45%] bg-[#f7fafc] sm:block" />
-        <div aria-hidden="true" className="absolute inset-y-0 left-[41%] hidden w-[22%] bg-[linear-gradient(90deg,#f7fafc_0%,rgba(247,250,252,0.82)_52%,rgba(247,250,252,0)_100%)] sm:block" />
-        <div className="relative grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-white/85 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.80)_42%,rgba(255,255,255,0.38)_75%,rgba(255,255,255,0.12)_100%)]"
+        />
+        <div className="relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
           <div className="max-w-[620px]">
             <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{hero.eyebrow}</p>
             <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
               {hero.title}
             </h1>
-            <p className="mt-3 max-w-[560px] text-[16px] font-normal leading-7 text-[#64748b]">{hero.subtitle}</p>
+            <p className="mt-3 max-w-[560px] text-[16px] font-normal leading-7 text-[#475569]">{hero.subtitle}</p>
           </div>
-          <Card className="rounded-xl border-[#e1ebef] bg-white/95 p-5 shadow-[0_2px_8px_rgba(15,23,42,0.05)] backdrop-blur sm:p-6">
+          <Card className="rounded-2xl border-[#d9e9ee] bg-white/95 p-5 shadow-[0_4px_20px_rgba(0,86,135,0.08)] backdrop-blur-md sm:p-6">
             <div className="space-y-4">
               {hero.info.map((item) => (
                 <InfoBlock compact item={item} key={item.label} />

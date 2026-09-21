@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { BranchesPageContent } from '@/features/landing-page/types';
 import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { getBranchCoordinates } from './branch-coordinates';
@@ -61,17 +61,18 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
   return (
     <section className="relative bg-[#f7fafc] pb-0 pt-5 sm:pt-7">
       <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-white sm:min-h-[340px]">
-        <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png" presentation={hero.imagePresentation} src={hero.backgroundImageUrl} />
         <ResilientImage
           alt={hero.backgroundImageAlt}
-          className="absolute inset-y-0 right-0 hidden h-full w-[60%] object-cover object-center sm:block"
+          className="absolute inset-0 h-full w-full object-cover object-center"
           fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
           presentation={hero.imagePresentation}
           src={imageUrl}
         />
-        <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[43%] bg-white sm:block" />
-        <div aria-hidden="true" className="absolute inset-y-0 left-[39%] hidden w-[23%] bg-[linear-gradient(90deg,#fff_0%,rgba(255,255,255,0.82)_52%,rgba(255,255,255,0)_100%)] sm:block" />
-        <div className="relative mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-white/85 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.80)_42%,rgba(255,255,255,0.38)_75%,rgba(255,255,255,0.12)_100%)]"
+        />
+        <div className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
           <div className="max-w-[560px] py-7">
             <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
               {hero.eyebrow}
