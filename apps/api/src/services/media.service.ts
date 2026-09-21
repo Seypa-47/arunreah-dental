@@ -113,6 +113,20 @@ export function createMediaObjectKey(
   return `${category}/${crypto.randomUUID()}-${sanitizeFilename(filename)}.${imageFormats[mimeType].extension}`;
 }
 
+export function isHeicBytes(bytes: Uint8Array): boolean {
+  return (
+    bytes.length >= 12 &&
+    bytes[4] === 0x66 &&
+    bytes[5] === 0x74 &&
+    bytes[6] === 0x79 &&
+    bytes[7] === 0x70 &&
+    (
+      (bytes[8] === 0x68 && bytes[9] === 0x65 && bytes[10] === 0x69) || // heic, heix, heim, heis
+      (bytes[8] === 0x6d && bytes[9] === 0x69 && bytes[10] === 0x66)    // mif1
+    )
+  );
+}
+
 export async function validateImageFile(file: File): Promise<ImageMimeType> {
   if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
     throw new HttpError(400, 'MEDIA_TOO_LARGE', 'Image uploads must not exceed 5 MB.');
@@ -120,13 +134,22 @@ export async function validateImageFile(file: File): Promise<ImageMimeType> {
 
   const bytes = new Uint8Array(await file.slice(0, 24).arrayBuffer());
 
-  // 1. Sniff actual magic bytes to reliably determine real image type
+  // 1. Check if the user uploaded an Apple HEIC/HEIF photo
+  if (isHeicBytes(bytes)) {
+    throw new HttpError(
+      400,
+      'INVALID_MEDIA_TYPE',
+      'Apple HEIC/HEIF photos are not supported by web browsers. Please convert or export to JPEG or PNG before uploading.',
+    );
+  }
+
+  // 2. Sniff actual magic bytes to reliably determine real image type
   const detectedType = detectImageMimeType(bytes);
   if (detectedType) {
     return detectedType;
   }
 
-  // 2. If declared type matches and signature passes
+  // 3. If declared type matches and signature passes
   if (isImageMimeType(file.type) && imageFormats[file.type].signature(bytes)) {
     return file.type;
   }

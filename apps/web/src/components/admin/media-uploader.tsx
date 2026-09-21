@@ -75,9 +75,61 @@ export function MediaUploader({
     },
   });
 
-  const chooseFile = (file: File) => {
+  const chooseFile = async (rawFile: File) => {
     setValidationMessage(null);
     setUploadedMedia(null);
+
+    let file = rawFile;
+    // Detect Apple HEIC/HEIF photos (even if named .jpg)
+    try {
+      const header = new Uint8Array(await rawFile.slice(0, 16).arrayBuffer());
+      const isHeic =
+        (header.length >= 12 &&
+          header[4] === 0x66 &&
+          header[5] === 0x74 &&
+          header[6] === 0x79 &&
+          header[7] === 0x70 &&
+          (
+            (header[8] === 0x68 && header[9] === 0x65 && header[10] === 0x69) ||
+            (header[8] === 0x6d && header[9] === 0x69 && header[10] === 0x66)
+          )) ||
+        /\.(heic|heif)$/i.test(rawFile.name);
+
+      if (isHeic) {
+        let converted = false;
+        try {
+          const bitmap = await createImageBitmap(rawFile);
+          const canvas = document.createElement('canvas');
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(bitmap, 0, 0);
+            const blob = await new Promise<Blob | null>((resolve) =>
+              canvas.toBlob(resolve, 'image/jpeg', 0.92)
+            );
+            if (blob) {
+              const newName = rawFile.name.replace(/\.(heic|heif|jpg|jpeg|png)$/i, '') + '.jpg';
+              file = new File([blob], newName, { type: 'image/jpeg' });
+              converted = true;
+            }
+          }
+        } catch {
+          // Browser cannot decode HEIC
+        }
+
+        if (!converted) {
+          setLocalFile(null);
+          setValidationMessage(
+            'This is an Apple HEIC/HEIF photo. Web browsers cannot display HEIC. Please export or convert it to JPEG or PNG before uploading (e.g. in Preview: File > Export > JPEG).'
+          );
+          return;
+        }
+      }
+    } catch {
+      // Header check fallback
+    }
+
     const ext = file.name.split('.').at(-1)?.toLowerCase() ?? '';
     const isMimeAccepted = acceptedTypes.includes(file.type as (typeof acceptedTypes)[number]);
     const isExtAccepted = acceptedExtensions.includes(ext);
