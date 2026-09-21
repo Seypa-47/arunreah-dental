@@ -444,18 +444,18 @@ export function AdminPageHeroesPage() {
                     />
                     {activePage.placement === 'DOCTORS_HERO' || activePage.placement === 'ABOUT_HERO' ? (
                       <div className="relative z-10 flex min-h-[220px] flex-col justify-end p-3 sm:min-h-[280px] sm:p-5">
-                        <div className="max-w-[420px] rounded-xl border border-white/15 bg-[linear-gradient(135deg,rgba(2,24,39,0.28)_0%,rgba(2,24,39,0.14)_100%)] p-3.5 shadow-md backdrop-blur-md sm:p-4">
+                        <div className="max-w-[420px] rounded-xl border border-white/10 bg-[linear-gradient(135deg,rgba(2,24,39,0.12)_0%,rgba(2,24,39,0.04)_100%)] p-3.5 shadow-sm backdrop-blur-sm sm:p-4">
                           {previewEyebrow ? (
                             <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[1.5px] text-[#7ee1f8]">
                               <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
                               <span>{previewEyebrow}</span>
                             </div>
                           ) : null}
-                          <h3 className={`${previewEyebrow ? 'mt-2' : ''} text-[16px] font-extrabold leading-tight tracking-[-0.02em] text-white [text-shadow:_0_2px_8px_rgba(0,0,0,0.7)] sm:text-[20px]`}>
+                          <h3 className={`${previewEyebrow ? 'mt-2' : ''} text-[16px] font-extrabold leading-tight tracking-[-0.02em] text-white [text-shadow:_0_1px_4px_rgba(0,0,0,0.9),_0_2px_10px_rgba(0,0,0,0.7)] sm:text-[20px]`}>
                             {previewTitle}
                           </h3>
                           {previewSubtitle ? (
-                            <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-[#f0f7fa] [text-shadow:_0_1px_6px_rgba(0,0,0,0.6)] sm:text-[12px]">
+                            <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-white [text-shadow:_0_1px_4px_rgba(0,0,0,0.9)] sm:text-[12px]">
                               {previewSubtitle}
                             </p>
                           ) : null}

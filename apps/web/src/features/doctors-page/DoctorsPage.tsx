@@ -37,15 +37,15 @@ function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; he
             src={imageUrl}
           />
           <div className="relative z-10 flex min-h-[360px] flex-col justify-end p-4 sm:min-h-[420px] sm:p-6 lg:min-h-[480px] lg:p-8">
-            <div className="max-w-[480px] rounded-2xl border border-white/15 bg-[linear-gradient(135deg,rgba(2,24,39,0.28)_0%,rgba(2,24,39,0.14)_100%)] p-5 shadow-[0_8px_24px_rgba(2,24,39,0.12)] backdrop-blur-md sm:max-w-[500px] sm:p-6">
+            <div className="max-w-[480px] rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(2,24,39,0.12)_0%,rgba(2,24,39,0.04)_100%)] p-5 shadow-[0_4px_16px_rgba(0,0,0,0.06)] backdrop-blur-sm sm:max-w-[500px] sm:p-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-0.5 text-[11px] font-bold uppercase tracking-[1.6px] text-[#7ee1f8] sm:text-[12px]">
                 <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
                 <span>{eyebrow}</span>
               </div>
-              <h1 className="mt-2.5 text-[22px] font-extrabold leading-tight tracking-[-0.025em] text-white [text-shadow:_0_2px_10px_rgba(0,0,0,0.7),_0_1px_3px_rgba(0,0,0,0.8)] sm:text-[28px] lg:text-[32px]">
+              <h1 className="mt-2.5 text-[22px] font-extrabold leading-tight tracking-[-0.025em] text-white [text-shadow:_0_1px_4px_rgba(0,0,0,0.9),_0_2px_12px_rgba(0,0,0,0.7)] sm:text-[28px] lg:text-[32px]">
                 {title}
               </h1>
-              <p className="mt-2 text-[13px] font-medium leading-relaxed text-[#f0f7fa] [text-shadow:_0_1px_8px_rgba(0,0,0,0.7)] sm:text-[14px] sm:leading-6">
+              <p className="mt-2 text-[13px] font-medium leading-relaxed text-white [text-shadow:_0_1px_4px_rgba(0,0,0,0.9),_0_2px_10px_rgba(0,0,0,0.6)] sm:text-[14px] sm:leading-6">
                 {description}
               </p>
             </div>
