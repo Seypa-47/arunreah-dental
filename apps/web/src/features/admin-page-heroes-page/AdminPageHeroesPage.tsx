@@ -442,7 +442,7 @@ export function AdminPageHeroesPage() {
                         transform: `scale(${form.imagePresentation.zoom})`,
                       }}
                     />
-                    {activePage.placement === 'DOCTORS_HERO' ? (
+                    {activePage.placement === 'DOCTORS_HERO' || activePage.placement === 'ABOUT_HERO' ? (
                       <div className="relative z-10 flex min-h-[220px] flex-col justify-end p-3 sm:min-h-[280px] sm:p-5">
                         <div className="max-w-[420px] rounded-xl border border-white/15 bg-[linear-gradient(135deg,rgba(2,24,39,0.50)_0%,rgba(2,24,39,0.30)_100%)] p-3.5 shadow-md backdrop-blur-xl sm:p-4">
                           {previewEyebrow ? (
