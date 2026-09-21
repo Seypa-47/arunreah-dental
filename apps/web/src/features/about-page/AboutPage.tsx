@@ -25,14 +25,39 @@ function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
 
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8"><div className="relative grid min-h-[300px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#00546f] sm:min-h-[360px]">
-        <ResilientImage alt={imageAlt} className="absolute inset-0 h-full w-full object-cover object-center" fallbackSrc="/assets/landing/hero-clinic.png" presentation={hero.imagePresentation} src={imageUrl} />
-        <div className="relative flex max-w-[720px] items-end p-6 text-white [text-shadow:_0_2px_8px_rgba(0,0,0,0.85),_0_1px_3px_rgba(0,0,0,0.95)] sm:p-10 lg:p-12">
-          <div>{hero.eyebrow ? <p className="text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#b7e7f4]">{hero.eyebrow}</p> : null}
-          <h1 className={`${hero.eyebrow ? 'mt-3' : ''} text-[30px] font-extrabold leading-tight tracking-[-0.035em] sm:text-[42px]`}>{hero.title}</h1>
-          {hero.subtitle ? <p className="mt-3 max-w-[580px] text-[16px] font-medium leading-7 text-white/90">{hero.subtitle}</p> : null}</div>
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="relative min-h-[320px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#00546f] sm:min-h-[380px] lg:min-h-[420px]">
+          <ResilientImage
+            alt={imageAlt}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            fallbackSrc="/assets/landing/hero-clinic.png"
+            presentation={hero.imagePresentation}
+            src={imageUrl}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#021827]/90 via-[#021827]/40 to-transparent sm:bg-[linear-gradient(100deg,rgba(2,24,39,0.88)_0%,rgba(2,24,39,0.5)_42%,rgba(2,24,39,0.1)_70%,transparent_100%)]"
+          />
+          <div className="relative z-10 flex min-h-[320px] max-w-[720px] flex-col justify-end p-6 sm:min-h-[380px] sm:p-10 lg:min-h-[420px] lg:p-12">
+            <div>
+              {hero.eyebrow ? (
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-[11px] font-bold uppercase tracking-[1.8px] text-[#7ee1f8] backdrop-blur-md sm:text-[12px]">
+                  <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
+                  <span>{hero.eyebrow}</span>
+                </div>
+              ) : null}
+              <h1 className={`${hero.eyebrow ? 'mt-3.5' : ''} text-[28px] font-extrabold leading-[1.18] tracking-[-0.03em] text-white sm:text-[38px] lg:text-[44px]`}>
+                {hero.title}
+              </h1>
+              {hero.subtitle ? (
+                <p className="mt-3.5 max-w-[600px] text-[15px] font-normal leading-relaxed text-[#e1f0f5] sm:text-[16px] sm:leading-7">
+                  {hero.subtitle}
+                </p>
+              ) : null}
+            </div>
+          </div>
         </div>
-      </div></div>
+      </div>
     </section>
   );
 }

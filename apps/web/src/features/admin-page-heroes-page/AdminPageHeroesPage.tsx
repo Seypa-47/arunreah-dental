@@ -237,8 +237,7 @@ export function AdminPageHeroesPage() {
   const invalidate = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.pageMedia(activePage.placement) }),
-      queryClient.invalidateQueries({ queryKey: ['public', 'page-media', activePage.placement] }),
-      queryClient.invalidateQueries({ queryKey: ['public', activePage.id] }),
+      queryClient.invalidateQueries({ queryKey: ['public'] }),
     ]);
   };
 
@@ -433,7 +432,7 @@ export function AdminPageHeroesPage() {
 
                 {/* Banner Visual Preview Box */}
                 <div className="relative mt-5 overflow-hidden rounded-xl border border-[#d9e9ee] bg-[#063e5c]">
-                  <div className="relative min-h-[200px] sm:min-h-[250px]">
+                  <div className="relative min-h-[220px] sm:min-h-[280px]">
                     <img
                       alt={previewTitle}
                       className="absolute inset-0 h-full w-full object-cover"
@@ -443,17 +442,22 @@ export function AdminPageHeroesPage() {
                         transform: `scale(${form.imagePresentation.zoom})`,
                       }}
                     />
-                    <div className="relative z-10 flex min-h-[200px] max-w-[640px] flex-col justify-end p-6 text-white [text-shadow:_0_2px_8px_rgba(0,0,0,0.85),_0_1px_3px_rgba(0,0,0,0.95)] sm:min-h-[250px] sm:p-8">
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#021827]/90 via-[#021827]/40 to-transparent sm:bg-[linear-gradient(100deg,rgba(2,24,39,0.88)_0%,rgba(2,24,39,0.5)_42%,rgba(2,24,39,0.1)_70%,transparent_100%)]"
+                    />
+                    <div className="relative z-10 flex min-h-[220px] max-w-[640px] flex-col justify-end p-6 text-white sm:min-h-[280px] sm:p-8">
                       {previewEyebrow ? (
-                        <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#b7e7f4]">
-                          {previewEyebrow}
-                        </p>
+                        <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-0.5 text-[11px] font-bold uppercase tracking-[1.5px] text-[#7ee1f8] backdrop-blur-md">
+                          <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
+                          <span>{previewEyebrow}</span>
+                        </div>
                       ) : null}
-                      <h3 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.03em] sm:text-[30px]">
+                      <h3 className={`${previewEyebrow ? 'mt-2.5' : ''} text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-white sm:text-[30px]`}>
                         {previewTitle}
                       </h3>
                       {previewSubtitle ? (
-                        <p className="mt-2 text-[13px] leading-5 text-[#e6f6fa] sm:text-[14px] sm:leading-6">
+                        <p className="mt-2 text-[13px] leading-relaxed text-[#e1f0f5] sm:text-[14px] sm:leading-6">
                           {previewSubtitle}
                         </p>
                       ) : null}
