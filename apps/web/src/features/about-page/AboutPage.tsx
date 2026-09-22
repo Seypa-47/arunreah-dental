@@ -4,10 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, ContentBlocks, ResilientImage, renderHeroTitle } from '@/components/layout/public-ui';
+import { CmsImage, ContentBlocks, InfoBlock, ResilientImage } from '@/components/layout/public-ui';
 import type { AboutPageContent } from '@/features/landing-page/types';
 import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
-import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { useAboutPageQuery } from './use-about-page';
 import { getPublicMediaUrl } from '@/services/media';
 
@@ -21,49 +20,45 @@ function ArrowIcon() {
 }
 
 function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
-  const { language } = usePublicLanguage();
   const imageUrl = hero.imageUrl || '/assets/landing/hero-clinic.png';
   const imageAlt = hero.imageAlt || 'Arunreah Dental Clinic';
-  const eyebrow = hero.eyebrow || (language === 'km' ? 'អំពីយើង' : 'ABOUT US');
-  const title = hero.title || (language === 'km' ? 'អំពី គ្លីនិកធ្មេញ អរុណរះ' : 'About Arunreah Dental Clinic');
-  const subtitle = hero.subtitle;
+  const info = hero.info ?? [];
 
   return (
-    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-6 sm:py-8 lg:py-10">
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="relative min-h-[380px] sm:min-h-[440px] lg:min-h-[480px] overflow-hidden rounded-2xl sm:rounded-[28px] lg:rounded-[32px] border border-[#dce6ed] bg-[#f8fafc] shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
-          <ResilientImage
-            alt={imageAlt}
-            className="absolute inset-0 h-full w-full object-cover object-[center_35%] lg:object-center"
-            fallbackSrc="/assets/landing/hero-clinic.png"
-            presentation={hero.imagePresentation}
-            src={imageUrl}
-          />
-          {/* Directional white gradient overlay - keeps building & logo on the right 100% visible while giving crisp contrast for text on the left */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/95 via-white/85 to-white/40 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.92)_24%,rgba(255,255,255,0.78)_40%,rgba(255,255,255,0.25)_56%,transparent_72%)]"
-          />
-          <div className="relative z-10 flex min-h-[380px] sm:min-h-[440px] lg:min-h-[480px] flex-col justify-center px-6 sm:px-10 lg:px-14 py-8 sm:py-12">
-            <div className="max-w-[440px] sm:max-w-[500px]">
-              {eyebrow ? (
-                <div className="flex items-center gap-2.5 sm:gap-3">
-                  <span aria-hidden="true" className="h-[2.5px] w-6 sm:w-8 rounded-full bg-[#0080c8]" />
-                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.2em] text-[#0080c8]">
-                    {eyebrow}
-                  </span>
-                </div>
-              ) : null}
-              <h1 className={`${eyebrow ? 'mt-3 sm:mt-4' : ''} text-[28px] sm:text-[38px] lg:text-[46px] font-black leading-[1.14] tracking-[-0.035em] text-[#073f60]`}>
-                {renderHeroTitle(title, language)}
-              </h1>
-              {subtitle ? (
-                <p className="mt-3.5 text-[14px] sm:text-[15px] lg:text-[16px] font-medium leading-relaxed text-[#526477] max-w-[420px] sm:leading-6">
-                  {subtitle}
-                </p>
-              ) : null}
-            </div>
+    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
+      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
+        <ResilientImage
+          alt={imageAlt}
+          className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
+          fallbackSrc="/assets/landing/hero-clinic.png"
+          presentation={hero.imagePresentation}
+          src={imageUrl}
+        />
+        <div className={`relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 ${info.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8' : ''}`}>
+          <div className="max-w-[620px]">
+            {hero.eyebrow ? (
+              <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+                {hero.eyebrow}
+              </p>
+            ) : null}
+            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
+              {hero.title}
+            </h1>
+            {hero.subtitle ? (
+              <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e]">
+                {hero.subtitle}
+              </p>
+            ) : null}
           </div>
+          {info.length > 0 ? (
+            <Card className="rounded-2xl border-[#d9e9ee] bg-white/95 p-5 shadow-[0_4px_20px_rgba(0,86,135,0.08)] backdrop-blur-md sm:p-6">
+              <div className="space-y-4">
+                {info.map((item) => (
+                  <InfoBlock compact item={item} key={item.label} />
+                ))}
+              </div>
+            </Card>
+          ) : null}
         </div>
       </div>
     </section>

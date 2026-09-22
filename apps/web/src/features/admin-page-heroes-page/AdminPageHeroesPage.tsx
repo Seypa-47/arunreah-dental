@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card';
 import { queryKeys } from '@/lib/query-keys';
 import { cmsApi, type AdminPageMediaRecord } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
-import { renderHeroTitle } from '@/components/layout/public-ui';
+import { ContactIcon } from '@/components/layout/public-ui';
 
 export type HeroPageConfig = {
   aspectRatio: string;
@@ -443,33 +443,46 @@ export function AdminPageHeroesPage() {
                         transform: `scale(${form.imagePresentation.zoom})`,
                       }}
                     />
-                    {activePage.placement === 'ABOUT_HERO' ? (
-                      <>
-                        <div
-                          aria-hidden="true"
-                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/95 via-white/85 to-white/40 sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.92)_24%,rgba(255,255,255,0.78)_40%,rgba(255,255,255,0.25)_56%,transparent_72%)]"
-                        />
-                        <div className="relative z-10 flex min-h-[220px] sm:min-h-[280px] flex-col justify-center p-4 sm:p-6">
-                          <div className="max-w-[340px] sm:max-w-[420px]">
-                            {previewEyebrow ? (
-                              <div className="flex items-center gap-2">
-                                <span aria-hidden="true" className="h-[2px] w-5 rounded-full bg-[#0080c8]" />
-                                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#0080c8]">
-                                  {previewEyebrow}
-                                </span>
+                    {activePage.placement === 'ABOUT_HERO' || activePage.placement === 'CONTACT_HERO' ? (
+                      <div className="relative z-10 grid min-h-[220px] items-center gap-4 p-4 sm:min-h-[280px] sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-6 sm:p-6">
+                        <div className="max-w-[360px]">
+                          {previewEyebrow ? (
+                            <p className="text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
+                              {previewEyebrow}
+                            </p>
+                          ) : null}
+                          <h3 className="mt-1 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-2 sm:text-[24px]">
+                            {previewTitle}
+                          </h3>
+                          {previewSubtitle ? (
+                            <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#0e3b5e] sm:text-[13px]">
+                              {previewSubtitle}
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className="hidden rounded-xl border border-[#d9e9ee] bg-white/95 p-3.5 shadow-[0_4px_16px_rgba(0,86,135,0.08)] backdrop-blur-md sm:block">
+                          <div className="space-y-2.5">
+                            <div className="flex items-center gap-2.5">
+                              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9]">
+                                <ContactIcon className="size-3.5" name="phone" />
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-bold text-[#3695b9]">{previewLanguage === 'km' ? 'ទូរស័ព្ទ' : 'Phone'}</p>
+                                <p className="text-[11px] font-extrabold text-[#005687]">098 701 302</p>
                               </div>
-                            ) : null}
-                            <h3 className={`${previewEyebrow ? 'mt-2' : ''} text-[18px] sm:text-[22px] font-black leading-[1.15] tracking-[-0.03em] text-[#073f60]`}>
-                              {renderHeroTitle(previewTitle, previewLanguage)}
-                            </h3>
-                            {previewSubtitle ? (
-                              <p className="mt-1.5 text-[11px] sm:text-[12px] font-medium leading-relaxed text-[#526477]">
-                                {previewSubtitle}
-                              </p>
-                            ) : null}
+                            </div>
+                            <div className="flex items-center gap-2.5">
+                              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9]">
+                                <ContactIcon className="size-3.5" name="clock" />
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-bold text-[#3695b9]">{previewLanguage === 'km' ? 'ម៉ោង' : 'Hours'}</p>
+                                <p className="text-[11px] font-extrabold text-[#005687]">8:00 AM - 7:00 PM</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </>
+                      </div>
                     ) : activePage.placement === 'DOCTORS_HERO' ? (
                       /* Doctors hero displays the clean doctor team photo without text or overlay so all doctors are clearly visible */
                       null

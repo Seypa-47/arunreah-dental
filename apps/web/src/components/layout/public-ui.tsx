@@ -331,3 +331,83 @@ export function renderHeroTitle(title: string, language?: 'en' | 'km'): ReactNod
 
   return <span>{trimmed}</span>;
 }
+
+export type ContactIconName = 'clock' | 'email' | 'location' | 'phone';
+
+export function ContactIcon({ className = 'size-[18px]', name }: { className?: string; name: ContactIconName }) {
+  const iconPath = {
+    clock: (
+      <>
+        <circle cx="12" cy="12" r="8" />
+        <path d="M12 7.8v4.45l3 1.75" />
+      </>
+    ),
+    email: (
+      <>
+        <path d="M4 7h16v10H4z" />
+        <path d="m5 8 7 5 7-5" />
+      </>
+    ),
+    location: (
+      <>
+        <path
+          d="M12 21s7-5.92 7-11.7A6.86 6.86 0 0 0 12 2.4a6.86 6.86 0 0 0-7 6.9C5 15.08 12 21 12 21Z"
+          fill="currentColor"
+          stroke="none"
+        />
+        <circle cx="12" cy="9.3" fill="white" r="2.1" stroke="none" />
+      </>
+    ),
+    phone: (
+      <path
+        d="M7.25 4.25 9.6 3.7l2 4.65-1.9 1.25a9.75 9.75 0 0 0 4.7 4.7l1.25-1.9 4.65 2-0.55 2.35a2 2 0 0 1-2.25 1.52C10.8 17.3 6.7 13.2 5.73 6.5a2 2 0 0 1 1.52-2.25Z"
+        fill="currentColor"
+        stroke="none"
+      />
+    ),
+  };
+
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      {iconPath[name]}
+    </svg>
+  );
+}
+
+export function InfoBlock({
+  compact = false,
+  item,
+}: {
+  compact?: boolean;
+  item: { description?: string | null; icon: ContactIconName; label: string; value: string };
+}) {
+  return (
+    <div className={`flex items-center ${compact ? 'gap-4' : 'gap-5'}`}>
+      <span
+        className={`grid shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9] ${
+          compact ? 'size-[38px]' : 'size-[46px]'
+        }`}
+      >
+        <ContactIcon className={compact ? 'size-[15px]' : 'size-[18px]'} name={item.icon} />
+      </span>
+      <div className="min-w-0 break-words">
+        <p className="text-[12px] font-extrabold leading-4 text-[#3695b9]">{item.label}</p>
+        <p className={`whitespace-pre-line font-extrabold text-[#005687] ${compact ? 'text-[14px] leading-5' : 'text-[16px] leading-6'}`}>
+          {item.value}
+        </p>
+        {!compact && item.description && item.description !== item.value ? (
+          <p className="text-[12px] font-medium leading-4 text-[#64748b]">{item.description}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}

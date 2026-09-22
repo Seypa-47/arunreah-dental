@@ -201,6 +201,7 @@ export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | '
     imageAlt: string;
     imagePresentation?: import('@arunreah/shared').ImagePresentation;
     imageUrl: string;
+    info?: { description: string; icon: 'clock' | 'email' | 'location' | 'phone'; label: string; value: string }[];
     subtitle: string;
     title: string;
   };
