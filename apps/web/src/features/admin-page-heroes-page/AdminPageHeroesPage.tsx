@@ -51,7 +51,7 @@ export const HERO_PAGES: HeroPageConfig[] = [
     aspectRatio: 'aspect-[21/9]',
     defaultEyebrowEn: 'ABOUT US',
     defaultEyebrowKm: 'អំពីយើង',
-    defaultImage: '/assets/landing/hero-clinic.png',
+    defaultImage: '/assets/landing/figma-branches/image2_183_4173.png',
     defaultSubtitleEn: 'Thoughtful dental care for a healthier, more confident smile.',
     defaultSubtitleKm: 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ ដើម្បីស្នាមញញឹមមានសុខភាពល្អ និងទំនុកចិត្ត។',
     defaultTitleEn: 'About Arunreah Dental Clinic',

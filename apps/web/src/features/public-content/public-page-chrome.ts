@@ -156,7 +156,7 @@ export function publicAboutContent(
     hero: {
       eyebrow: language === 'km' ? 'អំពីយើង' : 'ABOUT US',
       imageAlt: clinicName,
-      imageUrl: '',
+      imageUrl: '/assets/landing/figma-branches/image2_183_4173.png',
       subtitle: tagline ?? (language === 'km' ? 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ ដើម្បីស្នាមញញឹមមានសុខភាពល្អ និងទំនុកចិត្ត។' : 'Thoughtful dental care for a healthier, more confident smile.'),
       title: language === 'km' ? 'អំពី គ្លីនិកធ្មេញ អរុណរះ' : 'About Arunreah Dental Clinic',
     },

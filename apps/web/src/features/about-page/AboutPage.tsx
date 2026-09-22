@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, ContentBlocks, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ContentBlocks, PublicPageHero, ResilientImage } from '@/components/layout/public-ui';
 import type { AboutPageContent } from '@/features/landing-page/types';
 import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { useAboutPageQuery } from './use-about-page';
@@ -20,38 +20,16 @@ function ArrowIcon() {
 }
 
 function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
-  const imageUrl = hero.imageUrl || '/assets/landing/hero-clinic.png';
-  const imageAlt = hero.imageAlt || 'Arunreah Dental Clinic';
-
   return (
-    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
-      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
-        <ResilientImage
-          alt={imageAlt}
-          className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
-          fallbackSrc="/assets/landing/hero-clinic.png"
-          presentation={hero.imagePresentation}
-          src={imageUrl}
-        />
-        <div className="relative z-10 flex items-center py-8 sm:min-h-[340px] sm:py-10">
-          <div className="max-w-[620px]">
-            {hero.eyebrow ? (
-              <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
-                {hero.eyebrow}
-              </p>
-            ) : null}
-            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
-              {hero.title}
-            </h1>
-            {hero.subtitle ? (
-              <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e]">
-                {hero.subtitle}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </section>
+    <PublicPageHero
+      backgroundImageAlt={hero.imageAlt}
+      backgroundImageUrl={hero.imageUrl || '/assets/landing/figma-branches/image2_183_4173.png'}
+      eyebrow={hero.eyebrow}
+      fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
+      imagePresentation={hero.imagePresentation}
+      subtitle={hero.subtitle}
+      title={hero.title}
+    />
   );
 }
 

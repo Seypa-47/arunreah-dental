@@ -411,3 +411,73 @@ export function InfoBlock({
     </div>
   );
 }
+
+export type HeroInfoItem = {
+  description?: string | null;
+  icon: ContactIconName;
+  label: string;
+  value: string;
+};
+
+export type PublicPageHeroProps = {
+  backgroundImageAlt?: string;
+  backgroundImageUrl?: string;
+  eyebrow?: string;
+  fallbackSrc?: string;
+  imagePresentation?: ImagePresentation;
+  info?: HeroInfoItem[];
+  subtitle?: string;
+  title: string;
+};
+
+export function PublicPageHero({
+  backgroundImageAlt,
+  backgroundImageUrl,
+  eyebrow,
+  fallbackSrc = '/assets/landing/figma-branches/image2_183_4173.png',
+  imagePresentation,
+  info,
+  subtitle,
+  title,
+}: PublicPageHeroProps) {
+  const imageUrl = backgroundImageUrl || fallbackSrc;
+  return (
+    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
+      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
+        <ResilientImage
+          alt={backgroundImageAlt || title}
+          className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
+          fallbackSrc={fallbackSrc}
+          presentation={imagePresentation}
+          src={imageUrl}
+        />
+        <div className={`relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 ${info && info.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8' : ''}`}>
+          <div className="max-w-[620px]">
+            {eyebrow ? (
+              <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+                {eyebrow}
+              </p>
+            ) : null}
+            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
+              {title}
+            </h1>
+            {subtitle ? (
+              <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e]">
+                {subtitle}
+              </p>
+            ) : null}
+          </div>
+          {info && info.length > 0 ? (
+            <Card className="rounded-2xl border-[#d9e9ee] bg-white/95 p-5 shadow-[0_4px_20px_rgba(0,86,135,0.08)] backdrop-blur-md sm:p-6">
+              <div className="space-y-4">
+                {info.map((item) => (
+                  <InfoBlock compact item={item} key={item.label} />
+                ))}
+              </div>
+            </Card>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
