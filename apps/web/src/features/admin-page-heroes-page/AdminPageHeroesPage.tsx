@@ -471,32 +471,8 @@ export function AdminPageHeroesPage() {
                         </div>
                       </>
                     ) : activePage.placement === 'DOCTORS_HERO' ? (
-                      <>
-                        <div
-                          aria-hidden="true"
-                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/95 via-white/80 to-transparent sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.85)_24%,rgba(255,255,255,0.60)_38%,rgba(255,255,255,0.15)_52%,transparent_65%)]"
-                        />
-                        <div className="relative z-10 flex min-h-[220px] sm:min-h-[280px] flex-col justify-end p-4 sm:p-6">
-                          <div className="max-w-[340px] sm:max-w-[420px]">
-                            {previewEyebrow ? (
-                              <div className="flex items-center gap-2">
-                                <span aria-hidden="true" className="h-[2px] w-5 rounded-full bg-[#0080c8]" />
-                                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#0080c8]">
-                                  {previewEyebrow}
-                                </span>
-                              </div>
-                            ) : null}
-                            <h3 className={`${previewEyebrow ? 'mt-2' : ''} text-[18px] sm:text-[22px] font-black leading-[1.15] tracking-[-0.03em] text-[#073f60]`}>
-                              {renderHeroTitle(previewTitle, previewLanguage)}
-                            </h3>
-                            {previewSubtitle ? (
-                              <p className="mt-1.5 text-[11px] sm:text-[12px] font-medium leading-relaxed text-[#526477]">
-                                {previewSubtitle}
-                              </p>
-                            ) : null}
-                          </div>
-                        </div>
-                      </>
+                      /* Doctors hero displays the clean doctor team photo without text or overlay so all doctors are clearly visible */
+                      null
                     ) : (
                       <>
                         <div

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, ResilientImage, renderHeroTitle } from '@/components/layout/public-ui';
+import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { DoctorsPageContent, LandingDoctor } from '@/features/landing-page/types';
 import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { useDoctorsPageQuery } from './use-doctors-page';
@@ -17,18 +17,14 @@ function CalendarIcon() {
   return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
 }
 
-function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; heroMedia?: DoctorsPageContent['heroMedia'] }) {
-  const { language } = usePublicLanguage();
+function DoctorsHero({ heroMedia }: { hero?: DoctorsPageContent['hero']; heroMedia?: DoctorsPageContent['heroMedia'] }) {
   const imageUrl = heroMedia ? getPublicMediaUrl(heroMedia.imageKey) : null;
   const fallbackImageUrl = '/assets/landing/hero-clinic.png';
-  const title = heroMedia?.title ?? hero.title;
-  const description = heroMedia?.body ?? hero.description;
-  const eyebrow = heroMedia?.badge || (language === 'km' ? 'ក្រុមទន្តបណ្ឌិតរបស់យើង' : 'Our dental team');
 
   return (
     <section className="border-b border-[#dceaf0] bg-[#f7fafc] py-6 sm:py-8 lg:py-10">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="relative min-h-[380px] sm:min-h-[440px] lg:min-h-[480px] overflow-hidden rounded-2xl sm:rounded-[28px] lg:rounded-[32px] border border-[#dce6ed] bg-[#f8fafc] shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
+        <div className="relative min-h-[320px] sm:min-h-[400px] lg:min-h-[460px] overflow-hidden rounded-2xl sm:rounded-[28px] lg:rounded-[32px] border border-[#dce6ed] bg-[#f8fafc] shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
           <ResilientImage
             alt="Arunreah Dental Clinic team"
             className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.03] saturate-[1.03]"
@@ -36,29 +32,6 @@ function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; he
             presentation={heroMedia?.imagePresentation}
             src={imageUrl}
           />
-          {/* Subtle directional white gradient overlay - keeps doctor faces bright & crisp while giving optimal contrast for typography */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/95 via-white/80 to-transparent sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.85)_24%,rgba(255,255,255,0.60)_38%,rgba(255,255,255,0.15)_52%,transparent_65%)]"
-          />
-          <div className="relative z-10 flex min-h-[380px] sm:min-h-[440px] lg:min-h-[480px] flex-col justify-end p-6 sm:p-8 lg:p-10">
-            <div className="max-w-[460px] sm:max-w-[500px]">
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                <span aria-hidden="true" className="h-[2.5px] w-6 sm:w-8 rounded-full bg-[#0080c8]" />
-                <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.2em] text-[#0080c8]">
-                  {eyebrow}
-                </span>
-              </div>
-              <h1 className="mt-2.5 sm:mt-3 text-[26px] sm:text-[34px] lg:text-[40px] font-black leading-[1.15] tracking-[-0.035em] text-[#073f60]">
-                {renderHeroTitle(title, language)}
-              </h1>
-              {description ? (
-                <p className="mt-2 sm:mt-2.5 text-[13px] sm:text-[14px] lg:text-[15px] font-medium leading-relaxed text-[#526477] max-w-[440px]">
-                  {description}
-                </p>
-              ) : null}
-            </div>
-          </div>
         </div>
       </div>
     </section>
