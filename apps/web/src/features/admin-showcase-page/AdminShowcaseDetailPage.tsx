@@ -67,7 +67,7 @@ function TextInput({
 }) {
   return (
     <input
-      className={`h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${className}`}
+      className={`h-10 w-full rounded-xl border border-[#7d97af] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition placeholder:text-[#71839e] hover:border-[#426482] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20 ${className}`}
       lang={lang}
       min={min}
       onChange={onChange}

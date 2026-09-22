@@ -88,7 +88,16 @@ function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+      className={`h-10 w-full rounded-xl border border-[#7d97af] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition placeholder:text-[#71839e] hover:border-[#426482] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20 disabled:bg-[#f1f5f8] disabled:border-[#cbd7e2] ${props.className ?? ''}`}
+    />
+  );
+}
+
+function TextAreaInput(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...props}
+      className={`w-full rounded-xl border border-[#7d97af] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] shadow-xs outline-none transition placeholder:text-[#71839e] hover:border-[#426482] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20 disabled:bg-[#f1f5f8] disabled:border-[#cbd7e2] ${props.className ?? ''}`}
     />
   );
 }
@@ -109,11 +118,11 @@ function StatusSwitch({
   return (
     <div>
       <p className="text-[12px] font-bold text-[#61738d]">{label}</p>
-      <div className="mt-1.5 grid h-10 grid-cols-2 rounded-xl border border-[#dce5ef] bg-white p-0.5 text-[12.5px] font-bold">
+      <div className="mt-1.5 grid h-10 grid-cols-2 rounded-xl border border-[#7d97af] bg-white p-0.5 text-[12.5px] font-bold shadow-xs">
         <button
           aria-pressed={status === 'published'}
           className={`rounded-lg transition ${
-            status === 'published' ? 'bg-[#2187a8] text-white shadow-sm' : 'text-[#71839e] hover:text-[#182238]'
+            status === 'published' ? 'bg-[#096b89] text-white shadow-sm' : 'text-[#71839e] hover:text-[#182238]'
           }`}
           onClick={() => onChange('published')}
           type="button"
@@ -123,7 +132,7 @@ function StatusSwitch({
         <button
           aria-pressed={status === 'draft'}
           className={`rounded-lg transition ${
-            status === 'draft' ? 'bg-[#2187a8] text-white shadow-sm' : 'text-[#71839e] hover:text-[#182238]'
+            status === 'draft' ? 'bg-[#096b89] text-white shadow-sm' : 'text-[#71839e] hover:text-[#182238]'
           }`}
           onClick={() => onChange('draft')}
           type="button"
@@ -244,15 +253,15 @@ function BasicInformation({
         <div className="grid gap-5 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px]">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={`${content.editor.descriptionLabel} · English`}>
-              <textarea
-                className="h-[130px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+              <TextAreaInput
+                className="h-[130px] resize-none"
                 onChange={(event) => setService((current) => ({ ...current, description: event.target.value }))}
                 value={service.description}
               />
             </Field>
             <Field label="ពិពណ៌នាខ្លី · ខ្មែរ">
-              <textarea
-                className="h-[130px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+              <TextAreaInput
+                className="h-[130px] resize-none"
                 lang="km"
                 onChange={(event) => setService((current) => ({ ...current, descriptionKm: event.target.value }))}
                 value={service.descriptionKm}
@@ -433,7 +442,7 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
                   <div className="border-t border-[#dce5ef] p-4 sm:p-5">
                     <div className="grid gap-4 sm:grid-cols-[12rem_minmax(0,1fr)]">
                       <Field label="Section type">
-                        <select className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[13px]" onChange={(event) => updateSection(index, { sectionType: event.target.value as EditableDetailSection['sectionType'] })} value={section.sectionType}>
+                        <select className="h-10 w-full rounded-xl border border-[#7d97af] bg-white px-3 text-[13px] shadow-xs outline-none hover:border-[#426482] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20" onChange={(event) => updateSection(index, { sectionType: event.target.value as EditableDetailSection['sectionType'] })} value={section.sectionType}>
                           <option value="TEXT">Text section</option>
                           <option value="IMAGE">Image-led section</option>
                         </select>
@@ -443,8 +452,8 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
                     <div className="mt-4 grid gap-4 sm:grid-cols-2">
                       <Field label="Heading · English"><TextInput onChange={(event) => updateSection(index, { headingEn: event.target.value || null })} value={section.headingEn ?? ''} /></Field>
                       <Field label="ចំណងជើង · ខ្មែរ"><TextInput lang="km" onChange={(event) => updateSection(index, { headingKm: event.target.value || null })} value={section.headingKm ?? ''} /></Field>
-                      <Field label="Body · English"><textarea className="h-32 w-full rounded-xl border border-[#dce5ef] px-3 py-2 text-[13px]" onChange={(event) => updateSection(index, { bodyEn: event.target.value || null })} value={section.bodyEn ?? ''} /></Field>
-                      <Field label="ខ្លឹមសារ · ខ្មែរ"><textarea className="h-32 w-full rounded-xl border border-[#dce5ef] px-3 py-2 text-[13px]" lang="km" onChange={(event) => updateSection(index, { bodyKm: event.target.value || null })} value={section.bodyKm ?? ''} /></Field>
+                      <Field label="Body · English"><TextAreaInput className="h-32" onChange={(event) => updateSection(index, { bodyEn: event.target.value || null })} value={section.bodyEn ?? ''} /></Field>
+                      <Field label="ខ្លឹមសារ · ខ្មែរ"><TextAreaInput className="h-32" lang="km" onChange={(event) => updateSection(index, { bodyKm: event.target.value || null })} value={section.bodyKm ?? ''} /></Field>
                     </div>
                     <div className="mt-4"><MediaUploader category="services" help="Optional. Add one image only when it helps patients understand this section." label="Section image" onClear={() => updateSection(index, { imageKey: null })} onUploaded={(imageKey) => updateSection(index, { imageKey })} value={section.imageKey ?? undefined} /></div>
                     {repeatedImage ? <p className="mt-3 rounded-lg border border-[#f0c36d] bg-[#fff8e8] px-3 py-2 text-[12px] leading-5 text-[#7a4900]" role="status">This image is also used in another detail section. That can be intentional, but consider using a different image if the sections cover different topics.</p> : null}
@@ -515,8 +524,8 @@ function SectionRows({
                       />
                     </Field>
                     <Field label="Hero Summary">
-                      <textarea
-                        className="h-20 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      <TextAreaInput
+                        className="h-20"
                         onChange={(e) => setService((c) => ({ ...c, heroSummary: e.target.value }))}
                         value={service.heroSummary}
                       />
@@ -540,7 +549,7 @@ function SectionRows({
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Page presentation">
                       <select
-                        className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                        className="h-10 w-full rounded-xl border border-[#7d97af] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition hover:border-[#426482] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20"
                         onChange={(e) => setService((c) => ({ ...c, detailPresentation: e.target.value as EditableService['detailPresentation'] }))}
                         value={service.detailPresentation}
                       >
@@ -577,8 +586,8 @@ function SectionRows({
                       />
                     </Field>
                     <Field label="About Content">
-                      <textarea
-                        className="h-24 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      <TextAreaInput
+                        className="h-24"
                         onChange={(e) => setService((c) => ({ ...c, aboutContent: e.target.value }))}
                         value={service.aboutContent}
                       />
@@ -676,8 +685,8 @@ function SectionRows({
                       />
                     </Field>
                     <Field label="CTA Description">
-                      <textarea
-                        className="h-20 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      <TextAreaInput
+                        className="h-20"
                         onChange={(e) => setService((c) => ({ ...c, bottomCtaDescription: e.target.value }))}
                         value={service.bottomCtaDescription}
                       />
@@ -698,8 +707,8 @@ function SectionRows({
                       />
                     </Field>
                     <Field label="Meta Description">
-                      <textarea
-                        className="h-20 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      <TextAreaInput
+                        className="h-20"
                         onChange={(e) => setService((c) => ({ ...c, metaDescription: e.target.value }))}
                         value={service.metaDescription}
                       />
