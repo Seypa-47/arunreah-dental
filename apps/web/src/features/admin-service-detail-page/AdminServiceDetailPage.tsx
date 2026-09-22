@@ -88,7 +88,7 @@ function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`h-10 w-full rounded-xl border border-[#7d97af] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition placeholder:text-[#71839e] hover:border-[#426482] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20 disabled:bg-[#f1f5f8] disabled:border-[#cbd7e2] ${props.className ?? ''}`}
+      className={`h-10 w-full rounded-xl border border-[#64748b] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition placeholder:text-[#71839e] hover:border-[#475569] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20 disabled:bg-[#f1f5f8] disabled:border-[#cbd7e2] ${props.className ?? ''}`}
     />
   );
 }
@@ -97,7 +97,7 @@ function TextAreaInput(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>)
   return (
     <textarea
       {...props}
-      className={`w-full rounded-xl border border-[#7d97af] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] shadow-xs outline-none transition placeholder:text-[#71839e] hover:border-[#426482] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20 disabled:bg-[#f1f5f8] disabled:border-[#cbd7e2] ${props.className ?? ''}`}
+      className={`w-full rounded-xl border border-[#64748b] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] shadow-xs outline-none transition placeholder:text-[#71839e] hover:border-[#475569] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20 disabled:bg-[#f1f5f8] disabled:border-[#cbd7e2] ${props.className ?? ''}`}
     />
   );
 }
@@ -118,7 +118,7 @@ function StatusSwitch({
   return (
     <div>
       <p className="text-[12px] font-bold text-[#61738d]">{label}</p>
-      <div className="mt-1.5 grid h-10 grid-cols-2 rounded-xl border border-[#7d97af] bg-white p-0.5 text-[12.5px] font-bold shadow-xs">
+      <div className="mt-1.5 grid h-10 grid-cols-2 rounded-xl border border-[#64748b] bg-white p-0.5 text-[12.5px] font-bold shadow-xs">
         <button
           aria-pressed={status === 'published'}
           className={`rounded-lg transition ${
@@ -442,7 +442,7 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
                   <div className="border-t border-[#dce5ef] p-4 sm:p-5">
                     <div className="grid gap-4 sm:grid-cols-[12rem_minmax(0,1fr)]">
                       <Field label="Section type">
-                        <select className="h-10 w-full rounded-xl border border-[#7d97af] bg-white px-3 text-[13px] shadow-xs outline-none hover:border-[#426482] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20" onChange={(event) => updateSection(index, { sectionType: event.target.value as EditableDetailSection['sectionType'] })} value={section.sectionType}>
+                        <select className="h-10 w-full rounded-xl border border-[#64748b] bg-white px-3 text-[13px] shadow-xs outline-none hover:border-[#475569] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20" onChange={(event) => updateSection(index, { sectionType: event.target.value as EditableDetailSection['sectionType'] })} value={section.sectionType}>
                           <option value="TEXT">Text section</option>
                           <option value="IMAGE">Image-led section</option>
                         </select>
@@ -549,7 +549,7 @@ function SectionRows({
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Page presentation">
                       <select
-                        className="h-10 w-full rounded-xl border border-[#7d97af] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition hover:border-[#426482] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20"
+                        className="h-10 w-full rounded-xl border border-[#64748b] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition hover:border-[#475569] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20"
                         onChange={(e) => setService((c) => ({ ...c, detailPresentation: e.target.value as EditableService['detailPresentation'] }))}
                         value={service.detailPresentation}
                       >

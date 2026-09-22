@@ -129,7 +129,6 @@
 .admin-ui .admin-list-toolbar label :is(input, select),
 .admin-ui label:has(> input[type='search']) > input,
 .admin-ui label:has(> svg + input) > input,
-.admin-ui span:has(> input) > input,
 .admin-ui :is(label, span):has(> svg):has(> :is(input, select)) > :is(input, select) {
   border: 0 !important;
   border-radius: 0 !important;
@@ -150,8 +149,6 @@
 .admin-ui label:has(> input[type='search']) > input:focus-visible,
 .admin-ui label:has(> svg + input) > input:focus,
 .admin-ui label:has(> svg + input) > input:focus-visible,
-.admin-ui span:has(> input) > input:focus,
-.admin-ui span:has(> input) > input:focus-visible,
 .admin-ui :is(label, span):has(> svg):has(> :is(input, select)) > :is(input, select):focus,
 .admin-ui :is(label, span):has(> svg):has(> :is(input, select)) > :is(input, select):focus-visible {
   border: 0 !important;
@@ -185,11 +182,11 @@
   --admin-muted: #526477;
   --admin-primary: #096b89;
   --admin-border: #ccd7e1;
-  --admin-input-border: #7d97af;
-  --admin-input-border-hover: #426482;
+  --admin-input-border: #64748b;
+  --admin-input-border-hover: #475569;
   --admin-input-border-focus: #096b89;
-  --admin-input-focus-ring: 0 0 0 3px rgb(9 107 137 / 0.2), 0 1px 2px rgb(16 42 67 / 0.06);
-  --admin-input-shadow: 0 1px 2px rgb(16 42 67 / 0.08);
+  --admin-input-focus-ring: 0 0 0 3px rgb(9 107 137 / 0.22), 0 1px 2px rgb(16 42 67 / 0.06);
+  --admin-input-shadow: 0 1px 2px rgb(16 42 67 / 0.10);
   --admin-surface: #fff;
   --admin-canvas: #f4f7fa;
   --admin-radius: 0.625rem;
