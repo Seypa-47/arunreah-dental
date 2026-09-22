@@ -443,7 +443,7 @@ export function AdminPageHeroesPage() {
                         transform: `scale(${form.imagePresentation.zoom})`,
                       }}
                     />
-                    {activePage.placement === 'ABOUT_HERO' || activePage.placement === 'CONTACT_HERO' ? (
+                    {activePage.placement === 'CONTACT_HERO' ? (
                       <div className="relative z-10 grid min-h-[220px] items-center gap-4 p-4 sm:min-h-[280px] sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-6 sm:p-6">
                         <div className="max-w-[360px]">
                           {previewEyebrow ? (
@@ -481,6 +481,24 @@ export function AdminPageHeroesPage() {
                               </div>
                             </div>
                           </div>
+                        </div>
+                      </div>
+                    ) : activePage.placement === 'ABOUT_HERO' ? (
+                      <div className="relative z-10 flex min-h-[220px] items-center p-4 sm:min-h-[280px] sm:p-6">
+                        <div className="max-w-[420px]">
+                          {previewEyebrow ? (
+                            <p className="text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
+                              {previewEyebrow}
+                            </p>
+                          ) : null}
+                          <h3 className="mt-1 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-2 sm:text-[24px]">
+                            {previewTitle}
+                          </h3>
+                          {previewSubtitle ? (
+                            <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#0e3b5e] sm:text-[13px]">
+                              {previewSubtitle}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
                     ) : activePage.placement === 'DOCTORS_HERO' ? (

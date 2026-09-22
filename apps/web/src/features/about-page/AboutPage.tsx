@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, ContentBlocks, InfoBlock, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ContentBlocks, ResilientImage } from '@/components/layout/public-ui';
 import type { AboutPageContent } from '@/features/landing-page/types';
 import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
 import { useAboutPageQuery } from './use-about-page';
@@ -22,7 +22,6 @@ function ArrowIcon() {
 function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
   const imageUrl = hero.imageUrl || '/assets/landing/hero-clinic.png';
   const imageAlt = hero.imageAlt || 'Arunreah Dental Clinic';
-  const info = hero.info ?? [];
 
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
@@ -34,7 +33,7 @@ function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
           presentation={hero.imagePresentation}
           src={imageUrl}
         />
-        <div className={`relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 ${info.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8' : ''}`}>
+        <div className="relative z-10 flex items-center py-8 sm:min-h-[340px] sm:py-10">
           <div className="max-w-[620px]">
             {hero.eyebrow ? (
               <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
@@ -50,15 +49,6 @@ function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
               </p>
             ) : null}
           </div>
-          {info.length > 0 ? (
-            <Card className="rounded-2xl border-[#d9e9ee] bg-white/95 p-5 shadow-[0_4px_20px_rgba(0,86,135,0.08)] backdrop-blur-md sm:p-6">
-              <div className="space-y-4">
-                {info.map((item) => (
-                  <InfoBlock compact item={item} key={item.label} />
-                ))}
-              </div>
-            </Card>
-          ) : null}
         </div>
       </div>
     </section>
