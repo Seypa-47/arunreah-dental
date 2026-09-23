@@ -15,6 +15,7 @@ import { createPublicAppointment } from '@/services/public-content';
 import { TurnstileWidget } from './turnstile-widget';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { formatFullDate, formatMonthYear, formatWeekdayShort } from '@/features/public-content/public-dates';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 
 type IconName = 'calendar' | 'check' | 'clock' | 'doctor' | 'email' | 'hourglass' | 'location' | 'notes' | 'phone' | 'service' | 'user';
@@ -263,8 +264,9 @@ function SectionTitle({ number, title }: { number: string; title: string }) {
 }
 
 function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] }) {
+  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
   const imageUrl = hero.backgroundImageUrl || '/assets/landing/figma-branches/image5_183_4173.jpg';
-  const eyebrow = hero.eyebrow ?? 'Appointment request';
+  const eyebrow = hero.eyebrow ?? bookingCopy.heroEyebrow;
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
@@ -349,14 +351,11 @@ export function AppointmentCalendar({
   };
 
   const monthLabel = useMemo(() => {
-    return new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', {
-      month: 'long',
-      year: 'numeric',
-    }).format(viewDate);
+    return formatMonthYear(viewDate, language);
   }, [language, viewDate]);
 
   const weekdays = useMemo(() => {
-    const formatter = new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', { weekday: 'short' });
+    const formatter = { format: (value: Date) => formatWeekdayShort(value, language) };
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(2026, 8, 20 + i);
       return formatter.format(d);
@@ -387,7 +386,7 @@ export function AppointmentCalendar({
     });
   }, [viewDate]);
 
-  const dateFormatter = new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', { dateStyle: 'full' });
+  const dateFormatter = { format: (value: Date) => formatFullDate(value, language) };
 
   const handleSelectDate = (item: (typeof calendarDates)[number]) => {
     if (item.disabled) return;
@@ -648,7 +647,7 @@ function AppointmentForm({
             <SelectField
               icon="doctor"
               id="doctor"
-              label="Select Doctor (Optional)"
+              label={bookingCopy.selectDoctor}
               onChange={onSelectDoctor}
               options={content.doctors}
               value={selectedDoctor}
@@ -797,12 +796,7 @@ export function dateLabel(selectedDate: string, language: 'en' | 'km') {
   if (Number.isNaN(date.getTime())) {
     return selectedDate;
   }
-  return new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', {
-    day: 'numeric',
-    month: 'long',
-    weekday: 'long',
-    year: 'numeric',
-  }).format(date);
+  return formatFullDate(date, language);
 }
 
 export function AppointmentSuccessModal({

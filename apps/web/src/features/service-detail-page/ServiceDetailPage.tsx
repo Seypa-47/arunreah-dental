@@ -441,6 +441,7 @@ function PurposeLedDetail({ service }: { service: ServiceDetail }) {
 }
 
 function OtherServiceCard({ service }: { service: LandingService }) {
+  const detailCopy = publicUiCopy(usePublicLanguage().language).serviceDetail;
   const hasImage = Boolean(service.imageUrl);
 
   return (
@@ -456,7 +457,7 @@ function OtherServiceCard({ service }: { service: LandingService }) {
             className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#3695B9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
             to={`/services/${serviceSlug(service.name)}`}
           >
-            View Service
+            {detailCopy.viewService}
             <ArrowIcon />
           </Link>
         </div>

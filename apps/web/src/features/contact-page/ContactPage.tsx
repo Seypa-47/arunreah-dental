@@ -115,14 +115,15 @@ function ContactCards({ cards }: { cards: ContactPageContent['contactCards'] }) 
 }
 
 function ContactForm({ form }: { form: ContactPageContent['form'] }) {
+  const contactCopy = publicUiCopy(usePublicLanguage().language).contact;
   return (
     <section className="border-y border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <Card className="w-full rounded-xl border-[#e1ebef] bg-white p-6 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-8">
           <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{form.title}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-[16px] leading-7 text-[#64748b]">Use our appointment request form to choose your preferred service, branch, date, and time. The clinic will review your request before confirming it.</p>
+          <p className="mx-auto mt-3 max-w-xl text-[16px] leading-7 text-[#64748b]">{contactCopy.bookIntro}</p>
           <Link className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#3695B9] px-7 text-sm font-bold text-white shadow-none hover:bg-[#2c84a5] sm:min-h-11 sm:w-auto" to="/book-appointment">
-            Book an appointment request
+            {contactCopy.bookCta}
           </Link>
         </Card>
       </div>

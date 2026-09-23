@@ -15,6 +15,7 @@ import type {
 import { useLandingPageQuery } from './use-landing-page';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { formatShortDate } from '@/features/public-content/public-dates';
 import { CmsImage } from '@/components/layout/public-ui';
 
 const asset = (name: string) => `/assets/landing/${name}`;
@@ -245,7 +246,7 @@ function PromotionsSection({
 }) {
   if (promotions.length === 0) return null;
 
-  const formattedDate = (value: string) => new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${value}T00:00:00`));
+  const formattedDate = (value: string) => formatShortDate(new Date(`${value}T00:00:00`), language);
 
   return (
     <section aria-labelledby="promotions-title" className="border-y border-[#e2edf2] bg-[#f7fafc] py-14 sm:py-16">

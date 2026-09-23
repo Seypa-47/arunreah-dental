@@ -20,6 +20,7 @@ export type NewShowcaseFormState = {
   bodyContent: string;
   cardSummary: string;
   category: ShowcaseCategory | '';
+  categoryKm: string;
   coverImageUrl: string;
   coverImagePresentation?: ImagePresentation;
   displayOrder: number;
@@ -143,7 +144,7 @@ export async function saveShowcaseArticle(
     titleEn: formData.title,
     titleKm: formData.titleKm,
     categoryEn: formData.category || null,
-    categoryKm: null,
+    categoryKm: formData.categoryKm.trim() || null,
     summaryEn: formData.shortSummary || null,
     summaryKm: null,
     bodyEn: formData.bodyContent || null,

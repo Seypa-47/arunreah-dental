@@ -212,7 +212,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
             <button
               aria-controls="mobile-primary-navigation"
               aria-expanded={isMobileMenuOpen}
-              aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-label={isMobileMenuOpen ? layoutCopy.closeMenu : layoutCopy.openMenu}
               className="grid size-11 shrink-0 place-items-center rounded-full border border-[#cfe4ec] text-[#005687] transition hover:bg-[#eef9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9] lg:hidden"
               onClick={() => setIsMobileMenuOpen((open) => !open)}
               type="button"
