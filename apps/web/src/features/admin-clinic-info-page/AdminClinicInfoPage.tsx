@@ -3,7 +3,7 @@ import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useState, useEffect, useMemo, useRef, type ChangeEvent, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminBranchListQuery, CreateBranchInput } from '@arunreah/shared';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
 import { imageFrames } from '@/components/admin/image-frames';
@@ -121,6 +121,10 @@ export function resolveClinicInfoTab(
   return fallback;
 }
 
+export function selectedBranchIdFromSearch(search: string): string | undefined {
+  return new URLSearchParams(search).get('branch') || undefined;
+}
+
 export function AdminClinicInfoPage({
   initialTab = 'clinic',
 }: {
@@ -130,6 +134,7 @@ export function AdminClinicInfoPage({
   const location = useLocation();
   const queryClient = useQueryClient();
   const resolvedTab = resolveClinicInfoTab(location.pathname, initialTab);
+  const requestedBranchId = useMemo(() => selectedBranchIdFromSearch(location.search), [location.search]);
   const [activeTab, setActiveTab] = useState<'clinic' | 'branches' | 'contact'>(resolvedTab);
 
   useEffect(() => {
@@ -253,6 +258,12 @@ export function AdminClinicInfoPage({
       ? current
       : mappedBranches[0]?.id || '');
   }, [branchListQuery.data]);
+
+  useEffect(() => {
+    if (requestedBranchId && branches.some((branch) => branch.id === requestedBranchId)) {
+      setSelectedBranchId(requestedBranchId);
+    }
+  }, [branches, requestedBranchId]);
 
   const selectedBranch = useMemo(() => {
     return branches.find((b) => b.id === selectedBranchId) || branches[0] || null;
@@ -826,13 +837,16 @@ export function AdminClinicInfoPage({
                   {filteredBranches.map((b) => {
                     const isSelected = b.id === selectedBranch?.id;
                     return (
-                      <div
-                        className={`group relative flex cursor-pointer gap-3.5 rounded-2xl border p-4 transition ${
+                      <button
+                        aria-pressed={isSelected}
+                        className={`group relative flex w-full gap-3.5 rounded-2xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2187a8] focus-visible:ring-offset-2 ${
                           isSelected
                             ? 'border-[#2187a8] bg-[#f0f7fa] shadow-xs ring-1 ring-[#2187a8]'
                             : 'border-[#e2e8f0] bg-white hover:border-[#b8d6e7]'
                         }`}
                         key={b.id}
+                        onClick={() => setSelectedBranchId(b.id)}
+                        type="button"
                       >
                         {/* Photo */}
                         <img
@@ -844,7 +858,7 @@ export function AdminClinicInfoPage({
                         {/* Details */}
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3><button type="button" className="admin-row-action text-left" aria-pressed={isSelected} onClick={() => setSelectedBranchId(b.id)}>{b.name}</button></h3>
+                            <span className="font-bold text-[#182238]">{b.name}</span>
                             <span
                               className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${
                                 b.badge === 'Main Branch'
@@ -866,7 +880,7 @@ export function AdminClinicInfoPage({
                             <span>🕒 {b.openingDays} • {b.openingTime} - {b.closingTime}</span>
                           </div>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                   {branchListQuery.isLoading && (
@@ -1471,6 +1485,74 @@ export function AdminClinicInfoPage({
                             onChange={(e) => updateBranch(selectedBranch.id, { summaryKm: e.target.value })}
                             value={selectedBranch.summaryKm}
                           />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 6: Inside Our Clinic Gallery (About Page) */}
+                    <div className="space-y-4 border-t border-[#f0f4f8] pt-5">
+                      <div className="flex items-center justify-between">
+                        <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
+                          <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">6</span>
+                          Inside Our Clinic Gallery (About Page)
+                        </h3>
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f0fdf4] px-2.5 py-0.5 text-[11px] font-bold text-[#16a34a] ring-1 ring-[#bbf7d0]">
+                          Active on About page
+                        </span>
+                      </div>
+                      <p className="text-[12px] leading-relaxed text-[#71839e]">
+                        The photo gallery under &ldquo;A look inside our clinic&rdquo; on the public About page displays this location's clinic tour. Each branch has its own dedicated 4-photo showcase in the CMS.
+                      </p>
+
+                      <div className="rounded-2xl border border-[#dce8ee] bg-[#f8fbfe] p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#1687aa]">
+                              Connected Showcase
+                            </span>
+                            <h4 className="mt-0.5 text-[14px] font-bold text-[#182238]">
+                              {selectedBranch.slug === 'psa-chas'
+                                ? 'What To Expect During Your First Visit - Psa Chas Branch'
+                                : 'What To Expect During Your First Visit - Toul Tompoung Branch'}
+                            </h4>
+                            <p className="text-[12px] text-[#71839e]">
+                              Category: Clinic Experience • 4 photos
+                            </p>
+                          </div>
+                          <Link
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-[#096b89] bg-white px-3.5 py-1.5 text-[12.5px] font-bold text-[#096b89] shadow-xs transition hover:bg-[#edf7fb]"
+                            to={
+                              selectedBranch.slug === 'psa-chas'
+                                ? '/admin/showcase/50000000-0000-4000-8000-000000000004/edit'
+                                : '/admin/showcase/50000000-0000-4000-8000-000000000003/edit'
+                            }
+                          >
+                            <span>Edit in Showcases</span>
+                            <span aria-hidden="true">↗</span>
+                          </Link>
+                        </div>
+
+                        {/* Thumbnail Previews */}
+                        <div className="mt-4 grid grid-cols-4 gap-2.5">
+                          {(selectedBranch.slug === 'psa-chas'
+                            ? [
+                                { label: 'Exterior', url: '/assets/landing/psa-chas-exterior.jpg' },
+                                { label: 'Reception', url: '/assets/landing/psa-chas-reception.jpg' },
+                                { label: 'Waiting Lounge', url: '/assets/landing/psa-chas-waiting-area.jpg' },
+                                { label: 'Lounge / Consult', url: '/assets/landing/psa-chas-consultation-lounge.jpg' },
+                              ]
+                            : [
+                                { label: 'Exterior', url: '/assets/landing/branches-clinic.png' },
+                                { label: 'Reception', url: '/assets/landing/hero-clinic.png' },
+                                { label: 'Waiting Area', url: '/assets/landing/showcase-room.png' },
+                                { label: 'Treatment Room', url: '/assets/landing/branch-card-clinic.png' },
+                              ]
+                          ).map((thumb) => (
+                            <div className="overflow-hidden rounded-xl border border-[#dce8ee] bg-white text-center shadow-xs" key={thumb.label}>
+                              <img alt={thumb.label} className="h-16 w-full object-cover" src={thumb.url} />
+                              <span className="block truncate px-1 py-1 text-[10.5px] font-semibold text-[#5a7184]">{thumb.label}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>

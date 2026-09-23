@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -152,22 +153,159 @@ function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPag
   );
 }
 
-function ClinicGallery({ editorial, images }: { editorial: AboutPageContent['editorial']; images: NonNullable<AboutPageContent['clinicGallery']> }) {
-  if (images.length === 0) return null;
+function ClinicGallery({
+  branchGalleries,
+  editorial,
+  images,
+}: {
+  branchGalleries?: AboutPageContent['branchGalleries'];
+  editorial: AboutPageContent['editorial'];
+  images: NonNullable<AboutPageContent['clinicGallery']>;
+}) {
+  const { language } = usePublicLanguage();
+  const isKm = language === 'km';
+  const [selectedBranchSlug, setSelectedBranchSlug] = useState<'all' | string>('all');
+
+  const branches = useMemo(() => {
+    if (branchGalleries && branchGalleries.length > 0) return branchGalleries;
+    if (images.length > 0) {
+      return [
+        {
+          branchSlug: 'toul-tompoung',
+          branchName: isKm ? 'សាខាទួលទំពូង' : 'Toul Tompoung Branch',
+          badge: isKm ? 'សាខាចម្បង' : 'Main Branch',
+          shortLocationLabel: isKm ? 'ទួលទំពូង រាជធានីភ្នំពេញ' : 'Toul Tompoung, Phnom Penh',
+          address: isKm ? 'ផ្ទះ159c ផ្លូវ 113 ភូមិ 4 សង្កាត់បឹងកេងកង3 ខណ្ឌបឹងកេងកង' : '#159c, st113, Boeng Keng Kang 3, Phnom Penh',
+          openingHours: isKm ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM',
+          phone: '061 978 997',
+          googleMapsUrl: 'https://maps.app.goo.gl/LHQeXEkpcAvcfnT18',
+          images,
+        },
+      ];
+    }
+    return [];
+  }, [branchGalleries, images, isKm]);
+
+  const activeBranches = useMemo(() => {
+    if (selectedBranchSlug === 'all') return branches;
+    return branches.filter((b) => b.branchSlug === selectedBranchSlug);
+  }, [branches, selectedBranchSlug]);
+
+  if (branches.length === 0) return null;
 
   return (
-    <section className="border-y border-[#e7eff3] bg-[#f7fafc] py-12 sm:py-14">
+    <section className="border-y border-[#e7eff3] bg-[#f7fafc] py-12 sm:py-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="max-w-[640px]">
-          <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.galleryEyebrow}</p>
-          <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{editorial.galleryTitle}</h2>
+        {/* Section Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-[620px]">
+            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
+              {editorial.galleryEyebrow}
+            </p>
+            <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">
+              {editorial.galleryTitle}
+            </h2>
+            <p className="mt-2 text-[14.5px] font-normal leading-relaxed text-[#597184]">
+              {isKm
+                ? 'ស្វែងយល់ពីបរិយាកាស និងគ្រឿងបរិក្ខារនៃសាខាទាំងពីររបស់យើងនៅរាជធានីភ្នំពេញ'
+                : 'Explore the welcoming environment and modern facilities across our two Phnom Penh branches.'}
+            </p>
+          </div>
+
+          {/* Simple Branch Filter Tabs */}
+          {branches.length > 1 && (
+            <div className="inline-flex self-start rounded-full border border-[#d6e5eb] bg-white p-1 shadow-xs sm:self-end">
+              <button
+                className={`rounded-full px-4 py-1.5 text-[12.5px] font-bold transition ${
+                  selectedBranchSlug === 'all'
+                    ? 'bg-[#005687] text-white shadow-xs'
+                    : 'text-[#62778a] hover:text-[#005687]'
+                }`}
+                onClick={() => setSelectedBranchSlug('all')}
+                type="button"
+              >
+                {isKm ? 'សាខាទាំងពីរ' : 'All Branches'}
+              </button>
+              {branches.map((b) => (
+                <button
+                  className={`rounded-full px-4 py-1.5 text-[12.5px] font-bold transition ${
+                    selectedBranchSlug === b.branchSlug
+                      ? 'bg-[#005687] text-white shadow-xs'
+                      : 'text-[#62778a] hover:text-[#005687]'
+                  }`}
+                  key={b.branchSlug}
+                  onClick={() => setSelectedBranchSlug(b.branchSlug)}
+                  type="button"
+                >
+                  {b.branchName}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="mt-7 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          {images.map((image, index) => (
-            <figure className={`overflow-hidden rounded-xl border border-[#e1ebef] bg-white ${index === 0 ? 'sm:col-span-2 lg:col-span-2' : ''}`} key={image.imageUrl}>
-              <ResilientImage alt={image.imageAlt || editorial.galleryTitle} className={`w-full object-cover ${index === 0 ? 'h-[230px] sm:h-[300px]' : 'h-[190px] sm:h-[300px]'}`} fallbackSrc="/assets/landing/branches-clinic.png" src={image.imageUrl} />
-              {image.imageAlt ? <figcaption className="ui-caption px-4 pb-3">{image.imageAlt}</figcaption> : null}
-            </figure>
+
+        {/* Branch Galleries */}
+        <div className="mt-9 space-y-10 sm:space-y-12">
+          {activeBranches.map((branch) => (
+            <div key={branch.branchSlug}>
+              {/* Clean Branch Header */}
+              {branches.length > 1 && (
+                <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-[#e1ebef] pb-3">
+                  <div className="flex flex-wrap items-baseline gap-2.5">
+                    <h3 className="text-[19px] font-extrabold text-[#005687] sm:text-[21px]">
+                      {branch.branchName}
+                    </h3>
+                    {(branch.shortLocationLabel || branch.address) && (
+                      <span className="text-[13px] text-[#697d8e]">
+                        • {branch.shortLocationLabel || branch.address}
+                      </span>
+                    )}
+                  </div>
+                  {branch.googleMapsUrl && (
+                    <a
+                      className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#1687aa] hover:underline"
+                      href={branch.googleMapsUrl}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      {isKm ? 'ផែនទី' : 'Maps'}
+                      <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* 4-Photo Clean Grid */}
+              <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+                {branch.images.map((image, index) => (
+                  <figure
+                    className={`overflow-hidden rounded-xl border border-[#e1ebef] bg-white transition hover:shadow-xs ${
+                      index === 0 ? 'sm:col-span-2 lg:col-span-2' : ''
+                    }`}
+                    key={`${branch.branchSlug}-${image.imageUrl}-${index}`}
+                  >
+                    <ResilientImage
+                      alt={image.imageAlt || branch.branchName}
+                      className={`w-full object-cover ${
+                        index === 0 ? 'h-[230px] sm:h-[300px]' : 'h-[190px] sm:h-[300px]'
+                      }`}
+                      fallbackSrc="/assets/landing/branches-clinic.png"
+                      presentation={image.imagePresentation}
+                      src={image.imageUrl}
+                    />
+                    {image.imageAlt ? (
+                      <figcaption className="ui-caption px-4 pb-3 pt-2 text-[13px] font-semibold text-[#073f60]">
+                        {image.imageAlt}
+                      </figcaption>
+                    ) : null}
+                  </figure>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -306,7 +444,7 @@ function AboutPageView({ content }: { content: AboutPageContent }) {
         <StorySection editorial={content.editorial} featuredDoctor={content.featuredDoctor} stats={content.stats} story={content.story} />
         <GrowthTimeline editorial={content.editorial} items={content.timeline ?? []} />
         <ProfessionalDevelopment editorial={content.editorial} items={content.professionalMedia ?? []} />
-        <ClinicGallery editorial={content.editorial} images={content.clinicGallery ?? []} />
+        <ClinicGallery branchGalleries={content.branchGalleries} editorial={content.editorial} images={content.clinicGallery ?? []} />
         <VisionMissionSection mission={content.mission} vision={content.vision} />
         <DifferencesSection differences={content.differences} />
         <FacilitiesSection editorial={content.editorial} facilities={content.facilities} />

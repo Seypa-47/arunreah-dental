@@ -154,7 +154,26 @@ export type DoctorsPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
   }[];
 };
 
+export type ClinicBranchGallery = {
+  branchId?: string;
+  branchSlug: string;
+  branchName: string;
+  badge?: string | null;
+  address?: string | null;
+  shortLocationLabel?: string | null;
+  openingHours?: string | null;
+  phone?: string | null;
+  googleMapsUrl?: string | null;
+  showcaseTitle?: string;
+  images: {
+    imageAlt: string;
+    imagePresentation?: import('@arunreah/shared').ImagePresentation;
+    imageUrl: string;
+  }[];
+};
+
 export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  branchGalleries?: ClinicBranchGallery[];
   clinicGallery?: {
     imageAlt: string;
     imagePresentation?: import('@arunreah/shared').ImagePresentation;
