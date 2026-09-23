@@ -128,7 +128,7 @@ function ServiceHero({ editorial, service }: { editorial: boolean; service: Serv
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] pb-12 pt-12 sm:pb-14 sm:pt-14">
       <div className={`mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:gap-12 lg:px-8 ${editorial ? 'lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end' : 'lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center'}`}>
         <div className={editorial ? 'max-w-[760px]' : ''}>
-          <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{service.hero.eyebrow}</p>
+          <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{service.hero.eyebrow}</p>
           <h1 className="mt-3 max-w-[620px] text-[30px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">
             {service.hero.title}
           </h1>
@@ -148,7 +148,7 @@ function ServiceHero({ editorial, service }: { editorial: boolean; service: Serv
         </div>
         {editorial ? (
           <div className="border-l-2 border-[#83cadd] pl-5 text-[#365d70]">
-            <p className="text-[12px] font-extrabold uppercase tracking-[0.16em] text-[#1682a4]">{guideCopy.eyebrow}</p>
+            <p className="ui-eyebrow text-[12px] font-extrabold uppercase tracking-[0.16em] text-[#1682a4]">{guideCopy.eyebrow}</p>
             <p className="mt-2 text-[15px] leading-6">{guideCopy.body}</p>
           </div>
         ) : (
@@ -180,7 +180,7 @@ function EditorialOverview({ service }: { service: ServiceDetail }) {
     <section className="border-b border-[#e7eff3] bg-white py-9 sm:py-11">
       <div className="mx-auto grid w-full max-w-[1280px] gap-7 px-4 sm:px-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-12 lg:px-8">
         <div>
-          <p className="text-[12px] font-extrabold uppercase tracking-[0.16em] text-[#3695B9]">{copy.eyebrow}</p>
+          <p className="ui-eyebrow text-[12px] font-extrabold uppercase tracking-[0.16em] text-[#3695B9]">{copy.eyebrow}</p>
           <h2 className="mt-2 text-[23px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687]">{copy.title}</h2>
         </div>
         <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -289,7 +289,7 @@ function ClinicalJourney({ service }: { service: ServiceDetail }) {
     <section className="bg-white py-12 sm:py-16">
       <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[660px]">
-          <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-[#3695B9]">{copy.eyebrow}</p>
+          <p className="ui-eyebrow text-[12px] font-extrabold uppercase tracking-[0.18em] text-[#3695B9]">{copy.eyebrow}</p>
           <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{copy.title}</h2>
         </div>
         <div className="mt-8 divide-y divide-[#dcebf0] border-y border-[#dcebf0] sm:mt-10">
@@ -384,7 +384,7 @@ function SectionHeading({ service }: { service: ServiceDetail }) {
   const copy = language === 'km'
     ? { eyebrow: service.editorial.label || 'ព័ត៌មានអំពីសេវា', title: service.editorial.title || 'ស្វែងយល់ពីជម្រើសថែទាំ' }
     : { eyebrow: service.editorial.label || 'Service information', title: service.editorial.title || 'Explore your care options' };
-  return <div className="max-w-[680px]"><p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-[#3695B9]">{copy.eyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{copy.title}</h2></div>;
+  return <div className="max-w-[680px]"><p className="ui-eyebrow text-[12px] font-extrabold uppercase tracking-[0.18em] text-[#3695B9]">{copy.eyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{copy.title}</h2></div>;
 }
 
 function CareMenu({ family, service }: { family?: boolean; service: ServiceDetail }) {

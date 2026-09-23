@@ -82,7 +82,8 @@ textarea {
 }
 
 :lang(km) .ui-eyebrow {
-  letter-spacing: 0.04em;
+  /* Khmer glyphs need their natural spacing; wide Latin-style tracking separates them. */
+  letter-spacing: normal;
   text-transform: none;
 }
 

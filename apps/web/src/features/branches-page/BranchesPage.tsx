@@ -72,7 +72,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
         />
         <div className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
           <div className="max-w-[560px] py-7">
-            <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+            <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
               {hero.eyebrow}
             </p>
             <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
@@ -142,7 +142,7 @@ function SectionIntro({
 }) {
   return (
     <div className="mx-auto max-w-[720px] px-4 text-center sm:px-6">
-      <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p>
+      <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p>
       <h2 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[32px]">
         {title}
       </h2>
@@ -358,7 +358,7 @@ function AppointmentCta({ cta }: { cta: BranchesPageContent['cta'] }) {
               <AssetIcon className="size-6 brightness-0 invert" name="hero-calendar.svg" />
             </span>
             <div>
-              <p className="text-[12px] font-bold uppercase leading-4 tracking-wider text-white/75">{cta.eyebrow}</p>
+              <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-wider text-white/75">{cta.eyebrow}</p>
               <h2 className="mt-1 text-[23px] font-extrabold leading-tight sm:text-[26px]">{cta.title}</h2>
               <p className="mt-1 text-[14px] font-normal leading-6 text-white/80">{cta.subtitle}</p>
             </div>
