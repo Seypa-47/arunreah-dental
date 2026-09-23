@@ -837,13 +837,16 @@ export function AdminClinicInfoPage({
                   {filteredBranches.map((b) => {
                     const isSelected = b.id === selectedBranch?.id;
                     return (
-                      <div
-                        className={`group relative flex cursor-pointer gap-3.5 rounded-2xl border p-4 transition ${
+                      <button
+                        aria-pressed={isSelected}
+                        className={`group relative flex w-full gap-3.5 rounded-2xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2187a8] focus-visible:ring-offset-2 ${
                           isSelected
                             ? 'border-[#2187a8] bg-[#f0f7fa] shadow-xs ring-1 ring-[#2187a8]'
                             : 'border-[#e2e8f0] bg-white hover:border-[#b8d6e7]'
                         }`}
                         key={b.id}
+                        onClick={() => setSelectedBranchId(b.id)}
+                        type="button"
                       >
                         {/* Photo */}
                         <img
@@ -855,7 +858,7 @@ export function AdminClinicInfoPage({
                         {/* Details */}
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3><button type="button" className="admin-row-action text-left" aria-pressed={isSelected} onClick={() => setSelectedBranchId(b.id)}>{b.name}</button></h3>
+                            <span className="font-bold text-[#182238]">{b.name}</span>
                             <span
                               className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${
                                 b.badge === 'Main Branch'
@@ -877,7 +880,7 @@ export function AdminClinicInfoPage({
                             <span>🕒 {b.openingDays} • {b.openingTime} - {b.closingTime}</span>
                           </div>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                   {branchListQuery.isLoading && (

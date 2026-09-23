@@ -11,7 +11,7 @@ vi.mock('@/services/cms', () => ({
         items: [
           {
             id: 'hero-1',
-            placement: 'HOME_HERO',
+            placement: 'ABOUT_HERO',
             status: 'PUBLISHED',
             imageKey: 'clinic/sample.jpg',
             imagePresentation: { positionX: 50, positionY: 50, zoom: 1 },
@@ -64,7 +64,7 @@ describe('AdminPageHeroesPage', () => {
     );
   });
 
-  it('renders all 8 page hero selector tabs', () => {
+  it('renders every editable page hero selector tab', () => {
     const html = renderPage();
     for (const page of HERO_PAGES) {
       expect(html).toContain(page.name);
@@ -91,12 +91,13 @@ describe('AdminPageHeroesPage', () => {
     expect(html).toContain('ខ្មែរ');
   });
 
-  it('separates live homepage carousel slides from an optional draft site slide', () => {
+  it('shows only published branch slides in the homepage carousel overview', () => {
     const html = renderPage();
     expect(html).toContain('Homepage carousel');
     expect(html).toContain('0 live slides');
-    expect(html).toContain('Optional main site slide · Draft.');
-    expect(html).toContain('Edit Optional Main Site Slide');
+    expect(html).not.toContain('Optional main site slide');
+    expect(html).not.toContain('Main site hero');
+    expect(HERO_PAGES.find((page) => page.id === 'home')).toBeUndefined();
   });
 
   it('only previews a background image for services and showcases after one is selected', () => {

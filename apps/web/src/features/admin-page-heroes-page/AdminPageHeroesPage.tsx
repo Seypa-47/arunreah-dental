@@ -49,24 +49,6 @@ export function heroPreviewShowsImage(
 export const HERO_PAGES: HeroPageConfig[] = [
   {
     aspectRatio: 'aspect-[21/9]',
-    defaultEyebrowEn: 'Arunreah Dental Clinic',
-    defaultEyebrowKm: 'គ្លីនិកធ្មេញ អរុណរះ',
-    defaultImage: '/assets/landing/hero-clinic.png',
-    defaultSubtitleEn:
-      'Comprehensive dental care delivered by experienced specialists in Phnom Penh.',
-    defaultSubtitleKm: 'ការថែទាំធ្មេញគ្រប់ជ្រុងជ្រោយដោយទន្តបណ្ឌិតឯកទេសនៅភ្នំពេញ។',
-    defaultTitleEn: 'Trusted Care For Every Smile',
-    defaultTitleKm: 'ការថែទាំធ្មេញដែលគួរឱ្យទុកចិត្តសម្រាប់គ្រប់ស្នាមញញឹម',
-    icon: 'dashboard',
-    id: 'home',
-    name: 'Home Page',
-    placement: 'HOME_HERO',
-    previewLayout: 'overlay',
-    publicUrl: '/',
-    subtitle: 'Main homepage hero banner and headline',
-  },
-  {
-    aspectRatio: 'aspect-[21/9]',
     defaultEyebrowEn: 'ABOUT US',
     defaultEyebrowKm: 'អំពីយើង',
     defaultImage: '/assets/landing/figma-branches/image2_183_4173.png',
@@ -232,7 +214,7 @@ const toHeroForm = (item: AdminPageMediaRecord): HeroFormState => ({
 
 export function AdminPageHeroesPage() {
   const queryClient = useQueryClient();
-  const [selectedPageId, setSelectedPageId] = useState<string>('home');
+  const [selectedPageId, setSelectedPageId] = useState<string>('about');
   const [previewLanguage, setPreviewLanguage] = useState<'en' | 'km'>('en');
   const [notification, setNotification] = useState<
     { message: string; tone: 'success' | 'error' } | undefined
@@ -249,8 +231,6 @@ export function AdminPageHeroesPage() {
   });
 
   const branchHeroQuery = useQuery({
-    enabled:
-      activePage.id === 'home' || activePage.id === 'branches' || activePage.id === 'contact',
     queryFn: () => cmsApi.branches.list(homeCarouselBranchQuery),
     queryKey: queryKeys.admin.branches(homeCarouselBranchQuery),
   });
@@ -277,9 +257,6 @@ export function AdminPageHeroesPage() {
     queryFn: () => cmsApi.contact.get(),
     queryKey: queryKeys.admin.contact(),
   });
-  const isPublishedMainSiteHero = existingRecord?.status === 'PUBLISHED';
-  const publishedHomeCarouselSlideCount =
-    (isPublishedMainSiteHero ? 1 : 0) + branchHeroSlides.length;
 
   const [form, setForm] = useState<HeroFormState>(() => emptyHeroForm());
 
@@ -478,6 +455,74 @@ export function AdminPageHeroesPage() {
             </a>
           </header>
 
+          <Card className="mt-7 rounded-2xl border-[#dce5ef] bg-white p-5 shadow-none sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#edf1f5] pb-4">
+              <div>
+                <h2 className="text-[16px] font-bold text-[#182238]">Homepage carousel</h2>
+                <p className="mt-0.5 max-w-2xl text-xs leading-5 text-[#71839e]">
+                  These are the published branch slides currently visible to website visitors.
+                  Edit a branch slide in Branches &amp; Locations.
+                </p>
+              </div>
+              <span className="rounded-full bg-[#eef8fb] px-3 py-1 text-xs font-bold text-[#2187a8]">
+                {branchHeroSlides.length} live {branchHeroSlides.length === 1 ? 'slide' : 'slides'}
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {branchHeroQuery.isLoading ? (
+                <div className="min-h-40 animate-pulse rounded-xl border border-[#dce5ef] bg-[#f7fafc]" />
+              ) : null}
+              {branchHeroSlides.map((branch) => {
+                const branchImage = getPublicMediaUrl(
+                  branch.heroImageKey || branch.branchImageKey || undefined,
+                );
+                return (
+                  <article
+                    className="overflow-hidden rounded-xl border border-[#dce5ef] bg-white"
+                    key={branch.id}
+                  >
+                    <div className="aspect-[21/9] bg-[#eaf3f6]">
+                      {branchImage ? (
+                        <img
+                          alt={branch.nameEn}
+                          className="h-full w-full object-cover"
+                          src={branchImage}
+                        />
+                      ) : (
+                        <div className="grid h-full place-items-center text-xs font-semibold text-[#71839e]">
+                          No branch hero image
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-bold text-[#182238]">{branch.nameEn}</p>
+                        <span className="rounded-full bg-[#eef8fb] px-2.5 py-1 text-[11px] font-bold text-[#2187a8]">
+                          Branch slide
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-[#71839e]">
+                        Managed with this branch’s hero content and visibility settings.
+                      </p>
+                      <Link
+                        className="mt-2 inline-flex min-h-10 items-center text-xs font-bold text-[#2187a8] hover:text-[#176d89] hover:underline"
+                        to={`/admin/clinic-info/branches?branch=${encodeURIComponent(branch.id)}`}
+                      >
+                        Edit branch slide →
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
+              {branchHeroSlides.length === 0 && !branchHeroQuery.isLoading ? (
+                <p className="rounded-xl border border-dashed border-[#dce5ef] bg-[#f8fcfd] p-4 text-sm text-[#71839e]">
+                  No published branch slides are enabled for the homepage carousel yet.
+                </p>
+              ) : null}
+            </div>
+          </Card>
+
           {/* Main Layout: Page Selector List + Editor/Preview */}
           <div className="mt-8 grid gap-7 xl:grid-cols-[340px_minmax(0,1fr)]">
             {/* Left Column: Pages List */}
@@ -525,126 +570,17 @@ export function AdminPageHeroesPage() {
 
             {/* Right Column: Hero Editor & Live Preview */}
             <div className="space-y-6">
-              {activePage.id === 'home' ? (
-                <Card className="rounded-2xl border-[#dce5ef] bg-white p-5 shadow-none sm:p-6">
-                  <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#edf1f5] pb-4">
-                    <div>
-                      <h2 className="text-[16px] font-bold text-[#182238]">Homepage carousel</h2>
-                      <p className="mt-0.5 max-w-2xl text-xs leading-5 text-[#71839e]">
-                        These are the exact slides currently visible to website visitors. Branch
-                        slides are edited in Branches &amp; Locations.
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-[#eef8fb] px-3 py-1 text-xs font-bold text-[#2187a8]">
-                      {publishedHomeCarouselSlideCount} live{' '}
-                      {publishedHomeCarouselSlideCount === 1 ? 'slide' : 'slides'}
-                    </span>
-                  </div>
-
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {isPublishedMainSiteHero ? (
-                      <article className="overflow-hidden rounded-xl border border-[#b9dce8] bg-[#f8fcfd]">
-                        <div className="aspect-[21/9] bg-[#eaf3f6]">
-                          <img
-                            alt="Main site hero"
-                            className="h-full w-full object-cover"
-                            src={previewImage}
-                          />
-                        </div>
-                        <div className="p-3.5">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-sm font-bold text-[#182238]">Main site hero</p>
-                            <AdminPublicationStatus status="published" />
-                          </div>
-                          <p className="mt-1 text-xs leading-5 text-[#71839e]">
-                            Edit this slide in the Home Page form below.
-                          </p>
-                        </div>
-                      </article>
-                    ) : null}
-
-                    {branchHeroQuery.isLoading ? (
-                      <div className="min-h-40 animate-pulse rounded-xl border border-[#dce5ef] bg-[#f7fafc]" />
-                    ) : null}
-                    {branchHeroSlides.map((branch) => {
-                      const branchImage = getPublicMediaUrl(
-                        branch.heroImageKey || branch.branchImageKey || undefined,
-                      );
-                      return (
-                        <article
-                          className="overflow-hidden rounded-xl border border-[#dce5ef] bg-white"
-                          key={branch.id}
-                        >
-                          <div className="aspect-[21/9] bg-[#eaf3f6]">
-                            {branchImage ? (
-                              <img
-                                alt={branch.nameEn}
-                                className="h-full w-full object-cover"
-                                src={branchImage}
-                              />
-                            ) : (
-                              <div className="grid h-full place-items-center text-xs font-semibold text-[#71839e]">
-                                No branch hero image
-                              </div>
-                            )}
-                          </div>
-                          <div className="p-3.5">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <p className="text-sm font-bold text-[#182238]">{branch.nameEn}</p>
-                              <span className="rounded-full bg-[#eef8fb] px-2.5 py-1 text-[11px] font-bold text-[#2187a8]">
-                                Branch slide
-                              </span>
-                            </div>
-                            <p className="mt-1 text-xs leading-5 text-[#71839e]">
-                              Managed with this branch’s hero content and visibility settings.
-                            </p>
-                            <Link
-                              className="mt-2 inline-flex min-h-10 items-center text-xs font-bold text-[#2187a8] hover:text-[#176d89] hover:underline"
-                              to={`/admin/clinic-info/branches?branch=${encodeURIComponent(branch.id)}`}
-                            >
-                              Edit branch slide →
-                            </Link>
-                          </div>
-                        </article>
-                      );
-                    })}
-                    {publishedHomeCarouselSlideCount === 0 && !branchHeroQuery.isLoading ? (
-                      <p className="rounded-xl border border-dashed border-[#dce5ef] bg-[#f8fcfd] p-4 text-sm text-[#71839e]">
-                        No live homepage slides yet. Publish the optional main site slide or enable
-                        a published branch for the homepage carousel.
-                      </p>
-                    ) : null}
-                  </div>
-
-                  {!isPublishedMainSiteHero ? (
-                    <div className="mt-4 rounded-xl border border-[#f4d6a4] bg-[#fffaf0] px-4 py-3 text-sm text-[#79520b]">
-                      <span className="font-bold">Optional main site slide · Draft.</span> It is not
-                      visible on the homepage. Publish it in the form below to add it before the
-                      branch slides.
-                    </div>
-                  ) : null}
-                </Card>
-              ) : null}
-
               {/* Live Preview Card */}
               <Card className="overflow-hidden rounded-2xl border-[#dce5ef] bg-white p-5 shadow-none sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f5] pb-4">
                   <div>
                     <h2 className="text-[16px] font-bold text-[#182238]">
-                      {activePage.id === 'home'
-                        ? isPublishedMainSiteHero
-                          ? 'Live Preview · Homepage Carousel Main Slide'
-                          : 'Preview · Optional Main Site Slide'
-                        : isPublishedHero
+                      {isPublishedHero
                           ? `Live Page Layout · ${activePage.name}`
                           : `Draft Editor Preview · ${activePage.name}`}
                     </h2>
                     <p className="mt-0.5 text-xs text-[#71839e]">
-                      {activePage.id === 'home'
-                        ? isPublishedMainSiteHero
-                          ? 'This published slide appears before the branch slides shown above.'
-                          : 'This draft is not visible on the homepage. Publish it to add it before the branch slides shown above.'
-                        : isPublishedHero
+                      {isPublishedHero
                           ? 'This is the layout currently shown to website visitors.'
                           : 'Draft changes are not visible to website visitors until you publish them.'}
                     </p>
@@ -808,14 +744,10 @@ export function AdminPageHeroesPage() {
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f5] pb-4">
                   <div>
                     <h3 className="text-lg font-bold text-[#182238]">
-                      {activePage.id === 'home'
-                        ? 'Edit Optional Main Site Slide'
-                        : `Edit ${activePage.name} Content`}
+                      {`Edit ${activePage.name} Content`}
                     </h3>
                     <p className="mt-0.5 text-xs text-[#71839e]">
-                      {activePage.id === 'home'
-                        ? 'Configure the optional site-wide slide. Publish it only when you want it shown before the branch slides.'
-                        : 'Configure the image, focal point, and bilingual copy for this page.'}
+                      Configure the image, focal point, and bilingual copy for this page.
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
