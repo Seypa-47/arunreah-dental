@@ -203,6 +203,8 @@ export const adminBranchReadSchema = z.object({
   showOnBranchesPage: z.boolean(),
   showOnHomepage: z.boolean(),
   includeInHomepageHero: z.boolean(),
+  heroImagePresentation: imagePresentationSchema.optional(),
+  branchImagePresentation: imagePresentationSchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

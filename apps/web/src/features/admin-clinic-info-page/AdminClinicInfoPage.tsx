@@ -6,6 +6,8 @@ import type { AdminBranchListQuery, CreateBranchInput } from '@arunreah/shared';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
+import { imageFrames } from '@/components/admin/image-frames';
+import { MediaUploader } from '@/components/admin/media-uploader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -327,8 +329,6 @@ export function AdminClinicInfoPage({
 
   // Upload refs
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const heroImageInputRef = useRef<HTMLInputElement>(null);
-  const branchPhotoInputRef = useRef<HTMLInputElement>(null);
 
   const imageUpload = useMutation({
     mutationFn: ({ category, file }: { category: 'branches' | 'clinic'; file: File }) => uploadMedia(category, file),
@@ -1393,37 +1393,21 @@ export function AdminClinicInfoPage({
                             />
                           </div>
 
-                          <div>
-                            <label className="block text-[12.5px] font-bold text-[#182238]">Hero Image</label>
-                            <div className="mt-1 flex items-center gap-3">
-                              <img
-                                alt="Hero"
-                                className="size-12 rounded-xl object-cover"
-                                src={getPublicMediaUrl(selectedBranch.heroImage) ?? '/assets/landing/hero-clinic.png'}
-                              />
-                              <input
-                                accept="image/*"
-                                className="sr-only"
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                  if (e.target.files?.[0])
-                                    uploadImage(e.target.files[0], (url) =>
-                                      setBranches((prev) =>
-                                        prev.map((b) =>
-                                          b.id === selectedBranch.id ? { ...b, heroImage: url } : b,
-                                        ),
-                                      ), 'branches');
-                                }}
-                                ref={heroImageInputRef}
-                                type="file"
-                              />
-                              <Button
-                                className="h-9 border border-[#dce5ef] bg-white px-3 text-xs text-[#2187a8]"
-                                onClick={() => heroImageInputRef.current?.click()}
-                                variant="secondary"
-                              >
-                                Click to upload
-                              </Button>
-                            </div>
+                          <div className="sm:col-span-2">
+                            <MediaUploader
+                              category="branches"
+                              framing={{
+                                frames: imageFrames.branchHero,
+                                onChange: (heroImagePresentation) => updateBranch(selectedBranch.id, { heroImagePresentation }),
+                                value: selectedBranch.heroImagePresentation,
+                              }}
+                              help="Shown in the homepage hero carousel. Use a wide, high quality landscape photo."
+                              key={`hero-${selectedBranch.id}`}
+                              label="Hero image"
+                              onClear={() => updateBranch(selectedBranch.id, { heroImage: '' })}
+                              onUploaded={(heroImage) => updateBranch(selectedBranch.id, { heroImage })}
+                              value={selectedBranch.heroImage || undefined}
+                            />
                           </div>
                         </div>
                       </div>
@@ -1437,37 +1421,21 @@ export function AdminClinicInfoPage({
                       </h3>
 
                       <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="block text-[12.5px] font-bold text-[#182238]">Branch Photo</label>
-                          <div className="mt-1 flex items-center gap-3">
-                            <img
-                              alt="Branch Photo"
-                              className="size-12 rounded-xl object-cover"
-                              src={getPublicMediaUrl(selectedBranch.photo) ?? '/assets/landing/branch-card-clinic.png'}
-                            />
-                            <input
-                              accept="image/*"
-                              className="sr-only"
-                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                if (e.target.files?.[0])
-                                  uploadImage(e.target.files[0], (url) =>
-                                    setBranches((prev) =>
-                                      prev.map((b) =>
-                                        b.id === selectedBranch.id ? { ...b, photo: url } : b,
-                                      ),
-                                    ), 'branches');
-                              }}
-                              ref={branchPhotoInputRef}
-                              type="file"
-                            />
-                            <Button
-                              className="h-9 border border-[#dce5ef] bg-white px-3 text-xs text-[#2187a8]"
-                              onClick={() => branchPhotoInputRef.current?.click()}
-                              variant="secondary"
-                            >
-                              Click to upload
-                            </Button>
-                          </div>
+                        <div className="sm:col-span-2">
+                          <MediaUploader
+                            category="branches"
+                            framing={{
+                              frames: imageFrames.branchPhoto,
+                              onChange: (photoImagePresentation) => updateBranch(selectedBranch.id, { photoImagePresentation }),
+                              value: selectedBranch.photoImagePresentation,
+                            }}
+                            help="Shown on the branches page, the homepage branch card and the contact page."
+                            key={`photo-${selectedBranch.id}`}
+                            label="Branch photo"
+                            onClear={() => updateBranch(selectedBranch.id, { photo: '' })}
+                            onUploaded={(photo) => updateBranch(selectedBranch.id, { photo })}
+                            value={selectedBranch.photo || undefined}
+                          />
                         </div>
 
                         <div>

@@ -1,7 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
-import type { MediaCategory } from '@arunreah/shared';
+import { defaultImagePresentation, type ImagePresentation, type MediaCategory } from '@arunreah/shared';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { AdminFeedback } from './admin-feedback';
+import { describePresentation, isDefaultPresentation, presentationStyle } from './image-framing';
+import { ImageFramingDialog, type FramingFrame } from './image-framing-dialog';
 import { Button } from '@/components/ui/button';
 import { getPublicMediaUrl, uploadMedia, type UploadedMedia } from '@/services/media';
 
@@ -9,8 +11,17 @@ const acceptedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'i
 const acceptedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif'];
 const maxImageBytes = 5 * 1024 * 1024;
 
+export type MediaFraming = {
+  /** Public placements for this image; the first one is the editor's main frame. */
+  frames: FramingFrame[];
+  onChange: (value: ImagePresentation) => void;
+  value?: ImagePresentation;
+};
+
 type MediaUploaderProps = {
   category: MediaCategory;
+  /** Enables the drag-and-zoom framing editor for this image. */
+  framing?: MediaFraming;
   help?: string;
   label?: string;
   onClear?: () => void;
@@ -30,6 +41,7 @@ function fileNameFromKey(key: string) {
 
 export function MediaUploader({
   category,
+  framing,
   help = 'JPEG, PNG, or WEBP up to 5 MB.',
   label = 'Image',
   onClear,
@@ -44,6 +56,9 @@ export function MediaUploader({
   const [previewFailed, setPreviewFailed] = useState(false);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const lastUploadedKey = useRef<string | null>(null);
+  const [framingOpen, setFramingOpen] = useState(false);
+  const framingValue = framing?.value ?? defaultImagePresentation;
+  const primaryFrame = framing?.frames[0];
   const remotePreview = useMemo(() => (value ? getPublicMediaUrl(value) : undefined), [value]);
   const previewSource = localPreview ?? uploadedMedia?.url ?? remotePreview;
   const assetName = value ? fileNameFromKey(value) : null;
@@ -72,6 +87,11 @@ export function MediaUploader({
       lastUploadedKey.current = media.key;
       setUploadedMedia(media);
       onUploaded(media.key);
+      if (framing) {
+        // A new photo starts centered; open the editor straight away like social apps do.
+        framing.onChange(defaultImagePresentation);
+        setFramingOpen(true);
+      }
     },
   });
 
@@ -159,7 +179,7 @@ export function MediaUploader({
   return <fieldset className="rounded-xl border border-[#dce5ef] bg-[#fbfdff] p-4 sm:p-5">
     <legend className="px-1 text-sm font-semibold text-[#182238]">{label} {required ? <span className="text-[#c92727]">*</span> : null}</legend>
     <p className="mt-1 text-xs leading-5 text-[#71839e]">{help}</p>
-    <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_9.5rem] sm:items-start">
+    <div className={framing ? 'mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,15rem)] sm:items-start' : 'mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_9.5rem] sm:items-start'}>
       <div className="min-w-0">
         <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-[#9bc9da] bg-white px-4 text-sm font-semibold text-[#167ea7] transition hover:border-[#2187a8] hover:bg-[#edf7fb] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#2187a8] focus-within:ring-offset-2">
           <span>{value ? 'Replace image' : 'Choose image'}</span>
@@ -172,9 +192,22 @@ export function MediaUploader({
         {onClear && value ? <Button className="mt-3 px-0 text-xs text-[#a12a22] hover:bg-transparent hover:text-[#7e201a]" onClick={removeFromField} type="button" variant="ghost">Remove from this content</Button> : null}
         {onClear && value ? <p className="mt-1 text-xs leading-5 text-[#71839e]">This only clears the image from this content field. It does not delete the stored media asset.</p> : null}
       </div>
-      <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-[#dce5ef] bg-[#edf3f7]">
-        {previewSource && !previewFailed ? <img alt="Selected image preview" className="size-full object-cover" onError={() => setPreviewFailed(true)} src={previewSource} /> : <div className="flex size-full flex-col items-center justify-center p-3 text-center text-xs leading-5 text-[#71839e]"><span className="font-semibold text-[#52647d]">Preview unavailable</span><span className="mt-1">The image will still be saved by its asset reference.</span></div>}
+      <div className="min-w-0">
+      <div className={framing ? 'group relative overflow-hidden rounded-lg border border-[#dce5ef] bg-[#edf3f7]' : 'relative aspect-[4/3] overflow-hidden rounded-lg border border-[#dce5ef] bg-[#edf3f7]'} style={primaryFrame ? { aspectRatio: String(primaryFrame.aspectRatio) } : undefined}>
+        {previewSource && !previewFailed ? <img alt="Selected image preview" className="size-full object-cover" onError={() => setPreviewFailed(true)} src={previewSource} style={framing ? presentationStyle(framingValue) : undefined} /> : <div className="flex size-full flex-col items-center justify-center p-3 text-center text-xs leading-5 text-[#71839e]"><span className="font-semibold text-[#52647d]">Preview unavailable</span><span className="mt-1">The image will still be saved by its asset reference.</span></div>}
         {upload.isPending ? <div aria-label="Uploading image" aria-valuetext="Uploading image" className="absolute inset-x-0 bottom-0 h-1 overflow-hidden bg-[#cfe6ef]" role="progressbar"><span className="block h-full w-2/5 animate-pulse bg-[#2187a8]" /></div> : null}
+        {framing && previewSource && !previewFailed && !upload.isPending ? <button aria-hidden="true" className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-[#0b1624]/55 via-transparent to-transparent pb-2.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100" onClick={() => setFramingOpen(true)} tabIndex={-1} type="button">
+          <span className="rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-[#075d83] shadow">Adjust framing</span>
+        </button> : null}
+      </div>
+      {framing ? <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <Button className="min-h-11 px-4 text-xs" disabled={!previewSource || previewFailed || upload.isPending} onClick={() => setFramingOpen(true)} type="button" variant="secondary">
+          <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20" /></svg>
+          Adjust framing
+        </Button>
+        {!isDefaultPresentation(framingValue) ? <Button className="min-h-11 px-3 text-xs" onClick={() => framing.onChange(defaultImagePresentation)} type="button" variant="ghost">Reset</Button> : null}
+        <p aria-live="polite" className="w-full text-xs text-[#71839e]">{describePresentation(framingValue)}</p>
+      </div> : null}
       </div>
     </div>
     <div aria-live="polite" className="mt-4">
@@ -183,5 +216,14 @@ export function MediaUploader({
       {upload.isSuccess ? <AdminFeedback title="Image ready" tone="success"><p>Save the form to apply this image to the content.</p></AdminFeedback> : null}
       {upload.isError ? <AdminFeedback title="Image upload failed" tone="error"><p>{(upload.error as Error)?.message || 'Check the image type, size, and your access permissions, then try again.'}</p></AdminFeedback> : null}
     </div>
+    {framing ? <ImageFramingDialog
+      frames={framing.frames}
+      onApply={(next) => { framing.onChange(next); setFramingOpen(false); }}
+      onClose={() => setFramingOpen(false)}
+      open={framingOpen}
+      src={previewSource}
+      title={`Adjust ${label.toLowerCase()} framing`}
+      value={framingValue}
+    /> : null}
   </fieldset>;
 }

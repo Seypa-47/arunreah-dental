@@ -136,6 +136,10 @@ export function sanitizeDoctorUpdatePayload(doctor: AdminDoctor): UpdateDoctorIn
     relatedDoctorIds,
   };
 
+  if (payload.photoKey && doctor.photoImagePresentation) {
+    payload.photoImagePresentation = doctor.photoImagePresentation;
+  }
+
   if (slug) {
     payload.slug = slug;
   }

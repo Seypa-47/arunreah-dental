@@ -3,7 +3,7 @@ import type { CreateServiceInput, ImagePresentation, ServiceListQuery, UpdateSer
 import { appointments, serviceBenefits, serviceDetailSections, serviceRelatedServices, services } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
 import { inTransaction } from '../db/transaction';
-import { upsert } from './image-presentation.repository';
+import { removeForOwners, upsert } from './image-presentation.repository';
 type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 export async function findServiceById(db: DatabaseClient, id: string) {
   const [x] = await db.select().from(services).where(eq(services.id, id)).limit(1);
@@ -78,12 +78,17 @@ async function replaceDetailSections(
   id: string,
   items: CreateServiceInput['detailSections'],
 ) {
+  // Sections are replaced wholesale, so their framing is re-keyed to the new row ids.
+  const previous = await db.select({ id: serviceDetailSections.id }).from(serviceDetailSections).where(eq(serviceDetailSections.serviceId, id));
+  await removeForOwners(db, previous.map((section) => ({ ownerType: 'SERVICE_DETAIL_SECTION' as const, ownerId: section.id })));
   await db.delete(serviceDetailSections).where(eq(serviceDetailSections.serviceId, id));
   if (items.length > 0) {
     const now = new Date().toISOString();
-    await db.insert(serviceDetailSections).values(
-      items.map((item) => ({ id: crypto.randomUUID(), serviceId: id, ...item, createdAt: now, updatedAt: now })),
-    );
+    const rows = items.map(({ imagePresentation, ...item }) => ({ imagePresentation, row: { id: crypto.randomUUID(), serviceId: id, ...item, createdAt: now, updatedAt: now } }));
+    await db.insert(serviceDetailSections).values(rows.map(({ row }) => row));
+    for (const { imagePresentation, row } of rows) {
+      if (imagePresentation && row.imageKey) await upsert(db, { ownerType: 'SERVICE_DETAIL_SECTION', ownerId: row.id, slot: 'PRIMARY' }, imagePresentation);
+    }
   }
 }
 async function replaceRelated(db: WriteDatabase, id: string, ids: string[]) {

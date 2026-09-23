@@ -27,7 +27,7 @@ export type PublicServiceDetail = PublicServiceSummary & {
   treatmentAtAGlance: { duration: string | null; recovery: string | null; visits: string | null; consultation: string | null };
   editorial: { label: string | null; title: string | null };
   benefits: { title: string; description: string | null; icon: string | null }[];
-  detailSections: { sectionType: 'TEXT' | 'IMAGE'; heading: string | null; body: string | null; imageKey: string | null; displayOrder: number }[];
+  detailSections: { sectionType: 'TEXT' | 'IMAGE'; heading: string | null; body: string | null; imageKey: string | null; imagePresentation?: ImagePresentation; displayOrder: number }[];
   relatedServices: PublicServiceSummary[];
   cta: { title: string | null; description: string | null; primaryLabel: string | null; secondaryLabel: string | null };
   seo: { title: string | null; description: string | null };
@@ -94,7 +94,7 @@ export type PublicShowcaseSummary = {
 
 export type PublicShowcaseDetail = PublicShowcaseSummary & {
   body: string | null;
-  sections: { sectionType: 'TEXT' | 'IMAGE' | 'QUOTE'; heading: string | null; body: string | null; imageKey: string | null; displayOrder: number }[];
+  sections: { sectionType: 'TEXT' | 'IMAGE' | 'QUOTE'; heading: string | null; body: string | null; imageKey: string | null; imagePresentation?: ImagePresentation; displayOrder: number }[];
   relatedShowcases: PublicShowcaseSummary[];
   seo: { title: string | null; description: string | null };
 };

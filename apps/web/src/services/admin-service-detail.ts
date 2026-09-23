@@ -2,7 +2,7 @@ import type { AdminNavIcon } from '@/services/admin-inbox';
 import { fetchAdminServicesContent, type AdminService } from '@/services/admin-services';
 import { cmsApi } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
-import type { CreateServiceInput } from '@arunreah/shared';
+import type { CreateServiceInput, ImagePresentation } from '@arunreah/shared';
 
 export type BenefitPreview = {
   icon: 'check' | 'heart' | 'shield' | 'smile' | 'star' | 'utensils';
@@ -76,6 +76,20 @@ export type AdminServiceDetailContent = {
     editorialTitleEn: string;
     editorialTitleKm: string;
     detailSections: CreateServiceInput['detailSections'];
+    /** Saved values; the editor falls back to template copy only when these are empty. */
+    saved: {
+      aboutBodyEn: string | null;
+      aboutImageKey: string | null;
+      aboutImagePresentation?: ImagePresentation;
+      aboutTitleEn: string | null;
+      heroImageKey: string | null;
+      heroImagePresentation?: ImagePresentation;
+      heroSummaryEn: string | null;
+      heroTitleEn: string | null;
+      imagePresentation?: ImagePresentation;
+      metaDescriptionEn: string | null;
+      metaTitleEn: string | null;
+    };
   }) | undefined;
 };
 
@@ -225,6 +239,19 @@ export async function fetchAdminServiceDetailContent(serviceId: string | undefin
       editorialTitleEn: detail.editorialTitleEn ?? '',
       editorialTitleKm: detail.editorialTitleKm ?? '',
       detailSections: detail.detailSections,
+      saved: {
+        aboutBodyEn: detail.aboutBodyEn ?? null,
+        aboutImageKey: detail.aboutImageKey ?? null,
+        aboutImagePresentation: detail.aboutImagePresentation,
+        aboutTitleEn: detail.aboutTitleEn ?? null,
+        heroImageKey: detail.heroImageKey ?? null,
+        heroImagePresentation: detail.heroImagePresentation,
+        heroSummaryEn: detail.heroSummaryEn ?? null,
+        heroTitleEn: detail.heroTitleEn ?? null,
+        imagePresentation: detail.imagePresentation,
+        metaDescriptionEn: detail.metaDescriptionEn ?? null,
+        metaTitleEn: detail.metaTitleEn ?? null,
+      },
     },
   };
 }

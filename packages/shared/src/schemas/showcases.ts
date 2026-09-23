@@ -19,6 +19,7 @@ const section = z.object({
   bodyEn: text(10_000),
   bodyKm: text(10_000),
   imageKey: optionalMediaKeySchema,
+  imagePresentation: imagePresentationSchema.optional(),
   displayOrder: displayOrder.default(0),
 });
 

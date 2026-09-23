@@ -1,5 +1,5 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
-import type { AdminBranchRead, ClinicSettingsAdminRead, ContactSettingsAdminRead } from '@arunreah/shared';
+import type { AdminBranchRead, ClinicSettingsAdminRead, ContactSettingsAdminRead, ImagePresentation } from '@arunreah/shared';
 import { cmsApi } from '@/services/cms';
 
 export type ClinicBranch = {
@@ -16,6 +16,7 @@ export type ClinicBranch = {
   heroCtaLabel: string;
   heroCtaLabelKm: string;
   heroImage: string;
+  heroImagePresentation?: ImagePresentation;
   heroSubtitle: string;
   heroSubtitleKm: string;
   id: string;
@@ -34,6 +35,7 @@ export type ClinicBranch = {
   phone1: string;
   phone2: string;
   photo: string;
+  photoImagePresentation?: ImagePresentation;
   showOnBranchesPage: boolean;
   showOnHomepageSection: boolean;
   slug: string;
@@ -236,6 +238,7 @@ export function toClinicBranch(branch: AdminBranchRead): ClinicBranch {
     heroCtaLabel: branch.heroCtaLabelEn ?? '',
     heroCtaLabelKm: branch.heroCtaLabelKm ?? '',
     heroImage: branch.heroImageKey ?? '',
+    heroImagePresentation: branch.heroImagePresentation,
     heroSubtitle: branch.heroSupportingTextEn ?? '',
     heroSubtitleKm: branch.heroSupportingTextKm ?? '',
     id: branch.id,
@@ -254,6 +257,7 @@ export function toClinicBranch(branch: AdminBranchRead): ClinicBranch {
     phone1: branch.phone,
     phone2: branch.secondaryPhone ?? '',
     photo: branch.branchImageKey ?? '',
+    photoImagePresentation: branch.branchImagePresentation,
     showOnBranchesPage: branch.showOnBranchesPage,
     showOnHomepageSection: branch.showOnHomepage,
     slug: branch.slug,
@@ -361,6 +365,7 @@ export async function saveBranch(branch: ClinicBranch): Promise<ClinicBranch> {
     badgeEn: branch.badge || null,
     badgeKm: branch.badgeKm || null,
     branchImageKey: branch.photo || null,
+    ...(branch.photo && branch.photoImagePresentation ? { branchImagePresentation: branch.photoImagePresentation } : {}),
     cityProvince: branch.city || null,
     displayOrder: branch.displayOrder,
     featured: branch.featured,
@@ -371,6 +376,7 @@ export async function saveBranch(branch: ClinicBranch): Promise<ClinicBranch> {
     heroHeadlineEn: branch.heroHeadline || null,
     heroHeadlineKm: branch.heroHeadlineKm || null,
     heroImageKey: branch.heroImage || null,
+    ...(branch.heroImage && branch.heroImagePresentation ? { heroImagePresentation: branch.heroImagePresentation } : {}),
     heroSupportingTextEn: branch.heroSubtitle || null,
     heroSupportingTextKm: branch.heroSubtitleKm || null,
     includeInHomepageHero: branch.includeInHeroCarousel,

@@ -298,7 +298,7 @@ function ClinicalJourney({ service }: { service: ServiceDetail }) {
             return (
               <article className={`grid gap-5 py-7 sm:gap-8 sm:py-10 ${section.imageUrl ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-14' : ''}`} key={`${section.heading}-${index}`}>
                 {section.imageUrl ? (
-                  <EditorialImage alt={section.imageAlt} caption={section.imageAlt} className={reversed ? 'lg:order-2' : undefined} imageClassName="h-[250px] sm:h-[340px]" src={section.imageUrl} />
+                  <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} className={reversed ? 'lg:order-2' : undefined} imageClassName="h-[250px] sm:h-[340px]" src={section.imageUrl} />
                 ) : null}
                 <div className="px-1 sm:px-3">
                   <div className="flex items-center gap-3">
@@ -335,7 +335,7 @@ function OrthodonticTimeline({ service }: { service: ServiceDetail }) {
                 {section.heading ? <h3 className="text-[21px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}
                 <div className={section.imageUrl ? 'mt-4 grid gap-5 md:grid-cols-[minmax(0,1fr)_220px] md:items-start' : 'mt-3'}>
                   <ContentBlocks value={section.body} />
-                  {section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} imageClassName="h-40" src={section.imageUrl} /> : null}
+                  {section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} imageClassName="h-40" src={section.imageUrl} /> : null}
                 </div>
               </article>
             </li>
@@ -362,7 +362,7 @@ function ImplantPlanning({ service }: { service: ServiceDetail }) {
               <div>
                 {section.heading ? <h3 className="text-[20px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}
                 <ContentBlocks className="mt-2" value={section.body} />
-                {section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} className="mt-5" imageClassName="h-[210px]" src={section.imageUrl} /> : null}
+                {section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} className="mt-5" imageClassName="h-[210px]" src={section.imageUrl} /> : null}
               </div>
             </article>
           ))}
@@ -411,7 +411,7 @@ function ClinicalScope({ imaging, service }: { imaging?: boolean; service: Servi
     <section className={imaging ? 'bg-[#f3f8fb] py-12 sm:py-16' : 'bg-white py-12 sm:py-16'}>
       <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8"><SectionHeading service={service} />
         <div className="mt-9 grid gap-5 lg:grid-cols-2">
-          {service.detailSections.map((section, index) => <article className="grid gap-5 border-t-2 border-[#b9dce8] pt-5 sm:grid-cols-[44px_minmax(0,1fr)]" key={`${section.heading}-${index}`}><span className={`grid size-10 place-items-center rounded-full text-[13px] font-extrabold ${imaging ? 'bg-[#005687] text-white' : 'bg-[#e8f5f9] text-[#1682a4]'}`}>{String(index + 1).padStart(2, '0')}</span><div>{section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} className="mb-5" imageClassName="h-44" src={section.imageUrl} /> : null}{section.heading ? <h3 className="text-[20px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div></article>)}
+          {service.detailSections.map((section, index) => <article className="grid gap-5 border-t-2 border-[#b9dce8] pt-5 sm:grid-cols-[44px_minmax(0,1fr)]" key={`${section.heading}-${index}`}><span className={`grid size-10 place-items-center rounded-full text-[13px] font-extrabold ${imaging ? 'bg-[#005687] text-white' : 'bg-[#e8f5f9] text-[#1682a4]'}`}>{String(index + 1).padStart(2, '0')}</span><div>{section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} className="mb-5" imageClassName="h-44" src={section.imageUrl} /> : null}{section.heading ? <h3 className="text-[20px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div></article>)}
         </div>
       </div>
     </section>
@@ -422,7 +422,7 @@ function ProblemToCare({ service }: { service: ServiceDetail }) {
   if (service.detailSections.length === 0) return null;
   return (
     <section className="bg-[#f8fbfc] py-12 sm:py-16"><div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8"><SectionHeading service={service} />
-      <div className="mt-9 space-y-5">{service.detailSections.map((section, index) => <article className="grid gap-5 rounded-2xl border border-[#dcebf0] bg-white p-5 shadow-[0_4px_15px_rgba(15,61,84,0.04)] sm:p-7 lg:grid-cols-[160px_minmax(0,1fr)_280px] lg:items-center" key={`${section.heading}-${index}`}><p className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#1682a4]">{String(index + 1).padStart(2, '0')}</p><div>{section.heading ? <h3 className="text-[21px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div>{section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} imageClassName="h-44" src={section.imageUrl} /> : null}</article>)}</div>
+      <div className="mt-9 space-y-5">{service.detailSections.map((section, index) => <article className="grid gap-5 rounded-2xl border border-[#dcebf0] bg-white p-5 shadow-[0_4px_15px_rgba(15,61,84,0.04)] sm:p-7 lg:grid-cols-[160px_minmax(0,1fr)_280px] lg:items-center" key={`${section.heading}-${index}`}><p className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#1682a4]">{String(index + 1).padStart(2, '0')}</p><div>{section.heading ? <h3 className="text-[21px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div>{section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} imageClassName="h-44" src={section.imageUrl} /> : null}</article>)}</div>
     </div></section>
   );
 }

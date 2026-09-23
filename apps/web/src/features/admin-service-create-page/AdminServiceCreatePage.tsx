@@ -5,6 +5,7 @@ import {
   AdminFormSection,
   focusFirstInvalid,
 } from '@/components/admin/admin-form';
+import { imageFrames } from '@/components/admin/image-frames';
 import { MediaUploader } from '@/components/admin/media-uploader';
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState, type FormEvent } from 'react';
+import { defaultImagePresentation, type ImagePresentation } from '@arunreah/shared';
 import { useNavigate } from 'react-router-dom';
 
 const slugify = (value: string) =>
@@ -34,6 +36,7 @@ export function AdminServiceCreatePage() {
   const [summary, setSummary] = useState('');
   const [summaryKm, setSummaryKm] = useState('');
   const [imageKey, setImageKey] = useState<string>();
+  const [imagePresentation, setImagePresentation] = useState<ImagePresentation>(defaultImagePresentation);
   const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED'>('DRAFT');
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
 
@@ -49,6 +52,7 @@ export function AdminServiceCreatePage() {
         summaryEn: summary || null,
         summaryKm: summaryKm || null,
         imageKey: imageKey ?? null,
+        ...(imageKey ? { imagePresentation } : {}),
         category: category || null,
         detailPresentation: 'STANDARD',
         benefits: [],
@@ -139,7 +143,7 @@ export function AdminServiceCreatePage() {
 
           <AdminFormSection description="A card image is optional at this stage and can be changed later." title="Image and publishing">
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
-              <MediaUploader category="services" help="Choose a clear representative image for the service. JPEG, PNG, or WEBP up to 5 MB." label="Service image" onClear={() => setImageKey('')} onUploaded={setImageKey} value={imageKey} />
+              <MediaUploader category="services" framing={{ frames: imageFrames.serviceCard, onChange: setImagePresentation, value: imagePresentation }} help="Choose a clear representative image for the service. JPEG, PNG, or WEBP up to 5 MB." label="Service image" onClear={() => setImageKey('')} onUploaded={setImageKey} value={imageKey} />
               <AdminField htmlFor="status" label="Initial status">
                 <select id="status" onChange={(event) => setStatus(event.target.value as 'DRAFT' | 'PUBLISHED')} value={status}>
                   <option value="DRAFT">Save as draft</option>

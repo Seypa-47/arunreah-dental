@@ -118,6 +118,7 @@ export function mapServiceDetail(base: ServiceDetailContent, detail: PublicServi
       heading: section.heading ?? '',
       imageAlt: section.heading ?? detail.name,
       imageUrl: getPublicMediaUrl(section.imageKey) ?? '',
+      imagePresentation: section.imagePresentation,
       sectionType: section.sectionType,
     })),
     detailPresentation: detail.detailPresentation,

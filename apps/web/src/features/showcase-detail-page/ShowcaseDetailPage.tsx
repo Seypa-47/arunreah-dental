@@ -45,7 +45,7 @@ export function ShowcaseDetailPage() {
 
               return (
                 <section className="mt-9 border-t border-[#e7eff3] pt-8" key={`${section.displayOrder}-${section.heading ?? 'section'}`}>
-                    {sectionImageUrl ? <ResilientImage alt={section.heading ?? showcase.title} className="mb-5 max-h-[420px] w-full rounded-xl bg-[#edf5f8] object-cover object-center" src={sectionImageUrl} /> : null}
+                    {sectionImageUrl ? <div className="mb-5 overflow-hidden rounded-xl bg-[#edf5f8]"><ResilientImage alt={section.heading ?? showcase.title} className="h-[200px] w-full object-cover sm:h-[420px]" presentation={section.imagePresentation} src={sectionImageUrl} /></div> : null}
                   {section.heading ? <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{section.heading}</h2> : null}
                   {section.body ? <p className="mt-3 whitespace-pre-line text-[16px] leading-8 text-[#465d6c]">{section.body}</p> : null}
                 </section>

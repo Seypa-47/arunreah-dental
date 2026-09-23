@@ -107,16 +107,30 @@ function toPublicBranch(branch: BranchRecord, language: PublicBranchLanguage, pr
   };
 }
 
+/** Admin editors need the saved framing so they can show and keep it. */
+async function withBranchPresentations(database: DatabaseClient, branches: AdminBranchRead[]): Promise<AdminBranchRead[]> {
+  const presentations = await listForOwners(database, branches.flatMap((branch) => [
+    { ownerType: 'BRANCH' as const, ownerId: branch.id, slot: 'HERO' },
+    { ownerType: 'BRANCH' as const, ownerId: branch.id, slot: 'PRIMARY' },
+  ]));
+  return branches.map((branch) => ({
+    ...branch,
+    heroImagePresentation: presentationFor(presentations, branch.id, 'HERO'),
+    branchImagePresentation: presentationFor(presentations, branch.id, 'PRIMARY'),
+  }));
+}
+
 export async function getAdminBranch(database: DatabaseClient, id: string): Promise<AdminBranchRead> {
   const branch = await findBranchById(database, id);
   if (!branch) throw new HttpError(404, 'NOT_FOUND', 'Branch not found.');
-  return toAdminBranch(branch);
+  const [withPresentation] = await withBranchPresentations(database, [toAdminBranch(branch)]);
+  return withPresentation ?? toAdminBranch(branch);
 }
 
 export async function getAdminBranchList(database: DatabaseClient, query: AdminBranchListQuery) {
   const { items, total } = await listAdminBranches(database, query);
   return {
-    branches: items.map(toAdminBranch),
+    branches: await withBranchPresentations(database, items.map(toAdminBranch)),
     meta: {
       page: query.page,
       limit: query.limit,

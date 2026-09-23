@@ -2,6 +2,7 @@ import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useState, useRef, useId, type ChangeEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { defaultImagePresentation, type ImagePresentation } from '@arunreah/shared';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,10 @@ import type {
   SectionBlock,
 } from '@/services/admin-add-showcase';
 import type { ShowcaseCategory, ShowcaseStatus } from '@/services/admin-showcase';
-import { uploadMedia } from '@/services/media';
+import { getPublicMediaUrl, uploadMedia } from '@/services/media';
+import { imageFrames } from '@/components/admin/image-frames';
+import { presentationStyle } from '@/components/admin/image-framing';
+import { ImageFramingDialog } from '@/components/admin/image-framing-dialog';
 
 export function AdminAddShowcasePage() {
   const navigate = useNavigate();
@@ -37,6 +41,8 @@ export function AdminAddShowcasePage() {
 
   // Cover Content
   const [coverImageUrl, setCoverImageUrl] = useState<string>('');
+  const [coverImagePresentation, setCoverImagePresentation] = useState<ImagePresentation>(defaultImagePresentation);
+  const [isFramingOpen, setIsFramingOpen] = useState(false);
   const [headline, setHeadline] = useState('');
   const [shortSummary, setShortSummary] = useState('');
 
@@ -87,7 +93,13 @@ export function AdminAddShowcasePage() {
 
   const photoUpload = useMutation({ mutationFn: (file: File) => uploadMedia('showcases', file) });
   const handlePhotoSelect = (file: File) => {
-    photoUpload.mutate(file, { onSuccess: (media) => setCoverImageUrl(media.key) });
+    photoUpload.mutate(file, {
+      onSuccess: (media) => {
+        setCoverImageUrl(media.key);
+        setCoverImagePresentation(defaultImagePresentation);
+        setIsFramingOpen(true);
+      },
+    });
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -158,6 +170,7 @@ export function AdminAddShowcasePage() {
       cardSummary: cardSummary || shortSummary,
       category,
       coverImageUrl,
+      coverImagePresentation,
       displayOrder,
       headline,
       homepageVisibility,
@@ -431,14 +444,32 @@ export function AdminAddShowcasePage() {
                       type="file"
                     />
 
+                    <ImageFramingDialog
+                      frames={imageFrames.showcaseCover}
+                      onApply={(presentation) => { setCoverImagePresentation(presentation); setIsFramingOpen(false); }}
+                      onClose={() => setIsFramingOpen(false)}
+                      open={isFramingOpen}
+                      src={getPublicMediaUrl(coverImageUrl)}
+                      title="Adjust cover image framing"
+                      value={coverImagePresentation}
+                    />
+
                     {coverImageUrl ? (
                       <div className="flex flex-col items-center gap-2.5">
                         <img
                           alt="Cover preview"
-                          className="aspect-video w-full max-w-[200px] rounded-xl object-cover shadow-sm ring-1 ring-[#2187a8]"
-                          src={coverImageUrl}
+                          className="w-full max-w-[220px] rounded-xl object-cover shadow-sm ring-1 ring-[#2187a8]"
+                          src={getPublicMediaUrl(coverImageUrl) ?? coverImageUrl}
+                          style={{ aspectRatio: String(imageFrames.showcaseCover[0]?.aspectRatio ?? 1.7), ...presentationStyle(coverImagePresentation) }}
                         />
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap justify-center gap-2">
+                          <button
+                            className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-[#2187a8] shadow-sm hover:bg-[#f8fbfe]"
+                            onClick={() => setIsFramingOpen(true)}
+                            type="button"
+                          >
+                            Adjust framing
+                          </button>
                           <button
                             className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-[#2187a8] shadow-sm hover:bg-[#f8fbfe]"
                             onClick={() => fileInputRef.current?.click()}
@@ -448,7 +479,7 @@ export function AdminAddShowcasePage() {
                           </button>
                           <button
                             className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-[#ef4444] shadow-sm hover:bg-[#f8fbfe]"
-                            onClick={() => setCoverImageUrl('')}
+                            onClick={() => { setCoverImageUrl(''); setCoverImagePresentation(defaultImagePresentation); }}
                             type="button"
                           >
                             Remove

@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
+import { imageFrames } from '@/components/admin/image-frames';
 import { MediaUploader } from '@/components/admin/media-uploader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -14,11 +15,12 @@ import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 import { getPublicMediaUrl } from '@/services/media';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
-import type { CreateServiceInput } from '@arunreah/shared';
+import { defaultImagePresentation, type CreateServiceInput, type ImagePresentation } from '@arunreah/shared';
 import { toMediaKey } from './media-key';
 
 type EditableService = AdminService & {
   aboutContent: string;
+  aboutImagePresentation: ImagePresentation;
   aboutImageUrl: string;
   aboutTitle: string;
   anesthesia: string;
@@ -36,7 +38,9 @@ type EditableService = AdminService & {
   editorialTitleEn: string;
   editorialTitleKm: string;
   heroHeading: string;
+  heroImagePresentation: ImagePresentation;
   heroImageUrl: string;
+  imagePresentation: ImagePresentation;
   heroPrimaryCta: string;
   heroSecondaryCta: string;
   heroSummary: string;
@@ -270,6 +274,11 @@ function BasicInformation({
           </div>
           <MediaUploader
             category="services"
+            framing={{
+              frames: imageFrames.serviceCard,
+              onChange: (imagePresentation) => setService((current) => ({ ...current, imagePresentation })),
+              value: service.imagePresentation,
+            }}
             help={`${content.editor.imageHelp} You can replace or remove it without deleting the stored media asset.`}
             label={content.editor.imageLabel}
             onClear={() => setService((current) => ({ ...current, imageUrl: '' }))}
@@ -455,7 +464,7 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
                       <Field label="Body · English"><TextAreaInput className="h-32" onChange={(event) => updateSection(index, { bodyEn: event.target.value || null })} value={section.bodyEn ?? ''} /></Field>
                       <Field label="ខ្លឹមសារ · ខ្មែរ"><TextAreaInput className="h-32" lang="km" onChange={(event) => updateSection(index, { bodyKm: event.target.value || null })} value={section.bodyKm ?? ''} /></Field>
                     </div>
-                    <div className="mt-4"><MediaUploader category="services" help="Optional. Add one image only when it helps patients understand this section." label="Section image" onClear={() => updateSection(index, { imageKey: null })} onUploaded={(imageKey) => updateSection(index, { imageKey })} value={section.imageKey ?? undefined} /></div>
+                    <div className="mt-4"><MediaUploader category="services" framing={{ frames: imageFrames.serviceSection, onChange: (imagePresentation) => updateSection(index, { imagePresentation }), value: section.imagePresentation }} help="Optional. Add one image only when it helps patients understand this section." label="Section image" onClear={() => updateSection(index, { imageKey: null })} onUploaded={(imageKey) => updateSection(index, { imageKey })} value={section.imageKey ?? undefined} /></div>
                     {repeatedImage ? <p className="mt-3 rounded-lg border border-[#f0c36d] bg-[#fff8e8] px-3 py-2 text-[12px] leading-5 text-[#7a4900]" role="status">This image is also used in another detail section. That can be intentional, but consider using a different image if the sections cover different topics.</p> : null}
                     <div className="mt-5 flex items-center justify-between border-t border-[#edf1f5] pt-4">
                       <span className="text-[12px] text-[#71839e]">Section {index + 1} of {service.detailSections.length}</span>
@@ -517,6 +526,19 @@ function SectionRows({
               <div className="border-t border-[#e1e8f0] bg-[#fafbfd] px-6 py-5">
                 {section.title.includes('2. Hero Section') ? (
                   <div className="space-y-4">
+                    <MediaUploader
+                      category="services"
+                      framing={{
+                        frames: imageFrames.serviceHero,
+                        onChange: (heroImagePresentation) => setService((c) => ({ ...c, heroImagePresentation })),
+                        value: service.heroImagePresentation,
+                      }}
+                      help="Optional. Shown beside the service heading. Without one, the service card image is used."
+                      label="Hero image"
+                      onClear={() => setService((c) => ({ ...c, heroImageUrl: '' }))}
+                      onUploaded={(heroImageUrl) => setService((c) => ({ ...c, heroImageUrl }))}
+                      value={service.heroImageUrl || undefined}
+                    />
                     <Field label="Hero Heading">
                       <TextInput
                         onChange={(e) => setService((c) => ({ ...c, heroHeading: e.target.value }))}
@@ -579,6 +601,19 @@ function SectionRows({
                   </div>
                 ) : section.title.includes('3. About Section') ? (
                   <div className="space-y-4">
+                    <MediaUploader
+                      category="services"
+                      framing={{
+                        frames: imageFrames.serviceAbout,
+                        onChange: (aboutImagePresentation) => setService((c) => ({ ...c, aboutImagePresentation })),
+                        value: service.aboutImagePresentation,
+                      }}
+                      help="Optional. Shown with the About section. Without one, the service card image is used."
+                      label="About image"
+                      onClear={() => setService((c) => ({ ...c, aboutImageUrl: '' }))}
+                      onUploaded={(aboutImageUrl) => setService((c) => ({ ...c, aboutImageUrl }))}
+                      value={service.aboutImageUrl || undefined}
+                    />
                     <Field label="About Heading">
                       <TextInput
                         onChange={(e) => setService((c) => ({ ...c, aboutTitle: e.target.value }))}
@@ -738,9 +773,11 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
   const [isDirty, setIsDirty] = useState(false);
   const [service, setServiceState] = useState<EditableService>(() => ({
     ...content.service,
-    aboutContent: content.preview.aboutDescription,
-    aboutImageUrl: content.preview.aboutImageUrl,
-    aboutTitle: content.preview.aboutTitle,
+    aboutContent: content.service.saved.aboutBodyEn ?? content.preview.aboutDescription,
+    aboutImagePresentation: content.service.saved.aboutImagePresentation ?? defaultImagePresentation,
+    // Saved media keys only: template preview images must never be written back on save.
+    aboutImageUrl: content.service.saved.aboutImageKey ?? '',
+    aboutTitle: content.service.saved.aboutTitleEn ?? content.preview.aboutTitle,
     anesthesia: 'Local Anesthesia / Sedation',
     benefits: content.preview.benefits,
     benefitsIntro: `Why choose ${content.service.name} at Arunreah Dental Clinic`,
@@ -755,14 +792,16 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     editorialLabelKm: content.service.editorialLabelKm,
     editorialTitleEn: content.service.editorialTitleEn,
     editorialTitleKm: content.service.editorialTitleKm,
-    heroHeading: `${content.preview.titlePrefix} ${content.service.name}`,
-    heroImageUrl: content.preview.heroImageUrl,
+    heroHeading: content.service.saved.heroTitleEn ?? `${content.preview.titlePrefix} ${content.service.name}`,
+    heroImagePresentation: content.service.saved.heroImagePresentation ?? defaultImagePresentation,
+    heroImageUrl: content.service.saved.heroImageKey ?? '',
+    imagePresentation: content.service.saved.imagePresentation ?? defaultImagePresentation,
     heroPrimaryCta: 'Book an Appointment',
     heroSecondaryCta: content.preview.requestLabel,
-    heroSummary: content.service.description,
+    heroSummary: content.service.saved.heroSummaryEn ?? content.service.description,
     longevity: 'Permanent / Long-Term',
-    metaDescription: content.service.description,
-    metaTitle: `${content.service.name} in Phnom Penh | Arunreah Dental Clinic`,
+    metaDescription: content.service.saved.metaDescriptionEn ?? content.service.description,
+    metaTitle: content.service.saved.metaTitleEn ?? `${content.service.name} in Phnom Penh | Arunreah Dental Clinic`,
     recovery: '3 - 6 Months',
     relatedCategory: content.service.category,
     relatedServices: ['Teeth Whitening', 'Routine Cleaning', 'Orthodontics'],
@@ -786,6 +825,9 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       summaryKm: service.descriptionKm || null,
       descriptionEn: service.heroSummary || null,
       imageKey: toMediaKey(service.imageUrl),
+      imagePresentation: service.imagePresentation,
+      heroImagePresentation: service.heroImagePresentation,
+      aboutImagePresentation: service.aboutImagePresentation,
       featured: service.featured,
       displayOrder: service.order,
       heroTitleEn: service.heroHeading || null,

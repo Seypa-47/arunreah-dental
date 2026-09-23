@@ -117,13 +117,15 @@ export async function updateManagedDoctor(
 export async function getAdminDoctor(database: DatabaseClient, id: string) {
   const doctor = await repository.findDoctorById(database, id);
   if (!doctor) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
-  const [expertise, education, relatedDoctors] = await Promise.all([
+  const [expertise, education, relatedDoctors, presentations] = await Promise.all([
     repository.getExpertise(database, id),
     repository.getEducation(database, id),
     repository.getRelatedDoctors(database, id),
+    listForOwners(database, [{ ownerType: 'DOCTOR', ownerId: id, slot: 'PRIMARY' }]),
   ]);
   return {
     ...toAdminDoctor(doctor),
+    photoImagePresentation: presentationFor(presentations, id),
     expertise: expertise.map((item) => ({
       id: item.id,
       titleEn: item.nameEn,
@@ -145,8 +147,9 @@ export async function getAdminDoctor(database: DatabaseClient, id: string) {
 
 export async function getAdminDoctorList(database: DatabaseClient, query: AdminDoctorListQuery) {
   const { items, total } = await repository.listAdminDoctors(database, query);
+  const presentations = await listForOwners(database, items.map((doctor) => ({ ownerType: 'DOCTOR' as const, ownerId: doctor.id, slot: 'PRIMARY' })));
   return {
-    doctors: items.map(toAdminDoctor),
+    doctors: items.map((doctor) => ({ ...toAdminDoctor(doctor), photoImagePresentation: presentationFor(presentations, doctor.id) })),
     meta: {
       page: query.page,
       limit: query.limit,

@@ -5,7 +5,7 @@ import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { AdminIcon, type AdminIconName } from '@/components/layout/admin-sidebar';
 import { AdminPublicationStatus } from '@/components/admin/admin-list';
 import { MediaUploader } from '@/components/admin/media-uploader';
-import { ImagePositionEditor } from '@/components/admin/image-position-editor';
+import { pageHeroFrames } from '@/components/admin/image-frames';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { queryKeys } from '@/lib/query-keys';
@@ -560,6 +560,11 @@ export function AdminPageHeroesPage() {
                   <div className="space-y-4">
                     <MediaUploader
                       category="clinic"
+                      framing={{
+                        frames: pageHeroFrames(activePage.placement),
+                        onChange: (imagePresentation) => setForm((prev) => ({ ...prev, imagePresentation })),
+                        value: form.imagePresentation,
+                      }}
                       help="Choose a high quality landscape photo. JPEG, PNG, or WEBP up to 5 MB."
                       label="Hero Background Photo"
                       onClear={() => setForm((prev) => ({ ...prev, imageKey: '' }))}
@@ -568,19 +573,6 @@ export function AdminPageHeroesPage() {
                       value={form.imageKey}
                     />
 
-                    {form.imageKey ? (
-                      <div>
-                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.1em] text-[#71839e]">
-                          Adjust Image Framing (Focal Point & Zoom)
-                        </p>
-                        <ImagePositionEditor
-                          aspectClassName="aspect-[21/9]"
-                          onChange={(imagePresentation) => setForm((prev) => ({ ...prev, imagePresentation }))}
-                          src={getPublicMediaUrl(form.imageKey)}
-                          value={form.imagePresentation}
-                        />
-                      </div>
-                    ) : null}
                   </div>
 
                   {/* Publication Status Selector */}

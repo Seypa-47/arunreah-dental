@@ -7,7 +7,7 @@ import type {
 import { showcaseRelated, showcaseSections, showcases } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
 import { inTransaction } from '../db/transaction';
-import { upsert } from './image-presentation.repository';
+import { removeForOwners, upsert } from './image-presentation.repository';
 type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 
 function toShowcaseRow(input: UpdateShowcaseInput) {
@@ -108,18 +108,20 @@ async function replaceSections(
   showcaseId: string,
   sections: CreateShowcaseInput['sections'],
 ) {
+  // Sections are replaced wholesale, so their framing is re-keyed to the new row ids.
+  const previous = await database.select({ id: showcaseSections.id }).from(showcaseSections).where(eq(showcaseSections.showcaseId, showcaseId));
+  await removeForOwners(database, previous.map((section) => ({ ownerType: 'SHOWCASE_SECTION' as const, ownerId: section.id })));
   await database.delete(showcaseSections).where(eq(showcaseSections.showcaseId, showcaseId));
   if (sections.length > 0) {
     const now = new Date().toISOString();
-    await database.insert(showcaseSections).values(
-      sections.map((section) => ({
-        id: crypto.randomUUID(),
-        showcaseId,
-        ...section,
-        createdAt: now,
-        updatedAt: now,
-      })),
-    );
+    const rows = sections.map(({ imagePresentation, ...section }) => ({
+      imagePresentation,
+      row: { id: crypto.randomUUID(), showcaseId, ...section, createdAt: now, updatedAt: now },
+    }));
+    await database.insert(showcaseSections).values(rows.map(({ row }) => row));
+    for (const { imagePresentation, row } of rows) {
+      if (imagePresentation && row.imageKey) await upsert(database, { ownerType: 'SHOWCASE_SECTION', ownerId: row.id, slot: 'PRIMARY' }, imagePresentation);
+    }
   }
 }
 

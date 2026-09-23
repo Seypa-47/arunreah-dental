@@ -6,6 +6,7 @@ import type { AdminDoctorListQuery } from '@arunreah/shared';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
+import { imageFrames } from '@/components/admin/image-frames';
 import { MediaUploader } from '@/components/admin/media-uploader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -248,6 +249,11 @@ function DoctorDetailPanel({
           <div className="space-y-5">
             <MediaUploader
               category="doctors"
+              framing={{
+                frames: imageFrames.doctorPhoto,
+                onChange: (photoImagePresentation) => handleFieldChange('photoImagePresentation', photoImagePresentation),
+                value: formData.photoImagePresentation,
+              }}
               help="Use a clear portrait image. You can replace or remove it without deleting the stored media asset."
               label="Doctor profile photo"
               onClear={() => handlePhotoChange(null)}
