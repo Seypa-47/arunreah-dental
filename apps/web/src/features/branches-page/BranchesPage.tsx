@@ -7,7 +7,9 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { BranchesPageContent } from '@/features/landing-page/types';
-import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
+import { publicShell } from '@/features/public-content/public-page-chrome';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { getBranchCoordinates } from './branch-coordinates';
 import { useBranchesPageQuery } from './use-branches-page';
 
@@ -156,6 +158,8 @@ function BranchCard({
   branch: BranchesPageContent['branches'][number];
   flipped: boolean;
 }) {
+  const { language } = usePublicLanguage();
+  const branchCopy = publicUiCopy(language).branches;
   const [viewMode, setViewMode] = useState<'photo' | 'satellite'>('photo');
   const phoneHref = `tel:${branch.phones[0]?.replaceAll(' ', '') ?? ''}`;
   const coords = getBranchCoordinates(branch.name);
@@ -179,14 +183,14 @@ function BranchCard({
           <dl className="mt-5 space-y-3 text-[14px] font-medium leading-6 text-[#64748b]">
             <div className="flex items-start gap-3.5">
               <dt className="shrink-0">
-                <span className="sr-only">Address</span>
+                <span className="sr-only">{branchCopy.address}</span>
                 <AssetIcon className="mt-1 size-4" name="branch-card-pin-alt.svg" />
               </dt>
               <dd className="max-w-[480px]">{branch.address}</dd>
             </div>
             <div className="flex items-center gap-3.5">
               <dt className="shrink-0">
-                <span className="sr-only">Phone</span>
+                <span className="sr-only">{branchCopy.phone}</span>
                 <AssetIcon className="size-4" name="branch-card-phone.svg" />
               </dt>
               <dd className="flex flex-wrap gap-x-6 gap-y-1 font-extrabold text-[#005687]">
@@ -199,7 +203,7 @@ function BranchCard({
             </div>
             <div className="flex items-center gap-3.5">
               <dt className="shrink-0">
-                <span className="sr-only">Opening hours</span>
+                <span className="sr-only">{branchCopy.openingHours}</span>
                 <AssetIcon className="size-4" name="branch-card-clock.svg" />
               </dt>
               <dd>
@@ -389,10 +393,13 @@ function BranchesPageView({ content }: { content: BranchesPageContent }) {
 }
 
 function BranchesPageSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).branches;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading clinic locations" className="bg-white">
-        <span className="sr-only">Loading clinic locations</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <section className="relative min-h-[300px] overflow-hidden bg-[#f7fafc] sm:min-h-[340px]" aria-hidden="true">
           <div className="absolute inset-y-0 right-0 hidden w-[47%] bg-[linear-gradient(135deg,#dceef3_0%,#eff7f9_100%)] lg:block" />
@@ -465,26 +472,30 @@ function BranchesPageSkeleton() {
 }
 
 function BranchesPageEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Branch information is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
+        <Badge>{copy.common.noContent}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.branches.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.branches.unavailableBody}</p>
       </Card>
     </main>
   );
 }
 
 function BranchesPageError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the branches page</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the clinic locations.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.branches.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.branches.errorBody}</p>
         <Button className="mt-6" onClick={onRetry} type="button">
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

@@ -12,7 +12,7 @@ export function useShowcaseDetailPageQuery(slug: string | undefined) {
     enabled: Boolean(slug),
     queryFn: async () => {
       const response = await getPublicShowcase(slug!, language);
-      return { chrome: publicServicesChrome(), showcase: response.showcase };
+      return { chrome: publicServicesChrome(language), showcase: response.showcase };
     },
   });
 }

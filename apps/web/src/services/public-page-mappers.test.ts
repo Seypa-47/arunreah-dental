@@ -10,7 +10,7 @@ describe('public page mappers', () => {
 
   it('uses public UUIDs for appointment choices and preserves No Preference', () => {
     const content = mapBookingOptions(
-      publicBookingChrome(),
+      publicBookingChrome('en'),
       [{ id: 'service-uuid', slug: 'cleaning', name: 'Cleaning', shortDescription: null, listingThumbnailKey: null, category: null, featured: false }],
       [{ id: 'doctor-uuid', slug: 'dara', name: 'Dr. Dara', title: null, specialty: null, shortBio: null, photoKey: null, featured: false }],
       [{ id: 'branch-uuid', slug: 'ttp', name: 'TTP', address: 'Street 1', branchImageKey: null, googleMapsUrl: null, acceptsAppointments: true }],
@@ -24,7 +24,7 @@ describe('public page mappers', () => {
   });
 
   it('excludes branches that do not accept appointment requests', () => {
-    const content = mapBookingOptions(publicBookingChrome(), [], [], [{ id: 'branch-uuid', slug: 'closed', name: 'Closed', address: 'Street 1', branchImageKey: null, googleMapsUrl: null, acceptsAppointments: false }]);
+    const content = mapBookingOptions(publicBookingChrome('en'), [], [], [{ id: 'branch-uuid', slug: 'closed', name: 'Closed', address: 'Street 1', branchImageKey: null, googleMapsUrl: null, acceptsAppointments: false }]);
     expect(content.branches).toEqual([]);
   });
 });

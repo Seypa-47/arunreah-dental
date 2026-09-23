@@ -7,7 +7,8 @@ import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { DoctorDetailContent, LandingDoctor } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
-import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useDoctorDetailPageQuery } from './use-doctor-detail-page';
 
 const asset = (name: string) => `/assets/landing/${name}`;
@@ -254,10 +255,13 @@ function DoctorDetailView({ content }: { content: DoctorDetailContent & { doctor
 }
 
 function DoctorDetailSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).doctorDetail;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading doctor detail page" className="bg-white">
-        <span className="sr-only">Loading doctor profile</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
           <div className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 sm:px-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-center lg:gap-10 lg:px-8">
@@ -350,17 +354,19 @@ function DoctorDetailSkeleton() {
 }
 
 function DoctorDetailEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No doctor</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Doctor profile is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please return to the doctors page and choose another profile.</p>
+        <Badge>{copy.doctorDetail.noDoctor}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.doctorDetail.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.doctorDetail.unavailableBody}</p>
         <Link
           className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695B9] px-5 text-sm font-extrabold text-white hover:bg-[#2c84a5]"
           to="/doctors"
         >
-          View All Doctors
+          {copy.doctorDetail.viewAllDoctors}
         </Link>
       </Card>
     </main>
@@ -368,14 +374,16 @@ function DoctorDetailEmpty() {
 }
 
 function DoctorDetailError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load this doctor profile</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the profile information.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.doctorDetail.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.doctorDetail.errorBody}</p>
         <Button className="mt-6" onClick={onRetry}>
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

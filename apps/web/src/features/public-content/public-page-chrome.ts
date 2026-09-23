@@ -25,7 +25,7 @@ export const skeletonNavigation: LandingNavigationItem[] = [
   { href: '/showcases', label: 'Showcases' },
 ];
 
-export function publicShell(language: 'en' | 'km' = 'en') {
+export function publicShell(language: 'en' | 'km') {
   const isKm = language === 'km';
   return {
     actions: {
@@ -66,7 +66,7 @@ export function publicShell(language: 'en' | 'km' = 'en') {
   };
 }
 
-export function publicLandingChrome(language: 'en' | 'km' = 'en'): LandingPageContent {
+export function publicLandingChrome(language: 'en' | 'km'): LandingPageContent {
   return {
     ...publicShell(language),
     branches: [],
@@ -173,7 +173,7 @@ export function publicAboutContent(
   };
 }
 
-export function publicServicesChrome(language: 'en' | 'km' = 'en'): ServicesPageContent {
+export function publicServicesChrome(language: 'en' | 'km'): ServicesPageContent {
   const isKm = language === 'km';
   return {
     ...publicShell(language),
@@ -190,7 +190,7 @@ export function publicServicesChrome(language: 'en' | 'km' = 'en'): ServicesPage
   };
 }
 
-export function publicDoctorsChrome(language: 'en' | 'km' = 'en'): DoctorsPageContent {
+export function publicDoctorsChrome(language: 'en' | 'km'): DoctorsPageContent {
   const isKm = language === 'km';
   return {
     ...publicShell(language),
@@ -202,15 +202,15 @@ export function publicDoctorsChrome(language: 'en' | 'km' = 'en'): DoctorsPageCo
   };
 }
 
-export function publicServiceDetailChrome(language: 'en' | 'km' = 'en'): ServiceDetailContent {
+export function publicServiceDetailChrome(language: 'en' | 'km'): ServiceDetailContent {
   return { ...publicShell(language), otherServices: [], service: undefined };
 }
 
-export function publicDoctorDetailChrome(language: 'en' | 'km' = 'en'): DoctorDetailContent {
+export function publicDoctorDetailChrome(language: 'en' | 'km'): DoctorDetailContent {
   return { ...publicShell(language), doctor: undefined, otherDoctors: [] };
 }
 
-export function publicBranchesChrome(language: 'en' | 'km' = 'en'): BranchesPageContent {
+export function publicBranchesChrome(language: 'en' | 'km'): BranchesPageContent {
   const isKm = language === 'km';
   return {
     ...publicShell(language),
@@ -244,7 +244,7 @@ export function publicBranchesChrome(language: 'en' | 'km' = 'en'): BranchesPage
   };
 }
 
-export function publicContactChrome(language: 'en' | 'km' = 'en'): ContactPageContent {
+export function publicContactChrome(language: 'en' | 'km'): ContactPageContent {
   const isKm = language === 'km';
   return {
     ...publicShell(language),
@@ -289,7 +289,7 @@ export function publicContactChrome(language: 'en' | 'km' = 'en'): ContactPageCo
   };
 }
 
-export function publicBookingChrome(language: 'en' | 'km' = 'en'): BookAppointmentPageContent {
+export function publicBookingChrome(language: 'en' | 'km'): BookAppointmentPageContent {
   const isKm = language === 'km';
   return {
     ...publicShell(language),

@@ -8,7 +8,9 @@ import { CmsImage, PublicPageHero } from '@/components/layout/public-ui';
 import type { ContactPageContent } from '@/features/landing-page/types';
 import { GoogleSatelliteMap } from './GoogleSatelliteMap';
 import { useContactPageQuery } from './use-contact-page';
-import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
+import { publicShell } from '@/features/public-content/public-page-chrome';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 
 type ContactIconName = ContactPageContent['contactCards'][number]['icon'];
 
@@ -193,10 +195,13 @@ function ContactPageView({ content }: { content: ContactPageContent }) {
 }
 
 function ContactPageSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).contact;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading contact information" className="bg-white">
-        <span className="sr-only">Loading contact information</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <section aria-hidden="true" className="relative overflow-hidden border-b border-[#e7eff3] bg-[#f7fafc]">
           <div className="absolute inset-y-0 right-0 hidden w-[42%] bg-[linear-gradient(135deg,#dceef3_0%,#eff7f9_100%)] lg:block" />
@@ -265,26 +270,30 @@ function ContactPageSkeleton() {
 }
 
 function ContactPageEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Contact page content is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
+        <Badge>{copy.common.noContent}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.contact.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.contact.unavailableBody}</p>
       </Card>
     </main>
   );
 }
 
 function ContactPageError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the contact page</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the contact information.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.contact.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.contact.errorBody}</p>
         <Button className="mt-6" onClick={onRetry} type="button">
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

@@ -1,4 +1,6 @@
 import { Card } from '@/components/ui/card';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 
 export type GoogleSatelliteMapProps = {
   address: string;
@@ -62,6 +64,8 @@ export function GoogleSatelliteMap({
   phone,
   zoom = 17,
 }: GoogleSatelliteMapProps) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language).contact;
   const apiKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined)?.trim();
 
   // If a Google Maps API Key is provided, call the official Google Maps Embed v1 API in satellite mode.
@@ -86,7 +90,7 @@ export function GoogleSatelliteMap({
         {/* Floating Satellite Indicator */}
         <div className="pointer-events-none absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[10.5px] font-bold text-[#3695B9] shadow-[0_2px_8px_rgba(15,23,42,0.08)] backdrop-blur">
           <SatelliteIcon />
-          <span>Google Satellite</span>
+          <span>{copy.satelliteMap}</span>
         </div>
       </div>
 
@@ -107,7 +111,7 @@ export function GoogleSatelliteMap({
               target="_blank"
             >
               <LocationIcon className="size-3.5" />
-              <span>Get Directions</span>
+              <span>{copy.directions}</span>
             </a>
           </div>
 

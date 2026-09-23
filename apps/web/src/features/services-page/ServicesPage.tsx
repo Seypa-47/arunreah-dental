@@ -5,7 +5,9 @@ import { ImageFrame, PageContainer, PageFeedback, ResilientImage, SectionIntro }
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import type { LandingService, ServicesPageContent } from '@/features/landing-page/types';
-import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
+import { publicShell } from '@/features/public-content/public-page-chrome';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { useServicesPageQuery } from './use-services-page';
 
 const serviceId = (name: string) =>
@@ -150,10 +152,13 @@ function ServicesPageView({ content }: { content: ServicesPageContent }) {
 }
 
 function ServicesPageSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).services;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading services page" className="bg-white">
-        <span className="sr-only">Loading treatments</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loadingLabel}</span>
 
         <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] px-4 py-12 text-center sm:px-6 sm:py-14">
           <div className="mx-auto max-w-[620px]">
@@ -194,11 +199,14 @@ function ServicesPageSkeleton() {
 }
 
 function ServicesPageEmpty() {
-  return <PageFeedback body="Please check the content source and try again." title="Service information is unavailable" />;
+  const copy = publicUiCopy(usePublicLanguage().language).services;
+  return <PageFeedback body={copy.unavailableBody} title={copy.unavailableTitle} />;
 }
 
 function ServicesPageError({ onRetry }: { onRetry: () => void }) {
-  return <PageFeedback action={<Button onClick={onRetry}>Retry</Button>} body="Try again to refresh the service list." title="We could not load the services page" />;
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
+  return <PageFeedback action={<Button onClick={onRetry}>{copy.common.retry}</Button>} body={copy.services.errorBody} title={copy.services.errorTitle} />;
 }
 
 function hasServicesContent(content: ServicesPageContent | undefined): content is ServicesPageContent {

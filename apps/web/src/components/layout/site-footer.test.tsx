@@ -37,7 +37,7 @@ describe('SiteFooter', () => {
       </MemoryRouter>,
     );
 
-    expect(html).toContain('Our Branches');
+    expect(html).toContain('សាខារបស់យើង');
     expect(html).toContain('សាខាផ្សារចាស់');
     expect(html).toContain('សាខាទួលទំពូង');
     expect(html).toContain('href="/branches"');
@@ -55,7 +55,7 @@ describe('SiteFooter', () => {
       </MemoryRouter>,
     );
 
-    expect(html).toContain('Our Branches');
+    expect(html).toContain('សាខារបស់យើង');
     expect(html).toContain('សាខាផ្សារចាស់');
   });
 });

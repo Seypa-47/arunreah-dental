@@ -7,11 +7,15 @@ import { SiteLayout } from '@/components/layout/site-layout';
 import { ImageFrame, PageContainer, PageFeedback, ResilientImage, SectionIntro } from '@/components/layout/public-ui';
 import { getPublicMediaUrl } from '@/services/media';
 import type { PublicShowcaseSummary } from '@/services/public-content';
-import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
+import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useShowcasesPageQuery } from './use-showcases-page';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 
 
 function ShowcaseCard({ showcase }: { showcase: PublicShowcaseSummary }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language).showcases;
   const imageUrl = getPublicMediaUrl(showcase.coverImageKey);
 
   return (
@@ -22,7 +26,7 @@ function ShowcaseCard({ showcase }: { showcase: PublicShowcaseSummary }) {
           {showcase.category ? <Badge className="w-fit bg-[#eef8fb] text-[11px] font-bold text-[#005687]">{showcase.category}</Badge> : null}
           <h2 className="mt-2 line-clamp-2 text-[16px] font-extrabold leading-5 tracking-[-0.015em] text-[#005687] transition group-hover:text-[#167ea7] sm:text-[18px] sm:leading-6">{showcase.title}</h2>
           {showcase.summary ? <p className="mt-2 line-clamp-2 text-[14px] leading-5 text-[#64748b] sm:line-clamp-3 sm:leading-6">{showcase.summary}</p> : null}
-          <span className="mt-auto pt-3 text-[13px] font-bold text-[#167ea7]">Read showcase <span aria-hidden="true">→</span></span>
+          <span className="mt-auto pt-3 text-[13px] font-bold text-[#167ea7]">{copy.readMore} <span aria-hidden="true">→</span></span>
         </div>
       </Link>
     </Card>
@@ -30,9 +34,11 @@ function ShowcaseCard({ showcase }: { showcase: PublicShowcaseSummary }) {
 }
 
 function ShowcasesHero({ heroMedia }: { heroMedia?: { badge: string | null; body: string | null; imageKey: string; imagePresentation: import('@arunreah/shared').ImagePresentation; title: string | null } }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language).showcases;
   const imageUrl = heroMedia?.imageKey ? getPublicMediaUrl(heroMedia.imageKey) : null;
-  const eyebrow = heroMedia?.badge || 'Our work';
-  const title = heroMedia?.title || 'Latest Showcases';
+  const eyebrow = heroMedia?.badge || copy.heroEyebrow;
+  const title = heroMedia?.title || copy.heroTitle;
   const description = heroMedia?.body;
 
   return (
@@ -70,16 +76,18 @@ function ShowcasesHero({ heroMedia }: { heroMedia?: { badge: string | null; body
 
 export function ShowcasesPage() {
   const { data, isError, isLoading, refetch } = useShowcasesPageQuery();
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
 
   if (isLoading) return <ShowcasesPageSkeleton />;
-  if (isError || !data) return <PageFeedback action={<Button onClick={() => void refetch()}>Retry</Button>} body="Try again to refresh the latest clinic stories." title="We could not load showcases" />;
+  if (isError || !data) return <PageFeedback action={<Button onClick={() => void refetch()}>{copy.common.retry}</Button>} body={copy.showcases.errorBody} title={copy.showcases.errorTitle} />;
 
   return (
     <SiteLayout actions={data.chrome.actions} navigation={data.chrome.navigation} services={data.chrome.services}>
       <main className="bg-white">
         <ShowcasesHero heroMedia={data.heroMedia} />
         <section className="py-10 sm:py-14"><PageContainer>
-          {data.showcases.length === 0 ? <Card className="rounded-xl border-[#e1ebef] p-8 text-center text-[16px] text-[#64748b]">No showcases are available right now.</Card> : <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{data.showcases.map((showcase) => <ShowcaseCard key={showcase.slug} showcase={showcase} />)}</div>}
+          {data.showcases.length === 0 ? <Card className="rounded-xl border-[#e1ebef] p-8 text-center text-[16px] text-[#64748b]">{copy.showcases.empty}</Card> : <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{data.showcases.map((showcase) => <ShowcaseCard key={showcase.slug} showcase={showcase} />)}</div>}
         </PageContainer></section>
       </main>
       <SiteFooter {...data.chrome.footer} />
@@ -88,10 +96,13 @@ export function ShowcasesPage() {
 }
 
 function ShowcasesPageSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).showcases;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading clinic showcases" className="bg-white">
-        <span className="sr-only">Loading clinic showcases</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] px-4 py-10 text-center sm:px-6 sm:py-12">
           <div className="mx-auto max-w-[620px] animate-pulse">

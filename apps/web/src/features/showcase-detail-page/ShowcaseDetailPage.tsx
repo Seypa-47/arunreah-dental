@@ -6,15 +6,19 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import { getPublicMediaUrl } from '@/services/media';
-import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
+import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useShowcaseDetailPageQuery } from './use-showcase-detail-page';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 
 export function ShowcaseDetailPage() {
   const { showcaseSlug } = useParams();
   const { data, isError, isLoading, refetch } = useShowcaseDetailPageQuery(showcaseSlug);
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
 
   if (isLoading) return <ShowcaseDetailPageSkeleton />;
-  if (isError || !data) return <main className="grid min-h-screen place-items-center bg-[#f7fafc] px-4"><Card className="max-w-lg p-8 text-center"><Badge className="bg-[#fff1e6] text-[#9d4d18]">Not found</Badge><h1 className="mt-4 text-2xl font-extrabold text-[#005687]">This showcase is unavailable</h1><p className="mt-2 text-sm text-[#62798b]">It may no longer be published.</p><Button className="mt-6" onClick={() => void refetch()}>Retry</Button></Card></main>;
+  if (isError || !data) return <main className="grid min-h-screen place-items-center bg-[#f7fafc] px-4"><Card className="max-w-lg p-8 text-center"><Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.showcaseDetail.notFound}</Badge><h1 className="mt-4 text-2xl font-extrabold text-[#005687]">{copy.showcaseDetail.errorTitle}</h1><p className="mt-2 text-sm text-[#62798b]">{copy.showcaseDetail.errorBody}</p><Button className="mt-6" onClick={() => void refetch()}>{copy.common.retry}</Button></Card></main>;
 
   const { showcase } = data;
   const coverImageUrl = getPublicMediaUrl(showcase.coverImageKey);
@@ -56,7 +60,7 @@ export function ShowcaseDetailPage() {
         {showcase.relatedShowcases.length > 0 ? (
           <section className="border-t border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
             <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-              <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">Related Showcases</h2>
+              <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{copy.showcaseDetail.related}</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
                 {showcase.relatedShowcases.map((related) => {
                   const relatedImageUrl = getPublicMediaUrl(related.coverImageKey);
@@ -81,10 +85,13 @@ export function ShowcaseDetailPage() {
 }
 
 function ShowcaseDetailPageSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).showcaseDetail;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading showcase article" className="bg-white">
-        <span className="sr-only">Loading showcase article</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <article>
           <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] py-6 sm:py-8">

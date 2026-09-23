@@ -14,7 +14,8 @@ import { env } from '@/config/env';
 import { createPublicAppointment } from '@/services/public-content';
 import { TurnstileWidget } from './turnstile-widget';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
-import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { publicShell } from '@/features/public-content/public-page-chrome';
 
 type IconName = 'calendar' | 'check' | 'clock' | 'doctor' | 'email' | 'hourglass' | 'location' | 'notes' | 'phone' | 'service' | 'user';
 
@@ -471,6 +472,7 @@ export function AvailableTimes({
   selectedTime: string;
   times: string[];
 }) {
+  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
   const baseTimes = times && times.length > 0 ? times : DEFAULT_HOURS;
   const baseHours = Array.from(new Set(baseTimes.map((t) => t.split(':')[0] ?? t)));
 
@@ -480,7 +482,7 @@ export function AvailableTimes({
 
   return (
     <div>
-      <h3 className="mb-5 text-center text-[15px] font-extrabold leading-6 text-[#005687]">Available Time</h3>
+      <h3 className="mb-5 text-center text-[15px] font-extrabold leading-6 text-[#005687]">{bookingCopy.availableTime}</h3>
       <div className="space-y-2.5">
         {baseHours.map((hour) => {
           const isHourActive = selectedHour === hour;
@@ -507,7 +509,7 @@ export function AvailableTimes({
               {isHourActive ? (
                 <div className="rounded-xl border border-[#bce0ed] bg-[#f2f9fb] p-3 shadow-inner">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-[12px] font-bold text-[#005687]">Select Minute</span>
+                    <span className="text-[12px] font-bold text-[#005687]">{bookingCopy.selectMinute}</span>
                     <span className="rounded-full bg-[#3695b9]/10 px-2 py-0.5 text-[11px] font-extrabold text-[#087b9f]">
                       {formatDisplayTime(selectedTime)}
                     </span>
@@ -582,6 +584,7 @@ function AppointmentForm({
   submissionError: string | null;
   turnstileResetSignal: number;
 }) {
+  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
   const [patientName, setPatientName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -624,12 +627,12 @@ function AppointmentForm({
     <Card className="rounded-xl border-[#e1ebef] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.05)] sm:p-7">
       <form className="space-y-7 sm:space-y-8" noValidate onSubmit={handleSubmit} ref={formRef}>
         <section>
-          <SectionTitle number="1" title="Appointment Details" />
+          <SectionTitle number="1" title={bookingCopy.appointmentDetails} />
           <div className="mt-5 space-y-4">
             <SelectField
               icon="location"
               id="branch"
-              label="Select Branch"
+              label={bookingCopy.selectBranch}
               onChange={onSelectBranch}
               options={content.branches.map((branch) => ({ name: branch.name, value: branch.id ?? '' }))}
               value={selectedBranch}
@@ -637,7 +640,7 @@ function AppointmentForm({
             <SelectField
               icon="service"
               id="service"
-              label="Select Service"
+              label={bookingCopy.selectService}
               onChange={onSelectService}
               options={content.servicesList}
               value={selectedService}
@@ -654,7 +657,7 @@ function AppointmentForm({
         </section>
 
         <section className="border-t border-[#e7eff3] pt-7 sm:pt-8">
-          <SectionTitle number="2" title="Choose Date & Time" />
+          <SectionTitle number="2" title={bookingCopy.chooseDateTime} />
           <div className="mt-5 grid gap-7 lg:grid-cols-[1fr_300px]">
             <AppointmentCalendar calendar={content.calendar} onSelectDate={onSelectDate} selectedDate={selectedDate} />
             <AvailableTimes onSelectTime={onSelectTime} selectedTime={selectedTime} times={content.times} />
@@ -662,7 +665,7 @@ function AppointmentForm({
         </section>
 
         <section className="border-t border-[#e7eff3] pt-7 sm:pt-8">
-          <SectionTitle number="3" title="Your Information" />
+          <SectionTitle number="3" title={bookingCopy.yourInformation} />
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <TextField error={fieldErrors.fullName} icon="user" id="fullName" label={content.form.fields.fullName} onChange={handlePatientNameChange} placeholder={content.form.placeholders.fullName} value={patientName} />
             <TextField
@@ -725,6 +728,7 @@ function AppointmentSummary({
   selectedServiceName: string;
   selectedTime: string;
 }) {
+  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
   const hasBranchImage = Boolean(branch.imageUrl);
 
   return (
@@ -748,11 +752,11 @@ function AppointmentSummary({
       </div>
 
       <div className="mt-6 space-y-4">
-        <SummaryRow icon="service" label="Service" value={selectedServiceName} />
-        <SummaryRow icon="doctor" label="Doctor" value={selectedDoctorName} />
-        <SummaryRow icon="calendar" label="Date" value={selectedDateLabel} />
-        <SummaryRow icon="clock" label="Time" value={formatDisplayTime(selectedTime)} />
-        {content.summary.duration ? <SummaryRow icon="hourglass" label="Duration" value={content.summary.duration} /> : null}
+        <SummaryRow icon="service" label={bookingCopy.service} value={selectedServiceName} />
+        <SummaryRow icon="doctor" label={bookingCopy.doctor} value={selectedDoctorName} />
+        <SummaryRow icon="calendar" label={bookingCopy.date} value={selectedDateLabel} />
+        <SummaryRow icon="clock" label={bookingCopy.time} value={formatDisplayTime(selectedTime)} />
+        {content.summary.duration ? <SummaryRow icon="hourglass" label={bookingCopy.duration} value={content.summary.duration} /> : null}
       </div>
 
       {content.information.length > 0 ? <div className="mt-5 rounded-xl border border-[#d7e7ef] bg-[#f4fbfd] p-4">
@@ -1140,10 +1144,13 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 }
 
 function BookAppointmentSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).booking;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading appointment request form" className="bg-white">
-        <span className="sr-only">Loading appointment request form</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
           <div className="mx-auto flex min-h-[180px] max-w-[1280px] items-center sm:min-h-[200px]">
@@ -1218,26 +1225,30 @@ function BookAppointmentSkeleton() {
 }
 
 function BookAppointmentEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Appointment information is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
+        <Badge>{copy.common.noContent}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.booking.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.booking.unavailableBody}</p>
       </Card>
     </main>
   );
 }
 
 function BookAppointmentError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load booking</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the appointment form.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.booking.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.booking.errorBody}</p>
         <Button className="mt-6" onClick={onRetry} type="button">
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

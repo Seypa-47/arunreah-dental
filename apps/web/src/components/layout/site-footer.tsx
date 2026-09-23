@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { LandingFooterLinkGroup, LandingPageContent } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { queryKeys } from '@/lib/query-keys';
 import { getPublicBranches, getPublicClinic, getPublicContact } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
@@ -42,6 +43,7 @@ function FooterLinks({ group }: { group: LandingFooterLinkGroup }) {
 
 export function SiteFooter({ branchLinks, description, linkGroups, tagline }: LandingPageContent['footer']) {
   const { language } = usePublicLanguage();
+  const layoutCopy = publicUiCopy(language).layout;
   const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic() });
   const contactQuery = useQuery({ queryKey: queryKeys.public.contact(), queryFn: () => getPublicContact() });
   const branchesQuery = useQuery({ queryKey: queryKeys.public.branches(language), queryFn: () => getPublicBranches(language) });
@@ -77,7 +79,7 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
           {socialLinks.length > 0 ? <div className="mt-5 flex gap-2">{socialLinks.map((link) => <a aria-label={link.label} className="grid size-11 place-items-center rounded-full border border-[#cfe4ec] bg-white transition hover:border-[#168aad] hover:bg-[#eef8fb]" href={link.href} key={link.href} rel="noreferrer" target="_blank"><img alt="" className="size-4" src={asset(link.icon)} /></a>)}</div> : null}
         </div>
         <div>
-          <h2 className="mb-3 text-[15px] font-extrabold leading-6 text-[#075d83]">Our Branches</h2>
+          <h2 className="mb-3 text-[15px] font-extrabold leading-6 text-[#075d83]">{layoutCopy.footerBranches}</h2>
           <ul className="space-y-2.5">
             {effectiveBranchLinks.map((link) => (
             <li className="flex min-h-11 items-center gap-3 text-[#6b7280]" key={link.label}>

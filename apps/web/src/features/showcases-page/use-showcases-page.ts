@@ -15,7 +15,7 @@ export function useShowcasesPageQuery() {
         getPublicPageMedia('SHOWCASES_HERO', language).catch(() => ({ items: [] })),
       ]);
       return {
-        chrome: publicServicesChrome(),
+        chrome: publicServicesChrome(language),
         heroMedia: heroMediaResponse.items[0],
         showcases: response.showcases,
       };

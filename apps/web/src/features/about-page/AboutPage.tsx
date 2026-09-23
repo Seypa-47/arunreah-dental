@@ -6,7 +6,9 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ContentBlocks, PublicPageHero, ResilientImage } from '@/components/layout/public-ui';
 import type { AboutPageContent } from '@/features/landing-page/types';
-import { skeletonNavigation } from '@/features/public-content/public-page-chrome';
+import { publicShell } from '@/features/public-content/public-page-chrome';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { useAboutPageQuery } from './use-about-page';
 import { getPublicMediaUrl } from '@/services/media';
 
@@ -67,6 +69,8 @@ function ExperienceBadgeIcon() {
 }
 
 function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPageContent, 'editorial' | 'featuredDoctor' | 'stats' | 'story'>) {
+  const { language } = usePublicLanguage();
+  const aboutCopy = publicUiCopy(language).about;
   return (
     <section className="bg-white py-12 sm:py-16">
       <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8">
@@ -90,7 +94,7 @@ function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPag
                 <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3695B9]">{featuredDoctor.specialty}</p>
                 <h3 className="mt-2 text-[21px] font-extrabold leading-6 text-[#073f60]">{featuredDoctor.name}</h3>
                 {featuredDoctor.title ? <p className="mt-1 text-[14px] font-medium leading-5 text-[#587080]">{featuredDoctor.title}</p> : null}
-                <Link className="mt-4 inline-flex items-center gap-2 text-[13px] font-bold text-[#087b9f] hover:text-[#005687]" to={featuredDoctor.profileHref}>View profile <ArrowIcon /></Link>
+                <Link className="mt-4 inline-flex items-center gap-2 text-[13px] font-bold text-[#087b9f] hover:text-[#005687]" to={featuredDoctor.profileHref}>{aboutCopy.viewProfile} <ArrowIcon /></Link>
               </div>
             </article>
           ) : null}
@@ -243,12 +247,14 @@ function VisionMissionSection({
 }
 
 function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences'>) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language).about;
   if (differences.length === 0) return null;
   return (
     <section className="bg-white py-14 text-center sm:py-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">Why Choose Us</p>
-        <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">What Makes Us Different</h2>
+        <p className="text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{copy.whyTitle}</p>
+        <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{copy.differenceTitle}</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {differences.map((item) => (
             <Card className="rounded-xl border border-[#e4edf2] bg-[#fbfdfe] px-5 py-6 text-center shadow-none" key={item.title}>
@@ -311,10 +317,13 @@ function AboutPageView({ content }: { content: AboutPageContent }) {
 }
 
 function AboutPageSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).about;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading about page" className="bg-white">
-        <span className="sr-only">Loading clinic story</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loadingLabel}</span>
 
         <section aria-hidden="true" className="grid min-h-[236px] place-items-center overflow-hidden bg-[radial-gradient(circle_at_15%_0%,rgba(79,181,209,0.34),transparent_36%),linear-gradient(120deg,#00546f,#087b9f)] px-4 py-12 sm:min-h-[260px] sm:px-6 sm:py-14">
           <div className="w-full max-w-[620px] space-y-4 text-center">
@@ -370,26 +379,30 @@ function AboutPageSkeleton() {
 }
 
 function AboutPageEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">About page content is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
+        <Badge>{copy.common.noContent}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.about.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.about.unavailableBody}</p>
       </Card>
     </main>
   );
 }
 
 function AboutPageError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the about page</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the clinic story.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.about.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.about.errorBody}</p>
         <Button className="mt-6" onClick={onRetry} type="button">
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

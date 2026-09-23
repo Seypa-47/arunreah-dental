@@ -9,7 +9,7 @@ export function useDoctorDetailPageQuery(profileSlug: string | undefined) {
   const { language } = usePublicLanguage();
   return useQuery({
     enabled: Boolean(profileSlug),
-    queryFn: async () => mapDoctorDetail(publicDoctorDetailChrome(), (await getPublicDoctor(profileSlug!, language)).doctor),
+    queryFn: async () => mapDoctorDetail(publicDoctorDetailChrome(language), (await getPublicDoctor(profileSlug!, language)).doctor),
     queryKey: queryKeys.public.doctor(profileSlug ?? '', language),
   });
 }

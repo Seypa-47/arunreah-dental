@@ -14,7 +14,7 @@ export function useDoctorsPageQuery() {
         getPublicPageMedia('DOCTORS_HERO', language).catch(() => ({ items: [] })),
         getPublicPageMedia('DOCTORS_PATIENT_EDUCATION', language).catch(() => ({ items: [] })),
       ]);
-      return { ...mapDoctorsPage(publicDoctorsChrome(), doctors.doctors), heroMedia: heroMedia.items[0], patientEducation: patientEducation.items };
+      return { ...mapDoctorsPage(publicDoctorsChrome(language), doctors.doctors), heroMedia: heroMedia.items[0], patientEducation: patientEducation.items };
     },
     queryKey: [...queryKeys.public.doctors(language), queryKeys.public.pageMedia('DOCTORS_HERO', language), queryKeys.public.pageMedia('DOCTORS_PATIENT_EDUCATION', language)],
   });

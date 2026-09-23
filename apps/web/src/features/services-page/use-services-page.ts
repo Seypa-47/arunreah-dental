@@ -14,7 +14,7 @@ export function useServicesPageQuery() {
         getPublicServices(language),
         getPublicPageMedia('SERVICES_HERO', language).catch(() => ({ items: [] })),
       ]);
-      const content = mapServicesPage(publicServicesChrome(), servicesResponse.services);
+      const content = mapServicesPage(publicServicesChrome(language), servicesResponse.services);
       const heroItem = heroMediaResponse.items[0];
       if (heroItem) {
         return {

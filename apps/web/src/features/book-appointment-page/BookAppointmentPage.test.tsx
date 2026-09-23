@@ -108,11 +108,13 @@ describe('BookAppointmentPage Date & Time features', () => {
 
     it('renders hours with 12-hour AM/PM labels', () => {
       const html = renderToStaticMarkup(
-        <AvailableTimes
-          onSelectTime={vi.fn()}
-          selectedTime="10:00"
-          times={times}
-        />,
+        <PublicLanguageProvider>
+          <AvailableTimes
+            onSelectTime={vi.fn()}
+            selectedTime="10:00"
+            times={times}
+          />
+        </PublicLanguageProvider>,
       );
 
       expect(html).toContain('08:00 AM');
@@ -124,11 +126,13 @@ describe('BookAppointmentPage Date & Time features', () => {
 
     it('displays the minute selector below the active hour', () => {
       const html = renderToStaticMarkup(
-        <AvailableTimes
-          onSelectTime={vi.fn()}
-          selectedTime="10:30"
-          times={times}
-        />,
+        <PublicLanguageProvider>
+          <AvailableTimes
+            onSelectTime={vi.fn()}
+            selectedTime="10:30"
+            times={times}
+          />
+        </PublicLanguageProvider>,
       );
 
       expect(html).toContain('Select Minute');
