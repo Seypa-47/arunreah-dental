@@ -121,6 +121,10 @@ export function resolveClinicInfoTab(
   return fallback;
 }
 
+export function selectedBranchIdFromSearch(search: string): string | undefined {
+  return new URLSearchParams(search).get('branch') || undefined;
+}
+
 export function AdminClinicInfoPage({
   initialTab = 'clinic',
 }: {
@@ -130,6 +134,7 @@ export function AdminClinicInfoPage({
   const location = useLocation();
   const queryClient = useQueryClient();
   const resolvedTab = resolveClinicInfoTab(location.pathname, initialTab);
+  const requestedBranchId = useMemo(() => selectedBranchIdFromSearch(location.search), [location.search]);
   const [activeTab, setActiveTab] = useState<'clinic' | 'branches' | 'contact'>(resolvedTab);
 
   useEffect(() => {
@@ -253,6 +258,12 @@ export function AdminClinicInfoPage({
       ? current
       : mappedBranches[0]?.id || '');
   }, [branchListQuery.data]);
+
+  useEffect(() => {
+    if (requestedBranchId && branches.some((branch) => branch.id === requestedBranchId)) {
+      setSelectedBranchId(requestedBranchId);
+    }
+  }, [branches, requestedBranchId]);
 
   const selectedBranch = useMemo(() => {
     return branches.find((b) => b.id === selectedBranchId) || branches[0] || null;

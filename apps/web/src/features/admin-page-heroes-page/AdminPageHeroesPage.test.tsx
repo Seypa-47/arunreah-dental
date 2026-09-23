@@ -88,4 +88,11 @@ describe('AdminPageHeroesPage', () => {
     expect(html).toContain('English');
     expect(html).toContain('ខ្មែរ');
   });
+
+  it('explains every source that can appear in the homepage carousel', () => {
+    const html = renderPage();
+    expect(html).toContain('Homepage carousel slides');
+    expect(html).toContain('Main site hero');
+    expect(html).toContain('Branch slides are shown above and managed in Branches &amp; Locations.');
+  });
 });

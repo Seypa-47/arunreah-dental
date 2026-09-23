@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
-import { AdminClinicInfoPage, resolveClinicInfoTab } from './AdminClinicInfoPage';
+import { AdminClinicInfoPage, resolveClinicInfoTab, selectedBranchIdFromSearch } from './AdminClinicInfoPage';
 
 const mockClinicData = {
   generalInfo: {
@@ -115,6 +115,13 @@ describe('resolveClinicInfoTab', () => {
   it('falls back to provided fallback when route is outside clinic-info', () => {
     expect(resolveClinicInfoTab('/admin/dashboard', 'branches')).toBe('branches');
     expect(resolveClinicInfoTab('/admin/dashboard')).toBe('clinic');
+  });
+});
+
+describe('selectedBranchIdFromSearch', () => {
+  it('reads an optional branch id from a branch-editor deep link', () => {
+    expect(selectedBranchIdFromSearch('?branch=branch-1')).toBe('branch-1');
+    expect(selectedBranchIdFromSearch('?page=2')).toBeUndefined();
   });
 });
 

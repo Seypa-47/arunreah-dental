@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { defaultImagePresentation, type ImagePresentation, type PageMediaPlacement } from '@arunreah/shared';
+import { Link } from 'react-router-dom';
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { AdminIcon, type AdminIconName } from '@/components/layout/admin-sidebar';
 import { AdminPublicationStatus } from '@/components/admin/admin-list';
@@ -161,6 +162,12 @@ export const HERO_PAGES: HeroPageConfig[] = [
   },
 ];
 
+const homeCarouselBranchQuery = {
+  limit: 100,
+  order: 'asc',
+  sort: 'displayOrder',
+} as const;
+
 type HeroFormState = {
   badgeEn: string;
   badgeKm: string;
@@ -213,10 +220,26 @@ export function AdminPageHeroesPage() {
     queryKey: queryKeys.admin.pageMedia(activePage.placement),
   });
 
+  const branchHeroQuery = useQuery({
+    enabled: activePage.id === 'home',
+    queryFn: () => cmsApi.branches.list(homeCarouselBranchQuery),
+    queryKey: queryKeys.admin.branches(homeCarouselBranchQuery),
+  });
+
   const existingRecord = useMemo(
     () => heroQuery.data?.items?.[0],
     [heroQuery.data?.items],
   );
+
+  const branchHeroSlides = useMemo(
+    () => (branchHeroQuery.data?.items ?? []).filter(
+      (branch) => branch.status === 'PUBLISHED' && branch.includeInHomepageHero,
+    ),
+    [branchHeroQuery.data?.items],
+  );
+  const configuredHomeCarouselSlideCount = 1 + branchHeroSlides.length;
+  const publishedHomeCarouselSlideCount =
+    (existingRecord?.status === 'PUBLISHED' ? 1 : 0) + branchHeroSlides.length;
 
   const [form, setForm] = useState<HeroFormState>(() => emptyHeroForm());
 
@@ -395,15 +418,76 @@ export function AdminPageHeroesPage() {
 
             {/* Right Column: Hero Editor & Live Preview */}
             <div className="space-y-6">
+              {activePage.id === 'home' ? (
+                <Card className="rounded-2xl border-[#dce5ef] bg-white p-5 shadow-none sm:p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#edf1f5] pb-4">
+                    <div>
+                      <h2 className="text-[16px] font-bold text-[#182238]">Homepage carousel slides</h2>
+                      <p className="mt-0.5 max-w-2xl text-xs leading-5 text-[#71839e]">
+                        The homepage rotates through the main site hero and every published branch enabled for the homepage hero carousel.
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-[#eef8fb] px-3 py-1 text-xs font-bold text-[#2187a8]">
+                      {publishedHomeCarouselSlideCount} live · {configuredHomeCarouselSlideCount} configured
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <article className="overflow-hidden rounded-xl border border-[#b9dce8] bg-[#f8fcfd]">
+                      <div className="aspect-[21/9] bg-[#eaf3f6]">
+                        <img alt="Main site hero" className="h-full w-full object-cover" src={previewImage} />
+                      </div>
+                      <div className="p-3.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-sm font-bold text-[#182238]">Main site hero</p>
+                          <AdminPublicationStatus status={existingRecord ? form.status.toLowerCase() as 'published' | 'draft' : 'draft'} />
+                        </div>
+                        <p className="mt-1 text-xs leading-5 text-[#71839e]">Edit this slide in the Home Page form below.</p>
+                      </div>
+                    </article>
+
+                    {branchHeroQuery.isLoading ? (
+                      <div className="min-h-40 animate-pulse rounded-xl border border-[#dce5ef] bg-[#f7fafc]" />
+                    ) : null}
+                    {branchHeroSlides.map((branch) => {
+                      const branchImage = getPublicMediaUrl(branch.heroImageKey || branch.branchImageKey || undefined);
+                      return (
+                        <article className="overflow-hidden rounded-xl border border-[#dce5ef] bg-white" key={branch.id}>
+                          <div className="aspect-[21/9] bg-[#eaf3f6]">
+                            {branchImage ? (
+                              <img alt={branch.nameEn} className="h-full w-full object-cover" src={branchImage} />
+                            ) : (
+                              <div className="grid h-full place-items-center text-xs font-semibold text-[#71839e]">No branch hero image</div>
+                            )}
+                          </div>
+                          <div className="p-3.5">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <p className="text-sm font-bold text-[#182238]">{branch.nameEn}</p>
+                              <span className="rounded-full bg-[#eef8fb] px-2.5 py-1 text-[11px] font-bold text-[#2187a8]">Branch slide</span>
+                            </div>
+                            <p className="mt-1 text-xs leading-5 text-[#71839e]">Managed with this branch’s hero content and visibility settings.</p>
+                            <Link className="mt-2 inline-flex min-h-10 items-center text-xs font-bold text-[#2187a8] hover:text-[#176d89] hover:underline" to={`/admin/clinic-info/branches?branch=${encodeURIComponent(branch.id)}`}>
+                              Edit branch slide →
+                            </Link>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </Card>
+              ) : null}
+
               {/* Live Preview Card */}
               <Card className="overflow-hidden rounded-2xl border-[#dce5ef] bg-white p-5 shadow-none sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f5] pb-4">
                   <div>
                     <h2 className="text-[16px] font-bold text-[#182238]">
-                      Live Preview · {activePage.name} Hero
+                      Live Preview · {activePage.name} {activePage.id === 'home' ? 'Carousel Main Slide' : 'Hero'}
                     </h2>
                     <p className="mt-0.5 text-xs text-[#71839e]">
-                      Shows how this hero appears to website visitors.
+                      {activePage.id === 'home'
+                        ? 'Previewing the main site slide. Branch slides are shown above and managed in Branches & Locations.'
+                        : 'Shows how this hero appears to website visitors.'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
