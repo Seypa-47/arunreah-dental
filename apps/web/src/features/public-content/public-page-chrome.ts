@@ -2,6 +2,7 @@ import type {
   AboutPageContent,
   BookAppointmentPageContent,
   BranchesPageContent,
+  ClinicBranchGallery,
   ContactPageContent,
   DoctorDetailContent,
   DoctorsPageContent,
@@ -10,7 +11,7 @@ import type {
   ServiceDetailContent,
   ServicesPageContent,
 } from '@/features/landing-page/types';
-import type { ClinicSettingsPublicRead } from '@arunreah/shared';
+import type { ClinicSettingsPublicRead, PublicBranchRead } from '@arunreah/shared';
 import { getPublicMediaUrl } from '@/services/media';
 import type { PublicDoctorSummary, PublicShowcaseDetail } from '@/services/public-content';
 
@@ -83,28 +84,114 @@ export function publicLandingChrome(language: 'en' | 'km'): LandingPageContent {
   };
 }
 
+function extractShowcaseGallery(
+  showcase?: PublicShowcaseDetail,
+  fallbackTitle = '',
+  fallbackImages?: { imageAlt: string; imageUrl: string }[],
+): { imageAlt: string; imagePresentation?: import('@arunreah/shared').ImagePresentation; imageUrl: string }[] {
+  if (showcase) {
+    const list: { imageAlt: string; imagePresentation?: import('@arunreah/shared').ImagePresentation; imageUrl: string }[] = [];
+    if (showcase.coverImageKey) {
+      const url = getPublicMediaUrl(showcase.coverImageKey) ?? (showcase.coverImageKey.startsWith('http') || showcase.coverImageKey.startsWith('/') ? showcase.coverImageKey : `/assets/landing/${showcase.coverImageKey}`);
+      if (url) {
+        list.push({
+          imageAlt: showcase.title || fallbackTitle,
+          imagePresentation: showcase.coverImagePresentation,
+          imageUrl: url,
+        });
+      }
+    }
+    for (const section of showcase.sections) {
+      if (section.sectionType === 'IMAGE' && section.imageKey) {
+        const url = getPublicMediaUrl(section.imageKey) ?? (section.imageKey.startsWith('http') || section.imageKey.startsWith('/') ? section.imageKey : `/assets/landing/${section.imageKey}`);
+        if (url) {
+          list.push({
+            imageAlt: section.heading ?? showcase.title ?? fallbackTitle,
+            imagePresentation: section.imagePresentation,
+            imageUrl: url,
+          });
+        }
+      }
+    }
+    if (list.length > 0) return list;
+  }
+  return fallbackImages ?? [];
+}
+
 export function publicAboutContent(
   clinic: ClinicSettingsPublicRead,
   language: 'en' | 'km',
   clinicShowcase?: PublicShowcaseDetail,
   featuredDoctor?: PublicDoctorSummary,
   advancedFacilities: { id: string; imageKey: string; imagePresentation: import('@arunreah/shared').ImagePresentation; title: string | null; body: string | null; displayOrder: number }[] = [],
+  branches: (PublicBranchRead | import('@/services/public-content').PublicBranch)[] = [],
+  branchShowcases?: { psaChas?: PublicShowcaseDetail; toulTompoung?: PublicShowcaseDetail },
 ): AboutPageContent {
   const clinicName = language === 'km' ? clinic.clinicNameKm : clinic.clinicNameEn;
   const tagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
   const shortAbout = language === 'km' ? clinic.shortAboutKm : clinic.shortAboutEn;
+
+  const defaultPsaChasImages = [
+    { imageAlt: language === 'km' ? 'សាខាផ្សារចាស់' : 'Psa Chas Branch', imageUrl: '/assets/landing/psa-chas-exterior.jpg' },
+    { imageAlt: language === 'km' ? 'ការិយាល័យទទួលភ្ញៀវ' : 'Our reception', imageUrl: '/assets/landing/psa-chas-reception.jpg' },
+    { imageAlt: language === 'km' ? 'កន្លែងរង់ចាំប្រកបដោយផាសុកភាព' : 'Comfortable waiting lounge', imageUrl: '/assets/landing/psa-chas-waiting-area.jpg' },
+    { imageAlt: language === 'km' ? 'កន្លែងពិគ្រោះយោបល់ និងសម្រាកលំហែ' : 'Consultation and lounge area', imageUrl: '/assets/landing/psa-chas-consultation-lounge.jpg' },
+  ];
+
+  const defaultToulTompoungImages = [
+    { imageAlt: language === 'km' ? 'សាខាទួលទំពូង' : 'Toul Tompoung Branch', imageUrl: '/assets/landing/branches-clinic.png' },
+    { imageAlt: language === 'km' ? 'ការិយាល័យទទួលភ្ញៀវ' : 'Our reception', imageUrl: '/assets/landing/hero-clinic.png' },
+    { imageAlt: language === 'km' ? 'កន្លែងរង់ចាំ' : 'Comfortable waiting area', imageUrl: '/assets/landing/showcase-room.png' },
+    { imageAlt: language === 'km' ? 'បន្ទប់ព្យាបាល' : 'A calm clinic environment', imageUrl: '/assets/landing/branch-card-clinic.png' },
+  ];
+
+  const psaChasBranch = branches.find((b) => b.slug === 'psa-chas');
+  const psaChasGallery = extractShowcaseGallery(
+    branchShowcases?.psaChas,
+    language === 'km' ? 'សាខាផ្សារចាស់' : 'Psa Chas Branch',
+    defaultPsaChasImages,
+  );
+
+  const toulTompoungBranch = branches.find((b) => b.slug === 'toul-tompoung');
+  const toulTompoungGallery = extractShowcaseGallery(
+    branchShowcases?.toulTompoung ?? clinicShowcase,
+    language === 'km' ? 'សាខាទួលទំពូង' : 'Toul Tompoung Branch',
+    defaultToulTompoungImages,
+  );
+
+  const branchGalleries: ClinicBranchGallery[] = [
+    {
+      branchId: psaChasBranch?.id ?? 'psa-chas',
+      branchSlug: 'psa-chas',
+      branchName: psaChasBranch?.name ?? (language === 'km' ? 'សាខាផ្សារចាស់' : 'Psa Chas Branch'),
+      badge: psaChasBranch?.badge ?? (language === 'km' ? 'សាខាក្នុងក្រុង' : 'City Branch'),
+      shortLocationLabel: psaChasBranch?.shortLocationLabel ?? (language === 'km' ? 'ជិតផ្សារចាស់ រាជធានីភ្នំពេញ' : 'Near Old Market, Phnom Penh'),
+      address: psaChasBranch?.address ?? (language === 'km' ? '#៤៥ ផ្លូវលេខ ១៣ សង្កាត់វត្តភ្នំ ខណ្ឌដូនពេញ រាជធានីភ្នំពេញ កម្ពុជា (ជិតផ្សារចាស់)' : '#45, Street 13, Sangkat Wat Phnom, Khan Daun Penh, Phnom Penh, Cambodia (Near Old Market)'),
+      openingHours: psaChasBranch?.openingHours ?? (language === 'km' ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM'),
+      phone: psaChasBranch?.phone ?? '069 978 997',
+      googleMapsUrl: psaChasBranch?.googleMapsUrl ?? 'https://maps.app.goo.gl/M5gvtMWpzYydHM2v5',
+      showcaseTitle: branchShowcases?.psaChas?.title ?? (language === 'km' ? 'អ្វីដែលត្រូវរំពឹងក្នុងការមកពិនិត្យលើកដំបូង - សាខាផ្សារចាស់' : 'What To Expect During Your First Visit - Psa Chas Branch'),
+      images: psaChasGallery,
+    },
+    {
+      branchId: toulTompoungBranch?.id ?? 'toul-tompoung',
+      branchSlug: 'toul-tompoung',
+      branchName: toulTompoungBranch?.name ?? (language === 'km' ? 'សាខាទួលទំពូង' : 'Toul Tompoung Branch'),
+      badge: toulTompoungBranch?.badge ?? (language === 'km' ? 'សាខាចម្បង' : 'Main Branch'),
+      shortLocationLabel: toulTompoungBranch?.shortLocationLabel ?? (language === 'km' ? 'ទួលទំពូង រាជធានីភ្នំពេញ' : 'Toul Tompoung, Phnom Penh'),
+      address: toulTompoungBranch?.address ?? (language === 'km' ? 'ផ្ទះ159c ផ្លូវ 113 ភូមិ 4 សង្កាត់បឹងកេងកង3 ខណ្ឌបឹងកេងកង' : '#159c, st113, Boeng Keng Kang 3, Phnom Penh'),
+      openingHours: toulTompoungBranch?.openingHours ?? (language === 'km' ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM'),
+      phone: toulTompoungBranch?.phone ?? '061 978 997',
+      googleMapsUrl: toulTompoungBranch?.googleMapsUrl ?? 'https://maps.app.goo.gl/LHQeXEkpcAvcfnT18',
+      showcaseTitle: (branchShowcases?.toulTompoung ?? clinicShowcase)?.title ?? (language === 'km' ? 'អ្វីដែលត្រូវរំពឹងក្នុងការមកពិនិត្យលើកដំបូង - សាខាទួលទំពូង' : 'What To Expect During Your First Visit - Toul Tompoung Branch'),
+      images: toulTompoungGallery,
+    },
+  ];
+
   return {
     ...publicShell(language),
-    clinicGallery: clinicShowcase
-      ? [
-          clinicShowcase.coverImageKey
-            ? { imageAlt: clinicShowcase.title, imageUrl: getPublicMediaUrl(clinicShowcase.coverImageKey) ?? '' }
-            : null,
-          ...clinicShowcase.sections
-            .filter((section) => section.sectionType === 'IMAGE' && section.imageKey)
-            .map((section) => ({ imageAlt: section.heading ?? clinicShowcase.title, imageUrl: getPublicMediaUrl(section.imageKey) ?? '' })),
-        ].filter((image): image is { imageAlt: string; imageUrl: string } => image !== null && Boolean(image.imageUrl))
-      : [],
+    branchGalleries,
+    clinicGallery: psaChasGallery.length > 0 ? psaChasGallery : toulTompoungGallery,
     editorial: language === 'km'
       ? {
           editionLabel: 'ព័ត៌មានគ្លីនិក',
