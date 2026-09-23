@@ -14,17 +14,9 @@ import { invalidateCmsDomain } from '@/services/cms-cache';
 import { queryKeys } from '@/lib/query-keys';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { toMediaKey } from '@/services/media';
+import { nextKhmerCategory, showcaseCategoryOptions, suggestedKhmerCategory } from './showcase-categories';
 
-const categoryOptions = [
-  'Treatment',
-  'Smile Makeover',
-  'Restorative Dentistry',
-  'Cosmetic Dentistry',
-  'Patient Education',
-  'Clinic Experience',
-  'Smile Care',
-  'Technology',
-];
+
 
 function Field({
   children,
@@ -129,6 +121,7 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
   const [titleKm, setTitleKm] = useState(showcase.titleKm ?? '');
   const [slug, setSlug] = useState(showcase.slug ?? '');
   const [categoryEn, setCategoryEn] = useState(showcase.categoryEn ?? 'Treatment');
+  const [categoryKm, setCategoryKm] = useState(showcase.categoryKm ?? '');
   const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED' | 'ARCHIVED'>(showcase.status ?? 'DRAFT');
   const [showOnHomepage, setShowOnHomepage] = useState(showcase.showOnHomepage ?? false);
   const [displayOrder, setDisplayOrder] = useState<number>(showcase.displayOrder ?? 0);
@@ -178,7 +171,7 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
         titleKm: titleKm.trim(),
         slug: slug.trim().toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-+|-+$)/g, ''),
         categoryEn: categoryEn.trim() || null,
-        categoryKm: null,
+        categoryKm: categoryKm.trim() || null,
         status: activeStatus,
         showOnHomepage,
         displayOrder,
@@ -429,21 +422,36 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
                     value={slug}
                   />
                 </Field>
-                <Field label="Category">
+                <Field label="Category · English">
                   <select
                     className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
                     onChange={(e) => {
                       markDirty();
+                      setCategoryKm((current) => nextKhmerCategory(current, categoryEn, e.target.value));
                       setCategoryEn(e.target.value);
                     }}
                     value={categoryEn}
                   >
-                    {categoryOptions.map((opt) => (
+                    {showcaseCategoryOptions.map((opt) => (
                       <option key={opt} value={opt}>
                         {opt}
                       </option>
                     ))}
                   </select>
+                </Field>
+                <Field label="ប្រភេទ · ខ្មែរ">
+                  <input
+                    className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                    lang="km"
+                    maxLength={120}
+                    onChange={(e) => {
+                      markDirty();
+                      setCategoryKm(e.target.value);
+                    }}
+                    placeholder={suggestedKhmerCategory(categoryEn)}
+                    value={categoryKm}
+                  />
+                  <p className="mt-1 text-[11.5px] leading-4 text-[#71839e]">Shown to Khmer visitors. Leave empty to show the English category.</p>
                 </Field>
               </div>
 

@@ -17,6 +17,7 @@ import type {
 } from '@/services/admin-add-showcase';
 import type { ShowcaseCategory, ShowcaseStatus } from '@/services/admin-showcase';
 import { getPublicMediaUrl, uploadMedia } from '@/services/media';
+import { nextKhmerCategory, suggestedKhmerCategory } from '@/features/admin-showcase-page/showcase-categories';
 import { imageFrames } from '@/components/admin/image-frames';
 import { presentationStyle } from '@/components/admin/image-framing';
 import { ImageFramingDialog } from '@/components/admin/image-framing-dialog';
@@ -36,6 +37,7 @@ export function AdminAddShowcasePage() {
   const [slug, setSlug] = useState('');
   const [isSlugCustomized, setIsSlugCustomized] = useState(false);
   const [category, setCategory] = useState<ShowcaseCategory | ''>('');
+  const [categoryKm, setCategoryKm] = useState('');
   const [status, setStatus] = useState<ShowcaseStatus>('draft');
   const [homepageVisibility, setHomepageVisibility] = useState(true);
 
@@ -169,6 +171,7 @@ export function AdminAddShowcasePage() {
       bodyContent,
       cardSummary: cardSummary || shortSummary,
       category,
+      categoryKm,
       coverImageUrl,
       coverImagePresentation,
       displayOrder,
@@ -349,7 +352,11 @@ export function AdminAddShowcasePage() {
                         className={`h-11 w-full appearance-none rounded-xl border bg-white px-3.5 pr-9 text-[14px] text-[#182238] outline-none transition focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${
                           errors.category ? 'border-[#ef4444]' : 'border-[#dce5ef]'
                         }`}
-                        onChange={(e) => setCategory(e.target.value as ShowcaseCategory)}
+                        onChange={(e) => {
+                          const nextCategory = e.target.value as ShowcaseCategory;
+                          setCategoryKm((current) => nextKhmerCategory(current, category, nextCategory));
+                          setCategory(nextCategory);
+                        }}
                         id="showcase-category"
                         value={category}
                       >
@@ -371,6 +378,22 @@ export function AdminAddShowcasePage() {
                     {errors.category && (
                       <p className="mt-1 text-[12px] text-[#ef4444]">{errors.category}</p>
                     )}
+                  </div>
+
+                  <div>
+                    <label className="block text-[13px] font-bold text-[#182238]" htmlFor="showcase-category-km">
+                      ប្រភេទ · ខ្មែរ
+                    </label>
+                    <input
+                      className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none transition focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      id="showcase-category-km"
+                      lang="km"
+                      maxLength={120}
+                      onChange={(e) => setCategoryKm(e.target.value)}
+                      placeholder={suggestedKhmerCategory(category)}
+                      value={categoryKm}
+                    />
+                    <p className="mt-1 text-[12px] leading-4 text-[#71839e]">Shown to Khmer visitors. Leave empty to show the English category.</p>
                   </div>
 
                   <div>
