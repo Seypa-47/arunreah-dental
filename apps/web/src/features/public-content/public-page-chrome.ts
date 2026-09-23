@@ -86,16 +86,16 @@ export function publicLandingChrome(language: 'en' | 'km'): LandingPageContent {
 
 function extractShowcaseGallery(
   showcase?: PublicShowcaseDetail,
-  fallbackTitle = '',
+  coverCaption = 'Clinic Exterior',
   fallbackImages?: { imageAlt: string; imageUrl: string }[],
 ): { imageAlt: string; imagePresentation?: import('@arunreah/shared').ImagePresentation; imageUrl: string }[] {
   if (showcase) {
     const list: { imageAlt: string; imagePresentation?: import('@arunreah/shared').ImagePresentation; imageUrl: string }[] = [];
     if (showcase.coverImageKey) {
-      const url = getPublicMediaUrl(showcase.coverImageKey) ?? (showcase.coverImageKey.startsWith('http') || showcase.coverImageKey.startsWith('/') ? showcase.coverImageKey : `/assets/landing/${showcase.coverImageKey}`);
+      const url = getPublicMediaUrl(showcase.coverImageKey) ?? (showcase.coverImageKey.startsWith('http') || showcase.coverImageKey.startsWith('/') ? showcase.coverImageKey : `/assets/landing/${showcase.coverImageKey.replace(/^showcases\//, '')}`);
       if (url) {
         list.push({
-          imageAlt: showcase.title || fallbackTitle,
+          imageAlt: coverCaption,
           imagePresentation: showcase.coverImagePresentation,
           imageUrl: url,
         });
@@ -103,10 +103,10 @@ function extractShowcaseGallery(
     }
     for (const section of showcase.sections) {
       if (section.sectionType === 'IMAGE' && section.imageKey) {
-        const url = getPublicMediaUrl(section.imageKey) ?? (section.imageKey.startsWith('http') || section.imageKey.startsWith('/') ? section.imageKey : `/assets/landing/${section.imageKey}`);
+        const url = getPublicMediaUrl(section.imageKey) ?? (section.imageKey.startsWith('http') || section.imageKey.startsWith('/') ? section.imageKey : `/assets/landing/${section.imageKey.replace(/^showcases\//, '')}`);
         if (url) {
           list.push({
-            imageAlt: section.heading ?? showcase.title ?? fallbackTitle,
+            imageAlt: section.heading ?? '',
             imagePresentation: section.imagePresentation,
             imageUrl: url,
           });
@@ -131,31 +131,33 @@ export function publicAboutContent(
   const tagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
   const shortAbout = language === 'km' ? clinic.shortAboutKm : clinic.shortAboutEn;
 
+  const exteriorCaption = language === 'km' ? 'ទិដ្ឋភាពខាងក្រៅនៃគ្លីនិក' : 'Clinic Exterior';
+
   const defaultPsaChasImages = [
-    { imageAlt: language === 'km' ? 'សាខាផ្សារចាស់' : 'Psa Chas Branch', imageUrl: '/assets/landing/psa-chas-exterior.jpg' },
+    { imageAlt: exteriorCaption, imageUrl: '/assets/landing/psa-chas-exterior.jpg' },
     { imageAlt: language === 'km' ? 'ការិយាល័យទទួលភ្ញៀវ' : 'Our reception', imageUrl: '/assets/landing/psa-chas-reception.jpg' },
     { imageAlt: language === 'km' ? 'កន្លែងរង់ចាំប្រកបដោយផាសុកភាព' : 'Comfortable waiting lounge', imageUrl: '/assets/landing/psa-chas-waiting-area.jpg' },
     { imageAlt: language === 'km' ? 'កន្លែងពិគ្រោះយោបល់ និងសម្រាកលំហែ' : 'Consultation and lounge area', imageUrl: '/assets/landing/psa-chas-consultation-lounge.jpg' },
   ];
 
   const defaultToulTompoungImages = [
-    { imageAlt: language === 'km' ? 'សាខាទួលទំពូង' : 'Toul Tompoung Branch', imageUrl: '/assets/landing/branches-clinic.png' },
+    { imageAlt: exteriorCaption, imageUrl: '/assets/landing/branches-clinic.png' },
     { imageAlt: language === 'km' ? 'ការិយាល័យទទួលភ្ញៀវ' : 'Our reception', imageUrl: '/assets/landing/hero-clinic.png' },
     { imageAlt: language === 'km' ? 'កន្លែងរង់ចាំ' : 'Comfortable waiting area', imageUrl: '/assets/landing/showcase-room.png' },
-    { imageAlt: language === 'km' ? 'បន្ទប់ព្យាបាល' : 'A calm clinic environment', imageUrl: '/assets/landing/branch-card-clinic.png' },
+    { imageAlt: language === 'km' ? 'បរិយាកាសគ្លីនិក' : 'A calm clinic environment', imageUrl: '/assets/landing/branch-card-clinic.png' },
   ];
 
   const psaChasBranch = branches.find((b) => b.slug === 'psa-chas');
   const psaChasGallery = extractShowcaseGallery(
     branchShowcases?.psaChas,
-    language === 'km' ? 'សាខាផ្សារចាស់' : 'Psa Chas Branch',
+    exteriorCaption,
     defaultPsaChasImages,
   );
 
   const toulTompoungBranch = branches.find((b) => b.slug === 'toul-tompoung');
   const toulTompoungGallery = extractShowcaseGallery(
     branchShowcases?.toulTompoung ?? clinicShowcase,
-    language === 'km' ? 'សាខាទួលទំពូង' : 'Toul Tompoung Branch',
+    exteriorCaption,
     defaultToulTompoungImages,
   );
 
