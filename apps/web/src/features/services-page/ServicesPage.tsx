@@ -15,6 +15,7 @@ const serviceId = (name: string) =>
 const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
 
 function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
+  const servicesCopy = publicUiCopy(usePublicLanguage().language).services;
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <PageContainer>
@@ -40,7 +41,7 @@ function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
           </div>
         ) : (
           <div className="rounded-2xl border border-[#d9e9ee] bg-[linear-gradient(120deg,#fafdfe_0%,#edf7fa_100%)] px-5 py-11 text-center shadow-[0_5px_20px_rgba(15,61,84,0.04)] sm:px-8 sm:py-14">
-            <SectionIntro align="center" as="h1" description={hero.description} eyebrow={hero.eyebrow ?? 'Our Treatments'} title={hero.title} />
+            <SectionIntro align="center" as="h1" description={hero.description} eyebrow={hero.eyebrow ?? servicesCopy.heroEyebrow} title={hero.title} />
           </div>
         )}
       </PageContainer>
@@ -49,6 +50,7 @@ function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
 }
 
 function ServiceCard({ service }: { service: LandingService }) {
+  const servicesCopy = publicUiCopy(usePublicLanguage().language).services;
   const id = serviceId(service.name);
   const slug = service.slug ?? serviceSlug(service.name);
 
@@ -73,7 +75,7 @@ function ServiceCard({ service }: { service: LandingService }) {
             </p>
           </div>
           <span className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#3695B9] transition group-hover:text-[#005687]">
-            Learn More
+            {servicesCopy.learnMore}
             <svg
               aria-hidden="true"
               className="size-3 transition duration-150 group-hover:translate-x-1"

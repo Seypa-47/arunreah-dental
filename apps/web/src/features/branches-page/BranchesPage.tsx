@@ -264,7 +264,7 @@ function BranchCard({
             onClick={() => setViewMode('photo')}
             type="button"
           >
-            Photo
+            {branchCopy.photoView}
           </button>
           <button
             className={`min-h-11 rounded-full px-3 py-1 text-[11px] font-bold transition ${
@@ -273,7 +273,7 @@ function BranchCard({
             onClick={() => setViewMode('satellite')}
             type="button"
           >
-            Satellite Map
+            {branchCopy.satelliteView}
           </button>
         </div>
 

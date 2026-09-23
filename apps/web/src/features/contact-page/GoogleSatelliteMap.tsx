@@ -151,7 +151,7 @@ export function GoogleSatelliteMap({
               <div className="flex items-center gap-2.5 text-[12.5px] text-[#64748b]">
                 <ClockIcon className="size-4 shrink-0 text-[#3695B9]" />
                 <span>
-                  Hours: <strong className="font-bold text-[#005687]">{hours}</strong>
+                  {copy.hoursLabel} <strong className="font-bold text-[#005687]">{hours}</strong>
                 </span>
               </div>
             )}
