@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { defaultImagePresentation, type ImagePresentation, type PageMediaPlacement } from '@arunreah/shared';
+import {
+  defaultImagePresentation,
+  type ImagePresentation,
+  type PageMediaPlacement,
+} from '@arunreah/shared';
 import { Link } from 'react-router-dom';
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { AdminIcon, type AdminIconName } from '@/components/layout/admin-sidebar';
@@ -13,6 +17,8 @@ import { queryKeys } from '@/lib/query-keys';
 import { cmsApi, type AdminPageMediaRecord } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
 import { ContactIcon } from '@/components/layout/public-ui';
+
+type HeroPreviewLayout = 'image-only' | 'light' | 'overlay' | 'overlay-or-text';
 
 export type HeroPageConfig = {
   aspectRatio: string;
@@ -27,9 +33,18 @@ export type HeroPageConfig = {
   id: string;
   name: string;
   placement: PageMediaPlacement;
+  previewLayout: HeroPreviewLayout;
   publicUrl: string;
+  supportsCopy?: boolean;
   subtitle: string;
 };
+
+export function heroPreviewShowsImage(
+  page: Pick<HeroPageConfig, 'previewLayout'>,
+  imageKey: string,
+) {
+  return page.previewLayout !== 'overlay-or-text' || Boolean(imageKey);
+}
 
 export const HERO_PAGES: HeroPageConfig[] = [
   {
@@ -37,7 +52,8 @@ export const HERO_PAGES: HeroPageConfig[] = [
     defaultEyebrowEn: 'Arunreah Dental Clinic',
     defaultEyebrowKm: 'គ្លីនិកធ្មេញ អរុណរះ',
     defaultImage: '/assets/landing/hero-clinic.png',
-    defaultSubtitleEn: 'Comprehensive dental care delivered by experienced specialists in Phnom Penh.',
+    defaultSubtitleEn:
+      'Comprehensive dental care delivered by experienced specialists in Phnom Penh.',
     defaultSubtitleKm: 'ការថែទាំធ្មេញគ្រប់ជ្រុងជ្រោយដោយទន្តបណ្ឌិតឯកទេសនៅភ្នំពេញ។',
     defaultTitleEn: 'Trusted Care For Every Smile',
     defaultTitleKm: 'ការថែទាំធ្មេញដែលគួរឱ្យទុកចិត្តសម្រាប់គ្រប់ស្នាមញញឹម',
@@ -45,6 +61,7 @@ export const HERO_PAGES: HeroPageConfig[] = [
     id: 'home',
     name: 'Home Page',
     placement: 'HOME_HERO',
+    previewLayout: 'overlay',
     publicUrl: '/',
     subtitle: 'Main homepage hero banner and headline',
   },
@@ -61,6 +78,7 @@ export const HERO_PAGES: HeroPageConfig[] = [
     id: 'about',
     name: 'About Us',
     placement: 'ABOUT_HERO',
+    previewLayout: 'light',
     publicUrl: '/about',
     subtitle: 'Clinic history and story header banner',
   },
@@ -77,6 +95,7 @@ export const HERO_PAGES: HeroPageConfig[] = [
     id: 'services',
     name: 'Our Services',
     placement: 'SERVICES_HERO',
+    previewLayout: 'overlay-or-text',
     publicUrl: '/services',
     subtitle: 'Comprehensive dental procedures directory hero',
   },
@@ -93,38 +112,43 @@ export const HERO_PAGES: HeroPageConfig[] = [
     id: 'doctors',
     name: 'Our Doctors',
     placement: 'DOCTORS_HERO',
+    previewLayout: 'image-only',
     publicUrl: '/doctors',
+    supportsCopy: false,
     subtitle: 'Specialists team introduction and group photo banner',
   },
   {
     aspectRatio: 'aspect-[21/9]',
-    defaultEyebrowEn: 'Our Locations',
-    defaultEyebrowKm: 'ទីតាំងរបស់យើង',
+    defaultEyebrowEn: '',
+    defaultEyebrowKm: '',
     defaultImage: '/assets/landing/figma-branches/image2_183_4173.png',
-    defaultSubtitleEn: 'Advanced dental care with international standards across two convenient central locations.',
-    defaultSubtitleKm: 'ការថែទាំធ្មេញកម្រិតខ្ពស់តាមស្តង់ដារអន្តរជាតិនៅសាខាកណ្តាលក្រុងទាំងពីរ។',
-    defaultTitleEn: 'Two Modern Clinics in Phnom Penh',
-    defaultTitleKm: 'គ្លីនិកទំនើបទាំងពីរនៅភ្នំពេញ',
+    defaultSubtitleEn: 'Find a clinic branch that works for you.',
+    defaultSubtitleKm: 'ស្វែងរកសាខាគ្លីនិកដែលសមស្របសម្រាប់អ្នក។',
+    defaultTitleEn: 'Our Locations',
+    defaultTitleKm: 'ទីតាំងរបស់យើង',
     icon: 'clinicInfo',
     id: 'branches',
     name: 'Branches',
     placement: 'BRANCHES_HERO',
+    previewLayout: 'light',
     publicUrl: '/branches',
     subtitle: 'Branch locations and facilities header',
   },
   {
     aspectRatio: 'aspect-[21/9]',
     defaultEyebrowEn: 'Get In Touch',
-    defaultEyebrowKm: 'ទាក់ទងមកយើង',
+    defaultEyebrowKm: 'ទំនាក់ទំនង',
     defaultImage: '/assets/landing/figma-branches/image2_183_4173.png',
-    defaultSubtitleEn: 'Visit one of our branches or reach out directly to our front desk team.',
-    defaultSubtitleKm: 'មកកាន់សាខាណាមួយរបស់យើង ឬទាក់ទងមកកាន់ក្រុមការងារទទួលភ្ញៀវរបស់យើង។',
-    defaultTitleEn: "We're Here to Help",
-    defaultTitleKm: 'យើងនៅទីនេះដើម្បីជួយអ្នក',
+    defaultSubtitleEn: 'Contact our clinic team for help with your care.',
+    defaultSubtitleKm:
+      'ទាក់ទងមកកាន់ក្រុមការងារគ្លីនិករបស់យើងសម្រាប់ការជួយសម្រួលដល់ការព្យាបាលរបស់អ្នក។',
+    defaultTitleEn: 'Contact Us',
+    defaultTitleKm: 'ទាក់ទងមកយើង',
     icon: 'appointments',
     id: 'contact',
     name: 'Contact Us',
     placement: 'CONTACT_HERO',
+    previewLayout: 'light',
     publicUrl: '/contact',
     subtitle: 'Contact channels and directions hero banner',
   },
@@ -141,22 +165,24 @@ export const HERO_PAGES: HeroPageConfig[] = [
     id: 'showcases',
     name: 'Showcases',
     placement: 'SHOWCASES_HERO',
+    previewLayout: 'overlay-or-text',
     publicUrl: '/showcases',
     subtitle: 'Smile transformations and clinic stories hero',
   },
   {
     aspectRatio: 'aspect-[21/9]',
-    defaultEyebrowEn: 'Appointment Request',
-    defaultEyebrowKm: 'ការស្នើសុំណាត់ជួប',
+    defaultEyebrowEn: '',
+    defaultEyebrowKm: '',
     defaultImage: '/assets/landing/figma-branches/image5_183_4173.jpg',
-    defaultSubtitleEn: 'Choose your preferred branch, doctor, and service. Our team will contact you to confirm.',
-    defaultSubtitleKm: 'ជ្រើសរើសសាខា វេជ្ជបណ្ឌិត និងសេវាកម្មដែលអ្នកចង់បាន។ ក្រុមការងារយើងនឹងទាក់ទងទៅដើម្បីបញ្ជាក់។',
-    defaultTitleEn: 'Schedule Your Visit',
-    defaultTitleKm: 'កំណត់ពេលណាត់ជួបរបស់អ្នក',
+    defaultSubtitleEn: 'Send a preferred appointment request and our clinic will review it.',
+    defaultSubtitleKm: 'ផ្ញើសំណើណាត់ជួបដែលអ្នកពេញចិត្ត ហើយគ្លីនិករបស់យើងនឹងពិនិត្យមើល។',
+    defaultTitleEn: 'Book an Appointment',
+    defaultTitleKm: 'កក់ការណាត់ជួប',
     icon: 'calendar',
     id: 'booking',
     name: 'Book Appointment',
     placement: 'BOOKING_HERO',
+    previewLayout: 'light',
     publicUrl: '/book-appointment',
     subtitle: 'Online appointment booking form header banner',
   },
@@ -208,7 +234,9 @@ export function AdminPageHeroesPage() {
   const queryClient = useQueryClient();
   const [selectedPageId, setSelectedPageId] = useState<string>('home');
   const [previewLanguage, setPreviewLanguage] = useState<'en' | 'km'>('en');
-  const [notification, setNotification] = useState<{ message: string; tone: 'success' | 'error' } | undefined>();
+  const [notification, setNotification] = useState<
+    { message: string; tone: 'success' | 'error' } | undefined
+  >();
 
   const activePage = useMemo(
     () => HERO_PAGES.find((page) => page.id === selectedPageId) ?? HERO_PAGES[0]!,
@@ -221,25 +249,37 @@ export function AdminPageHeroesPage() {
   });
 
   const branchHeroQuery = useQuery({
-    enabled: activePage.id === 'home',
+    enabled:
+      activePage.id === 'home' || activePage.id === 'branches' || activePage.id === 'contact',
     queryFn: () => cmsApi.branches.list(homeCarouselBranchQuery),
     queryKey: queryKeys.admin.branches(homeCarouselBranchQuery),
   });
 
-  const existingRecord = useMemo(
-    () => heroQuery.data?.items?.[0],
-    [heroQuery.data?.items],
-  );
+  const existingRecord = useMemo(() => heroQuery.data?.items?.[0], [heroQuery.data?.items]);
 
   const branchHeroSlides = useMemo(
-    () => (branchHeroQuery.data?.items ?? []).filter(
-      (branch) => branch.status === 'PUBLISHED' && branch.includeInHomepageHero,
-    ),
+    () =>
+      (branchHeroQuery.data?.items ?? []).filter(
+        (branch) => branch.status === 'PUBLISHED' && branch.includeInHomepageHero,
+      ),
     [branchHeroQuery.data?.items],
   );
-  const configuredHomeCarouselSlideCount = 1 + branchHeroSlides.length;
+  const publicBranches = useMemo(
+    () =>
+      (branchHeroQuery.data?.items ?? []).filter(
+        (branch) => branch.status === 'PUBLISHED' && branch.showOnBranchesPage,
+      ),
+    [branchHeroQuery.data?.items],
+  );
+  const primaryPublicBranch = publicBranches[0];
+  const contactQuery = useQuery({
+    enabled: activePage.id === 'contact',
+    queryFn: () => cmsApi.contact.get(),
+    queryKey: queryKeys.admin.contact(),
+  });
+  const isPublishedMainSiteHero = existingRecord?.status === 'PUBLISHED';
   const publishedHomeCarouselSlideCount =
-    (existingRecord?.status === 'PUBLISHED' ? 1 : 0) + branchHeroSlides.length;
+    (isPublishedMainSiteHero ? 1 : 0) + branchHeroSlides.length;
 
   const [form, setForm] = useState<HeroFormState>(() => emptyHeroForm());
 
@@ -316,16 +356,72 @@ export function AdminPageHeroesPage() {
     },
   });
 
-  const previewImage = form.imageKey ? getPublicMediaUrl(form.imageKey) : activePage.defaultImage;
-  const previewEyebrow = previewLanguage === 'km'
-    ? form.badgeKm || activePage.defaultEyebrowKm
-    : form.badgeEn || activePage.defaultEyebrowEn;
-  const previewTitle = previewLanguage === 'km'
-    ? form.titleKm || activePage.defaultTitleKm
-    : form.titleEn || activePage.defaultTitleEn;
-  const previewSubtitle = previewLanguage === 'km'
-    ? form.bodyKm || activePage.defaultSubtitleKm
-    : form.bodyEn || activePage.defaultSubtitleEn;
+  const branchFallbackImage = getPublicMediaUrl(
+    primaryPublicBranch?.heroImageKey || primaryPublicBranch?.branchImageKey || undefined,
+  );
+  const previewImage = form.imageKey
+    ? getPublicMediaUrl(form.imageKey)
+    : activePage.id === 'branches'
+      ? branchFallbackImage || activePage.defaultImage
+      : activePage.defaultImage;
+  const previewEyebrow =
+    previewLanguage === 'km'
+      ? form.badgeKm ||
+        (activePage.id === 'branches' ? primaryPublicBranch?.badgeKm : undefined) ||
+        activePage.defaultEyebrowKm
+      : form.badgeEn ||
+        (activePage.id === 'branches' ? primaryPublicBranch?.badgeEn : undefined) ||
+        activePage.defaultEyebrowEn;
+  const previewTitle =
+    previewLanguage === 'km'
+      ? form.titleKm || activePage.defaultTitleKm
+      : form.titleEn || activePage.defaultTitleEn;
+  const previewSubtitle =
+    previewLanguage === 'km'
+      ? form.bodyKm ||
+        (activePage.id === 'branches' ? primaryPublicBranch?.heroSupportingTextKm : undefined) ||
+        activePage.defaultSubtitleKm
+      : form.bodyEn ||
+        (activePage.id === 'branches' ? primaryPublicBranch?.heroSupportingTextEn : undefined) ||
+        activePage.defaultSubtitleEn;
+  const isPublishedHero = existingRecord?.status === 'PUBLISHED';
+  const previewShowsImage = heroPreviewShowsImage(activePage, form.imageKey);
+  const contact = contactQuery.data?.contact;
+  const contactPreviewItems = [
+    {
+      icon: 'phone' as const,
+      label: previewLanguage === 'km' ? 'ទូរស័ព្ទមកយើង' : 'Call Us',
+      value: [contact?.primaryPhone, contact?.secondaryPhone].filter(Boolean).join('\n'),
+    },
+    contact?.primaryEmail
+      ? {
+          icon: 'email' as const,
+          label: previewLanguage === 'km' ? 'អ៊ីមែលមកយើង' : 'Email Us',
+          value: contact.primaryEmail,
+        }
+      : null,
+    {
+      icon: 'clock' as const,
+      label: previewLanguage === 'km' ? 'ម៉ោងធ្វើការ' : 'Opening Hours',
+      value:
+        previewLanguage === 'km'
+          ? (contact?.businessHoursKm ?? '')
+          : (contact?.businessHoursEn ?? ''),
+    },
+    {
+      icon: 'location' as const,
+      label: previewLanguage === 'km' ? 'មកកាន់យើង' : 'Visit Us',
+      value:
+        previewLanguage === 'km'
+          ? `ទីតាំងគ្លីនិកទាំង ${publicBranches.length}`
+          : `${publicBranches.length} clinic location${publicBranches.length === 1 ? '' : 's'}`,
+    },
+  ].filter(
+    (
+      item,
+    ): item is { icon: 'clock' | 'email' | 'location' | 'phone'; label: string; value: string } =>
+      Boolean(item?.value),
+  );
 
   return (
     <div className="min-h-screen bg-[#f6f8fb]">
@@ -342,12 +438,19 @@ export function AdminPageHeroesPage() {
               }`}
             >
               <span className="inline-flex items-center gap-2">
-                <AdminIcon className="size-4" name={notification.tone === 'error' ? 'info' : 'check'} />
+                <AdminIcon
+                  className="size-4"
+                  name={notification.tone === 'error' ? 'info' : 'check'}
+                />
                 {notification.message}
               </span>
               <button
                 aria-label="Dismiss notification"
-                className={notification.tone === 'error' ? 'text-[#b42318] hover:text-[#7a271a]' : 'text-[#13ad63] hover:text-[#0b7944]'}
+                className={
+                  notification.tone === 'error'
+                    ? 'text-[#b42318] hover:text-[#7a271a]'
+                    : 'text-[#13ad63] hover:text-[#0b7944]'
+                }
                 onClick={() => setNotification(undefined)}
                 type="button"
               >
@@ -359,7 +462,9 @@ export function AdminPageHeroesPage() {
           {/* Page Heading */}
           <header className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2187a8]">Website Content Management</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2187a8]">
+                Website Content Management
+              </p>
               <AdminPageHeading />
             </div>
             <a
@@ -377,7 +482,9 @@ export function AdminPageHeroesPage() {
           <div className="mt-8 grid gap-7 xl:grid-cols-[340px_minmax(0,1fr)]">
             {/* Left Column: Pages List */}
             <Card className="h-fit rounded-2xl border-[#dce5ef] bg-white p-4 shadow-none">
-              <h2 className="px-2 text-xs font-bold uppercase tracking-[0.15em] text-[#71839e]">Select Page to Edit</h2>
+              <h2 className="px-2 text-xs font-bold uppercase tracking-[0.15em] text-[#71839e]">
+                Select Page to Edit
+              </h2>
               <div className="mt-3 space-y-1.5">
                 {HERO_PAGES.map((page) => {
                   const isSelected = page.id === selectedPageId;
@@ -422,58 +529,100 @@ export function AdminPageHeroesPage() {
                 <Card className="rounded-2xl border-[#dce5ef] bg-white p-5 shadow-none sm:p-6">
                   <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#edf1f5] pb-4">
                     <div>
-                      <h2 className="text-[16px] font-bold text-[#182238]">Homepage carousel slides</h2>
+                      <h2 className="text-[16px] font-bold text-[#182238]">Homepage carousel</h2>
                       <p className="mt-0.5 max-w-2xl text-xs leading-5 text-[#71839e]">
-                        The homepage rotates through the main site hero and every published branch enabled for the homepage hero carousel.
+                        These are the exact slides currently visible to website visitors. Branch
+                        slides are edited in Branches &amp; Locations.
                       </p>
                     </div>
                     <span className="rounded-full bg-[#eef8fb] px-3 py-1 text-xs font-bold text-[#2187a8]">
-                      {publishedHomeCarouselSlideCount} live · {configuredHomeCarouselSlideCount} configured
+                      {publishedHomeCarouselSlideCount} live{' '}
+                      {publishedHomeCarouselSlideCount === 1 ? 'slide' : 'slides'}
                     </span>
                   </div>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <article className="overflow-hidden rounded-xl border border-[#b9dce8] bg-[#f8fcfd]">
-                      <div className="aspect-[21/9] bg-[#eaf3f6]">
-                        <img alt="Main site hero" className="h-full w-full object-cover" src={previewImage} />
-                      </div>
-                      <div className="p-3.5">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-sm font-bold text-[#182238]">Main site hero</p>
-                          <AdminPublicationStatus status={existingRecord ? form.status.toLowerCase() as 'published' | 'draft' : 'draft'} />
+                    {isPublishedMainSiteHero ? (
+                      <article className="overflow-hidden rounded-xl border border-[#b9dce8] bg-[#f8fcfd]">
+                        <div className="aspect-[21/9] bg-[#eaf3f6]">
+                          <img
+                            alt="Main site hero"
+                            className="h-full w-full object-cover"
+                            src={previewImage}
+                          />
                         </div>
-                        <p className="mt-1 text-xs leading-5 text-[#71839e]">Edit this slide in the Home Page form below.</p>
-                      </div>
-                    </article>
+                        <div className="p-3.5">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm font-bold text-[#182238]">Main site hero</p>
+                            <AdminPublicationStatus status="published" />
+                          </div>
+                          <p className="mt-1 text-xs leading-5 text-[#71839e]">
+                            Edit this slide in the Home Page form below.
+                          </p>
+                        </div>
+                      </article>
+                    ) : null}
 
                     {branchHeroQuery.isLoading ? (
                       <div className="min-h-40 animate-pulse rounded-xl border border-[#dce5ef] bg-[#f7fafc]" />
                     ) : null}
                     {branchHeroSlides.map((branch) => {
-                      const branchImage = getPublicMediaUrl(branch.heroImageKey || branch.branchImageKey || undefined);
+                      const branchImage = getPublicMediaUrl(
+                        branch.heroImageKey || branch.branchImageKey || undefined,
+                      );
                       return (
-                        <article className="overflow-hidden rounded-xl border border-[#dce5ef] bg-white" key={branch.id}>
+                        <article
+                          className="overflow-hidden rounded-xl border border-[#dce5ef] bg-white"
+                          key={branch.id}
+                        >
                           <div className="aspect-[21/9] bg-[#eaf3f6]">
                             {branchImage ? (
-                              <img alt={branch.nameEn} className="h-full w-full object-cover" src={branchImage} />
+                              <img
+                                alt={branch.nameEn}
+                                className="h-full w-full object-cover"
+                                src={branchImage}
+                              />
                             ) : (
-                              <div className="grid h-full place-items-center text-xs font-semibold text-[#71839e]">No branch hero image</div>
+                              <div className="grid h-full place-items-center text-xs font-semibold text-[#71839e]">
+                                No branch hero image
+                              </div>
                             )}
                           </div>
                           <div className="p-3.5">
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <p className="text-sm font-bold text-[#182238]">{branch.nameEn}</p>
-                              <span className="rounded-full bg-[#eef8fb] px-2.5 py-1 text-[11px] font-bold text-[#2187a8]">Branch slide</span>
+                              <span className="rounded-full bg-[#eef8fb] px-2.5 py-1 text-[11px] font-bold text-[#2187a8]">
+                                Branch slide
+                              </span>
                             </div>
-                            <p className="mt-1 text-xs leading-5 text-[#71839e]">Managed with this branch’s hero content and visibility settings.</p>
-                            <Link className="mt-2 inline-flex min-h-10 items-center text-xs font-bold text-[#2187a8] hover:text-[#176d89] hover:underline" to={`/admin/clinic-info/branches?branch=${encodeURIComponent(branch.id)}`}>
+                            <p className="mt-1 text-xs leading-5 text-[#71839e]">
+                              Managed with this branch’s hero content and visibility settings.
+                            </p>
+                            <Link
+                              className="mt-2 inline-flex min-h-10 items-center text-xs font-bold text-[#2187a8] hover:text-[#176d89] hover:underline"
+                              to={`/admin/clinic-info/branches?branch=${encodeURIComponent(branch.id)}`}
+                            >
                               Edit branch slide →
                             </Link>
                           </div>
                         </article>
                       );
                     })}
+                    {publishedHomeCarouselSlideCount === 0 && !branchHeroQuery.isLoading ? (
+                      <p className="rounded-xl border border-dashed border-[#dce5ef] bg-[#f8fcfd] p-4 text-sm text-[#71839e]">
+                        No live homepage slides yet. Publish the optional main site slide or enable
+                        a published branch for the homepage carousel.
+                      </p>
+                    ) : null}
                   </div>
+
+                  {!isPublishedMainSiteHero ? (
+                    <div className="mt-4 rounded-xl border border-[#f4d6a4] bg-[#fffaf0] px-4 py-3 text-sm text-[#79520b]">
+                      <span className="font-bold">Optional main site slide · Draft.</span> It is not
+                      visible on the homepage. Publish it in the form below to add it before the
+                      branch slides.
+                    </div>
+                  ) : null}
                 </Card>
               ) : null}
 
@@ -482,12 +631,22 @@ export function AdminPageHeroesPage() {
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f5] pb-4">
                   <div>
                     <h2 className="text-[16px] font-bold text-[#182238]">
-                      Live Preview · {activePage.name} {activePage.id === 'home' ? 'Carousel Main Slide' : 'Hero'}
+                      {activePage.id === 'home'
+                        ? isPublishedMainSiteHero
+                          ? 'Live Preview · Homepage Carousel Main Slide'
+                          : 'Preview · Optional Main Site Slide'
+                        : isPublishedHero
+                          ? `Live Page Layout · ${activePage.name}`
+                          : `Draft Editor Preview · ${activePage.name}`}
                     </h2>
                     <p className="mt-0.5 text-xs text-[#71839e]">
                       {activePage.id === 'home'
-                        ? 'Previewing the main site slide. Branch slides are shown above and managed in Branches & Locations.'
-                        : 'Shows how this hero appears to website visitors.'}
+                        ? isPublishedMainSiteHero
+                          ? 'This published slide appears before the branch slides shown above.'
+                          : 'This draft is not visible on the homepage. Publish it to add it before the branch slides shown above.'
+                        : isPublishedHero
+                          ? 'This is the layout currently shown to website visitors.'
+                          : 'Draft changes are not visible to website visitors until you publish them.'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -495,7 +654,9 @@ export function AdminPageHeroesPage() {
                     <div className="inline-flex rounded-lg border border-[#dce5ef] p-0.5">
                       <button
                         className={`rounded-md px-2.5 py-1 text-xs font-bold transition ${
-                          previewLanguage === 'en' ? 'bg-[#2187a8] text-white' : 'text-[#71839e] hover:text-[#182238]'
+                          previewLanguage === 'en'
+                            ? 'bg-[#2187a8] text-white'
+                            : 'text-[#71839e] hover:text-[#182238]'
                         }`}
                         onClick={() => setPreviewLanguage('en')}
                         type="button"
@@ -504,7 +665,9 @@ export function AdminPageHeroesPage() {
                       </button>
                       <button
                         className={`rounded-md px-2.5 py-1 text-xs font-bold transition ${
-                          previewLanguage === 'km' ? 'bg-[#2187a8] text-white' : 'text-[#71839e] hover:text-[#182238]'
+                          previewLanguage === 'km'
+                            ? 'bg-[#2187a8] text-white'
+                            : 'text-[#71839e] hover:text-[#182238]'
                         }`}
                         onClick={() => setPreviewLanguage('km')}
                         type="button"
@@ -516,17 +679,21 @@ export function AdminPageHeroesPage() {
                 </div>
 
                 {/* Banner Visual Preview Box */}
-                <div className="relative mt-5 overflow-hidden rounded-xl border border-[#d9e9ee] bg-[#063e5c]">
+                <div
+                  className={`relative mt-5 overflow-hidden rounded-xl border border-[#d9e9ee] ${previewShowsImage ? 'bg-[#063e5c]' : 'bg-[linear-gradient(120deg,#fafdfe_0%,#edf7fa_100%)]'}`}
+                >
                   <div className="relative min-h-[220px] sm:min-h-[280px]">
-                    <img
-                      alt={previewTitle}
-                      className="absolute inset-0 h-full w-full object-cover"
-                      src={previewImage}
-                      style={{
-                        objectPosition: `${form.imagePresentation.positionX}% ${form.imagePresentation.positionY}%`,
-                        transform: `scale(${form.imagePresentation.zoom})`,
-                      }}
-                    />
+                    {previewShowsImage ? (
+                      <img
+                        alt={previewTitle}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        src={previewImage}
+                        style={{
+                          objectPosition: `${form.imagePresentation.positionX}% ${form.imagePresentation.positionY}%`,
+                          transform: `scale(${form.imagePresentation.zoom})`,
+                        }}
+                      />
+                    ) : null}
                     {activePage.placement === 'CONTACT_HERO' ? (
                       <div className="relative z-10 grid min-h-[220px] items-center gap-4 p-4 sm:min-h-[280px] sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-6 sm:p-6">
                         <div className="max-w-[360px]">
@@ -545,29 +712,30 @@ export function AdminPageHeroesPage() {
                           ) : null}
                         </div>
                         <div className="hidden rounded-xl border border-[#d9e9ee] bg-white/95 p-3.5 shadow-[0_4px_16px_rgba(0,86,135,0.08)] backdrop-blur-md sm:block">
-                          <div className="space-y-2.5">
-                            <div className="flex items-center gap-2.5">
-                              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9]">
-                                <ContactIcon className="size-3.5" name="phone" />
-                              </span>
-                              <div className="min-w-0">
-                                <p className="text-[10px] font-bold text-[#3695b9]">{previewLanguage === 'km' ? 'ទូរស័ព្ទ' : 'Phone'}</p>
-                                <p className="text-[11px] font-extrabold text-[#005687]">098 701 302</p>
-                              </div>
+                          {contactQuery.isLoading ? (
+                            <div className="h-24 animate-pulse rounded-lg bg-[#eef8fb]" />
+                          ) : (
+                            <div className="space-y-2.5">
+                              {contactPreviewItems.map((item) => (
+                                <div className="flex items-center gap-2.5" key={item.label}>
+                                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9]">
+                                    <ContactIcon className="size-3.5" name={item.icon} />
+                                  </span>
+                                  <div className="min-w-0">
+                                    <p className="text-[10px] font-bold text-[#3695b9]">
+                                      {item.label}
+                                    </p>
+                                    <p className="whitespace-pre-line text-[11px] font-extrabold text-[#005687]">
+                                      {item.value}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            <div className="flex items-center gap-2.5">
-                              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9]">
-                                <ContactIcon className="size-3.5" name="clock" />
-                              </span>
-                              <div className="min-w-0">
-                                <p className="text-[10px] font-bold text-[#3695b9]">{previewLanguage === 'km' ? 'ម៉ោង' : 'Hours'}</p>
-                                <p className="text-[11px] font-extrabold text-[#005687]">8:00 AM - 7:00 PM</p>
-                              </div>
-                            </div>
-                          </div>
+                          )}
                         </div>
                       </div>
-                    ) : activePage.placement === 'ABOUT_HERO' ? (
+                    ) : activePage.previewLayout === 'light' ? (
                       <div className="relative z-10 flex min-h-[220px] items-center p-4 sm:min-h-[280px] sm:p-6">
                         <div className="max-w-[420px]">
                           {previewEyebrow ? (
@@ -585,9 +753,26 @@ export function AdminPageHeroesPage() {
                           ) : null}
                         </div>
                       </div>
-                    ) : activePage.placement === 'DOCTORS_HERO' ? (
-                      /* Doctors hero displays the clean doctor team photo without text or overlay so all doctors are clearly visible */
-                      null
+                    ) : activePage.previewLayout ===
+                      'image-only' /* Doctors hero displays the clean doctor team photo without text or overlay so all doctors are clearly visible */ ? null : activePage.previewLayout ===
+                        'overlay-or-text' && !previewShowsImage ? (
+                      <div className="flex min-h-[220px] items-center justify-center p-6 text-center sm:min-h-[280px] sm:p-10">
+                        <div className="max-w-[620px]">
+                          {previewEyebrow ? (
+                            <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+                              {previewEyebrow}
+                            </p>
+                          ) : null}
+                          <h3 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">
+                            {previewTitle}
+                          </h3>
+                          {previewSubtitle ? (
+                            <p className="mt-3 text-[16px] font-medium leading-7 text-[#607486]">
+                              {previewSubtitle}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
                     ) : (
                       <>
                         <div
@@ -601,7 +786,9 @@ export function AdminPageHeroesPage() {
                               <span>{previewEyebrow}</span>
                             </div>
                           ) : null}
-                          <h3 className={`${previewEyebrow ? 'mt-2.5' : ''} text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-white sm:text-[30px]`}>
+                          <h3
+                            className={`${previewEyebrow ? 'mt-2.5' : ''} text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-white sm:text-[30px]`}
+                          >
                             {previewTitle}
                           </h3>
                           {previewSubtitle ? (
@@ -621,15 +808,25 @@ export function AdminPageHeroesPage() {
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf1f5] pb-4">
                   <div>
                     <h3 className="text-lg font-bold text-[#182238]">
-                      Edit {activePage.name} Content
+                      {activePage.id === 'home'
+                        ? 'Edit Optional Main Site Slide'
+                        : `Edit ${activePage.name} Content`}
                     </h3>
                     <p className="mt-0.5 text-xs text-[#71839e]">
-                      Configure the image, focal point, and bilingual copy for this page.
+                      {activePage.id === 'home'
+                        ? 'Configure the optional site-wide slide. Publish it only when you want it shown before the branch slides.'
+                        : 'Configure the image, focal point, and bilingual copy for this page.'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-[#71839e]">Current status:</span>
-                    <AdminPublicationStatus status={existingRecord ? form.status.toLowerCase() as 'published' | 'draft' : 'draft'} />
+                    <AdminPublicationStatus
+                      status={
+                        existingRecord
+                          ? (form.status.toLowerCase() as 'published' | 'draft')
+                          : 'draft'
+                      }
+                    />
                   </div>
                 </div>
 
@@ -646,17 +843,25 @@ export function AdminPageHeroesPage() {
                       category="clinic"
                       framing={{
                         frames: pageHeroFrames(activePage.placement),
-                        onChange: (imagePresentation) => setForm((prev) => ({ ...prev, imagePresentation })),
+                        onChange: (imagePresentation) =>
+                          setForm((prev) => ({ ...prev, imagePresentation })),
                         value: form.imagePresentation,
                       }}
-                      help="Choose a high quality landscape photo. JPEG, PNG, or WEBP up to 5 MB."
-                      label="Hero Background Photo"
+                      help={
+                        activePage.supportsCopy === false
+                          ? 'Choose the team photo shown at the top of the Doctors page. JPEG, PNG, or WEBP up to 5 MB.'
+                          : 'Choose a high quality landscape photo. JPEG, PNG, or WEBP up to 5 MB.'
+                      }
+                      label={
+                        activePage.supportsCopy === false
+                          ? 'Doctor Team Photo'
+                          : 'Hero Background Photo'
+                      }
                       onClear={() => setForm((prev) => ({ ...prev, imageKey: '' }))}
                       onUploaded={(key) => setForm((prev) => ({ ...prev, imageKey: key }))}
                       required
                       value={form.imageKey}
                     />
-
                   </div>
 
                   {/* Publication Status Selector */}
@@ -665,101 +870,129 @@ export function AdminPageHeroesPage() {
                       Publication Status
                       <select
                         className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-sm text-[#182238]"
-                        onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as 'DRAFT' | 'PUBLISHED' }))}
+                        onChange={(e) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            status: e.target.value as 'DRAFT' | 'PUBLISHED',
+                          }))
+                        }
                         value={form.status}
                       >
                         <option value="PUBLISHED">Published (Visible on live site)</option>
-                        <option value="DRAFT">Draft (Saved but using clinic defaults)</option>
+                        <option value="DRAFT">
+                          Draft (Saved but not visible to website visitors)
+                        </option>
                       </select>
                     </label>
                   </div>
 
-                  {/* Bilingual Eyebrow Badge */}
-                  <fieldset className="rounded-xl border border-[#dce5ef] p-4 sm:p-5">
-                    <legend className="px-1 text-xs font-bold uppercase tracking-[0.14em] text-[#2187a8]">
-                      Eyebrow / Category Badge (Small upper label)
-                    </legend>
-                    <div className="mt-2 grid gap-4 sm:grid-cols-2">
-                      <label className="text-sm font-semibold text-[#52647d]">
-                        Badge · English
-                        <input
-                          className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm"
-                          maxLength={80}
-                          onChange={(e) => setForm((prev) => ({ ...prev, badgeEn: e.target.value }))}
-                          placeholder={activePage.defaultEyebrowEn}
-                          value={form.badgeEn}
-                        />
-                      </label>
-                      <label className="text-sm font-semibold text-[#52647d]">
-                        ផ្លាកចំណងជើង · ខ្មែរ
-                        <input
-                          className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm"
-                          maxLength={80}
-                          onChange={(e) => setForm((prev) => ({ ...prev, badgeKm: e.target.value }))}
-                          placeholder={activePage.defaultEyebrowKm}
-                          value={form.badgeKm}
-                        />
-                      </label>
-                    </div>
-                  </fieldset>
+                  {activePage.supportsCopy !== false ? (
+                    <>
+                      {/* Bilingual Eyebrow Badge */}
+                      <fieldset className="rounded-xl border border-[#dce5ef] p-4 sm:p-5">
+                        <legend className="px-1 text-xs font-bold uppercase tracking-[0.14em] text-[#2187a8]">
+                          Eyebrow / Category Badge (Small upper label)
+                        </legend>
+                        <div className="mt-2 grid gap-4 sm:grid-cols-2">
+                          <label className="text-sm font-semibold text-[#52647d]">
+                            Badge · English
+                            <input
+                              className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm"
+                              maxLength={80}
+                              onChange={(e) =>
+                                setForm((prev) => ({ ...prev, badgeEn: e.target.value }))
+                              }
+                              placeholder={activePage.defaultEyebrowEn}
+                              value={form.badgeEn}
+                            />
+                          </label>
+                          <label className="text-sm font-semibold text-[#52647d]">
+                            ផ្លាកចំណងជើង · ខ្មែរ
+                            <input
+                              className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm"
+                              maxLength={80}
+                              onChange={(e) =>
+                                setForm((prev) => ({ ...prev, badgeKm: e.target.value }))
+                              }
+                              placeholder={activePage.defaultEyebrowKm}
+                              value={form.badgeKm}
+                            />
+                          </label>
+                        </div>
+                      </fieldset>
 
-                  {/* Bilingual Main Heading / Title */}
-                  <fieldset className="rounded-xl border border-[#dce5ef] p-4 sm:p-5">
-                    <legend className="px-1 text-xs font-bold uppercase tracking-[0.14em] text-[#2187a8]">
-                      Hero Title / Main Heading
-                    </legend>
-                    <div className="mt-2 grid gap-4 sm:grid-cols-2">
-                      <label className="text-sm font-semibold text-[#52647d]">
-                        Title · English
-                        <input
-                          className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm"
-                          maxLength={160}
-                          onChange={(e) => setForm((prev) => ({ ...prev, titleEn: e.target.value }))}
-                          placeholder={activePage.defaultTitleEn}
-                          value={form.titleEn}
-                        />
-                      </label>
-                      <label className="text-sm font-semibold text-[#52647d]">
-                        ចំណងជើងធំ · ខ្មែរ
-                        <input
-                          className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm"
-                          maxLength={160}
-                          onChange={(e) => setForm((prev) => ({ ...prev, titleKm: e.target.value }))}
-                          placeholder={activePage.defaultTitleKm}
-                          value={form.titleKm}
-                        />
-                      </label>
-                    </div>
-                  </fieldset>
+                      {/* Bilingual Main Heading / Title */}
+                      <fieldset className="rounded-xl border border-[#dce5ef] p-4 sm:p-5">
+                        <legend className="px-1 text-xs font-bold uppercase tracking-[0.14em] text-[#2187a8]">
+                          Hero Title / Main Heading
+                        </legend>
+                        <div className="mt-2 grid gap-4 sm:grid-cols-2">
+                          <label className="text-sm font-semibold text-[#52647d]">
+                            Title · English
+                            <input
+                              className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm"
+                              maxLength={160}
+                              onChange={(e) =>
+                                setForm((prev) => ({ ...prev, titleEn: e.target.value }))
+                              }
+                              placeholder={activePage.defaultTitleEn}
+                              value={form.titleEn}
+                            />
+                          </label>
+                          <label className="text-sm font-semibold text-[#52647d]">
+                            ចំណងជើងធំ · ខ្មែរ
+                            <input
+                              className="mt-2 h-11 w-full rounded-xl border border-[#dce5ef] px-3 text-sm"
+                              maxLength={160}
+                              onChange={(e) =>
+                                setForm((prev) => ({ ...prev, titleKm: e.target.value }))
+                              }
+                              placeholder={activePage.defaultTitleKm}
+                              value={form.titleKm}
+                            />
+                          </label>
+                        </div>
+                      </fieldset>
 
-                  {/* Bilingual Subtitle / Description */}
-                  <fieldset className="rounded-xl border border-[#dce5ef] p-4 sm:p-5">
-                    <legend className="px-1 text-xs font-bold uppercase tracking-[0.14em] text-[#2187a8]">
-                      Subtitle / Supporting Description
-                    </legend>
-                    <div className="mt-2 grid gap-4 sm:grid-cols-2">
-                      <label className="text-sm font-semibold text-[#52647d]">
-                        Description · English
-                        <textarea
-                          className="mt-2 min-h-24 w-full rounded-xl border border-[#dce5ef] p-3 text-sm leading-6"
-                          maxLength={600}
-                          onChange={(e) => setForm((prev) => ({ ...prev, bodyEn: e.target.value }))}
-                          placeholder={activePage.defaultSubtitleEn}
-                          value={form.bodyEn}
-                        />
-                      </label>
-                      <label className="text-sm font-semibold text-[#52647d]">
-                        ការពិពណ៌នា · ខ្មែរ
-                        <textarea
-                          className="mt-2 min-h-24 w-full rounded-xl border border-[#dce5ef] p-3 text-sm leading-6"
-                          maxLength={600}
-                          onChange={(e) => setForm((prev) => ({ ...prev, bodyKm: e.target.value }))}
-                          placeholder={activePage.defaultSubtitleKm}
-                          value={form.bodyKm}
-                        />
-                      </label>
-                    </div>
-                  </fieldset>
+                      {/* Bilingual Subtitle / Description */}
+                      <fieldset className="rounded-xl border border-[#dce5ef] p-4 sm:p-5">
+                        <legend className="px-1 text-xs font-bold uppercase tracking-[0.14em] text-[#2187a8]">
+                          Subtitle / Supporting Description
+                        </legend>
+                        <div className="mt-2 grid gap-4 sm:grid-cols-2">
+                          <label className="text-sm font-semibold text-[#52647d]">
+                            Description · English
+                            <textarea
+                              className="mt-2 min-h-24 w-full rounded-xl border border-[#dce5ef] p-3 text-sm leading-6"
+                              maxLength={600}
+                              onChange={(e) =>
+                                setForm((prev) => ({ ...prev, bodyEn: e.target.value }))
+                              }
+                              placeholder={activePage.defaultSubtitleEn}
+                              value={form.bodyEn}
+                            />
+                          </label>
+                          <label className="text-sm font-semibold text-[#52647d]">
+                            ការពិពណ៌នា · ខ្មែរ
+                            <textarea
+                              className="mt-2 min-h-24 w-full rounded-xl border border-[#dce5ef] p-3 text-sm leading-6"
+                              maxLength={600}
+                              onChange={(e) =>
+                                setForm((prev) => ({ ...prev, bodyKm: e.target.value }))
+                              }
+                              placeholder={activePage.defaultSubtitleKm}
+                              value={form.bodyKm}
+                            />
+                          </label>
+                        </div>
+                      </fieldset>
+                    </>
+                  ) : (
+                    <p className="rounded-xl border border-[#dce5ef] bg-[#f8fcfd] px-4 py-3 text-sm leading-6 text-[#52647d]">
+                      The Doctors page hero is a team photo only. Its title and supporting copy are
+                      managed by the public page design, so there are no unused text fields here.
+                    </p>
+                  )}
 
                   {/* Actions Footer */}
                   <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#edf1f5] pt-5">

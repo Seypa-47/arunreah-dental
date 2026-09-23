@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AdminPageHeroesPage, HERO_PAGES } from './AdminPageHeroesPage';
+import { AdminPageHeroesPage, HERO_PAGES, heroPreviewShowsImage } from './AdminPageHeroesPage';
 
 vi.mock('@/services/cms', () => ({
   cmsApi: {
@@ -59,7 +59,9 @@ describe('AdminPageHeroesPage', () => {
     const html = renderPage();
     expect(html).toContain('Hero sections');
     expect(html).toContain('Website Content Management');
-    expect(html).toContain('Manage the bilingual titles, subtitles, eyebrow badges, and hero images');
+    expect(html).toContain(
+      'Manage the bilingual titles, subtitles, eyebrow badges, and hero images',
+    );
   });
 
   it('renders all 8 page hero selector tabs', () => {
@@ -81,18 +83,40 @@ describe('AdminPageHeroesPage', () => {
     expect(html).toContain('Save Hero Section');
   });
 
-  it('renders live preview section with language toggle', () => {
+  it('renders the preview section with a language toggle', () => {
     const html = renderPage();
-    expect(html).toContain('Live Preview');
+    expect(html).toContain('Preview');
     expect(html).toContain('Preview language:');
     expect(html).toContain('English');
     expect(html).toContain('ខ្មែរ');
   });
 
-  it('explains every source that can appear in the homepage carousel', () => {
+  it('separates live homepage carousel slides from an optional draft site slide', () => {
     const html = renderPage();
-    expect(html).toContain('Homepage carousel slides');
-    expect(html).toContain('Main site hero');
-    expect(html).toContain('Branch slides are shown above and managed in Branches &amp; Locations.');
+    expect(html).toContain('Homepage carousel');
+    expect(html).toContain('0 live slides');
+    expect(html).toContain('Optional main site slide · Draft.');
+    expect(html).toContain('Edit Optional Main Site Slide');
+  });
+
+  it('only previews a background image for services and showcases after one is selected', () => {
+    const services = HERO_PAGES.find((page) => page.id === 'services');
+    const showcases = HERO_PAGES.find((page) => page.id === 'showcases');
+    const doctors = HERO_PAGES.find((page) => page.id === 'doctors');
+
+    expect(services).toBeDefined();
+    expect(showcases).toBeDefined();
+    expect(doctors).toBeDefined();
+    expect(heroPreviewShowsImage(services!, '')).toBe(false);
+    expect(heroPreviewShowsImage(showcases!, '')).toBe(false);
+    expect(heroPreviewShowsImage(services!, 'clinic/services.jpg')).toBe(true);
+    expect(heroPreviewShowsImage(doctors!, '')).toBe(true);
+  });
+
+  it('marks the doctors hero as image-only so unused copy fields are not offered', () => {
+    const doctors = HERO_PAGES.find((page) => page.id === 'doctors');
+
+    expect(doctors?.supportsCopy).toBe(false);
+    expect(doctors?.previewLayout).toBe('image-only');
   });
 });
