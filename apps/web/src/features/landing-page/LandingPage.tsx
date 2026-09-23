@@ -92,7 +92,7 @@ function SectionHeader({
     <div className="mx-auto flex w-full max-w-[1280px] items-end justify-between gap-4 px-4 sm:px-6 lg:px-8">
       <div className={align === 'center' ? 'mx-auto text-center' : undefined}>
         {eyebrow ? (
-          <p className="mb-4 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695b9]">
+          <p className="ui-eyebrow mb-4 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695b9]">
             {eyebrow}
           </p>
         ) : null}
@@ -253,7 +253,7 @@ function PromotionsSection({
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-[680px]">
-            <p className="text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.eyebrow}</p>
+            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.eyebrow}</p>
             <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]" id="promotions-title">{editorial.title}</h2>
             <p className="mt-3 max-w-[620px] text-[15px] leading-6 text-[#607486] sm:text-[16px]">{editorial.subtitle}</p>
           </div>
@@ -475,7 +475,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695b9]">
+            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695b9]">
               {copy.servicesEyebrow}
             </p>
             <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">{copy.servicesTitle}</h2>
@@ -585,7 +585,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
+            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
               {copy.specialistsEyebrow}
             </p>
             <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">{copy.specialistsTitle}</h2>
@@ -726,7 +726,7 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
       <div className="relative mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="mb-7 flex items-end justify-between border-b border-white/25 pb-4">
           <div>
-            <p className="mb-3 text-[12px] font-bold uppercase tracking-[0.22em] text-[#b9e8f5]">{copy.showcaseEyebrow}</p>
+            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase tracking-[0.22em] text-[#b9e8f5]">{copy.showcaseEyebrow}</p>
             <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] sm:text-[38px]">{copy.showcaseTitle}</h2>
           </div>
           <Link

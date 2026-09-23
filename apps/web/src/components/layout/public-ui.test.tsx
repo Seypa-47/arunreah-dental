@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { CmsImage, ImageFrame, renderHeroTitle } from './public-ui';
+import { CmsImage, ImageFrame, renderHeroTitle, SectionIntro } from './public-ui';
 
 describe('public CMS image primitives', () => {
   it('lazy-loads card media with async decoding by default', () => {
@@ -28,6 +28,14 @@ describe('public CMS image primitives', () => {
   it('uses custom fallbackSrc when provided without src', () => {
     const html = renderToStaticMarkup(<CmsImage alt="Custom" fallbackSrc="/custom-fallback.png" />);
     expect(html).toContain('src="/custom-fallback.png"');
+  });
+
+  it('marks shared section eyebrows so Khmer can use natural letter spacing', () => {
+    const html = renderToStaticMarkup(
+      <SectionIntro as="h2" eyebrow="Clinic information" title="About our clinic" />,
+    );
+
+    expect(html).toContain('ui-eyebrow');
   });
 });
 

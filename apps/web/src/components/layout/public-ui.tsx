@@ -454,7 +454,7 @@ export function PublicPageHero({
         <div className={`relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 ${info && info.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8' : ''}`}>
           <div className="max-w-[620px]">
             {eyebrow ? (
-              <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+              <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
                 {eyebrow}
               </p>
             ) : null}

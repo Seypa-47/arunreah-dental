@@ -48,7 +48,7 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
           />
         </div>
         <div>
-          <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+          <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
             {doctor.detail.roleTitle}
           </p>
           <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
@@ -152,7 +152,7 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
           <section className="rounded-2xl border border-[#e3edf1] bg-white p-5 sm:p-7">
             <div className="flex items-center gap-3">
               <span aria-hidden="true" className="h-px w-8 bg-[#3695B9]" />
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#3695B9]">{copy.profile}</p>
+              <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#3695B9]">{copy.profile}</p>
             </div>
             <h2 className="mt-3 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{copy.about}</h2>
             <div className="mt-4 max-w-[800px] space-y-4 text-[16px] font-normal leading-7 text-[#526879]">
@@ -165,7 +165,7 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
           <section className="mt-8">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#3695B9]">{copy.qualifications}</p>
+                <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#3695B9]">{copy.qualifications}</p>
                 <h2 className="mt-2 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{copy.education}</h2>
               </div>
             </div>
@@ -180,7 +180,7 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <Card className="overflow-hidden rounded-2xl border-[#dcebf0] bg-[#f8fcfd] p-0 shadow-none">
             <div className="border-b border-[#dcebf0] bg-[#edf8fb] px-5 py-4">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#3695B9]">{copy.profile}</p>
+              <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#3695B9]">{copy.profile}</p>
               <h2 className="mt-1 text-[19px] font-extrabold leading-6 text-[#005687]">{copy.expertise}</h2>
             </div>
             <div className="p-5">
