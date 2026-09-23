@@ -6,14 +6,14 @@ import { defaultImagePresentation, type ImagePresentation, type UpdateShowcaseIn
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
 import { MediaUploader } from '@/components/admin/media-uploader';
-import { ImagePositionEditor } from '@/components/admin/image-position-editor';
+import { imageFrames } from '@/components/admin/image-frames';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cmsApi, type AdminShowcaseDetail } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 import { queryKeys } from '@/lib/query-keys';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
-import { getPublicMediaUrl, toMediaKey } from '@/services/media';
+import { toMediaKey } from '@/services/media';
 
 const categoryOptions = [
   'Treatment',
@@ -67,7 +67,7 @@ function TextInput({
 }) {
   return (
     <input
-      className={`h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7] ${className}`}
+      className={`h-10 w-full rounded-xl border border-[#64748b] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition placeholder:text-[#71839e] hover:border-[#475569] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20 ${className}`}
       lang={lang}
       min={min}
       onChange={onChange}
@@ -195,6 +195,7 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
           bodyEn: sec.bodyEn?.trim() || null,
           bodyKm: sec.bodyKm?.trim() || null,
           imageKey: toMediaKey(sec.imageKey),
+          ...(sec.imageKey && sec.imagePresentation ? { imagePresentation: sec.imagePresentation } : {}),
           displayOrder: idx,
         })),
         relatedShowcaseIds,
@@ -515,6 +516,14 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
               <div className="space-y-3 rounded-xl border border-[#edf2f7] bg-[#fbfcfd] p-4">
                 <MediaUploader
                   category="showcases"
+                  framing={{
+                    frames: imageFrames.showcaseCover,
+                    onChange: (presentation) => {
+                      markDirty();
+                      setCoverImagePresentation(presentation);
+                    },
+                    value: coverImagePresentation,
+                  }}
                   help="Choose a clear cover photograph representing this showcase. JPEG, PNG, or WEBP up to 5 MB."
                   label="Cover Image"
                   onClear={() => {
@@ -527,20 +536,6 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
                   }}
                   value={coverImageKey ?? undefined}
                 />
-                {coverImageKey ? (
-                  <div className="mt-4 border-t border-[#edf2f7] pt-4">
-                    <p className="mb-2 text-[12.5px] font-bold text-[#61738d]">Image Framing & Focus</p>
-                    <ImagePositionEditor
-                      aspectClassName="aspect-video"
-                      onChange={(presentation) => {
-                        markDirty();
-                        setCoverImagePresentation(presentation);
-                      }}
-                      src={getPublicMediaUrl(coverImageKey)}
-                      value={coverImagePresentation}
-                    />
-                  </div>
-                ) : null}
               </div>
             </div>
           </Card>
@@ -719,6 +714,11 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
 
                           <MediaUploader
                             category="showcases"
+                            framing={{
+                              frames: imageFrames.showcaseSection,
+                              onChange: (imagePresentation) => updateSection(idx, { imagePresentation }),
+                              value: sec.imagePresentation,
+                            }}
                             help="Optional supporting photo for this specific section."
                             label="Section Image"
                             onClear={() => updateSection(idx, { imageKey: null })}

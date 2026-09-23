@@ -1,11 +1,12 @@
-import { useCallback, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { BookAppointmentPageContent } from '@/features/landing-page/types';
 import { useBookAppointmentPageQuery } from './use-book-appointment-page';
 import { ApiClientError } from '@/lib/api';
@@ -13,14 +14,8 @@ import { env } from '@/config/env';
 import { createPublicAppointment } from '@/services/public-content';
 import { TurnstileWidget } from './turnstile-widget';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { publicShell } from '@/features/public-content/public-page-chrome';
 
 type IconName = 'calendar' | 'check' | 'clock' | 'doctor' | 'email' | 'hourglass' | 'location' | 'notes' | 'phone' | 'service' | 'user';
 
@@ -269,24 +264,22 @@ function SectionTitle({ number, title }: { number: string; title: string }) {
 
 function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] }) {
   const imageUrl = hero.backgroundImageUrl || '/assets/landing/figma-branches/image5_183_4173.jpg';
+  const eyebrow = hero.eyebrow ?? 'Appointment request';
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
-      <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg" src={hero.backgroundImageUrl} />
       <ResilientImage
         alt={hero.backgroundImageAlt}
-        className="absolute inset-y-0 right-0 hidden h-full w-[50%] object-cover object-center sm:block"
+        className="absolute inset-0 h-full w-full object-cover object-center"
         fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg"
+        presentation={hero.imagePresentation}
         src={imageUrl}
       />
-      <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[45%] bg-[#f7fafc] sm:block" />
-      <div aria-hidden="true" className="absolute inset-y-0 left-[41%] hidden w-[22%] bg-[linear-gradient(90deg,#f7fafc_0%,rgba(247,250,252,0.82)_52%,rgba(247,250,252,0)_100%)] sm:block" />
-      <div aria-hidden="true" className="absolute inset-y-0 right-0 hidden w-[51%] bg-[linear-gradient(90deg,rgba(5,84,111,0.06),rgba(5,84,111,0.24))] sm:block" />
-      <div className="relative flex items-center py-8 sm:min-h-[250px] sm:py-10">
+      <div className="relative z-10 flex items-center py-8 sm:min-h-[250px] sm:py-10">
         <div className="max-w-[600px]">
-          <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">Appointment request</p>
+          {eyebrow ? <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p> : null}
           <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">{hero.title}</h1>
-          <p className="mt-3 max-w-[560px] text-[16px] font-normal leading-7 text-[#64748b]">{hero.subtitle}</p>
+          <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e]">{hero.subtitle}</p>
         </div>
       </div>
       </div>
@@ -294,53 +287,174 @@ function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] })
   );
 }
 
-function AppointmentCalendar({
+export const DEFAULT_HOURS = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
+export const MINUTE_OPTIONS = ['00', '15', '30', '45'];
+
+export function formatDisplayTime(timeStr: string): string {
+  if (!timeStr) return '';
+  const parts = timeStr.split(':');
+  const hours = Number(parts[0]);
+  const minutes = parts[1] ?? '00';
+  if (Number.isNaN(hours)) return timeStr;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${String(displayHours).padStart(2, '0')}:${minutes} ${ampm}`;
+}
+
+export function toDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function AppointmentCalendar({
   calendar,
   onSelectDate,
   selectedDate,
 }: {
-  calendar: BookAppointmentPageContent['calendar'];
+  calendar?: BookAppointmentPageContent['calendar'];
   onSelectDate: (date: string) => void;
   selectedDate: string;
 }) {
   const { language } = usePublicLanguage();
+
+  const [viewDate, setViewDate] = useState(() => {
+    const initialKey = selectedDate || calendar?.selectedDateKey;
+    if (initialKey) {
+      const parts = initialKey.split('-').map(Number);
+      if (parts[0] && parts[1]) {
+        return new Date(parts[0], parts[1] - 1, 1);
+      }
+    }
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+
+  const today = new Date();
+  const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const maxMonthStart = new Date(today.getFullYear() + 1, today.getMonth(), 1);
+
+  const canGoPrev = viewDate > currentMonthStart;
+  const canGoNext = viewDate < maxMonthStart;
+
+  const handlePrevMonth = () => {
+    if (!canGoPrev) return;
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    if (!canGoNext) return;
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+  };
+
+  const monthLabel = useMemo(() => {
+    return new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', {
+      month: 'long',
+      year: 'numeric',
+    }).format(viewDate);
+  }, [language, viewDate]);
+
+  const weekdays = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', { weekday: 'short' });
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(2026, 8, 20 + i);
+      return formatter.format(d);
+    });
+  }, [language]);
+
+  const calendarDates = useMemo(() => {
+    const now = new Date();
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const monthStart = new Date(year, month, 1);
+    const startDay = monthStart.getDay();
+    const gridStart = new Date(year, month, 1 - startDay);
+
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + index);
+      const key = toDateKey(date);
+      const isPast = date < todayMidnight;
+      const isCurrentMonth = date.getMonth() === month;
+      return {
+        date,
+        day: date.getDate(),
+        disabled: isPast,
+        key,
+        muted: !isCurrentMonth,
+      };
+    });
+  }, [viewDate]);
+
   const dateFormatter = new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', { dateStyle: 'full' });
+
+  const handleSelectDate = (item: (typeof calendarDates)[number]) => {
+    if (item.disabled) return;
+    onSelectDate(item.key);
+    if (item.muted) {
+      setViewDate(new Date(item.date.getFullYear(), item.date.getMonth(), 1));
+    }
+  };
+
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <button aria-label="Previous month unavailable" className="grid size-11 place-items-center rounded-full text-[#cbd5e1]" disabled type="button">
+        <button
+          aria-label={canGoPrev ? 'Previous month' : 'Previous month unavailable'}
+          className={`grid size-11 place-items-center rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3695b9] ${
+            canGoPrev
+              ? 'text-[#005687] hover:bg-[#edf7fb] hover:text-[#3695b9]'
+              : 'cursor-not-allowed text-[#cbd5e1] opacity-40'
+          }`}
+          disabled={!canGoPrev}
+          onClick={handlePrevMonth}
+          type="button"
+        >
           <ChevronIcon direction="left" />
         </button>
-        <h3 className="text-[15px] font-extrabold leading-6 text-[#005687]">{calendar.monthLabel}</h3>
-        <button aria-label="Next month unavailable" className="grid size-11 place-items-center rounded-full text-[#cbd5e1]" disabled type="button">
+        <h3 className="text-[15px] font-extrabold leading-6 text-[#005687]">{monthLabel}</h3>
+        <button
+          aria-label={canGoNext ? 'Next month' : 'Next month unavailable'}
+          className={`grid size-11 place-items-center rounded-full transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3695b9] ${
+            canGoNext
+              ? 'text-[#005687] hover:bg-[#edf7fb] hover:text-[#3695b9]'
+              : 'cursor-not-allowed text-[#cbd5e1] opacity-40'
+          }`}
+          disabled={!canGoNext}
+          onClick={handleNextMonth}
+          type="button"
+        >
           <ChevronIcon direction="right" />
         </button>
       </div>
       <div className="grid grid-cols-7 gap-y-2 text-center sm:gap-y-3">
-        {calendar.weekdays.map((day) => (
+        {weekdays.map((day) => (
           <span className="text-[12px] font-bold leading-4 text-[#6b7280]" key={day}>
             {day}
           </span>
         ))}
-        {calendar.dates.map((date) => {
-          const isSelected = date.key === selectedDate;
+        {calendarDates.map((item) => {
+          const isSelected = item.key === selectedDate;
           return (
             <button
-              aria-label={dateFormatter.format(new Date(`${date.key}T12:00:00`))}
+              aria-label={dateFormatter.format(new Date(`${item.key}T12:00:00`))}
               aria-pressed={isSelected}
               className={`mx-auto grid aspect-square w-full max-w-10 place-items-center rounded-full text-[13px] font-bold transition sm:max-w-8 ${
                 isSelected
-                  ? 'bg-[#3695b9] text-white'
-                  : date.muted
-                    ? 'text-[#d5dce3]'
-                    : 'text-[#6b7280] hover:bg-[#edf7fb] hover:text-[#3695b9]'
+                  ? 'bg-[#3695b9] text-white shadow-sm'
+                  : item.muted
+                    ? 'text-[#d5dce3] hover:text-[#94a3b8]'
+                    : item.disabled
+                      ? 'cursor-not-allowed text-[#cbd5e1] opacity-40'
+                      : 'text-[#6b7280] hover:bg-[#edf7fb] hover:text-[#3695b9]'
               }`}
-              disabled={date.disabled}
-              key={date.key}
-              onClick={() => onSelectDate(date.key)}
+              disabled={item.disabled}
+              key={item.key}
+              onClick={() => handleSelectDate(item)}
               type="button"
             >
-              {date.day}
+              {item.day}
             </button>
           );
         })}
@@ -349,7 +463,7 @@ function AppointmentCalendar({
   );
 }
 
-function AvailableTimes({
+export function AvailableTimes({
   onSelectTime,
   selectedTime,
   times,
@@ -358,27 +472,76 @@ function AvailableTimes({
   selectedTime: string;
   times: string[];
 }) {
+  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
+  const baseTimes = times && times.length > 0 ? times : DEFAULT_HOURS;
+  const baseHours = Array.from(new Set(baseTimes.map((t) => t.split(':')[0] ?? t)));
+
+  const selectedParts = selectedTime ? selectedTime.split(':') : [];
+  const selectedHour = selectedParts[0] ?? baseHours[0] ?? '08';
+  const selectedMinute = selectedParts[1] ?? '00';
+
   return (
     <div>
-      <h3 className="mb-5 text-center text-[15px] font-extrabold leading-6 text-[#005687]">Available Time</h3>
+      <h3 className="mb-5 text-center text-[15px] font-extrabold leading-6 text-[#005687]">{bookingCopy.availableTime}</h3>
       <div className="space-y-2.5">
-        {times.map((time) => {
-          const isSelected = time === selectedTime;
+        {baseHours.map((hour) => {
+          const isHourActive = selectedHour === hour;
+          const formattedHourLabel = formatDisplayTime(`${hour}:00`);
+
           return (
-            <button
-              aria-label={`Select ${time}`}
-              aria-pressed={isSelected}
-              className={`min-h-12 w-full rounded-lg border text-[14px] font-bold transition sm:min-h-[42px] sm:text-[13px] ${
-                isSelected
-                  ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-none'
-                  : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
-              }`}
-              key={time}
-              onClick={() => onSelectTime(time)}
-              type="button"
-            >
-              {time}
-            </button>
+            <div key={hour} className="space-y-2">
+              <button
+                aria-label={`Select ${formattedHourLabel}`}
+                aria-pressed={isHourActive}
+                className={`min-h-12 w-full rounded-lg border text-[14px] font-bold transition sm:min-h-[42px] sm:text-[13px] ${
+                  isHourActive
+                    ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-none'
+                    : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
+                }`}
+                onClick={() => {
+                  onSelectTime(`${hour}:${selectedMinute || '00'}`);
+                }}
+                type="button"
+              >
+                {isHourActive ? formatDisplayTime(selectedTime) : formattedHourLabel}
+              </button>
+
+              {isHourActive ? (
+                <div className="rounded-xl border border-[#bce0ed] bg-[#f2f9fb] p-3 shadow-inner">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[12px] font-bold text-[#005687]">{bookingCopy.selectMinute}</span>
+                    <span className="rounded-full bg-[#3695b9]/10 px-2 py-0.5 text-[11px] font-extrabold text-[#087b9f]">
+                      {formatDisplayTime(selectedTime)}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {MINUTE_OPTIONS.map((minute) => {
+                      const slotTime = `${hour}:${minute}`;
+                      const isSlotSelected = selectedTime === slotTime;
+                      return (
+                        <button
+                          key={minute}
+                          type="button"
+                          aria-label={formatDisplayTime(slotTime)}
+                          aria-pressed={isSlotSelected}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectTime(slotTime);
+                          }}
+                          className={`h-9 rounded-lg text-[13px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3695b9] ${
+                            isSlotSelected
+                              ? 'bg-[#3695b9] text-white shadow-sm ring-2 ring-[#3695b9]/30'
+                              : 'border border-[#d2e4ec] bg-white text-[#005687] hover:border-[#3695b9] hover:bg-[#eaf4f8] hover:text-[#3695b9]'
+                          }`}
+                        >
+                          :{minute}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           );
         })}
       </div>
@@ -421,6 +584,7 @@ function AppointmentForm({
   submissionError: string | null;
   turnstileResetSignal: number;
 }) {
+  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
   const [patientName, setPatientName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -463,12 +627,12 @@ function AppointmentForm({
     <Card className="rounded-xl border-[#e1ebef] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.05)] sm:p-7">
       <form className="space-y-7 sm:space-y-8" noValidate onSubmit={handleSubmit} ref={formRef}>
         <section>
-          <SectionTitle number="1" title="Appointment Details" />
+          <SectionTitle number="1" title={bookingCopy.appointmentDetails} />
           <div className="mt-5 space-y-4">
             <SelectField
               icon="location"
               id="branch"
-              label="Select Branch"
+              label={bookingCopy.selectBranch}
               onChange={onSelectBranch}
               options={content.branches.map((branch) => ({ name: branch.name, value: branch.id ?? '' }))}
               value={selectedBranch}
@@ -476,7 +640,7 @@ function AppointmentForm({
             <SelectField
               icon="service"
               id="service"
-              label="Select Service"
+              label={bookingCopy.selectService}
               onChange={onSelectService}
               options={content.servicesList}
               value={selectedService}
@@ -493,7 +657,7 @@ function AppointmentForm({
         </section>
 
         <section className="border-t border-[#e7eff3] pt-7 sm:pt-8">
-          <SectionTitle number="2" title="Choose Date & Time" />
+          <SectionTitle number="2" title={bookingCopy.chooseDateTime} />
           <div className="mt-5 grid gap-7 lg:grid-cols-[1fr_300px]">
             <AppointmentCalendar calendar={content.calendar} onSelectDate={onSelectDate} selectedDate={selectedDate} />
             <AvailableTimes onSelectTime={onSelectTime} selectedTime={selectedTime} times={content.times} />
@@ -501,7 +665,7 @@ function AppointmentForm({
         </section>
 
         <section className="border-t border-[#e7eff3] pt-7 sm:pt-8">
-          <SectionTitle number="3" title="Your Information" />
+          <SectionTitle number="3" title={bookingCopy.yourInformation} />
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <TextField error={fieldErrors.fullName} icon="user" id="fullName" label={content.form.fields.fullName} onChange={handlePatientNameChange} placeholder={content.form.placeholders.fullName} value={patientName} />
             <TextField
@@ -564,6 +728,7 @@ function AppointmentSummary({
   selectedServiceName: string;
   selectedTime: string;
 }) {
+  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
   const hasBranchImage = Boolean(branch.imageUrl);
 
   return (
@@ -587,11 +752,11 @@ function AppointmentSummary({
       </div>
 
       <div className="mt-6 space-y-4">
-        <SummaryRow icon="service" label="Service" value={selectedServiceName} />
-        <SummaryRow icon="doctor" label="Doctor" value={selectedDoctorName} />
-        <SummaryRow icon="calendar" label="Date" value={selectedDateLabel} />
-        <SummaryRow icon="clock" label="Time" value={selectedTime} />
-        {content.summary.duration ? <SummaryRow icon="hourglass" label="Duration" value={content.summary.duration} /> : null}
+        <SummaryRow icon="service" label={bookingCopy.service} value={selectedServiceName} />
+        <SummaryRow icon="doctor" label={bookingCopy.doctor} value={selectedDoctorName} />
+        <SummaryRow icon="calendar" label={bookingCopy.date} value={selectedDateLabel} />
+        <SummaryRow icon="clock" label={bookingCopy.time} value={formatDisplayTime(selectedTime)} />
+        {content.summary.duration ? <SummaryRow icon="hourglass" label={bookingCopy.duration} value={content.summary.duration} /> : null}
       </div>
 
       {content.information.length > 0 ? <div className="mt-5 rounded-xl border border-[#d7e7ef] bg-[#f4fbfd] p-4">
@@ -627,13 +792,12 @@ function AppointmentSummary({
   );
 }
 
-function dateLabel(content: BookAppointmentPageContent, selectedDate: string) {
-  if (selectedDate === content.calendar.selectedDateKey) {
-    return content.calendar.selectedDateLabel;
-  }
-
+export function dateLabel(selectedDate: string, language: 'en' | 'km') {
   const date = new Date(`${selectedDate}T00:00:00`);
-  return new Intl.DateTimeFormat('en-US', {
+  if (Number.isNaN(date.getTime())) {
+    return selectedDate;
+  }
+  return new Intl.DateTimeFormat(language === 'km' ? 'km-KH' : 'en-US', {
     day: 'numeric',
     month: 'long',
     weekday: 'long',
@@ -641,14 +805,233 @@ function dateLabel(content: BookAppointmentPageContent, selectedDate: string) {
   }).format(date);
 }
 
+export function AppointmentSuccessModal({
+  acknowledgement,
+  details,
+  language,
+  onClose,
+}: {
+  acknowledgement: { message: string; reference: string; status: string };
+  details: {
+    branchName: string;
+    dateLabel: string;
+    doctorName: string;
+    patientName: string;
+    phone: string;
+    serviceName: string;
+    time: string;
+  };
+  language: 'en' | 'km';
+  onClose: () => void;
+}) {
+  const isKhmer = language === 'km';
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(acknowledgement.reference);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Fallback
+    }
+  };
+
+  return (
+    <div
+      aria-labelledby="appointment-success-title"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm"
+      role="dialog"
+    >
+      <div
+        className="relative my-8 w-full max-w-[540px] overflow-hidden rounded-3xl border border-[#d6e7ee] bg-white p-6 shadow-2xl sm:p-8"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          aria-label={isKhmer ? 'បិទ' : 'Close'}
+          className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-[#3695B9]"
+          onClick={onClose}
+          type="button"
+        >
+          <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-[#a7f3d0] bg-[#ecfdf5] text-[#059669] shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+          <svg className="size-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+
+        <div className="mt-4 text-center">
+          <h2 className="text-[22px] font-extrabold leading-tight text-[#073f60] sm:text-[26px]" id="appointment-success-title">
+            {isKhmer ? 'បានទទួលសំណើសុំការណាត់ជួប' : 'Appointment Request Received'}
+          </h2>
+          <p className="mt-2 text-[14px] leading-relaxed text-[#597184] sm:text-[15px]">
+            {isKhmer
+              ? 'សូមអរគុណសម្រាប់ការជ្រើសរើស គ្លីនិកធ្មេញ អរុណរះ។ ក្រុមការងារយើងខ្ញុំនឹងទាក់ទងទៅលោកអ្នកក្នុងពេលឆាប់ៗដើម្បីបញ្ជាក់ការណាត់ជួប។'
+              : 'Thank you for choosing Arunreah Dental Clinic. Our receptionist will contact you shortly to confirm your booking.'}
+          </p>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-[#bce0ec] bg-[#f4fafd] p-4 text-center sm:p-5">
+          <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#2c84a5]">
+            {isKhmer ? 'លេខកូដសម្គាល់ការណាត់ជួប' : 'Booking Reference Code'}
+          </p>
+          <div className="mt-1 flex items-center justify-center gap-2">
+            <span className="font-mono text-[22px] font-extrabold tracking-wider text-[#005687] sm:text-[26px]">
+              {acknowledgement.reference}
+            </span>
+            <button
+              className="inline-flex items-center gap-1 rounded-lg border border-[#9fd1e3] bg-white px-2.5 py-1 text-[12px] font-semibold text-[#167ea7] transition hover:bg-[#edf7fb]"
+              onClick={handleCopy}
+              type="button"
+            >
+              {copied ? (isKhmer ? 'បានចម្លង!' : 'Copied!') : (isKhmer ? 'ចម្លង' : 'Copy')}
+            </button>
+          </div>
+          <div className="mt-2 flex items-center justify-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#fed7aa] bg-[#fffbeb] px-3 py-0.5 text-[11px] font-bold text-[#b45309]">
+              <span className="size-1.5 rounded-full bg-[#f59e0b]" />
+              {isKhmer ? 'ស្ថានភាព៖ រង់ចាំការបញ្ជាក់' : 'Status: Pending Confirmation'}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-5 divide-y divide-[#edf3f6] rounded-xl border border-[#e2edf2] bg-[#fafcfd] text-[13px] sm:text-[14px]">
+          <div className="flex justify-between px-4 py-2.5">
+            <span className="font-medium text-[#64748b]">{isKhmer ? 'សាខា' : 'Branch'}</span>
+            <span className="text-right font-bold text-[#073f60]">{details.branchName}</span>
+          </div>
+          <div className="flex justify-between px-4 py-2.5">
+            <span className="font-medium text-[#64748b]">{isKhmer ? 'សេវាកម្ម' : 'Service'}</span>
+            <span className="text-right font-bold text-[#073f60]">{details.serviceName}</span>
+          </div>
+          <div className="flex justify-between px-4 py-2.5">
+            <span className="font-medium text-[#64748b]">{isKhmer ? 'ទន្តបណ្ឌិត' : 'Doctor'}</span>
+            <span className="text-right font-bold text-[#073f60]">{details.doctorName}</span>
+          </div>
+          <div className="flex justify-between px-4 py-2.5">
+            <span className="font-medium text-[#64748b]">{isKhmer ? 'កាលបរិច្ឆេទ & ម៉ោង' : 'Date & Time'}</span>
+            <span className="text-right font-bold text-[#073f60]">{details.dateLabel} — {details.time}</span>
+          </div>
+          <div className="flex justify-between px-4 py-2.5">
+            <span className="font-medium text-[#64748b]">{isKhmer ? 'អ្នកជំងឺ' : 'Patient'}</span>
+            <span className="text-right font-bold text-[#073f60]">{details.patientName} ({details.phone})</span>
+          </div>
+        </div>
+
+        <p className="mt-4 text-center text-[12px] leading-relaxed text-[#768c9c]">
+          {isKhmer
+            ? 'ចំណាំ៖ ការស្នើសុំការណាត់ជួបមិនមែនជាការបញ្ជាក់ដោយស្វ័យប្រវត្តិនោះទេ។ គ្លីនិកនឹងទាក់ទងមកអ្នកដើម្បីបញ្ជាក់ពេលវេលាច្បាស់លាស់។'
+            : 'Notice: Appointments are requests subject to confirmation by our front desk team.'}
+        </p>
+
+        <div className="mt-6">
+          <Button
+            className="min-h-12 w-full rounded-xl bg-[#3695B9] text-[15px] font-bold text-white shadow-sm hover:bg-[#2c84a5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
+            onClick={onClose}
+          >
+            {isKhmer ? 'រួចរាល់' : 'Done'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BookAppointmentView({ content }: { content: BookAppointmentPageContent }) {
-  const [selectedBranch, setSelectedBranch] = useState(content.branches[0]?.id ?? '');
-  const [selectedService, setSelectedService] = useState(content.servicesList[0]?.value ?? '');
-  const [selectedDoctor, setSelectedDoctor] = useState(content.doctors[0]?.value ?? '');
+  const { language } = usePublicLanguage();
+  const [searchParams] = useSearchParams();
+  const requestedBranch = searchParams.get('branch');
+  const requestedDoctor = searchParams.get('doctor');
+  const requestedService = searchParams.get('service');
+
+  const initialBranch = useMemo<string>(() => {
+    if (requestedBranch) {
+      const match = content.branches.find(
+        (b) => b.id === requestedBranch || b.name.toLowerCase() === requestedBranch.toLowerCase(),
+      );
+      if (match?.id) return match.id;
+    }
+    return content.branches[0]?.id ?? '';
+  }, [content.branches, requestedBranch]);
+
+  const initialService = useMemo<string>(() => {
+    if (requestedService) {
+      const match = content.servicesList.find(
+        (s) => s.value === requestedService || s.name.toLowerCase() === requestedService.toLowerCase(),
+      );
+      if (match?.value) return match.value;
+    }
+    return content.servicesList[0]?.value ?? '';
+  }, [content.servicesList, requestedService]);
+
+  const initialDoctor = useMemo<string>(() => {
+    if (requestedDoctor) {
+      const match = content.doctors.find(
+        (d) => d.value === requestedDoctor || d.name.toLowerCase() === requestedDoctor.toLowerCase(),
+      );
+      if (match?.value) return match.value;
+    }
+    return content.doctors[0]?.value ?? '';
+  }, [content.doctors, requestedDoctor]);
+
+  const [selectedBranch, setSelectedBranch] = useState<string>(initialBranch);
+  const [selectedService, setSelectedService] = useState<string>(initialService);
+  const [selectedDoctor, setSelectedDoctor] = useState<string>(initialDoctor);
+
+  useEffect(() => {
+    if (requestedBranch) {
+      const match = content.branches.find(
+        (b) => b.id === requestedBranch || b.name.toLowerCase() === requestedBranch.toLowerCase(),
+      );
+      if (match?.id) setSelectedBranch(match.id);
+    }
+  }, [content.branches, requestedBranch]);
+
+  useEffect(() => {
+    if (requestedService) {
+      const match = content.servicesList.find(
+        (s) => s.value === requestedService || s.name.toLowerCase() === requestedService.toLowerCase(),
+      );
+      if (match?.value) setSelectedService(match.value);
+    }
+  }, [content.servicesList, requestedService]);
+
+  useEffect(() => {
+    if (requestedDoctor) {
+      const match = content.doctors.find(
+        (d) => d.value === requestedDoctor || d.name.toLowerCase() === requestedDoctor.toLowerCase(),
+      );
+      if (match?.value) setSelectedDoctor(match.value);
+    }
+  }, [content.doctors, requestedDoctor]);
+
   const [selectedDate, setSelectedDate] = useState(content.calendar.selectedDateKey);
-  const [selectedTime, setSelectedTime] = useState(content.times[2] ?? content.times[0] ?? '');
+  const [selectedTime, setSelectedTime] = useState(content.times[2] ?? content.times[0] ?? '10:00');
+  const [formKey, setFormKey] = useState(0);
   const idempotencyKey = useRef(createIdempotencyKey());
-  const [acknowledgement, setAcknowledgement] = useState<{ reference: string; status: string; message: string } | null>(null);
+  const [acknowledgement, setAcknowledgement] = useState<{ message: string; reference: string; status: string } | null>(null);
+  const [submittedDetails, setSubmittedDetails] = useState<{
+    branchName: string;
+    dateLabel: string;
+    doctorName: string;
+    patientName: string;
+    phone: string;
+    serviceName: string;
+    time: string;
+  } | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
   const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
@@ -669,7 +1052,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
     return <BookAppointmentEmpty />;
   }
 
-  const submit = (values: { patientName: string; phone: string; email: string; notes: string }) => {
+  const submit = (values: { email: string; notes: string; patientName: string; phone: string }) => {
     if (env.turnstileSiteKey && !turnstileToken) {
       setTurnstileError('Please complete the verification challenge before sending your request.');
       return;
@@ -686,9 +1069,24 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
       serviceId: selectedService,
       turnstileToken: turnstileToken ?? undefined,
     }).then((response) => {
+      setSubmittedDetails({
+        branchName: branch.name,
+        dateLabel: dateLabel(selectedDate, language),
+        doctorName: doctor.name,
+        patientName: values.patientName,
+        phone: values.phone,
+        serviceName: service.name,
+        time: formatDisplayTime(selectedTime),
+      });
       setAcknowledgement(response);
       idempotencyKey.current = createIdempotencyKey();
     }).catch(() => undefined).finally(() => setTurnstileResetSignal((value) => value + 1));
+  };
+
+  const handleCloseModal = () => {
+    setAcknowledgement(null);
+    setSubmittedDetails(null);
+    setFormKey((previous) => previous + 1);
   };
 
   const requestError = submitMutation.error instanceof ApiClientError
@@ -705,32 +1103,40 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
         <section className="mx-auto grid w-full max-w-[1180px] gap-6 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:px-8">
           <AppointmentForm
             content={content}
+            isSubmitting={submitMutation.isPending}
+            key={formKey}
             onSelectBranch={setSelectedBranch}
             onSelectDate={setSelectedDate}
             onSelectDoctor={setSelectedDoctor}
             onSelectService={setSelectedService}
             onSelectTime={setSelectedTime}
+            onSubmit={submit}
+            onTurnstileToken={handleTurnstileToken}
             selectedBranch={selectedBranch}
             selectedDate={selectedDate}
             selectedDoctor={selectedDoctor}
             selectedService={selectedService}
             selectedTime={selectedTime}
-            isSubmitting={submitMutation.isPending}
-            onSubmit={submit}
-            onTurnstileToken={handleTurnstileToken}
             submissionError={submissionError}
             turnstileResetSignal={turnstileResetSignal}
           />
           <AppointmentSummary
             branch={branch}
             content={content}
-            selectedDateLabel={dateLabel(content, selectedDate)}
+            selectedDateLabel={dateLabel(selectedDate, language)}
             selectedDoctorName={doctor.name}
             selectedServiceName={service.name}
             selectedTime={selectedTime}
           />
         </section>
-        {acknowledgement ? <section className="mx-auto max-w-[1180px] px-4 pb-10 sm:px-6 lg:px-8"><Card className="rounded-xl border-[#b9e2ee] bg-[#f4fbfd] p-5"><p className="font-bold text-[#005687]">Appointment request received</p><p className="mt-1 text-sm text-[#64748b]">{acknowledgement.message}</p><p className="mt-1 text-sm text-[#64748b]">Reference: {acknowledgement.reference}. Status: {acknowledgement.status}.</p></Card></section> : null}
+        {acknowledgement && submittedDetails ? (
+          <AppointmentSuccessModal
+            acknowledgement={acknowledgement}
+            details={submittedDetails}
+            language={language}
+            onClose={handleCloseModal}
+          />
+        ) : null}
       </main>
       <SiteFooter {...content.footer} />
     </SiteLayout>
@@ -738,10 +1144,13 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 }
 
 function BookAppointmentSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).booking;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading appointment request form" className="bg-white">
-        <span className="sr-only">Loading appointment request form</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
           <div className="mx-auto flex min-h-[180px] max-w-[1280px] items-center sm:min-h-[200px]">
@@ -816,26 +1225,30 @@ function BookAppointmentSkeleton() {
 }
 
 function BookAppointmentEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Appointment information is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
+        <Badge>{copy.common.noContent}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.booking.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.booking.unavailableBody}</p>
       </Card>
     </main>
   );
 }
 
 function BookAppointmentError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load booking</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the appointment form.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.booking.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.booking.errorBody}</p>
         <Button className="mt-6" onClick={onRetry} type="button">
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

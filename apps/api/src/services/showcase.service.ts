@@ -108,11 +108,17 @@ export async function updateManagedShowcase(
   return toAdminShowcaseWithPresentation(database, showcase);
 }
 
+async function sectionsWithPresentation(database: DatabaseClient, showcaseId: string) {
+  const sections = await repository.getSections(database, showcaseId);
+  const presentations = await listForOwners(database, sections.map((section) => ({ ownerType: 'SHOWCASE_SECTION' as const, ownerId: section.id, slot: 'PRIMARY' })));
+  return sections.map((section) => ({ ...section, imagePresentation: presentationFor(presentations, section.id) }));
+}
+
 export async function getAdminShowcase(database: DatabaseClient, id: string) {
   const showcase = await repository.findShowcaseById(database, id);
   if (!showcase) throw new HttpError(404, 'NOT_FOUND', 'Showcase not found.');
   const [sections, relatedShowcases, presentations] = await Promise.all([
-    repository.getSections(database, id),
+    sectionsWithPresentation(database, id),
     repository.getRelatedShowcases(database, id),
     listForOwners(database, [{ ownerType: 'SHOWCASE', ownerId: id, slot: 'PRIMARY' }]),
   ]);
@@ -159,7 +165,7 @@ export async function getPublicShowcase(
   const showcase = await repository.findPublicShowcaseBySlug(database, slug);
   if (!showcase) throw new HttpError(404, 'NOT_FOUND', 'Showcase not found.');
   const [sections, relatedShowcases, presentations] = await Promise.all([
-    repository.getSections(database, showcase.id),
+    sectionsWithPresentation(database, showcase.id),
     repository.getRelatedShowcases(database, showcase.id),
     listForOwners(database, [{ ownerType: 'SHOWCASE', ownerId: showcase.id, slot: 'PRIMARY' }]),
   ]);
@@ -171,6 +177,7 @@ export async function getPublicShowcase(
       heading: localizeText(section.headingEn, section.headingKm, language),
       body: localizeText(section.bodyEn, section.bodyKm, language),
       imageKey: section.imageKey,
+      imagePresentation: section.imagePresentation,
       displayOrder: section.displayOrder,
     })),
     relatedShowcases: relatedShowcases

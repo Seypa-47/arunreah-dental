@@ -4,18 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, PublicPageHero } from '@/components/layout/public-ui';
 import type { ContactPageContent } from '@/features/landing-page/types';
 import { GoogleSatelliteMap } from './GoogleSatelliteMap';
 import { useContactPageQuery } from './use-contact-page';
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
+import { publicShell } from '@/features/public-content/public-page-chrome';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 
 type ContactIconName = ContactPageContent['contactCards'][number]['icon'];
 
@@ -92,38 +87,16 @@ function InfoBlock({ item, compact = false }: { compact?: boolean; item: Contact
 }
 
 function ContactHero({ hero }: { hero: ContactPageContent['hero'] }) {
-  const imageUrl = hero.backgroundImageUrl || '/assets/landing/figma-branches/image2_183_4173.png';
   return (
-    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
-      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
-        <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png" src={hero.backgroundImageUrl} />
-        <ResilientImage
-          alt={hero.backgroundImageAlt}
-          className="absolute inset-y-0 right-0 hidden h-full w-[58%] object-cover object-center sm:block"
-          fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
-          src={imageUrl}
-        />
-        <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[45%] bg-[#f7fafc] sm:block" />
-        <div aria-hidden="true" className="absolute inset-y-0 left-[41%] hidden w-[22%] bg-[linear-gradient(90deg,#f7fafc_0%,rgba(247,250,252,0.82)_52%,rgba(247,250,252,0)_100%)] sm:block" />
-        <div aria-hidden="true" className="absolute inset-y-0 right-0 hidden w-[59%] bg-[linear-gradient(90deg,rgba(5,84,111,0.12),rgba(5,84,111,0.42))] sm:block" />
-        <div className="relative grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
-          <div className="max-w-[620px]">
-            <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{hero.eyebrow}</p>
-            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
-              {hero.title}
-            </h1>
-            <p className="mt-3 max-w-[560px] text-[16px] font-normal leading-7 text-[#64748b]">{hero.subtitle}</p>
-          </div>
-          <Card className="rounded-xl border-[#e1ebef] bg-white/95 p-5 shadow-[0_2px_8px_rgba(15,23,42,0.05)] backdrop-blur sm:p-6">
-            <div className="space-y-4">
-              {hero.info.map((item) => (
-                <InfoBlock compact item={item} key={item.label} />
-              ))}
-            </div>
-          </Card>
-        </div>
-      </div>
-    </section>
+    <PublicPageHero
+      backgroundImageAlt={hero.backgroundImageAlt}
+      backgroundImageUrl={hero.backgroundImageUrl}
+      eyebrow={hero.eyebrow}
+      imagePresentation={hero.imagePresentation}
+      info={hero.info}
+      subtitle={hero.subtitle}
+      title={hero.title}
+    />
   );
 }
 
@@ -222,10 +195,13 @@ function ContactPageView({ content }: { content: ContactPageContent }) {
 }
 
 function ContactPageSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).contact;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading contact information" className="bg-white">
-        <span className="sr-only">Loading contact information</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <section aria-hidden="true" className="relative overflow-hidden border-b border-[#e7eff3] bg-[#f7fafc]">
           <div className="absolute inset-y-0 right-0 hidden w-[42%] bg-[linear-gradient(135deg,#dceef3_0%,#eff7f9_100%)] lg:block" />
@@ -294,26 +270,30 @@ function ContactPageSkeleton() {
 }
 
 function ContactPageEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Contact page content is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
+        <Badge>{copy.common.noContent}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.contact.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.contact.unavailableBody}</p>
       </Card>
     </main>
   );
 }
 
 function ContactPageError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the contact page</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the contact information.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.contact.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.contact.errorBody}</p>
         <Button className="mt-6" onClick={onRetry} type="button">
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

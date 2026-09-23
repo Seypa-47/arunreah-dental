@@ -7,17 +7,11 @@ import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { DoctorDetailContent, LandingDoctor } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useDoctorDetailPageQuery } from './use-doctor-detail-page';
 
 const asset = (name: string) => `/assets/landing/${name}`;
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 function CalendarIcon() {
   return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
@@ -74,7 +68,7 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
           <Button
             className="mt-5 min-h-12 w-full rounded-full bg-[#3695B9] px-6 text-[14px] font-bold shadow-none hover:bg-[#2c84a5] sm:min-h-11 sm:w-auto"
             icon={<CalendarIcon />}
-            onClick={() => navigate('/book-appointment')}
+            onClick={() => navigate(doctor.id ? `/book-appointment?doctor=${encodeURIComponent(doctor.id)}` : '/book-appointment')}
           >
             {appointmentLabel}
           </Button>
@@ -145,10 +139,10 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
   const { language } = usePublicLanguage();
   const copy = language === 'km'
     ? {
-      about: 'អំពីទន្តបណ្ឌិត', appointment: 'ស្នើសុំការណាត់ជួប', appointmentBody: `ផ្ញើសំណើ ដើម្បីពិភាក្សាអំពីបញ្ហាមាត់ធ្មេញរបស់អ្នកជាមួយ ${doctor.name}។`, education: 'ការសិក្សា និងការអភិវឌ្ឍវិជ្ជាជីវៈ', expertise: 'ផ្នែកជំនាញ', profile: 'ប្រវត្តិវិជ្ជាជីវៈ', qualifications: 'គុណវុឌ្ឍិ និងវគ្គបណ្តុះបណ្តាល',
+      about: 'អំពីទន្តបណ្ឌិត', appointment: 'ស្នើសុំការណាត់ជួប', appointmentBody: `ផ្ញើសំណើ ដើម្បីពិភាក្សាអំពីបញ្ហាមាត់ធ្មេញរបស់អ្នកជាមួយ ${doctor.name}។`, bookAppointment: 'កក់ការណាត់ជួប', education: 'ការសិក្សា និងការអភិវឌ្ឍវិជ្ជាជីវៈ', expertise: 'ផ្នែកជំនាញ', profile: 'ប្រវត្តិវិជ្ជាជីវៈ', qualifications: 'គុណវុឌ្ឍិ និងវគ្គបណ្តុះបណ្តាល',
     }
     : {
-      about: 'About the Doctor', appointment: 'Request an Appointment', appointmentBody: `Send a request to discuss your dental concerns with ${doctor.name}.`, education: 'Education & Professional Development', expertise: 'Clinical Focus', profile: 'Professional Profile', qualifications: 'Qualifications & Training',
+      about: 'About the Doctor', appointment: 'Request an Appointment', appointmentBody: `Send a request to discuss your dental concerns with ${doctor.name}.`, bookAppointment: 'Book Appointment', education: 'Education & Professional Development', expertise: 'Clinical Focus', profile: 'Professional Profile', qualifications: 'Qualifications & Training',
     };
 
   return (
@@ -199,10 +193,11 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
               {copy.appointmentBody}
             </p>
             <Button
-              className="mt-4 min-h-12 w-full rounded-full bg-white text-[14px] font-bold text-[#167ea7] shadow-none hover:bg-[#eef8fb] sm:min-h-11"
-              onClick={() => navigate('/book-appointment')}
+              className="mt-4 min-h-12 w-full rounded-full border-none !bg-white text-[14px] font-bold !text-[#167ea7] shadow-none hover:!bg-[#eef8fb] sm:min-h-11"
+              onClick={() => navigate(doctor.id ? `/book-appointment?doctor=${encodeURIComponent(doctor.id)}` : '/book-appointment')}
+              variant="secondary"
             >
-              {copy.appointment}
+              {copy.bookAppointment}
             </Button>
           </Card>
         </aside>
@@ -260,10 +255,13 @@ function DoctorDetailView({ content }: { content: DoctorDetailContent & { doctor
 }
 
 function DoctorDetailSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).doctorDetail;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading doctor detail page" className="bg-white">
-        <span className="sr-only">Loading doctor profile</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
           <div className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 sm:px-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-center lg:gap-10 lg:px-8">
@@ -356,17 +354,19 @@ function DoctorDetailSkeleton() {
 }
 
 function DoctorDetailEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No doctor</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Doctor profile is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please return to the doctors page and choose another profile.</p>
+        <Badge>{copy.doctorDetail.noDoctor}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.doctorDetail.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.doctorDetail.unavailableBody}</p>
         <Link
           className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695B9] px-5 text-sm font-extrabold text-white hover:bg-[#2c84a5]"
           to="/doctors"
         >
-          View All Doctors
+          {copy.doctorDetail.viewAllDoctors}
         </Link>
       </Card>
     </main>
@@ -374,14 +374,16 @@ function DoctorDetailEmpty() {
 }
 
 function DoctorDetailError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load this doctor profile</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the profile information.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.doctorDetail.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.doctorDetail.errorBody}</p>
         <Button className="mt-6" onClick={onRetry}>
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

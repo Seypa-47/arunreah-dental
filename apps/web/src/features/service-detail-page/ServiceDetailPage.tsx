@@ -7,15 +7,9 @@ import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ContentBlocks, EditorialImage } from '@/components/layout/public-ui';
 import type { LandingService, ServiceDetailContent } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useServiceDetailPageQuery } from './use-service-detail-page';
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
 
@@ -140,7 +134,7 @@ function ServiceHero({ editorial, service }: { editorial: boolean; service: Serv
           </h1>
           <p className="mt-3 max-w-[540px] text-[16px] font-normal leading-7 text-[#607486]">{service.hero.subtitle}</p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button className="min-h-[46px] rounded-full px-7 text-[14px] font-bold shadow-[0_4px_12px_rgba(54,149,185,0.18)]" onClick={() => navigate('/book-appointment')}>
+            <Button className="min-h-[46px] rounded-full px-7 text-[14px] font-bold shadow-[0_4px_12px_rgba(54,149,185,0.18)]" onClick={() => navigate(service.id ? `/book-appointment?service=${encodeURIComponent(service.id)}` : '/book-appointment')}>
               {service.hero.appointmentLabel}
             </Button>
             <Button
@@ -305,7 +299,7 @@ function ClinicalJourney({ service }: { service: ServiceDetail }) {
             return (
               <article className={`grid gap-5 py-7 sm:gap-8 sm:py-10 ${section.imageUrl ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-14' : ''}`} key={`${section.heading}-${index}`}>
                 {section.imageUrl ? (
-                  <EditorialImage alt={section.imageAlt} caption={section.imageAlt} className={reversed ? 'lg:order-2' : undefined} imageClassName="h-[250px] sm:h-[340px]" src={section.imageUrl} />
+                  <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} className={reversed ? 'lg:order-2' : undefined} imageClassName="h-[250px] sm:h-[340px]" src={section.imageUrl} />
                 ) : null}
                 <div className="px-1 sm:px-3">
                   <div className="flex items-center gap-3">
@@ -342,7 +336,7 @@ function OrthodonticTimeline({ service }: { service: ServiceDetail }) {
                 {section.heading ? <h3 className="text-[21px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}
                 <div className={section.imageUrl ? 'mt-4 grid gap-5 md:grid-cols-[minmax(0,1fr)_220px] md:items-start' : 'mt-3'}>
                   <ContentBlocks value={section.body} />
-                  {section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} imageClassName="h-40" src={section.imageUrl} /> : null}
+                  {section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} imageClassName="h-40" src={section.imageUrl} /> : null}
                 </div>
               </article>
             </li>
@@ -369,7 +363,7 @@ function ImplantPlanning({ service }: { service: ServiceDetail }) {
               <div>
                 {section.heading ? <h3 className="text-[20px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}
                 <ContentBlocks className="mt-2" value={section.body} />
-                {section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} className="mt-5" imageClassName="h-[210px]" src={section.imageUrl} /> : null}
+                {section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} className="mt-5" imageClassName="h-[210px]" src={section.imageUrl} /> : null}
               </div>
             </article>
           ))}
@@ -418,7 +412,7 @@ function ClinicalScope({ imaging, service }: { imaging?: boolean; service: Servi
     <section className={imaging ? 'bg-[#f3f8fb] py-12 sm:py-16' : 'bg-white py-12 sm:py-16'}>
       <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8"><SectionHeading service={service} />
         <div className="mt-9 grid gap-5 lg:grid-cols-2">
-          {service.detailSections.map((section, index) => <article className="grid gap-5 border-t-2 border-[#b9dce8] pt-5 sm:grid-cols-[44px_minmax(0,1fr)]" key={`${section.heading}-${index}`}><span className={`grid size-10 place-items-center rounded-full text-[13px] font-extrabold ${imaging ? 'bg-[#005687] text-white' : 'bg-[#e8f5f9] text-[#1682a4]'}`}>{String(index + 1).padStart(2, '0')}</span><div>{section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} className="mb-5" imageClassName="h-44" src={section.imageUrl} /> : null}{section.heading ? <h3 className="text-[20px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div></article>)}
+          {service.detailSections.map((section, index) => <article className="grid gap-5 border-t-2 border-[#b9dce8] pt-5 sm:grid-cols-[44px_minmax(0,1fr)]" key={`${section.heading}-${index}`}><span className={`grid size-10 place-items-center rounded-full text-[13px] font-extrabold ${imaging ? 'bg-[#005687] text-white' : 'bg-[#e8f5f9] text-[#1682a4]'}`}>{String(index + 1).padStart(2, '0')}</span><div>{section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} className="mb-5" imageClassName="h-44" src={section.imageUrl} /> : null}{section.heading ? <h3 className="text-[20px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div></article>)}
         </div>
       </div>
     </section>
@@ -429,7 +423,7 @@ function ProblemToCare({ service }: { service: ServiceDetail }) {
   if (service.detailSections.length === 0) return null;
   return (
     <section className="bg-[#f8fbfc] py-12 sm:py-16"><div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8"><SectionHeading service={service} />
-      <div className="mt-9 space-y-5">{service.detailSections.map((section, index) => <article className="grid gap-5 rounded-2xl border border-[#dcebf0] bg-white p-5 shadow-[0_4px_15px_rgba(15,61,84,0.04)] sm:p-7 lg:grid-cols-[160px_minmax(0,1fr)_280px] lg:items-center" key={`${section.heading}-${index}`}><p className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#1682a4]">{String(index + 1).padStart(2, '0')}</p><div>{section.heading ? <h3 className="text-[21px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div>{section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} imageClassName="h-44" src={section.imageUrl} /> : null}</article>)}</div>
+      <div className="mt-9 space-y-5">{service.detailSections.map((section, index) => <article className="grid gap-5 rounded-2xl border border-[#dcebf0] bg-white p-5 shadow-[0_4px_15px_rgba(15,61,84,0.04)] sm:p-7 lg:grid-cols-[160px_minmax(0,1fr)_280px] lg:items-center" key={`${section.heading}-${index}`}><p className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#1682a4]">{String(index + 1).padStart(2, '0')}</p><div>{section.heading ? <h3 className="text-[21px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div>{section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} imageClassName="h-44" src={section.imageUrl} /> : null}</article>)}</div>
     </div></section>
   );
 }
@@ -498,7 +492,7 @@ function OtherServices({ services }: { services: LandingService[] }) {
   );
 }
 
-function ServiceCta({ cta }: { cta: ServiceDetail['cta'] }) {
+function ServiceCta({ cta, serviceId }: { cta: ServiceDetail['cta']; serviceId?: string }) {
   const navigate = useNavigate();
 
   return (
@@ -509,7 +503,7 @@ function ServiceCta({ cta }: { cta: ServiceDetail['cta'] }) {
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button
             className="min-h-[48px] w-full rounded-full bg-white px-8 text-[14px] text-[#087b9f] shadow-none hover:bg-[#eef8fb] sm:w-auto"
-            onClick={() => navigate('/book-appointment')}
+            onClick={() => navigate(serviceId ? `/book-appointment?service=${encodeURIComponent(serviceId)}` : '/book-appointment')}
             variant="secondary"
           >
             {cta.appointmentLabel}
@@ -537,7 +531,7 @@ function ServiceDetailView({ content }: { content: ServiceDetailContent & { serv
         {editorial ? <EditorialOverview service={service} /> : <><AboutService service={service} /><BenefitsSection benefits={service.benefits} title={service.name} /></>}
         <PurposeLedDetail service={service} />
         <OtherServices services={content.otherServices} />
-        <ServiceCta cta={service.cta} />
+        <ServiceCta cta={service.cta} serviceId={service.id} />
       </main>
       <SiteFooter {...content.footer} />
     </SiteLayout>
@@ -545,10 +539,13 @@ function ServiceDetailView({ content }: { content: ServiceDetailContent & { serv
 }
 
 function ServiceDetailSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).serviceDetail;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading service detail page" className="bg-white">
-        <span className="sr-only">Loading treatment information</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
           <div className="mx-auto grid w-full max-w-[1280px] gap-7 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center lg:gap-12 lg:px-8">
@@ -646,17 +643,19 @@ function ServiceDetailSkeleton() {
 }
 
 function ServiceDetailEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Service detail is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please return to the services page and choose another treatment.</p>
+        <Badge>{copy.common.noContent}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.serviceDetail.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.serviceDetail.unavailableBody}</p>
         <Link
           className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695B9] px-5 text-sm font-extrabold text-white hover:bg-[#2c84a5]"
           to="/services"
         >
-          Back to Services
+          {copy.serviceDetail.backToServices}
         </Link>
       </Card>
     </main>
@@ -664,14 +663,16 @@ function ServiceDetailEmpty() {
 }
 
 function ServiceDetailError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load this service</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the treatment information.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.serviceDetail.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.serviceDetail.errorBody}</p>
         <Button className="mt-6" onClick={onRetry} type="button">
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

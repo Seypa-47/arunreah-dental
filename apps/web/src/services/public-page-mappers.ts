@@ -43,6 +43,7 @@ export function toLandingService(service: PublicServiceSummary): LandingService 
     description: service.shortDescription ?? '',
     iconAlt: '',
     iconUrl: '',
+    id: service.id,
     imageAlt: service.name,
     imageUrl: getPublicMediaUrl(service.listingThumbnailKey) ?? '',
     imagePresentation: service.imagePresentation,
@@ -56,6 +57,7 @@ export function toLandingDoctor(doctor: PublicDoctorSummary): LandingDoctor {
   return {
     bookingLabel: `Book with ${doctor.name}`,
     credential: doctor.title ?? doctor.specialty ?? undefined,
+    id: doctor.id,
     detail: {
       about: [],
       biography: '',
@@ -116,6 +118,7 @@ export function mapServiceDetail(base: ServiceDetailContent, detail: PublicServi
       heading: section.heading ?? '',
       imageAlt: section.heading ?? detail.name,
       imageUrl: getPublicMediaUrl(section.imageKey) ?? '',
+      imagePresentation: section.imagePresentation,
       sectionType: section.sectionType,
     })),
     detailPresentation: detail.detailPresentation,
@@ -181,7 +184,9 @@ export function mapBookingOptions(
   doctors: PublicDoctorSummary[],
   branches: { id: string; slug: string; name: string; address: string; branchImageKey: string | null; branchImagePresentation?: import('@arunreah/shared').ImagePresentation; googleMapsUrl: string | null; acceptsAppointments: boolean }[],
   contact?: { primaryPhone: string | null; primaryEmail: string | null },
+  language: 'en' | 'km' = 'en',
 ): BookAppointmentPageContent {
+  const isKm = language === 'km';
   const bookableBranches = branches.filter((branch) => branch.acceptsAppointments);
   return {
     ...base,
@@ -192,7 +197,7 @@ export function mapBookingOptions(
       imageAlt: branch.name,
       imagePresentation: branch.branchImagePresentation,
       imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
-      mapLabel: 'View on Map',
+      mapLabel: isKm ? 'មើលលើផែនទី' : 'View on Map',
       mapUrl: branch.googleMapsUrl ?? '#',
       name: branch.name,
     })) as BookAppointmentPageContent['branches'],
@@ -201,7 +206,7 @@ export function mapBookingOptions(
       email: contact?.primaryEmail ?? '',
       phone: contact?.primaryPhone ?? '',
     },
-    doctors: [{ name: 'No Preference', value: '' }, ...doctors.map((doctor) => ({ name: doctor.name, value: doctor.id }))],
+    doctors: [{ name: isKm ? 'គ្មានចំណូលចិត្ត' : 'No Preference', value: '' }, ...doctors.map((doctor) => ({ name: doctor.name, value: doctor.id }))],
     services: services.map(toLandingService),
     servicesList: services.map((service) => ({ name: service.name, value: service.id })),
     // The appointment API accepts a machine-readable HH:mm value. UI labels may

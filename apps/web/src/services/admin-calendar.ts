@@ -1,7 +1,8 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
 import type { AppointmentStatus } from '@arunreah/shared';
 import { getAdminAppointments, type AppointmentListItem } from '@/services/appointments';
-import { getPublicServices } from '@/services/public-content';
+import { getPublicDoctors, getPublicServices } from '@/services/public-content';
+import { cmsApi } from '@/services/cms';
 
 export type CalendarAppointmentItem = {
   branchName?: string;
@@ -40,6 +41,7 @@ export type AdminCalendarContent = {
     views: ('Month' | 'Week' | 'Day')[];
     year: number;
   };
+  doctors: string[];
   newAppointment: {
     cancelLabel: string;
     dateLabel: string;
@@ -102,9 +104,10 @@ export async function fetchAdminCalendarContent(options?: {
 
   let appointments: AppointmentListItem[] = [];
   try {
-    const fromDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const lastDayOfMonth = new Date(year, month, 0).getDate();
-    const toDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDayOfMonth).padStart(2, '0')}`;
+    const prevBuffer = new Date(year, month - 1, -7);
+    const nextBuffer = new Date(year, month, 7);
+    const fromDate = `${prevBuffer.getFullYear()}-${String(prevBuffer.getMonth() + 1).padStart(2, '0')}-${String(prevBuffer.getDate()).padStart(2, '0')}`;
+    const toDate = `${nextBuffer.getFullYear()}-${String(nextBuffer.getMonth() + 1).padStart(2, '0')}-${String(nextBuffer.getDate()).padStart(2, '0')}`;
     const result = await getAdminAppointments({
       fromDate,
       limit: 100,
@@ -117,6 +120,25 @@ export async function fetchAdminCalendarContent(options?: {
     }
   } catch (error) {
     console.warn('Unable to load live appointments for calendar:', error);
+  }
+
+  let doctorsList: string[] = [];
+  try {
+    const docsRes = await cmsApi.doctors.list({ limit: 100 });
+    if (docsRes.items?.length) {
+      doctorsList = docsRes.items
+        .filter((d) => d.status !== 'ARCHIVED')
+        .map((d) => d.nameEn.trim());
+    }
+  } catch {
+    try {
+      const publicDocs = await getPublicDoctors('en');
+      if (publicDocs.doctors?.length) {
+        doctorsList = publicDocs.doctors.map((d) => d.name.trim());
+      }
+    } catch {
+      // Keep empty
+    }
   }
 
   let servicesList = defaultServices;
@@ -200,6 +222,13 @@ export async function fetchAdminCalendarContent(options?: {
     year: 'numeric',
   });
 
+  const allDoctorNames = Array.from(
+    new Set([
+      ...doctorsList,
+      ...appointments.map((a) => a.doctor?.nameSnapshot).filter(Boolean) as string[],
+    ]),
+  ).sort((a, b) => a.localeCompare(b));
+
   return {
     brand: { logoAlt: 'Arunreah Dental Clinic', logoUrl: '/assets/landing/footer-logo-cropped.png' },
     calendar: {
@@ -216,6 +245,7 @@ export async function fetchAdminCalendarContent(options?: {
       views: ['Month', 'Week', 'Day'],
       year,
     },
+    doctors: allDoctorNames,
     empty: { description: 'Try a different search or doctor selection.', title: 'No appointments found' },
     footer: {
       copyright: `© ${now.getFullYear()} Arunreah Dental Clinic. All rights reserved.`,

@@ -16,11 +16,12 @@ export const MAX_MEDIA_MULTIPART_BYTES = MAX_IMAGE_UPLOAD_BYTES + 64 * 1024;
 const imageFormats = {
   'image/jpeg': {
     extension: 'jpg',
-    signature: (bytes: Uint8Array) => bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff,
+    signature: (bytes: Uint8Array) => bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xd8,
   },
   'image/png': {
     extension: 'png',
     signature: (bytes: Uint8Array) =>
+      bytes.length >= 8 &&
       bytes[0] === 0x89 &&
       bytes[1] === 0x50 &&
       bytes[2] === 0x4e &&
@@ -33,6 +34,7 @@ const imageFormats = {
   'image/webp': {
     extension: 'webp',
     signature: (bytes: Uint8Array) =>
+      bytes.length >= 12 &&
       bytes[0] === 0x52 &&
       bytes[1] === 0x49 &&
       bytes[2] === 0x46 &&
@@ -42,9 +44,42 @@ const imageFormats = {
       bytes[10] === 0x42 &&
       bytes[11] === 0x50,
   },
+  'image/avif': {
+    extension: 'avif',
+    signature: (bytes: Uint8Array) =>
+      bytes.length >= 12 &&
+      bytes[4] === 0x66 &&
+      bytes[5] === 0x74 &&
+      bytes[6] === 0x79 &&
+      bytes[7] === 0x70 &&
+      bytes[8] === 0x61 &&
+      bytes[9] === 0x76 &&
+      bytes[10] === 0x69 &&
+      (bytes[11] === 0x66 || bytes[11] === 0x73),
+  },
+  'image/gif': {
+    extension: 'gif',
+    signature: (bytes: Uint8Array) =>
+      bytes.length >= 6 &&
+      bytes[0] === 0x47 &&
+      bytes[1] === 0x49 &&
+      bytes[2] === 0x46 &&
+      bytes[3] === 0x38 &&
+      (bytes[4] === 0x37 || bytes[4] === 0x39) &&
+      bytes[5] === 0x61,
+  },
 } as const;
 
-type ImageMimeType = keyof typeof imageFormats;
+export type ImageMimeType = keyof typeof imageFormats;
+
+export function detectImageMimeType(bytes: Uint8Array): ImageMimeType | null {
+  for (const [mimeType, format] of Object.entries(imageFormats)) {
+    if (format.signature(bytes)) {
+      return mimeType as ImageMimeType;
+    }
+  }
+  return null;
+}
 
 export type UploadedMedia = {
   key: string;
@@ -78,25 +113,52 @@ export function createMediaObjectKey(
   return `${category}/${crypto.randomUUID()}-${sanitizeFilename(filename)}.${imageFormats[mimeType].extension}`;
 }
 
-export async function validateImageFile(file: File) {
+export function isHeicBytes(bytes: Uint8Array): boolean {
+  return (
+    bytes.length >= 12 &&
+    bytes[4] === 0x66 &&
+    bytes[5] === 0x74 &&
+    bytes[6] === 0x79 &&
+    bytes[7] === 0x70 &&
+    (
+      (bytes[8] === 0x68 && bytes[9] === 0x65 && bytes[10] === 0x69) || // heic, heix, heim, heis
+      (bytes[8] === 0x6d && bytes[9] === 0x69 && bytes[10] === 0x66)    // mif1
+    )
+  );
+}
+
+export async function validateImageFile(file: File): Promise<ImageMimeType> {
   if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
     throw new HttpError(400, 'MEDIA_TOO_LARGE', 'Image uploads must not exceed 5 MB.');
   }
 
-  if (!isImageMimeType(file.type)) {
-    throw new HttpError(400, 'INVALID_MEDIA_TYPE', 'Only JPEG, PNG, and WEBP images are allowed.');
-  }
+  const bytes = new Uint8Array(await file.slice(0, 24).arrayBuffer());
 
-  const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
-  if (!imageFormats[file.type].signature(bytes)) {
+  // 1. Check if the user uploaded an Apple HEIC/HEIF photo
+  if (isHeicBytes(bytes)) {
     throw new HttpError(
       400,
       'INVALID_MEDIA_TYPE',
-      'The image file does not match its declared type.',
+      'Apple HEIC/HEIF photos are not supported by web browsers. Please convert or export to JPEG or PNG before uploading.',
     );
   }
 
-  return file.type;
+  // 2. Sniff actual magic bytes to reliably determine real image type
+  const detectedType = detectImageMimeType(bytes);
+  if (detectedType) {
+    return detectedType;
+  }
+
+  // 3. If declared type matches and signature passes
+  if (isImageMimeType(file.type) && imageFormats[file.type].signature(bytes)) {
+    return file.type;
+  }
+
+  throw new HttpError(
+    400,
+    'INVALID_MEDIA_TYPE',
+    'Only JPEG, PNG, WEBP, and AVIF images are allowed.',
+  );
 }
 
 function isMediaCategory(value: string): value is MediaCategory {

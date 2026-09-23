@@ -17,6 +17,7 @@ export type LandingHero = {
 };
 
 export type LandingService = {
+  id?: string;
   description: string;
   iconAlt: string;
   iconUrl: string;
@@ -29,6 +30,7 @@ export type LandingService = {
 };
 
 export type LandingDoctor = {
+  id?: string;
   bookingLabel?: string;
   credential?: string;
   detail: {
@@ -136,6 +138,7 @@ export type DoctorsPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
     title: string;
   };
   heroMedia?: {
+    badge?: string | null;
     body: string | null;
     id: string;
     imageKey: string;
@@ -196,6 +199,7 @@ export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | '
   hero: {
     eyebrow: string;
     imageAlt: string;
+    imagePresentation?: import('@arunreah/shared').ImagePresentation;
     imageUrl: string;
     subtitle: string;
     title: string;
@@ -261,6 +265,7 @@ export type BranchesPageContent = Pick<LandingPageContent, 'actions' | 'footer' 
     appointmentLabel: string;
     backgroundImageAlt: string;
     backgroundImageUrl: string;
+    imagePresentation?: import('@arunreah/shared').ImagePresentation;
     eyebrow: string;
     highlights: {
       iconUrl: string;
@@ -294,6 +299,9 @@ export type ServicesPageContent = Pick<LandingPageContent, 'actions' | 'footer' 
   hero: {
     description: string;
     title: string;
+    eyebrow?: string;
+    imageUrl?: string;
+    imagePresentation?: import('@arunreah/shared').ImagePresentation;
   };
 };
 
@@ -395,6 +403,7 @@ export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' |
     backgroundImageAlt: string;
     backgroundImageUrl: string;
     eyebrow: string;
+    imagePresentation?: import('@arunreah/shared').ImagePresentation;
     info: {
       description: string;
       icon: 'clock' | 'email' | 'location' | 'phone';
@@ -472,6 +481,8 @@ export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'f
   hero: {
     backgroundImageAlt: string;
     backgroundImageUrl: string;
+    eyebrow?: string;
+    imagePresentation?: import('@arunreah/shared').ImagePresentation;
     subtitle: string;
     title: string;
   };

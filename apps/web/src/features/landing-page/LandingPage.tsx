@@ -14,6 +14,7 @@ import type {
 } from '@/features/landing-page/types';
 import { useLandingPageQuery } from './use-landing-page';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { CmsImage } from '@/components/layout/public-ui';
 
 const asset = (name: string) => `/assets/landing/${name}`;
@@ -115,9 +116,9 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
 
   return (
     <article className="w-full shrink-0 snap-center">
-      <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:px-8 lg:h-[530px] lg:pb-0">
+      <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:px-8 lg:h-[600px] lg:pb-0">
         <div className="relative h-full">
-          <div className="relative h-[264px] overflow-hidden rounded-[20px] bg-[#dfe9ee] shadow-[0_8px_22px_rgba(15,61,84,0.08)] sm:h-[330px] md:h-[400px] lg:absolute lg:inset-x-0 lg:top-3 lg:h-[438px] lg:rounded-[24px]">
+          <div className="relative h-[320px] overflow-hidden rounded-[20px] bg-[#dfe9ee] shadow-[0_8px_22px_rgba(15,61,84,0.08)] sm:h-[390px] md:h-[460px] lg:absolute lg:inset-x-0 lg:top-3 lg:h-[510px] lg:rounded-[24px]">
             <CmsImage
               alt={hero.imageAlt || 'Arunreah Dental Clinic'}
               className="h-full w-full object-cover"
@@ -127,7 +128,7 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
               src={imageUrl}
             />
           </div>
-          <div className="relative mx-2 -mt-7 grid overflow-hidden rounded-xl border border-[#dcebef] bg-white text-[#005687] shadow-[0_8px_22px_rgba(15,61,84,0.09)] sm:mx-4 sm:grid-cols-2 lg:absolute lg:left-1/2 lg:top-[398px] lg:mx-0 lg:mt-0 lg:w-[calc(100%-4rem)] lg:-translate-x-1/2 lg:grid-cols-[minmax(0,1.35fr)_auto_minmax(0,0.85fr)] xl:w-[920px]">
+          <div className="relative mx-2 -mt-7 grid overflow-hidden rounded-xl border border-[#dcebef] bg-white text-[#005687] shadow-[0_8px_22px_rgba(15,61,84,0.09)] sm:mx-4 sm:grid-cols-2 lg:absolute lg:left-1/2 lg:top-[468px] lg:mx-0 lg:mt-0 lg:w-[calc(100%-4rem)] lg:-translate-x-1/2 lg:grid-cols-[minmax(0,1.35fr)_auto_minmax(0,0.85fr)] xl:w-[920px]">
             <div className="order-2 flex items-center gap-3 px-5 py-4 sm:px-6 sm:py-5 lg:order-none">
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#3695B9] sm:size-[43px]">
                 <AssetIcon className="h-[18px] w-[14px]" name="hero-location.svg" />
@@ -169,6 +170,7 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
 }
 
 function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
+  const copy = publicUiCopy(usePublicLanguage().language).landing;
   const carouselRef = useRef<HTMLDivElement>(null);
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
 
@@ -202,7 +204,7 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
   };
 
   return (
-    <section aria-label="Clinic branches" className="relative bg-[#f7fafc]">
+    <section aria-label={copy.branchesLabel} className="relative bg-[#f7fafc]">
       <div
         className="hero-carousel flex snap-x snap-mandatory overflow-hidden scroll-smooth touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         data-scroll-container
@@ -216,7 +218,7 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
       </div>
       {heroes.length > 1 ? (
         <>
-          <div className="pointer-events-none absolute inset-x-0 top-[142px] mx-auto flex w-full max-w-[1180px] items-center justify-between px-2 sm:top-[196px] sm:px-5 md:top-[230px]">
+          <div className="pointer-events-none absolute inset-x-0 top-[165px] mx-auto flex w-full max-w-[1180px] items-center justify-between px-2 sm:top-[215px] sm:px-5 md:top-[250px] lg:top-[265px]">
             <div className="pointer-events-auto">
               <HeroArrowButton direction="left" onClick={() => scrollToBranch(-1)} />
             </div>
@@ -455,6 +457,7 @@ function useSmoothCarousel<T>(items: T[]) {
 }
 
 function ServicesSection({ services }: { services: LandingService[] }) {
+  const copy = publicUiCopy(usePublicLanguage().language).landing;
   const {
     scrollRef,
     canScrollLeft,
@@ -472,21 +475,21 @@ function ServicesSection({ services }: { services: LandingService[] }) {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695b9]">
-              What We Offer
+              {copy.servicesEyebrow}
             </p>
-            <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">Our Services</h2>
+            <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">{copy.servicesTitle}</h2>
           </div>
           <div className="flex items-center gap-5">
             <Link
               className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#3695B9] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:inline-flex"
               to="/services"
             >
-              See All Services
+              {copy.seeAllServices}
               <ArrowIcon />
             </Link>
             <div className="flex items-center gap-2">
               <button
-                aria-label="Scroll services left"
+                aria-label={copy.scrollServicesLeft}
                 className={`grid size-11 place-items-center rounded-full border transition duration-200 ${
                   canScrollLeft
                     ? 'border-[#3695B9] text-[#3695B9] hover:bg-[#f0f9fa]'
@@ -499,7 +502,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                 ‹
               </button>
               <button
-                aria-label="Scroll services right"
+                aria-label={copy.scrollServicesRight}
                 className={`grid size-11 place-items-center rounded-full transition duration-200 ${
                   canScrollRight
                     ? 'bg-[#3695B9] text-white shadow-sm hover:bg-[#2c84a5]'
@@ -564,6 +567,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
 }
 
 function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
+  const copy = publicUiCopy(usePublicLanguage().language).landing;
   const {
     scrollRef,
     canScrollLeft,
@@ -581,21 +585,21 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
-              Expert Team
+              {copy.specialistsEyebrow}
             </p>
-            <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">Meet Our Specialists</h2>
+            <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">{copy.specialistsTitle}</h2>
           </div>
           <div className="flex items-center gap-5">
             <Link
               className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#3695B9] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:inline-flex"
               to="/doctors"
             >
-              See All Doctors
+              {copy.seeAllDoctors}
               <ArrowIcon />
             </Link>
             <div className="flex items-center gap-2">
               <button
-                aria-label="Scroll specialists left"
+                aria-label={copy.scrollSpecialistsLeft}
                 className={`grid size-11 place-items-center rounded-full border transition duration-200 ${
                   canScrollLeft
                     ? 'border-[#3695B9] text-[#3695B9] hover:bg-[#f0f9fa]'
@@ -608,7 +612,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
                 ‹
               </button>
               <button
-                aria-label="Scroll specialists right"
+                aria-label={copy.scrollSpecialistsRight}
                 className={`grid size-11 place-items-center rounded-full transition duration-200 ${
                   canScrollRight
                     ? 'bg-[#3695B9] text-white shadow-sm hover:bg-[#2c84a5]'
@@ -665,9 +669,10 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
 }
 
 export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch[]; eyebrow: string }) {
+  const copy = publicUiCopy(usePublicLanguage().language).landing;
   return (
     <section className="bg-[#f4f9fb] pb-16 pt-6 sm:pb-20" id="branches">
-      <SectionHeader actionHref="/branches" actionLabel="See All Branches" eyebrow={eyebrow} title="Branches" />
+      <SectionHeader actionHref="/branches" actionLabel={copy.seeAllBranches} eyebrow={eyebrow} title={copy.branchesTitle} />
       <div className="mx-auto mt-6 grid w-full max-w-[1280px] gap-5 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         {branches.map((branch) => {
           const [days, time] = branch.hours.split(', ');
@@ -713,20 +718,21 @@ export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch
 }
 
 function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
+  const copy = publicUiCopy(usePublicLanguage().language).landing;
   return (
     <section className="relative overflow-hidden bg-[#00546f] pb-16 pt-16 text-white sm:pb-20 sm:pt-20" id="showcase">
       <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,rgba(65,183,213,0.32),transparent_30%),radial-gradient(circle_at_85%_75%,rgba(21,134,166,0.45),transparent_35%)]" />
       <div className="relative mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="mb-7 flex items-end justify-between border-b border-white/25 pb-4">
           <div>
-            <p className="mb-3 text-[12px] font-bold uppercase tracking-[0.22em] text-[#b9e8f5]">Patient stories & clinic guidance</p>
-            <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] sm:text-[38px]">Latest Showcase</h2>
+            <p className="mb-3 text-[12px] font-bold uppercase tracking-[0.22em] text-[#b9e8f5]">{copy.showcaseEyebrow}</p>
+            <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] sm:text-[38px]">{copy.showcaseTitle}</h2>
           </div>
           <Link
             className="hidden items-center gap-2 text-[16px] font-semibold leading-6 hover:underline focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:inline-flex"
             to="/showcases"
           >
-            View Show Cases
+            {copy.viewShowcases}
             <AssetIcon className="h-3 w-[8px]" name="showcase-chevron.svg" />
           </Link>
         </div>
@@ -762,7 +768,7 @@ function LandingPageView({ content }: { content: LandingPageContent }) {
   return (
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main>
-        <h1 className="sr-only">Arunreah Dental Clinic</h1>
+        <h1 className="sr-only">{publicUiCopy(language).landing.srHeading}</h1>
         <HeroSection heroes={content.heroes} />
         <PromotionsSection appointmentLabel={content.actions.appointmentLabel} editorial={content.promotionsEditorial} language={language} promotions={content.promotions} />
         <ServicesSection services={content.services} />
@@ -776,6 +782,7 @@ function LandingPageView({ content }: { content: LandingPageContent }) {
 }
 
 function LandingPageSkeleton() {
+  const copy = publicUiCopy(usePublicLanguage().language).landing;
   return (
     <SiteLayout
       actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }}
@@ -785,8 +792,8 @@ function LandingPageSkeleton() {
         { href: '/doctors', label: 'Doctors' },
       ]}
     >
-      <main aria-busy="true" aria-label="Loading landing page" className="bg-white">
-        <span className="sr-only">Loading clinic content</span>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loadingLabel}</span>
 
         <section aria-hidden="true" className="bg-[#f7fafc]">
           <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:h-[530px] md:pb-0 lg:px-8">
@@ -867,26 +874,30 @@ function LandingPageSkeleton() {
 }
 
 function LandingPageEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Landing page content is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
+        <Badge>{copy.common.noContent}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.landing.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.landing.unavailableBody}</p>
       </Card>
     </main>
   );
 }
 
 function LandingPageError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the landing page</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the clinic content.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.landing.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.landing.errorBody}</p>
         <Button className="mt-6" onClick={onRetry}>
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

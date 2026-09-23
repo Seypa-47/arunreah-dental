@@ -1,6 +1,8 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
 import type { AdminDoctor, DoctorStatus } from '@/services/admin-doctors';
 import { cmsApi } from '@/services/cms';
+import { toMediaKey } from '@/services/media';
+import { parsePhone, parseProcedures, parseSatisfaction, parseYearsExp } from '@/features/admin-doctors-page/doctor-payload';
 
 export type NewDoctorFormState = {
   contactEmail: string;
@@ -102,21 +104,21 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
     status: formData.status === 'published' ? 'PUBLISHED' : 'DRAFT',
     featured: false,
     displayOrder: 0,
-    nameEn: formData.name,
-    nameKm: formData.nameKm,
-    titleEn: formData.roleTitle || null,
+    nameEn: formData.name.trim(),
+    nameKm: formData.nameKm?.trim() || formData.name.trim(),
+    titleEn: formData.roleTitle?.trim() || null,
     titleKm: null,
-    specialtyEn: formData.specialty || null,
+    specialtyEn: formData.specialty?.trim() || null,
     specialtyKm: null,
-    shortBioEn: formData.shortIntro || null,
+    shortBioEn: formData.shortIntro?.trim() || null,
     shortBioKm: null,
-    aboutEn: formData.content || null,
+    aboutEn: formData.content?.trim() || null,
     aboutKm: null,
-    photoKey: formData.photoUrl || null,
-    yearsExperience: Number.parseInt(formData.yearsExp, 10) || null,
-    successfulProcedures: Number.parseInt(formData.procedures, 10) || null,
-    patientSatisfaction: Number.parseInt(formData.satisfaction, 10) || null,
-    phone: formData.contactPhone || null,
+    photoKey: toMediaKey(formData.photoUrl),
+    yearsExperience: parseYearsExp(formData.yearsExp),
+    successfulProcedures: parseProcedures(formData.procedures),
+    patientSatisfaction: parseSatisfaction(formData.satisfaction),
+    phone: parsePhone(formData.contactPhone),
     // The current creation form collects English expertise only. Do not copy it
     // into Khmer fields; it can be added through the bilingual editor later.
     expertise: [],
@@ -125,7 +127,7 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
   });
   const doctor = response.doctor;
   const createdDoctor: AdminDoctor = {
-    contactPhone: formData.contactPhone || '+855 23 456 789',
+    contactPhone: formData.contactPhone || '',
     content: formData.content,
     ctaButtonText: 'Book Now',
     education: ['Doctor of Dental Surgery (DDS)'],

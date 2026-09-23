@@ -4,53 +4,37 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage } from '@/components/layout/public-ui';
+import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { DoctorsPageContent, LandingDoctor } from '@/features/landing-page/types';
+import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useDoctorsPageQuery } from './use-doctors-page';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 
 const asset = (name: string) => `/assets/landing/${name}`;
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 function CalendarIcon() {
   return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
 }
 
-function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; heroMedia?: DoctorsPageContent['heroMedia'] }) {
+function DoctorsHero({ heroMedia }: { hero?: DoctorsPageContent['hero']; heroMedia?: DoctorsPageContent['heroMedia'] }) {
   const { language } = usePublicLanguage();
+  const uiCopy = publicUiCopy(language).doctors;
   const imageUrl = heroMedia ? getPublicMediaUrl(heroMedia.imageKey) : null;
   const fallbackImageUrl = '/assets/landing/hero-clinic.png';
-  const title = heroMedia?.title ?? hero.title;
-  const description = heroMedia?.body ?? hero.description;
-  const eyebrow = language === 'km' ? 'ក្រុមទន្តបណ្ឌិតរបស់យើង' : 'Our dental team';
 
   return (
-    <section className="border-b border-[#dceaf0] bg-[#f7fafc] py-5 sm:py-7">
+    <section className="border-b border-[#dceaf0] bg-[#f7fafc] py-6 sm:py-8 lg:py-10">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="relative min-h-[330px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#063e5c] sm:min-h-[430px]">
-          <CmsImage alt="Arunreah Dental Clinic team" className="h-[200px] w-full sm:absolute sm:inset-0 sm:h-full" fallbackSrc={fallbackImageUrl} presentation={heroMedia?.imagePresentation} src={imageUrl} />
-          <div aria-hidden="true" className="absolute inset-0 hidden bg-[linear-gradient(90deg,rgba(5,52,78,0.88)_0%,rgba(5,52,78,0.61)_48%,rgba(5,52,78,0.08)_100%)] sm:block" />
-          <div className="relative z-10 flex max-w-[690px] items-end p-5 sm:min-h-[430px] sm:p-10 lg:p-12">
-            <div>
-              <p className="text-[11px] font-bold uppercase leading-4 tracking-[3px] text-[#b7e7f4] sm:text-[12px] sm:tracking-[3.6px]">
-                {eyebrow}
-              </p>
-              <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.035em] text-white sm:text-[42px]">
-                {title}
-              </h1>
-              <p className="mt-3 max-w-[600px] text-[15px] font-normal leading-6 text-[#e6f6fa] sm:text-[16px] sm:leading-7">
-                {description}
-              </p>
-            </div>
-          </div>
+        <div className="relative min-h-[320px] sm:min-h-[400px] lg:min-h-[460px] overflow-hidden rounded-2xl sm:rounded-[28px] lg:rounded-[32px] border border-[#dce6ed] bg-[#f8fafc] shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
+          <ResilientImage
+            alt={uiCopy.teamImageAlt}
+            className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.03] saturate-[1.03]"
+            fallbackSrc={fallbackImageUrl}
+            presentation={heroMedia?.imagePresentation}
+            src={imageUrl}
+          />
         </div>
       </div>
     </section>
@@ -58,6 +42,7 @@ function DoctorsHero({ hero, heroMedia }: { hero: DoctorsPageContent['hero']; he
 }
 
 function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
+  const { language } = usePublicLanguage();
   const hasImage = Boolean(doctor.imageUrl);
 
   return (
@@ -82,7 +67,7 @@ function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
           </p>
           <span className="mt-auto inline-flex min-h-9 items-center justify-center gap-2 pt-3 text-left text-[12px] font-bold leading-4 text-[#167ea7] transition group-hover:text-[#005687] sm:mt-3 sm:min-h-0 sm:justify-start sm:pt-0">
             <CalendarIcon />
-            {doctor.bookingLabel ?? `Book with ${doctor.name}`}
+            {doctor.bookingLabel ?? (language === 'km' ? `កក់ជាមួយ ${doctor.name}` : `Book with ${doctor.name}`)}
           </span>
         </div>
       </Link>
@@ -96,7 +81,7 @@ function DoctorsGrid({ doctors }: { doctors: LandingDoctor[] }) {
     ? { eyebrow: 'ជួបជាមួយក្រុមរបស់យើង', title: 'ក្រុមទន្តបណ្ឌិតដែលយកចិត្តទុកដាក់ស្តាប់អ្នកជាមុន', body: 'ស្វែងយល់ពីប្រវត្តិ ជំនាញ និងវិធីសាស្ត្រថែទាំអ្នកជំងឺរបស់ទន្តបណ្ឌិតនីមួយៗ។' }
     : { eyebrow: 'Meet the team', title: 'Professionals who listen first', body: 'Explore each profile to learn about their background, areas of practice, and approach to patient care.' };
   return (
-    <section aria-label="Doctor profiles" className="bg-white py-10 sm:py-14">
+    <section aria-label={publicUiCopy(language).doctors.profilesLabel} className="bg-white py-10 sm:py-14">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="mb-6 max-w-[650px] sm:mb-8">
           <p className="text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{copy.eyebrow}</p>
@@ -134,10 +119,13 @@ function DoctorsPageView({ content }: { content: DoctorsPageContent }) {
 }
 
 function DoctorsPageSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).doctors;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading doctors page" className="bg-white">
-        <span className="sr-only">Loading doctor profiles</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loadingLabel}</span>
 
         <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] pb-10 pt-12 text-center sm:pb-12 sm:pt-14">
           <div className="mx-auto max-w-[650px] px-4 sm:px-6">
@@ -169,26 +157,30 @@ function DoctorsPageSkeleton() {
 }
 
 function DoctorsPageEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Doctor profiles are unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
+        <Badge>{copy.common.noContent}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.doctors.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.doctors.unavailableBody}</p>
       </Card>
     </main>
   );
 }
 
 function DoctorsPageError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the doctors page</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the doctor profiles.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.doctors.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.doctors.errorBody}</p>
         <Button className="mt-6" onClick={onRetry} type="button">
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

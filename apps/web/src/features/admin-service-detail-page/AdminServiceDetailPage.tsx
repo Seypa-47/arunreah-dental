@@ -1,9 +1,10 @@
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
+import { imageFrames } from '@/components/admin/image-frames';
 import { MediaUploader } from '@/components/admin/media-uploader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -14,11 +15,12 @@ import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
 import { getPublicMediaUrl } from '@/services/media';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
-import type { CreateServiceInput } from '@arunreah/shared';
+import { defaultImagePresentation, type CreateServiceInput, type ImagePresentation } from '@arunreah/shared';
 import { toMediaKey } from './media-key';
 
 type EditableService = AdminService & {
   aboutContent: string;
+  aboutImagePresentation: ImagePresentation;
   aboutImageUrl: string;
   aboutTitle: string;
   anesthesia: string;
@@ -36,7 +38,9 @@ type EditableService = AdminService & {
   editorialTitleEn: string;
   editorialTitleKm: string;
   heroHeading: string;
+  heroImagePresentation: ImagePresentation;
   heroImageUrl: string;
+  imagePresentation: ImagePresentation;
   heroPrimaryCta: string;
   heroSecondaryCta: string;
   heroSummary: string;
@@ -88,7 +92,16 @@ function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+      className={`h-10 w-full rounded-xl border border-[#64748b] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition placeholder:text-[#71839e] hover:border-[#475569] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20 disabled:bg-[#f1f5f8] disabled:border-[#cbd7e2] ${props.className ?? ''}`}
+    />
+  );
+}
+
+function TextAreaInput(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...props}
+      className={`w-full rounded-xl border border-[#64748b] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] shadow-xs outline-none transition placeholder:text-[#71839e] hover:border-[#475569] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20 disabled:bg-[#f1f5f8] disabled:border-[#cbd7e2] ${props.className ?? ''}`}
     />
   );
 }
@@ -109,11 +122,11 @@ function StatusSwitch({
   return (
     <div>
       <p className="text-[12px] font-bold text-[#61738d]">{label}</p>
-      <div className="mt-1.5 grid h-10 grid-cols-2 rounded-xl border border-[#dce5ef] bg-white p-0.5 text-[12.5px] font-bold">
+      <div className="mt-1.5 grid h-10 grid-cols-2 rounded-xl border border-[#64748b] bg-white p-0.5 text-[12.5px] font-bold shadow-xs">
         <button
           aria-pressed={status === 'published'}
           className={`rounded-lg transition ${
-            status === 'published' ? 'bg-[#2187a8] text-white shadow-sm' : 'text-[#71839e] hover:text-[#182238]'
+            status === 'published' ? 'bg-[#096b89] text-white shadow-sm' : 'text-[#71839e] hover:text-[#182238]'
           }`}
           onClick={() => onChange('published')}
           type="button"
@@ -123,7 +136,7 @@ function StatusSwitch({
         <button
           aria-pressed={status === 'draft'}
           className={`rounded-lg transition ${
-            status === 'draft' ? 'bg-[#2187a8] text-white shadow-sm' : 'text-[#71839e] hover:text-[#182238]'
+            status === 'draft' ? 'bg-[#096b89] text-white shadow-sm' : 'text-[#71839e] hover:text-[#182238]'
           }`}
           onClick={() => onChange('draft')}
           type="button"
@@ -244,15 +257,15 @@ function BasicInformation({
         <div className="grid gap-5 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px]">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={`${content.editor.descriptionLabel} · English`}>
-              <textarea
-                className="h-[130px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+              <TextAreaInput
+                className="h-[130px] resize-none"
                 onChange={(event) => setService((current) => ({ ...current, description: event.target.value }))}
                 value={service.description}
               />
             </Field>
             <Field label="ពិពណ៌នាខ្លី · ខ្មែរ">
-              <textarea
-                className="h-[130px] w-full resize-none rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-6 text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+              <TextAreaInput
+                className="h-[130px] resize-none"
                 lang="km"
                 onChange={(event) => setService((current) => ({ ...current, descriptionKm: event.target.value }))}
                 value={service.descriptionKm}
@@ -261,6 +274,11 @@ function BasicInformation({
           </div>
           <MediaUploader
             category="services"
+            framing={{
+              frames: imageFrames.serviceCard,
+              onChange: (imagePresentation) => setService((current) => ({ ...current, imagePresentation })),
+              value: service.imagePresentation,
+            }}
             help={`${content.editor.imageHelp} You can replace or remove it without deleting the stored media asset.`}
             label={content.editor.imageLabel}
             onClear={() => setService((current) => ({ ...current, imageUrl: '' }))}
@@ -362,6 +380,34 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
     }));
     setOpenIndex(service.detailSections.length);
   };
+  const deleteSection = (indexToDelete: number) => {
+    const target = service.detailSections[indexToDelete];
+    const hasContent = Boolean(
+      target?.headingEn?.trim() ||
+      target?.headingKm?.trim() ||
+      target?.bodyEn?.trim() ||
+      target?.bodyKm?.trim() ||
+      target?.imageKey
+    );
+    const title = target?.headingEn?.trim() || target?.headingKm?.trim() || `Section ${indexToDelete + 1}`;
+
+    if (hasContent && !window.confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setService((current) => ({
+      ...current,
+      detailSections: current.detailSections
+        .filter((_, index) => index !== indexToDelete)
+        .map((section, index) => ({ ...section, displayOrder: index })),
+    }));
+    setOpenIndex((current) => {
+      if (current === undefined) return undefined;
+      if (current === indexToDelete) return undefined;
+      if (current > indexToDelete) return current - 1;
+      return current;
+    });
+  };
 
   return (
     <Card className="mt-4 rounded-[18px] border-[#dce5ef] p-6 shadow-none">
@@ -387,16 +433,25 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
                     <span className="block truncate text-[14px] font-bold text-[#182238]">{section.headingEn?.trim() || section.headingKm?.trim() || 'Untitled section'}</span>
                     <span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[#71839e]"><span>{section.sectionType === 'IMAGE' ? 'Image-led section' : 'Text section'}</span><span>{sectionLanguageState(section)}</span></span>
                   </button>
-                  <div className="flex shrink-0 items-center gap-1" aria-label={`Section ${index + 1} ordering controls`}>
+                  <div className="flex shrink-0 items-center gap-1.5" aria-label={`Section ${index + 1} controls`}>
                     <Button aria-label={`Move section ${index + 1} earlier`} className="min-h-9 px-3 py-1" disabled={index === 0} onClick={() => moveSection(index, -1)} type="button" variant="secondary">↑</Button>
                     <Button aria-label={`Move section ${index + 1} later`} className="min-h-9 px-3 py-1" disabled={index === service.detailSections.length - 1} onClick={() => moveSection(index, 1)} type="button" variant="secondary">↓</Button>
+                    <button
+                      aria-label={`Delete section ${index + 1}: ${section.headingEn || section.headingKm || 'Untitled section'}`}
+                      className="inline-flex size-9 items-center justify-center rounded-lg border border-[#fecdca] bg-white text-[#b42318] transition hover:border-[#fda29b] hover:bg-[#fef3f2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318]"
+                      onClick={() => deleteSection(index)}
+                      title="Delete section"
+                      type="button"
+                    >
+                      <AdminIcon className="size-4" name="trash" />
+                    </button>
                   </div>
                 </div>
                 {isOpen ? (
                   <div className="border-t border-[#dce5ef] p-4 sm:p-5">
                     <div className="grid gap-4 sm:grid-cols-[12rem_minmax(0,1fr)]">
                       <Field label="Section type">
-                        <select className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3 text-[13px]" onChange={(event) => updateSection(index, { sectionType: event.target.value as EditableDetailSection['sectionType'] })} value={section.sectionType}>
+                        <select className="h-10 w-full rounded-xl border border-[#64748b] bg-white px-3 text-[13px] shadow-xs outline-none hover:border-[#475569] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20" onChange={(event) => updateSection(index, { sectionType: event.target.value as EditableDetailSection['sectionType'] })} value={section.sectionType}>
                           <option value="TEXT">Text section</option>
                           <option value="IMAGE">Image-led section</option>
                         </select>
@@ -406,11 +461,22 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
                     <div className="mt-4 grid gap-4 sm:grid-cols-2">
                       <Field label="Heading · English"><TextInput onChange={(event) => updateSection(index, { headingEn: event.target.value || null })} value={section.headingEn ?? ''} /></Field>
                       <Field label="ចំណងជើង · ខ្មែរ"><TextInput lang="km" onChange={(event) => updateSection(index, { headingKm: event.target.value || null })} value={section.headingKm ?? ''} /></Field>
-                      <Field label="Body · English"><textarea className="h-32 w-full rounded-xl border border-[#dce5ef] px-3 py-2 text-[13px]" onChange={(event) => updateSection(index, { bodyEn: event.target.value || null })} value={section.bodyEn ?? ''} /></Field>
-                      <Field label="ខ្លឹមសារ · ខ្មែរ"><textarea className="h-32 w-full rounded-xl border border-[#dce5ef] px-3 py-2 text-[13px]" lang="km" onChange={(event) => updateSection(index, { bodyKm: event.target.value || null })} value={section.bodyKm ?? ''} /></Field>
+                      <Field label="Body · English"><TextAreaInput className="h-32" onChange={(event) => updateSection(index, { bodyEn: event.target.value || null })} value={section.bodyEn ?? ''} /></Field>
+                      <Field label="ខ្លឹមសារ · ខ្មែរ"><TextAreaInput className="h-32" lang="km" onChange={(event) => updateSection(index, { bodyKm: event.target.value || null })} value={section.bodyKm ?? ''} /></Field>
                     </div>
-                    <div className="mt-4"><MediaUploader category="services" help="Optional. Add one image only when it helps patients understand this section." label="Section image" onClear={() => updateSection(index, { imageKey: null })} onUploaded={(imageKey) => updateSection(index, { imageKey })} value={section.imageKey ?? undefined} /></div>
+                    <div className="mt-4"><MediaUploader category="services" framing={{ frames: imageFrames.serviceSection, onChange: (imagePresentation) => updateSection(index, { imagePresentation }), value: section.imagePresentation }} help="Optional. Add one image only when it helps patients understand this section." label="Section image" onClear={() => updateSection(index, { imageKey: null })} onUploaded={(imageKey) => updateSection(index, { imageKey })} value={section.imageKey ?? undefined} /></div>
                     {repeatedImage ? <p className="mt-3 rounded-lg border border-[#f0c36d] bg-[#fff8e8] px-3 py-2 text-[12px] leading-5 text-[#7a4900]" role="status">This image is also used in another detail section. That can be intentional, but consider using a different image if the sections cover different topics.</p> : null}
+                    <div className="mt-5 flex items-center justify-between border-t border-[#edf1f5] pt-4">
+                      <span className="text-[12px] text-[#71839e]">Section {index + 1} of {service.detailSections.length}</span>
+                      <button
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#fecdca] bg-white px-3 py-1.5 text-[13px] font-bold text-[#b42318] transition hover:border-[#fda29b] hover:bg-[#fef3f2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318]"
+                        onClick={() => deleteSection(index)}
+                        type="button"
+                      >
+                        <AdminIcon className="size-3.5" name="trash" />
+                        <span>Delete section</span>
+                      </button>
+                    </div>
                   </div>
                 ) : null}
               </li>
@@ -460,6 +526,19 @@ function SectionRows({
               <div className="border-t border-[#e1e8f0] bg-[#fafbfd] px-6 py-5">
                 {section.title.includes('2. Hero Section') ? (
                   <div className="space-y-4">
+                    <MediaUploader
+                      category="services"
+                      framing={{
+                        frames: imageFrames.serviceHero,
+                        onChange: (heroImagePresentation) => setService((c) => ({ ...c, heroImagePresentation })),
+                        value: service.heroImagePresentation,
+                      }}
+                      help="Optional. Shown beside the service heading. Without one, the service card image is used."
+                      label="Hero image"
+                      onClear={() => setService((c) => ({ ...c, heroImageUrl: '' }))}
+                      onUploaded={(heroImageUrl) => setService((c) => ({ ...c, heroImageUrl }))}
+                      value={service.heroImageUrl || undefined}
+                    />
                     <Field label="Hero Heading">
                       <TextInput
                         onChange={(e) => setService((c) => ({ ...c, heroHeading: e.target.value }))}
@@ -467,8 +546,8 @@ function SectionRows({
                       />
                     </Field>
                     <Field label="Hero Summary">
-                      <textarea
-                        className="h-20 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      <TextAreaInput
+                        className="h-20"
                         onChange={(e) => setService((c) => ({ ...c, heroSummary: e.target.value }))}
                         value={service.heroSummary}
                       />
@@ -492,7 +571,7 @@ function SectionRows({
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Page presentation">
                       <select
-                        className="h-10 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[13px] font-medium text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                        className="h-10 w-full rounded-xl border border-[#64748b] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition hover:border-[#475569] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20"
                         onChange={(e) => setService((c) => ({ ...c, detailPresentation: e.target.value as EditableService['detailPresentation'] }))}
                         value={service.detailPresentation}
                       >
@@ -522,6 +601,19 @@ function SectionRows({
                   </div>
                 ) : section.title.includes('3. About Section') ? (
                   <div className="space-y-4">
+                    <MediaUploader
+                      category="services"
+                      framing={{
+                        frames: imageFrames.serviceAbout,
+                        onChange: (aboutImagePresentation) => setService((c) => ({ ...c, aboutImagePresentation })),
+                        value: service.aboutImagePresentation,
+                      }}
+                      help="Optional. Shown with the About section. Without one, the service card image is used."
+                      label="About image"
+                      onClear={() => setService((c) => ({ ...c, aboutImageUrl: '' }))}
+                      onUploaded={(aboutImageUrl) => setService((c) => ({ ...c, aboutImageUrl }))}
+                      value={service.aboutImageUrl || undefined}
+                    />
                     <Field label="About Heading">
                       <TextInput
                         onChange={(e) => setService((c) => ({ ...c, aboutTitle: e.target.value }))}
@@ -529,8 +621,8 @@ function SectionRows({
                       />
                     </Field>
                     <Field label="About Content">
-                      <textarea
-                        className="h-24 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      <TextAreaInput
+                        className="h-24"
                         onChange={(e) => setService((c) => ({ ...c, aboutContent: e.target.value }))}
                         value={service.aboutContent}
                       />
@@ -628,8 +720,8 @@ function SectionRows({
                       />
                     </Field>
                     <Field label="CTA Description">
-                      <textarea
-                        className="h-20 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      <TextAreaInput
+                        className="h-20"
                         onChange={(e) => setService((c) => ({ ...c, bottomCtaDescription: e.target.value }))}
                         value={service.bottomCtaDescription}
                       />
@@ -650,8 +742,8 @@ function SectionRows({
                       />
                     </Field>
                     <Field label="Meta Description">
-                      <textarea
-                        className="h-20 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 py-2.5 text-[13px] font-medium leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      <TextAreaInput
+                        className="h-20"
                         onChange={(e) => setService((c) => ({ ...c, metaDescription: e.target.value }))}
                         value={service.metaDescription}
                       />
@@ -676,13 +768,16 @@ function SectionRows({
 
 
 function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent & { service: AdminService } }) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDirty, setIsDirty] = useState(false);
   const [service, setServiceState] = useState<EditableService>(() => ({
     ...content.service,
-    aboutContent: content.preview.aboutDescription,
-    aboutImageUrl: content.preview.aboutImageUrl,
-    aboutTitle: content.preview.aboutTitle,
+    aboutContent: content.service.saved.aboutBodyEn ?? content.preview.aboutDescription,
+    aboutImagePresentation: content.service.saved.aboutImagePresentation ?? defaultImagePresentation,
+    // Saved media keys only: template preview images must never be written back on save.
+    aboutImageUrl: content.service.saved.aboutImageKey ?? '',
+    aboutTitle: content.service.saved.aboutTitleEn ?? content.preview.aboutTitle,
     anesthesia: 'Local Anesthesia / Sedation',
     benefits: content.preview.benefits,
     benefitsIntro: `Why choose ${content.service.name} at Arunreah Dental Clinic`,
@@ -697,14 +792,16 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     editorialLabelKm: content.service.editorialLabelKm,
     editorialTitleEn: content.service.editorialTitleEn,
     editorialTitleKm: content.service.editorialTitleKm,
-    heroHeading: `${content.preview.titlePrefix} ${content.service.name}`,
-    heroImageUrl: content.preview.heroImageUrl,
+    heroHeading: content.service.saved.heroTitleEn ?? `${content.preview.titlePrefix} ${content.service.name}`,
+    heroImagePresentation: content.service.saved.heroImagePresentation ?? defaultImagePresentation,
+    heroImageUrl: content.service.saved.heroImageKey ?? '',
+    imagePresentation: content.service.saved.imagePresentation ?? defaultImagePresentation,
     heroPrimaryCta: 'Book an Appointment',
     heroSecondaryCta: content.preview.requestLabel,
-    heroSummary: content.service.description,
+    heroSummary: content.service.saved.heroSummaryEn ?? content.service.description,
     longevity: 'Permanent / Long-Term',
-    metaDescription: content.service.description,
-    metaTitle: `${content.service.name} in Phnom Penh | Arunreah Dental Clinic`,
+    metaDescription: content.service.saved.metaDescriptionEn ?? content.service.description,
+    metaTitle: content.service.saved.metaTitleEn ?? `${content.service.name} in Phnom Penh | Arunreah Dental Clinic`,
     recovery: '3 - 6 Months',
     relatedCategory: content.service.category,
     relatedServices: ['Teeth Whitening', 'Routine Cleaning', 'Orthodontics'],
@@ -728,6 +825,9 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       summaryKm: service.descriptionKm || null,
       descriptionEn: service.heroSummary || null,
       imageKey: toMediaKey(service.imageUrl),
+      imagePresentation: service.imagePresentation,
+      heroImagePresentation: service.heroImagePresentation,
+      aboutImagePresentation: service.aboutImagePresentation,
       featured: service.featured,
       displayOrder: service.order,
       heroTitleEn: service.heroHeading || null,
@@ -770,6 +870,25 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     setTimeout(() => {
       setNotification(undefined);
     }, 5000);
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: () => cmsApi.services.delete(content.service.id),
+    onSuccess: async () => {
+      setIsDirty(false);
+      await invalidateCmsDomain(queryClient, 'services');
+      navigate('/admin/services');
+    },
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'Unable to delete this service.';
+      showNotification(message, 'error');
+    },
+  });
+
+  const handleDelete = () => {
+    if (window.confirm(`Are you sure you want to delete "${service.name}"? This action cannot be undone.`)) {
+      deleteMutation.mutate();
+    }
   };
 
   const handleSaveDraft = () => {
@@ -825,7 +944,17 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
             {content.controls.previewLabel}
           </Button>
           <Button
+            className="h-9.5 rounded-xl border border-[#fecdca] bg-[#fff5f5] px-4 text-[12.5px] font-semibold text-[#b42318] shadow-none hover:bg-[#fee2e2]"
+            disabled={deleteMutation.isPending}
+            onClick={handleDelete}
+            type="button"
+            variant="secondary"
+          >
+            {deleteMutation.isPending ? 'Deleting…' : 'Delete Service'}
+          </Button>
+          <Button
             className="h-9.5 rounded-xl border border-[#dce5ef] bg-white px-4 text-[12.5px] font-semibold text-[#2187a8] shadow-none hover:bg-[#f4f8fb]"
+            disabled={saveMutation.isPending}
             onClick={handleSaveDraft}
             type="button"
             variant="secondary"
@@ -834,6 +963,7 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
           </Button>
           <Button
             className="h-9.5 rounded-xl bg-[#2187a8] px-4.5 text-[12.5px] font-bold text-white hover:bg-[#1a718c]"
+            disabled={saveMutation.isPending}
             onClick={handleUpdateService}
             type="button"
           >

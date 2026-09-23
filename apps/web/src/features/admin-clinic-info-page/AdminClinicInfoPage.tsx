@@ -3,9 +3,11 @@ import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useState, useEffect, useMemo, useRef, type ChangeEvent, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminBranchListQuery, CreateBranchInput } from '@arunreah/shared';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
+import { imageFrames } from '@/components/admin/image-frames';
+import { MediaUploader } from '@/components/admin/media-uploader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -103,14 +105,37 @@ function CreateBranchModal({
   );
 }
 
+export function resolveClinicInfoTab(
+  pathname: string,
+  fallback: 'clinic' | 'branches' | 'contact' = 'clinic',
+): 'clinic' | 'branches' | 'contact' {
+  if (pathname === '/admin/clinic-info/branches' || pathname.startsWith('/admin/clinic-info/branches/')) {
+    return 'branches';
+  }
+  if (pathname === '/admin/clinic-info/contact' || pathname.startsWith('/admin/clinic-info/contact/')) {
+    return 'contact';
+  }
+  if (pathname === '/admin/clinic-info' || pathname.startsWith('/admin/clinic-info/')) {
+    return 'clinic';
+  }
+  return fallback;
+}
+
 export function AdminClinicInfoPage({
   initialTab = 'clinic',
 }: {
   initialTab?: 'clinic' | 'branches' | 'contact';
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'clinic' | 'branches' | 'contact'>(initialTab);
+  const resolvedTab = resolveClinicInfoTab(location.pathname, initialTab);
+  const [activeTab, setActiveTab] = useState<'clinic' | 'branches' | 'contact'>(resolvedTab);
+
+  useEffect(() => {
+    const nextTab = resolveClinicInfoTab(location.pathname, initialTab);
+    setActiveTab(nextTab);
+  }, [location.pathname, initialTab]);
   const { data, isLoading } = useAdminClinicInfoPageQuery();
   const [branchListState, setBranchListState] = useState<BranchListState>({
     limit: 20,
@@ -151,7 +176,7 @@ export function AdminClinicInfoPage({
       const message = error instanceof ApiClientError && error.status === 409
         ? 'That branch slug is already in use. Choose a different URL slug.'
         : 'Unable to create a new branch. Please check the required bilingual fields and try again.';
-      showToast(message);
+      showToast(message, 'error');
     },
   });
   const deleteBranchMutation = useMutation({
@@ -166,7 +191,7 @@ export function AdminClinicInfoPage({
       const message = error instanceof ApiClientError && error.status === 409
         ? 'This branch is referenced by appointment history. Deactivate or unpublish it instead.'
         : 'Unable to delete this branch. Please try again.';
-      showToast(message);
+      showToast(message, 'error');
     },
   });
 
@@ -203,19 +228,22 @@ export function AdminClinicInfoPage({
     instagramUrl: '',
   });
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; tone: 'success' | 'error' } | null>(null);
 
   // Sync initial query data
   useEffect(() => {
     if (data) {
       setGeneralInfo(data.generalInfo);
       setContactSettings(data.contactSettings);
-      if (activeTab !== 'branches') {
-        setBranches(data.branches);
-        setSelectedBranchId((current) => current || data.branches[0]?.id || '');
-      }
     }
-  }, [activeTab, data]);
+  }, [data]);
+
+  useEffect(() => {
+    if (data) {
+      setBranches((previous) => (previous.length > 0 ? previous : data.branches));
+      setSelectedBranchId((current) => current || data.branches[0]?.id || '');
+    }
+  }, [data]);
 
   useEffect(() => {
     if (!branchListQuery.data) return;
@@ -238,40 +266,55 @@ export function AdminClinicInfoPage({
 
   const branchStatusLabel = (status: ClinicBranch['status']) => status.charAt(0) + status.slice(1).toLowerCase();
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 2500);
+  const showToast = (message: string, tone: 'success' | 'error' = 'success') => {
+    setToast({ message, tone });
+    setTimeout(() => setToast(null), 3500);
   };
+
+  const isSaving =
+    updateInfoMutation.isPending ||
+    updateBranchMutation.isPending ||
+    updateContactMutation.isPending;
 
   const handleSaveAll = () => {
     if (activeTab === 'clinic') {
+      if (!generalInfo.clinicNameEn.trim() || !generalInfo.clinicNameKm.trim()) {
+        showToast('Clinic name in English and Khmer are required.', 'error');
+        return;
+      }
       updateInfoMutation.mutate(generalInfo, {
-        onSuccess: () => showToast('Clinic Information saved successfully!'),
+        onSuccess: () => showToast('Clinic Information saved successfully!', 'success'),
         onError: (error: unknown) => {
           const message = error instanceof ApiClientError && error.status === 403
             ? 'You do not have permission to update clinic information.'
             : 'Unable to save clinic information. Please review the required English and Khmer fields.';
-          showToast(message);
+          showToast(message, 'error');
         },
       });
     } else if (activeTab === 'branches' && selectedBranch) {
       updateBranchMutation.mutate(selectedBranch, {
-        onSuccess: () => showToast('Branch details saved successfully!'),
+        onSuccess: () => showToast('Branch details saved successfully!', 'success'),
         onError: (error: unknown) => {
           const message = error instanceof ApiClientError && error.status === 409
             ? 'That branch slug is already in use. Choose a different URL slug.'
             : 'Unable to save branch details. Please review the fields and try again.';
-          showToast(message);
+          showToast(message, 'error');
         },
       });
     } else if (activeTab === 'contact') {
+      if (!contactSettings.primaryPhone.trim()) {
+        showToast('Primary phone number is required.', 'error');
+        return;
+      }
       updateContactMutation.mutate(contactSettings, {
-        onSuccess: () => showToast('Contact settings saved successfully!'),
+        onSuccess: () => showToast('Contact settings saved successfully!', 'success'),
         onError: (error: unknown) => {
           const message = error instanceof ApiClientError && error.status === 403
             ? 'You do not have permission to update contact settings.'
-            : 'Unable to save contact settings. Please review the phone, email, and URL values.';
-          showToast(message);
+            : error instanceof ApiClientError && error.message
+              ? error.message
+              : 'Unable to save contact settings. Please review the phone, email, and URL values.';
+          showToast(message, 'error');
         },
       });
     }
@@ -286,12 +329,10 @@ export function AdminClinicInfoPage({
 
   // Upload refs
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const heroImageInputRef = useRef<HTMLInputElement>(null);
-  const branchPhotoInputRef = useRef<HTMLInputElement>(null);
 
   const imageUpload = useMutation({
     mutationFn: ({ category, file }: { category: 'branches' | 'clinic'; file: File }) => uploadMedia(category, file),
-    onError: () => showToast('Image upload failed. Use a JPEG, PNG, or WEBP image under 5 MB.'),
+    onError: () => showToast('Image upload failed. Use a JPEG, PNG, or WEBP image under 5 MB.', 'error'),
   });
   const uploadImage = (file: File, callback: (key: string) => void, category: 'branches' | 'clinic') => {
     imageUpload.mutate({ category, file }, { onSuccess: (media) => callback(media.key) });
@@ -320,16 +361,29 @@ export function AdminClinicInfoPage({
       <main className="min-w-0 flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
         <div className="mx-auto max-w-[1440px] w-full">
         {/* Toast notification */}
-        {toastMessage && (
-          <div className="fixed top-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border border-[#bbf7d0] bg-[#f0fdf4] p-4 text-[14px] font-semibold text-[#15803d] shadow-lg">
-            <svg className="size-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                clipRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                fillRule="evenodd"
-              />
-            </svg>
-            <span>{toastMessage}</span>
+        {toast && (
+          <div
+            role="status"
+            className={`fixed top-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border p-4 text-[14px] font-semibold shadow-lg transition-all ${
+              toast.tone === 'error'
+                ? 'border-[#fecaca] bg-[#fef2f2] text-[#991b1b]'
+                : 'border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]'
+            }`}
+          >
+            {toast.tone === 'error' ? (
+              <svg className="size-5 shrink-0 text-[#dc2626]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            ) : (
+              <svg className="size-5 shrink-0 text-[#15803d]" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  clipRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  fillRule="evenodd"
+                />
+              </svg>
+            )}
+            <span>{toast.message}</span>
           </div>
         )}
 
@@ -350,6 +404,7 @@ export function AdminClinicInfoPage({
             className="mt-6 flex gap-8 border-b border-[#e2e8f0] text-[14.5px] font-semibold"
           >
             <button
+              aria-current={activeTab === 'clinic' ? 'page' : undefined}
               className={`pb-3 transition-colors ${
                 activeTab === 'clinic'
                   ? 'border-b-2 border-[#2187a8] font-bold text-[#2187a8]'
@@ -361,6 +416,7 @@ export function AdminClinicInfoPage({
               Clinic Information
             </button>
             <button
+              aria-current={activeTab === 'branches' ? 'page' : undefined}
               className={`pb-3 transition-colors ${
                 activeTab === 'branches'
                   ? 'border-b-2 border-[#2187a8] font-bold text-[#2187a8]'
@@ -372,6 +428,7 @@ export function AdminClinicInfoPage({
               Branches / Locations
             </button>
             <button
+              aria-current={activeTab === 'contact' ? 'page' : undefined}
               className={`pb-3 transition-colors ${
                 activeTab === 'contact'
                   ? 'border-b-2 border-[#2187a8] font-bold text-[#2187a8]'
@@ -1336,37 +1393,21 @@ export function AdminClinicInfoPage({
                             />
                           </div>
 
-                          <div>
-                            <label className="block text-[12.5px] font-bold text-[#182238]">Hero Image</label>
-                            <div className="mt-1 flex items-center gap-3">
-                              <img
-                                alt="Hero"
-                                className="size-12 rounded-xl object-cover"
-                                src={getPublicMediaUrl(selectedBranch.heroImage) ?? '/assets/landing/hero-clinic.png'}
-                              />
-                              <input
-                                accept="image/*"
-                                className="sr-only"
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                  if (e.target.files?.[0])
-                                    uploadImage(e.target.files[0], (url) =>
-                                      setBranches((prev) =>
-                                        prev.map((b) =>
-                                          b.id === selectedBranch.id ? { ...b, heroImage: url } : b,
-                                        ),
-                                      ), 'branches');
-                                }}
-                                ref={heroImageInputRef}
-                                type="file"
-                              />
-                              <Button
-                                className="h-9 border border-[#dce5ef] bg-white px-3 text-xs text-[#2187a8]"
-                                onClick={() => heroImageInputRef.current?.click()}
-                                variant="secondary"
-                              >
-                                Click to upload
-                              </Button>
-                            </div>
+                          <div className="sm:col-span-2">
+                            <MediaUploader
+                              category="branches"
+                              framing={{
+                                frames: imageFrames.branchHero,
+                                onChange: (heroImagePresentation) => updateBranch(selectedBranch.id, { heroImagePresentation }),
+                                value: selectedBranch.heroImagePresentation,
+                              }}
+                              help="Shown in the homepage hero carousel. Use a wide, high quality landscape photo."
+                              key={`hero-${selectedBranch.id}`}
+                              label="Hero image"
+                              onClear={() => updateBranch(selectedBranch.id, { heroImage: '' })}
+                              onUploaded={(heroImage) => updateBranch(selectedBranch.id, { heroImage })}
+                              value={selectedBranch.heroImage || undefined}
+                            />
                           </div>
                         </div>
                       </div>
@@ -1380,37 +1421,21 @@ export function AdminClinicInfoPage({
                       </h3>
 
                       <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="block text-[12.5px] font-bold text-[#182238]">Branch Photo</label>
-                          <div className="mt-1 flex items-center gap-3">
-                            <img
-                              alt="Branch Photo"
-                              className="size-12 rounded-xl object-cover"
-                              src={getPublicMediaUrl(selectedBranch.photo) ?? '/assets/landing/branch-card-clinic.png'}
-                            />
-                            <input
-                              accept="image/*"
-                              className="sr-only"
-                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                if (e.target.files?.[0])
-                                  uploadImage(e.target.files[0], (url) =>
-                                    setBranches((prev) =>
-                                      prev.map((b) =>
-                                        b.id === selectedBranch.id ? { ...b, photo: url } : b,
-                                      ),
-                                    ), 'branches');
-                              }}
-                              ref={branchPhotoInputRef}
-                              type="file"
-                            />
-                            <Button
-                              className="h-9 border border-[#dce5ef] bg-white px-3 text-xs text-[#2187a8]"
-                              onClick={() => branchPhotoInputRef.current?.click()}
-                              variant="secondary"
-                            >
-                              Click to upload
-                            </Button>
-                          </div>
+                        <div className="sm:col-span-2">
+                          <MediaUploader
+                            category="branches"
+                            framing={{
+                              frames: imageFrames.branchPhoto,
+                              onChange: (photoImagePresentation) => updateBranch(selectedBranch.id, { photoImagePresentation }),
+                              value: selectedBranch.photoImagePresentation,
+                            }}
+                            help="Shown on the branches page, the homepage branch card and the contact page."
+                            key={`photo-${selectedBranch.id}`}
+                            label="Branch photo"
+                            onClear={() => updateBranch(selectedBranch.id, { photo: '' })}
+                            onUploaded={(photo) => updateBranch(selectedBranch.id, { photo })}
+                            value={selectedBranch.photo || undefined}
+                          />
                         </div>
 
                         <div>
@@ -1535,15 +1560,6 @@ export function AdminClinicInfoPage({
                         value={contactSettings.instagramUrl}
                       />
                     </div>
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">Main Google Maps URL</label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, mainGoogleMapsUrl: e.target.value }))}
-                        type="url"
-                      value={contactSettings.mainGoogleMapsUrl}
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -1591,13 +1607,14 @@ export function AdminClinicInfoPage({
           </Button>
           <Button
             className="flex h-11 items-center gap-2 rounded-xl bg-[#2187a8] px-6 text-[14px] font-bold text-white shadow-[0_4px_14px_rgba(33,135,168,0.25)] hover:bg-[#1a718c]"
+            disabled={isSaving}
             onClick={handleSaveAll}
             type="button"
           >
             <svg className="size-4" fill="currentColor" viewBox="0 0 20 20">
               <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l6-6a1 1 0 00-1.414-1.414l-5.293 5.293-2.293-2.293z" />
             </svg>
-            <span>Save Changes</span>
+            <span>{isSaving ? 'Saving…' : 'Save Changes'}</span>
           </Button>
         </div>
         </div>

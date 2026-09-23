@@ -17,7 +17,7 @@ describe('admin navigation presentation', () => {
   });
   it('retains all CMS destinations without duplicate create links', () => {
     const links = getAdminNavigationGroups('CMS_ADMIN').flatMap((group) => group.items.map((item) => item.to));
-    expect(links).toEqual(['/admin/dashboard', '/admin/services', '/admin/doctors', '/admin/showcase', '/admin/page-media', '/admin/about-timeline', '/admin/clinic-info', '/admin/clinic-info/branches', '/admin/clinic-info/contact']);
+    expect(links).toEqual(['/admin/dashboard', '/admin/services', '/admin/doctors', '/admin/showcase', '/admin/page-heroes', '/admin/page-media', '/admin/about-timeline', '/admin/clinic-info', '/admin/clinic-info/branches', '/admin/clinic-info/contact']);
   });
   it('distinguishes nested service pages from neighboring list routes', () => {
     expect(isAdminNavigationActive('/admin/services/123/edit', '/admin/services')).toBe(true);

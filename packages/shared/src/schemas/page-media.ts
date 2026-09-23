@@ -2,7 +2,20 @@ import { z } from 'zod';
 import { imagePresentationSchema } from './image-presentation';
 import { mediaKeySchema } from './media';
 
-export const pageMediaPlacementValues = ['HOME_PROMOTIONS', 'ABOUT_PROFESSIONAL_DEVELOPMENT', 'ABOUT_ADVANCED_FACILITIES', 'DOCTORS_HERO', 'DOCTORS_PATIENT_EDUCATION'] as const;
+export const pageMediaPlacementValues = [
+  'HOME_PROMOTIONS',
+  'HOME_HERO',
+  'ABOUT_HERO',
+  'ABOUT_PROFESSIONAL_DEVELOPMENT',
+  'ABOUT_ADVANCED_FACILITIES',
+  'SERVICES_HERO',
+  'DOCTORS_HERO',
+  'DOCTORS_PATIENT_EDUCATION',
+  'BRANCHES_HERO',
+  'CONTACT_HERO',
+  'SHOWCASES_HERO',
+  'BOOKING_HERO',
+] as const;
 export const pageMediaPlacementSchema = z.enum(pageMediaPlacementValues);
 const base = z.object({
   placement: pageMediaPlacementSchema,

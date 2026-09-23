@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { env } from '@/config/env';
 
 type TurnstileOptions = {
@@ -100,6 +102,8 @@ type TurnstileWidgetProps = {
 };
 
 export function TurnstileWidget({ onToken, resetSignal }: TurnstileWidgetProps) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language).booking;
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | undefined>(undefined);
   const prevResetSignalRef = useRef(resetSignal);
@@ -192,13 +196,13 @@ export function TurnstileWidget({ onToken, resetSignal }: TurnstileWidgetProps) 
   if (loadError) {
     return (
       <div className="flex flex-col gap-2 rounded-lg border border-[#f5c6cb] bg-[#fff5f5] p-3 text-sm text-[#9d4d18]" role="alert">
-        <p className="font-medium">Security verification could not load. Please check your network or try again.</p>
+        <p className="font-medium">{copy.verificationFailed}</p>
         <button
           className="w-fit rounded border border-[#9d4d18]/30 bg-white px-3 py-1 text-xs font-semibold text-[#9d4d18] transition hover:bg-[#fff0f0]"
           onClick={handleRetry}
           type="button"
         >
-          Retry verification
+          {copy.verificationRetry}
         </button>
       </div>
     );
@@ -212,11 +216,11 @@ export function TurnstileWidget({ onToken, resetSignal }: TurnstileWidgetProps) 
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="currentColor" />
           </svg>
-          <span>Loading verification challenge…</span>
+          <span>{copy.verificationLoading}</span>
         </div>
       ) : null}
       <div
-        aria-label="Spam protection verification"
+        aria-label={copy.spamProtection}
         className={isLoading ? 'hidden' : 'block'}
         ref={containerRef}
       />

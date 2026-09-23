@@ -1,12 +1,13 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
+import { PublicLanguageProvider } from '@/features/public-content/public-language-provider';
 import { describe, expect, it } from 'vitest';
 import { BranchesSection } from './LandingPage';
 
 describe('BranchesSection', () => {
   it('renders the supporting eyebrow before the semantic Branches heading without changing branch cards', () => {
     const html = renderToStaticMarkup(
-      <MemoryRouter>
+      <MemoryRouter><PublicLanguageProvider>
         <BranchesSection
           branches={[{
             name: 'Psa Chas Branch', hours: 'Monday - Sunday, 8:00 AM - 7:00 PM',
@@ -14,7 +15,7 @@ describe('BranchesSection', () => {
           }]}
           eyebrow="Our locations"
         />
-      </MemoryRouter>,
+      </PublicLanguageProvider></MemoryRouter>,
     );
 
     expect(html.indexOf('Our locations')).toBeLessThan(html.indexOf('<h2'));

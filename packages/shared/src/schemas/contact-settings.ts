@@ -3,34 +3,66 @@ import { z } from 'zod';
 const phonePattern = /^[0-9+()\-\s]+$/;
 
 function optionalText(maxLength: number) {
-  return z.string().trim().max(maxLength).nullable().optional();
+  return z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((value) => {
+      if (value === undefined) return undefined;
+      if (value === null) return null;
+      const trimmed = value.trim();
+      return trimmed === '' ? null : trimmed;
+    })
+    .pipe(z.string().max(maxLength).nullable().optional());
 }
 
 function optionalUrl() {
   return z
-    .string()
-    .trim()
-    .transform((value) => (value === '' ? null : value))
-    .pipe(z.string().url().max(2_048).nullable())
-    .optional();
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((value) => {
+      if (value === undefined) return undefined;
+      if (value === null) return null;
+      const trimmed = value.trim();
+      if (trimmed === '') return null;
+      const iframeMatch = trimmed.match(/src=["'](https?:\/\/[^"']+)["']/i);
+      if (iframeMatch && iframeMatch[1]) {
+        return iframeMatch[1];
+      }
+      if (/^https?:\/\//i.test(trimmed)) {
+        return trimmed;
+      }
+      if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/.test(trimmed)) {
+        return `https://${trimmed}`;
+      }
+      return trimmed;
+    })
+    .pipe(z.string().url().max(2_048).nullable().optional());
 }
 
 function optionalEmail() {
   return z
-    .string()
-    .trim()
-    .transform((value) => (value === '' ? null : value))
-    .pipe(z.string().email().max(254).nullable())
-    .optional();
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((value) => {
+      if (value === undefined) return undefined;
+      if (value === null) return null;
+      const trimmed = value.trim();
+      return trimmed === '' ? null : trimmed;
+    })
+    .pipe(z.string().email().max(254).nullable().optional());
 }
 
 function optionalPhone() {
   return z
-    .string()
-    .trim()
-    .transform((value) => (value === '' ? null : value))
-    .pipe(z.string().min(6).max(32).regex(phonePattern).nullable())
-    .optional();
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((value) => {
+      if (value === undefined) return undefined;
+      if (value === null) return null;
+      const trimmed = value.trim();
+      return trimmed === '' ? null : trimmed;
+    })
+    .pipe(z.string().min(6).max(32).regex(phonePattern).nullable().optional());
 }
 
 const primaryPhoneSchema = z

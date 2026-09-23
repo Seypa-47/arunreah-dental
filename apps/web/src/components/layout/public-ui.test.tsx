@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { CmsImage, ImageFrame } from './public-ui';
+import { CmsImage, ImageFrame, renderHeroTitle } from './public-ui';
 
 describe('public CMS image primitives', () => {
   it('lazy-loads card media with async decoding by default', () => {
@@ -28,5 +28,30 @@ describe('public CMS image primitives', () => {
   it('uses custom fallbackSrc when provided without src', () => {
     const html = renderToStaticMarkup(<CmsImage alt="Custom" fallbackSrc="/custom-fallback.png" />);
     expect(html).toContain('src="/custom-fallback.png"');
+  });
+});
+
+describe('renderHeroTitle', () => {
+  it('splits English title with Dental Clinic into two parts with blue second line', () => {
+    const html = renderToStaticMarkup(<>{renderHeroTitle('About Arunreah Dental Clinic', 'en')}</>);
+    expect(html).toContain('<span>About Arunreah</span>');
+    expect(html).toContain('<span class="block text-[#0080c8]">Dental Clinic</span>');
+  });
+
+  it('splits English title with Dental Team into two parts with blue second line', () => {
+    const html = renderToStaticMarkup(<>{renderHeroTitle('Meet the Arunreah Dental Team', 'en')}</>);
+    expect(html).toContain('<span>Meet the Arunreah</span>');
+    expect(html).toContain('<span class="block text-[#0080c8]">Dental Team</span>');
+  });
+
+  it('splits Khmer title with អរុណរះ into two parts with blue second line', () => {
+    const html = renderToStaticMarkup(<>{renderHeroTitle('អំពី គ្លីនិកធ្មេញ អរុណរះ', 'km')}</>);
+    expect(html).toContain('<span>អំពី គ្លីនិកធ្មេញ</span>');
+    expect(html).toContain('<span class="block text-[#0080c8]">អរុណរះ</span>');
+  });
+
+  it('handles single word or short title gracefully without splitting', () => {
+    const html = renderToStaticMarkup(<>{renderHeroTitle('Welcome', 'en')}</>);
+    expect(html).toBe('<span>Welcome</span>');
   });
 });

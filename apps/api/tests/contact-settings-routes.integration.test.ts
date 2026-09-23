@@ -270,4 +270,47 @@ describe('contact settings API routes', () => {
       expect(response.status).toBe(400);
     }
   });
+
+  it('allows null and empty string values to clear optional fields, and normalizes URLs', async () => {
+    state.contact = contactFixture();
+    const headers = await authenticatedHeaders('CMS_ADMIN');
+
+    const updateResponse = await app.request(
+      'http://localhost/api/admin/contact',
+      {
+        method: 'PATCH',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          primaryPhone: '098 701 302',
+          secondaryPhone: null,
+          primaryEmail: 'arunreahdental@gmail.com',
+          addressEn: '',
+          addressKm: null,
+          mainGoogleMapsUrl: null,
+          facebookUrl: 'facebook.com/arunreah',
+          telegramUrl: null,
+          instagramUrl: '',
+        }),
+      },
+      testBindings,
+    );
+
+    expect(updateResponse.status).toBe(200);
+    await expect(updateResponse.json()).resolves.toMatchObject({
+      success: true,
+      data: {
+        contact: {
+          primaryPhone: '098 701 302',
+          secondaryPhone: null,
+          primaryEmail: 'arunreahdental@gmail.com',
+          addressEn: null,
+          addressKm: null,
+          mainGoogleMapsUrl: null,
+          facebookUrl: 'https://facebook.com/arunreah',
+          telegramUrl: null,
+          instagramUrl: null,
+        },
+      },
+    });
+  });
 });

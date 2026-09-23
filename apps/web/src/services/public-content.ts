@@ -2,9 +2,10 @@ import type {
   ClinicSettingsPublicRead,
   ContactSettingsPublicRead,
   CreatePublicAppointmentInput,
+  ImagePresentation,
+  PageMediaPlacement,
 } from '@arunreah/shared';
 import { getApiClient, type ApiClient } from '@/lib/api';
-import type { ImagePresentation } from '@arunreah/shared';
 
 export type PublicLanguage = 'en' | 'km';
 
@@ -26,7 +27,7 @@ export type PublicServiceDetail = PublicServiceSummary & {
   treatmentAtAGlance: { duration: string | null; recovery: string | null; visits: string | null; consultation: string | null };
   editorial: { label: string | null; title: string | null };
   benefits: { title: string; description: string | null; icon: string | null }[];
-  detailSections: { sectionType: 'TEXT' | 'IMAGE'; heading: string | null; body: string | null; imageKey: string | null; displayOrder: number }[];
+  detailSections: { sectionType: 'TEXT' | 'IMAGE'; heading: string | null; body: string | null; imageKey: string | null; imagePresentation?: ImagePresentation; displayOrder: number }[];
   relatedServices: PublicServiceSummary[];
   cta: { title: string | null; description: string | null; primaryLabel: string | null; secondaryLabel: string | null };
   seo: { title: string | null; description: string | null };
@@ -93,12 +94,12 @@ export type PublicShowcaseSummary = {
 
 export type PublicShowcaseDetail = PublicShowcaseSummary & {
   body: string | null;
-  sections: { sectionType: 'TEXT' | 'IMAGE' | 'QUOTE'; heading: string | null; body: string | null; imageKey: string | null; displayOrder: number }[];
+  sections: { sectionType: 'TEXT' | 'IMAGE' | 'QUOTE'; heading: string | null; body: string | null; imageKey: string | null; imagePresentation?: ImagePresentation; displayOrder: number }[];
   relatedShowcases: PublicShowcaseSummary[];
   seo: { title: string | null; description: string | null };
 };
 export type PublicPageMedia = { id: string; imageKey: string; imagePresentation: import('@arunreah/shared').ImagePresentation; title: string | null; body: string | null; badge: string | null; benefits: string | null; discount: string | null; validUntil: string | null; displayOrder: number };
-export type PageMediaPlacement = 'HOME_PROMOTIONS' | 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'ABOUT_ADVANCED_FACILITIES' | 'DOCTORS_HERO' | 'DOCTORS_PATIENT_EDUCATION';
+export type { PageMediaPlacement };
 export type PublicAboutTimelineItem = { id: string; year: number; title: string; body: string; displayOrder: number };
 
 export type AppointmentAcknowledgement = {

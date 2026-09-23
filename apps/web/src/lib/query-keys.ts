@@ -1,3 +1,5 @@
+import type { PageMediaPlacement } from '@arunreah/shared';
+
 export const queryKeys = {
   health: () => ['health'] as const,
   auth: {
@@ -23,7 +25,7 @@ export const queryKeys = {
       ['public', 'showcases', slug, language] as const,
     showcases: (language: 'en' | 'km', homepageOnly = false) =>
       ['public', 'showcases', language, { homepageOnly }] as const,
-    pageMedia: (placement: 'HOME_PROMOTIONS' | 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'ABOUT_ADVANCED_FACILITIES' | 'DOCTORS_HERO' | 'DOCTORS_PATIENT_EDUCATION', language: 'en' | 'km') =>
+    pageMedia: (placement: PageMediaPlacement, language: 'en' | 'km') =>
       ['public', 'page-media', placement, language] as const,
     aboutTimeline: (language: 'en' | 'km') => ['public', 'about-timeline', language] as const,
   },
@@ -47,7 +49,7 @@ export const queryKeys = {
     showcases: (filters: Record<string, string | number | boolean | undefined> = {}) =>
       ['admin', 'showcases', filters] as const,
     showcase: (id: string) => ['admin', 'showcases', id] as const,
-    pageMedia: (placement: 'HOME_PROMOTIONS' | 'ABOUT_PROFESSIONAL_DEVELOPMENT' | 'ABOUT_ADVANCED_FACILITIES' | 'DOCTORS_HERO' | 'DOCTORS_PATIENT_EDUCATION') =>
+    pageMedia: (placement: PageMediaPlacement) =>
       ['admin', 'page-media', placement] as const,
     aboutTimeline: () => ['admin', 'about-timeline'] as const,
   },

@@ -1,5 +1,5 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
-import type { AdminBranchRead, ClinicSettingsAdminRead, ContactSettingsAdminRead } from '@arunreah/shared';
+import type { AdminBranchRead, ClinicSettingsAdminRead, ContactSettingsAdminRead, ImagePresentation } from '@arunreah/shared';
 import { cmsApi } from '@/services/cms';
 
 export type ClinicBranch = {
@@ -16,6 +16,7 @@ export type ClinicBranch = {
   heroCtaLabel: string;
   heroCtaLabelKm: string;
   heroImage: string;
+  heroImagePresentation?: ImagePresentation;
   heroSubtitle: string;
   heroSubtitleKm: string;
   id: string;
@@ -34,6 +35,7 @@ export type ClinicBranch = {
   phone1: string;
   phone2: string;
   photo: string;
+  photoImagePresentation?: ImagePresentation;
   showOnBranchesPage: boolean;
   showOnHomepageSection: boolean;
   slug: string;
@@ -236,6 +238,7 @@ export function toClinicBranch(branch: AdminBranchRead): ClinicBranch {
     heroCtaLabel: branch.heroCtaLabelEn ?? '',
     heroCtaLabelKm: branch.heroCtaLabelKm ?? '',
     heroImage: branch.heroImageKey ?? '',
+    heroImagePresentation: branch.heroImagePresentation,
     heroSubtitle: branch.heroSupportingTextEn ?? '',
     heroSubtitleKm: branch.heroSupportingTextKm ?? '',
     id: branch.id,
@@ -254,6 +257,7 @@ export function toClinicBranch(branch: AdminBranchRead): ClinicBranch {
     phone1: branch.phone,
     phone2: branch.secondaryPhone ?? '',
     photo: branch.branchImageKey ?? '',
+    photoImagePresentation: branch.branchImagePresentation,
     showOnBranchesPage: branch.showOnBranchesPage,
     showOnHomepageSection: branch.showOnHomepage,
     slug: branch.slug,
@@ -336,6 +340,23 @@ export async function saveClinicInfo(info: ClinicGeneralInfo): Promise<ClinicGen
   return info;
 }
 
+function normalizeUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const iframeMatch = trimmed.match(/src=["'](https?:\/\/[^"']+)["']/i);
+  if (iframeMatch && iframeMatch[1]) {
+    return iframeMatch[1];
+  }
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+  return trimmed;
+}
+
 export async function saveBranch(branch: ClinicBranch): Promise<ClinicBranch> {
   await cmsApi.branches.update(branch.id, {
     addressEn: branch.address,
@@ -344,16 +365,18 @@ export async function saveBranch(branch: ClinicBranch): Promise<ClinicBranch> {
     badgeEn: branch.badge || null,
     badgeKm: branch.badgeKm || null,
     branchImageKey: branch.photo || null,
+    ...(branch.photo && branch.photoImagePresentation ? { branchImagePresentation: branch.photoImagePresentation } : {}),
     cityProvince: branch.city || null,
     displayOrder: branch.displayOrder,
     featured: branch.featured,
     closingTime: branch.closingTime || null,
-    googleMapsUrl: branch.googleMapsLink || null,
+    googleMapsUrl: normalizeUrl(branch.googleMapsLink),
     heroCtaLabelEn: branch.heroCtaLabel || null,
     heroCtaLabelKm: branch.heroCtaLabelKm || null,
     heroHeadlineEn: branch.heroHeadline || null,
     heroHeadlineKm: branch.heroHeadlineKm || null,
     heroImageKey: branch.heroImage || null,
+    ...(branch.heroImage && branch.heroImagePresentation ? { heroImagePresentation: branch.heroImagePresentation } : {}),
     heroSupportingTextEn: branch.heroSubtitle || null,
     heroSupportingTextKm: branch.heroSubtitleKm || null,
     includeInHomepageHero: branch.includeInHeroCarousel,
@@ -387,10 +410,10 @@ export async function saveContactSettings(settings: ContactSettings): Promise<Co
     addressKm: nullableText(settings.addressKm),
     businessHoursEn: nullableText(settings.businessHoursEn),
     businessHoursKm: nullableText(settings.businessHoursKm),
-    mainGoogleMapsUrl: nullableText(settings.mainGoogleMapsUrl),
-    facebookUrl: nullableText(settings.facebookUrl),
-    telegramUrl: nullableText(settings.telegramUrl),
-    instagramUrl: nullableText(settings.instagramUrl),
+    mainGoogleMapsUrl: normalizeUrl(settings.mainGoogleMapsUrl),
+    facebookUrl: normalizeUrl(settings.facebookUrl),
+    telegramUrl: normalizeUrl(settings.telegramUrl),
+    instagramUrl: normalizeUrl(settings.instagramUrl),
   });
   return settings;
 }

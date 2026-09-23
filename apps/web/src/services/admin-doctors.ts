@@ -1,5 +1,5 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
-import type { AdminDoctorListQuery } from '@arunreah/shared';
+import type { AdminDoctorListQuery, ImagePresentation } from '@arunreah/shared';
 import { cmsApi, type AdminDoctorDetail, type AdminDoctorRecord, type CmsListMeta } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
 
@@ -30,6 +30,7 @@ export type AdminDoctor = {
   imageAlt?: string;
   imageUrl?: string;
   photoKey?: string | null;
+  photoImagePresentation?: ImagePresentation;
   initials?: string;
   name: string;
   nameKm?: string;
@@ -403,7 +404,7 @@ const statusForUi = (status: AdminDoctorRecord['status']): DoctorStatus =>
 export function toAdminDoctor(doctor: AdminDoctorRecord): AdminDoctor {
   return {
     id: doctor.id, name: doctor.nameEn, nameKm: doctor.nameKm, roleTitle: doctor.titleEn ?? '', roleTitleKm: doctor.titleKm ?? '', specialty: doctor.specialtyEn ?? '', specialtyKm: doctor.specialtyKm ?? '', shortIntro: doctor.shortBioEn ?? '', shortIntroKm: doctor.shortBioKm ?? '', content: doctor.aboutEn ?? '', contentKm: doctor.aboutKm ?? '',
-    imageAlt: doctor.nameEn, imageUrl: getPublicMediaUrl(doctor.photoKey), photoKey: doctor.photoKey, contactPhone: doctor.phone ?? '', expertise: [], expertiseItems: [],
+    imageAlt: doctor.nameEn, imageUrl: getPublicMediaUrl(doctor.photoKey), photoKey: doctor.photoKey, photoImagePresentation: doctor.photoImagePresentation, contactPhone: doctor.phone ?? '', expertise: [], expertiseItems: [],
     education: [], educationItems: [], relatedDoctorIds: [], procedures: doctor.successfulProcedures?.toString() ?? '', satisfaction: doctor.patientSatisfaction?.toString() ?? '', yearsExp: doctor.yearsExperience?.toString() ?? '',
     featuredDoctor: doctor.featured, showOnWebsite: doctor.status === 'PUBLISHED', status: statusForUi(doctor.status), updatedAt: doctor.updatedAt, ctaButtonText: 'Book Now', seo: { slug: doctor.slug }, displayOrder: doctor.displayOrder,
   };

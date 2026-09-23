@@ -5,19 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, MobileHeroMedia, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { BranchesPageContent } from '@/features/landing-page/types';
+import { publicShell } from '@/features/public-content/public-page-chrome';
+import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { getBranchCoordinates } from './branch-coordinates';
 import { useBranchesPageQuery } from './use-branches-page';
 
 const asset = (name: string) => `/assets/landing/${name}`;
-
-const skeletonNavigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
-  { href: '/branches', label: 'Branches' },
-];
 
 function AssetIcon({ className, name }: { className: string; name: string }) {
   return <img alt="" aria-hidden="true" className={className} src={asset(name)} />;
@@ -67,17 +63,14 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
   return (
     <section className="relative bg-[#f7fafc] pb-0 pt-5 sm:pt-7">
       <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-white sm:min-h-[340px]">
-        <MobileHeroMedia alt={hero.backgroundImageAlt} fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png" src={hero.backgroundImageUrl} />
         <ResilientImage
           alt={hero.backgroundImageAlt}
-          className="absolute inset-y-0 right-0 hidden h-full w-[60%] object-cover object-center sm:block"
+          className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
           fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
+          presentation={hero.imagePresentation}
           src={imageUrl}
         />
-        <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[43%] bg-white sm:block" />
-        <div aria-hidden="true" className="absolute inset-y-0 left-[39%] hidden w-[23%] bg-[linear-gradient(90deg,#fff_0%,rgba(255,255,255,0.82)_52%,rgba(255,255,255,0)_100%)] sm:block" />
-        <div aria-hidden="true" className="absolute inset-y-0 right-0 hidden w-[61%] bg-[linear-gradient(90deg,rgba(5,84,111,0.05),rgba(5,84,111,0.2))] sm:block" />
-        <div className="relative mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
+        <div className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
           <div className="max-w-[560px] py-7">
             <p className="text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
               {hero.eyebrow}
@@ -85,7 +78,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
             <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
               {hero.title}
             </h1>
-            <p className="mt-3 max-w-[500px] text-[16px] font-normal leading-7 text-[#64748b]">{hero.subtitle}</p>
+            <p className="mt-3 max-w-[500px] text-[16px] font-medium leading-7 text-[#0e3b5e]">{hero.subtitle}</p>
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3">
               {hero.highlights.map((item) => (
                 <div className="flex items-center gap-3" key={item.label}>
@@ -158,11 +151,6 @@ function SectionIntro({
   );
 }
 
-const branchCoordinates: Record<string, { lat: number; lng: number }> = {
-  'Arunreah Dental Clinic - TTP': { lat: 11.53982, lng: 104.91421 },
-  'Arunreah Dental Clinic - Psa Chas': { lat: 11.57351, lng: 104.92552 },
-};
-
 function BranchCard({
   branch,
   flipped,
@@ -170,9 +158,11 @@ function BranchCard({
   branch: BranchesPageContent['branches'][number];
   flipped: boolean;
 }) {
+  const { language } = usePublicLanguage();
+  const branchCopy = publicUiCopy(language).branches;
   const [viewMode, setViewMode] = useState<'photo' | 'satellite'>('photo');
   const phoneHref = `tel:${branch.phones[0]?.replaceAll(' ', '') ?? ''}`;
-  const coords = branchCoordinates[branch.name] ?? { lat: 11.53982, lng: 104.91421 };
+  const coords = getBranchCoordinates(branch.name);
   const apiKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined)?.trim();
   const embedUrl = apiKey
     ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${coords.lat},${coords.lng}&maptype=satellite&zoom=17`
@@ -193,14 +183,14 @@ function BranchCard({
           <dl className="mt-5 space-y-3 text-[14px] font-medium leading-6 text-[#64748b]">
             <div className="flex items-start gap-3.5">
               <dt className="shrink-0">
-                <span className="sr-only">Address</span>
+                <span className="sr-only">{branchCopy.address}</span>
                 <AssetIcon className="mt-1 size-4" name="branch-card-pin-alt.svg" />
               </dt>
               <dd className="max-w-[480px]">{branch.address}</dd>
             </div>
             <div className="flex items-center gap-3.5">
               <dt className="shrink-0">
-                <span className="sr-only">Phone</span>
+                <span className="sr-only">{branchCopy.phone}</span>
                 <AssetIcon className="size-4" name="branch-card-phone.svg" />
               </dt>
               <dd className="flex flex-wrap gap-x-6 gap-y-1 font-extrabold text-[#005687]">
@@ -213,7 +203,7 @@ function BranchCard({
             </div>
             <div className="flex items-center gap-3.5">
               <dt className="shrink-0">
-                <span className="sr-only">Opening hours</span>
+                <span className="sr-only">{branchCopy.openingHours}</span>
                 <AssetIcon className="size-4" name="branch-card-clock.svg" />
               </dt>
               <dd>
@@ -243,7 +233,7 @@ function BranchCard({
           </a>
           <Link
             className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#d8e6ee] bg-white px-5 text-[13px] font-bold text-[#3695B9] transition hover:border-[#3695B9] hover:bg-[#f9fcfd]"
-            to="/book-appointment"
+            to={branch.id ? `/book-appointment?branch=${encodeURIComponent(branch.id)}` : '/book-appointment'}
           >
             <AssetIcon className="size-3.5" name="hero-calendar.svg" />
             {branch.bookingLabel}
@@ -403,10 +393,13 @@ function BranchesPageView({ content }: { content: BranchesPageContent }) {
 }
 
 function BranchesPageSkeleton() {
+  const { language } = usePublicLanguage();
+  const shell = publicShell(language);
+  const copy = publicUiCopy(language).branches;
   return (
-    <SiteLayout actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }} navigation={skeletonNavigation}>
-      <main aria-busy="true" aria-label="Loading clinic locations" className="bg-white">
-        <span className="sr-only">Loading clinic locations</span>
+    <SiteLayout actions={shell.actions} navigation={shell.navigation}>
+      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+        <span className="sr-only">{copy.loading}</span>
 
         <section className="relative min-h-[300px] overflow-hidden bg-[#f7fafc] sm:min-h-[340px]" aria-hidden="true">
           <div className="absolute inset-y-0 right-0 hidden w-[47%] bg-[linear-gradient(135deg,#dceef3_0%,#eff7f9_100%)] lg:block" />
@@ -479,26 +472,30 @@ function BranchesPageSkeleton() {
 }
 
 function BranchesPageEmpty() {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge>No content</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">Branch information is unavailable</h1>
-        <p className="mt-3 text-[#6b7280]">Please check the content source and try again.</p>
+        <Badge>{copy.common.noContent}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.branches.unavailableTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.branches.unavailableBody}</p>
       </Card>
     </main>
   );
 }
 
 function BranchesPageError({ onRetry }: { onRetry: () => void }) {
+  const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language);
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4">
       <Card className="max-w-lg p-8 text-center">
-        <Badge className="bg-[#fff1e6] text-[#9d4d18]">Error</Badge>
-        <h1 className="mt-4 text-3xl font-black text-[#005687]">We could not load the branches page</h1>
-        <p className="mt-3 text-[#6b7280]">Try again to refresh the clinic locations.</p>
+        <Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge>
+        <h1 className="mt-4 text-3xl font-black text-[#005687]">{copy.branches.errorTitle}</h1>
+        <p className="mt-3 text-[#6b7280]">{copy.branches.errorBody}</p>
         <Button className="mt-6" onClick={onRetry} type="button">
-          Retry
+          {copy.common.retry}
         </Button>
       </Card>
     </main>

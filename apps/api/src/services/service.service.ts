@@ -15,6 +15,11 @@ function presentationFor(rows: Awaited<ReturnType<typeof listForOwners>>, ownerI
   const row = rows.find((item) => item.ownerId === ownerId && item.slot === slot);
   return row ? { positionX: row.positionX, positionY: row.positionY, zoom: row.zoom } : defaultImagePresentation;
 }
+async function detailSectionsWithPresentation(db: DatabaseClient, id: string) {
+  const sections = await repo.getDetailSections(db, id);
+  const presentations = await listForOwners(db, sections.map((section) => ({ ownerType: 'SERVICE_DETAIL_SECTION' as const, ownerId: section.id, slot: 'PRIMARY' })));
+  return sections.map((section) => ({ ...section, imagePresentation: presentationFor(presentations, section.id) }));
+}
 const local = (
   s: NonNullable<Awaited<ReturnType<typeof repo.findServiceById>>>,
   lang: ServiceLanguage,
@@ -74,10 +79,18 @@ export async function updateManagedService(
 export async function getAdminService(db: DatabaseClient, id: string) {
   const s = await repo.findServiceById(db, id);
   if (!s) throw new HttpError(404, 'NOT_FOUND', 'Service not found.');
+  const presentations = await listForOwners(db, [
+    { ownerType: 'SERVICE', ownerId: id, slot: 'PRIMARY' },
+    { ownerType: 'SERVICE', ownerId: id, slot: 'HERO' },
+    { ownerType: 'SERVICE', ownerId: id, slot: 'ABOUT' },
+  ]);
   return {
     ...admin(s),
+    imagePresentation: presentationFor(presentations, id),
+    heroImagePresentation: presentationFor(presentations, id, 'HERO'),
+    aboutImagePresentation: presentationFor(presentations, id, 'ABOUT'),
     benefits: await repo.getBenefits(db, id),
-    detailSections: await repo.getDetailSections(db, id),
+    detailSections: await detailSectionsWithPresentation(db, id),
     relatedServiceIds: (await repo.getRelated(db, id)).map((x) => x.relation.relatedServiceId),
   };
 }
@@ -103,7 +116,7 @@ export async function getPublicService(db: DatabaseClient, slug: string, l: Serv
   if (!s) throw new HttpError(404, 'NOT_FOUND', 'Service not found.');
   const [benefits, detailSections, related, presentations] = await Promise.all([
     repo.getBenefits(db, s.id),
-    repo.getDetailSections(db, s.id),
+    detailSectionsWithPresentation(db, s.id),
     repo.getRelated(db, s.id),
     listForOwners(db, [
       { ownerType: 'SERVICE', ownerId: s.id, slot: 'PRIMARY' },
@@ -151,6 +164,7 @@ export async function getPublicService(db: DatabaseClient, slug: string, l: Serv
       heading: localize(section.headingEn, section.headingKm, l),
       body: localize(section.bodyEn, section.bodyKm, l),
       imageKey: section.imageKey,
+      imagePresentation: section.imagePresentation,
       displayOrder: section.displayOrder,
     })),
     relatedServices: localizedRelated,

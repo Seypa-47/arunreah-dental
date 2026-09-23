@@ -37,13 +37,18 @@ export class TelegramNotificationProvider implements NotificationProvider {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            chat_id: chatId,
+            chat_id: chatId.trim(),
             text: appointmentTelegramText(payload),
             disable_web_page_preview: true,
           }),
           signal: AbortSignal.timeout(NOTIFICATION_TIMEOUT_MS),
         },
       );
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => '');
+        console.error(`Telegram notification failed HTTP ${response.status}: ${errorText}`);
+      }
 
       return response.ok
         ? { provider: this.name, success: true }
