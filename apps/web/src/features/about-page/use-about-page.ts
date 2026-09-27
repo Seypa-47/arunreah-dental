@@ -40,7 +40,10 @@ export function useAboutPageQuery() {
         getPublicAboutTimeline(language).catch(() => ({ items: [] })),
         getPublicPageMedia('ABOUT_HERO', language).catch(() => ({ items: [] })),
       ]);
-      const featuredDoctor = doctors.doctors.find((doctor) => doctor.featured) ?? doctors.doctors[0];
+      // The clinic's leadership portraits: the first two featured doctors, in CMS
+      // display order. Who appears is controlled from the admin, never hard-coded.
+      const featuredDoctors = doctors.doctors.filter((doctor) => doctor.featured);
+      const [featuredDoctor = doctors.doctors[0], secondFeaturedDoctor] = featuredDoctors.length > 0 ? featuredDoctors : doctors.doctors;
       const baseContent = publicAboutContent(
         clinic,
         language,
@@ -52,6 +55,7 @@ export function useAboutPageQuery() {
           psaChas: showcasePsaChas?.showcase,
           toulTompoung: showcaseTtp?.showcase,
         },
+        secondFeaturedDoctor,
       );
       const heroItem = aboutHero.items[0];
 

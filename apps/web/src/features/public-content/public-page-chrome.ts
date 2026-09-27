@@ -126,12 +126,26 @@ export function publicAboutContent(
   advancedFacilities: { id: string; imageKey: string; imagePresentation: import('@arunreah/shared').ImagePresentation; title: string | null; body: string | null; displayOrder: number }[] = [],
   branches: (PublicBranchRead | import('@/services/public-content').PublicBranch)[] = [],
   branchShowcases?: { psaChas?: PublicShowcaseDetail; toulTompoung?: PublicShowcaseDetail },
+  secondFeaturedDoctor?: PublicDoctorSummary,
 ): AboutPageContent {
   const clinicName = language === 'km' ? clinic.clinicNameKm : clinic.clinicNameEn;
   const tagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
   const shortAbout = language === 'km' ? clinic.shortAboutKm : clinic.shortAboutEn;
 
   const exteriorCaption = language === 'km' ? 'ទិដ្ឋភាពខាងក្រៅនៃគ្លីនិក' : 'Clinic Exterior';
+
+  const toDoctorProfile = (doctor: PublicDoctorSummary | undefined) => doctor
+    ? {
+        imageAlt: doctor.name,
+        imageUrl: getPublicMediaUrl(doctor.photoKey) ?? '',
+        name: doctor.name,
+        presentation: doctor.photoImagePresentation,
+        profileHref: `/doctors/${doctor.slug}`,
+        specialty: doctor.specialty ?? '',
+        summary: doctor.shortBio ?? '',
+        title: doctor.title ?? '',
+      }
+    : undefined;
 
   const defaultPsaChasImages = [
     { imageAlt: exteriorCaption, imageUrl: '/assets/landing/psa-chas-exterior.jpg' },
@@ -221,17 +235,8 @@ export function publicAboutContent(
           profileLabel: 'Meet the team',
           profileTitle: 'Care that starts with listening',
         },
-    featuredDoctor: featuredDoctor
-      ? {
-          imageAlt: featuredDoctor.name,
-          imageUrl: getPublicMediaUrl(featuredDoctor.photoKey) ?? '',
-          name: featuredDoctor.name,
-          profileHref: `/doctors/${featuredDoctor.slug}`,
-          specialty: featuredDoctor.specialty ?? '',
-          summary: featuredDoctor.shortBio ?? '',
-          title: featuredDoctor.title ?? '',
-        }
-      : undefined,
+    featuredDoctor: toDoctorProfile(featuredDoctor),
+    secondFeaturedDoctor: toDoctorProfile(secondFeaturedDoctor),
     differences: [],
     facilities: advancedFacilities
       .map((item) => ({

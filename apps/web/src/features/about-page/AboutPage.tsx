@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ContentBlocks, PublicPageHero, ResilientImage } from '@/components/layout/public-ui';
-import type { AboutPageContent } from '@/features/landing-page/types';
+import type { AboutDoctorProfile, AboutPageContent } from '@/features/landing-page/types';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
@@ -69,9 +69,51 @@ function ExperienceBadgeIcon() {
   );
 }
 
-function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPageContent, 'editorial' | 'featuredDoctor' | 'stats' | 'story'>) {
+/** One founder: index rule, portrait, then details — set like a magazine spread, not a card. */
+function FounderProfile({ doctor, index, viewProfileLabel }: { doctor: AboutDoctorProfile; index: number; viewProfileLabel: string }) {
+  return (
+    <article className="group flex h-full flex-col">
+      <div className="flex items-center gap-3">
+        <span className="text-[11px] font-extrabold tabular-nums tracking-[0.2em] text-[#3695B9]">{String(index + 1).padStart(2, '0')}</span>
+        <span aria-hidden="true" className="h-px flex-1 bg-[#dde9ef]" />
+        {doctor.specialty ? <span className="ui-eyebrow shrink-0 text-[10.5px] font-bold uppercase leading-4 tracking-[0.16em] text-[#5b8ca6]">{doctor.specialty}</span> : null}
+      </div>
+
+      <div className="mt-5 flex flex-1 gap-5 sm:gap-6">
+        <div className="shrink-0 overflow-hidden rounded-lg bg-[#eef5f8]">
+          <ResilientImage
+            alt={doctor.imageAlt || doctor.name}
+            className="aspect-[4/5] w-[124px] object-cover transition duration-500 ease-out group-hover:scale-[1.04] sm:w-[152px] lg:w-[196px]"
+            fallbackSrc="/assets/landing/doctor-chea-kimly.png"
+            presentation={doctor.presentation}
+            src={doctor.imageUrl}
+          />
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <h3 className="text-[21px] font-extrabold leading-[1.12] tracking-[-0.025em] text-[#073f60] sm:text-[25px]">{doctor.name}</h3>
+          {doctor.title ? <p className="mt-1.5 text-[13.5px] font-semibold leading-5 text-[#46697d]">{doctor.title}</p> : null}
+          <span aria-hidden="true" className="mt-4 block h-px w-10 bg-[#9fcfe2]" />
+          {doctor.summary ? <p className="mt-4 text-[13.5px] leading-6 text-[#5f7789]">{doctor.summary}</p> : null}
+          <Link
+            className="mt-5 inline-flex min-h-11 w-fit items-center gap-2 text-[13px] font-bold text-[#087b9f] underline decoration-[#bfe0ec] decoration-2 underline-offset-[6px] transition hover:decoration-[#087b9f]"
+            to={doctor.profileHref}
+          >
+            {viewProfileLabel} <ArrowIcon />
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function StorySection({ editorial, featuredDoctor, secondFeaturedDoctor, stats, story }: Pick<AboutPageContent, 'editorial' | 'featuredDoctor' | 'secondFeaturedDoctor' | 'stats' | 'story'>) {
   const { language } = usePublicLanguage();
   const aboutCopy = publicUiCopy(language).about;
+  const isKm = language === 'km';
+  const leadership = [featuredDoctor, secondFeaturedDoctor].filter(
+    (doctor): doctor is AboutDoctorProfile => Boolean(doctor?.imageUrl),
+  );
   return (
     <section className="bg-white py-12 sm:py-16">
       <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8">
@@ -87,67 +129,53 @@ function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPag
           <div className="mt-5 h-1 w-16 rounded-full bg-[#3695B9]" />
         </div>
 
-        <div className={`grid gap-8 py-8 sm:gap-10 ${featuredDoctor ? 'lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.18fr)_minmax(200px,0.5fr)]' : 'mx-auto max-w-[760px]'}`}>
-          {featuredDoctor?.imageUrl ? (
-            <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#f8fbfc]">
-              <ResilientImage alt={featuredDoctor.imageAlt || featuredDoctor.name} className="h-[320px] w-full object-cover object-top sm:h-[400px]" fallbackSrc="/assets/landing/doctor-chea-kimly.png" src={featuredDoctor.imageUrl} />
-              <div className="border-t border-[#dceaf0] px-5 py-5">
-                <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[0.14em] text-[#3695B9]">{featuredDoctor.specialty}</p>
-                <h3 className="mt-2 text-[21px] font-extrabold leading-6 text-[#073f60]">{featuredDoctor.name}</h3>
-                {featuredDoctor.title ? <p className="mt-1 text-[14px] font-medium leading-5 text-[#587080]">{featuredDoctor.title}</p> : null}
-                <Link className="mt-4 inline-flex items-center gap-2 text-[13px] font-bold text-[#087b9f] hover:text-[#005687]" to={featuredDoctor.profileHref}>{aboutCopy.viewProfile} <ArrowIcon /></Link>
-              </div>
-            </article>
-          ) : null}
-
-          <div className={featuredDoctor ? undefined : 'text-center'}>
-            <h3 className="text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-[#073f60] sm:text-[32px]">{story.title}</h3>
-            <div className={`mt-5 space-y-4 ${featuredDoctor ? '' : 'mx-auto max-w-[700px]'}`}>
-              {story.paragraphs.map((paragraph) => <ContentBlocks key={paragraph} value={paragraph} />)}
-              {featuredDoctor?.summary ? <p className="border-l-2 border-[#3695B9] pl-4 font-medium text-[#255d74]">{featuredDoctor.summary}</p> : null}
+        <div className="grid gap-10 py-9 sm:py-11 lg:grid-cols-[minmax(0,640px)_280px] lg:items-start lg:justify-between lg:gap-12">
+          <div>
+            <h3 className="text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#073f60] sm:text-[26px]">{story.title}</h3>
+            <div className="mt-5 max-w-[62ch] space-y-4">
+              {/* The opening paragraph reads as a lede, the rest as body copy. */}
+              {story.paragraphs.map((paragraph, index) => (
+                <ContentBlocks
+                  className={index === 0 ? 'text-[16.5px] leading-[30px] text-[#3c5a6e]' : 'text-[15px] leading-7 text-[#61798a]'}
+                  key={paragraph}
+                  value={paragraph}
+                />
+              ))}
             </div>
           </div>
 
           {stats.length > 0 ? (
-            <aside className="mx-auto flex w-full max-w-[340px] flex-col justify-start border-t border-[#d6e5eb] pt-6 sm:max-w-[400px] lg:mx-0 lg:max-w-none lg:border-l lg:border-t-0 lg:border-[#dceaf0] lg:pl-8">
-              {stats.map((stat) => {
-                const isKm = stat.label === 'ឆ្នាំនៃបទពិសោធន៍';
-                return (
-                  <div
-                    className="group relative overflow-hidden rounded-[26px] border border-[#bfe0ec] bg-gradient-to-b from-[#f0f8fb] via-[#e6f4f8] to-[#d6eff7] p-6 text-center shadow-[0_8px_30px_rgba(7,93,131,0.08)] transition hover:shadow-[0_12px_36px_rgba(7,93,131,0.12)] sm:p-7"
-                    key={stat.label}
-                  >
-                    <div className="pointer-events-none absolute -right-6 -top-6 size-24 rounded-full bg-[#3695b9]/15 blur-2xl" />
-                    <div className="pointer-events-none absolute -bottom-6 -left-6 size-24 rounded-full bg-[#087b9f]/10 blur-2xl" />
-
-                    <div className="relative mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-[#3695b9]/20">
-                      <ExperienceBadgeIcon />
-                    </div>
-
-                    <div className="relative flex items-baseline justify-center gap-1">
-                      <span className="text-[64px] font-black leading-none tracking-[-0.04em] text-[#075d83] sm:text-[76px]">
-                        {stat.value}
-                      </span>
-                      <span className="text-[36px] font-extrabold leading-none text-[#3695b9]">+</span>
-                    </div>
-
-                    <p className="ui-eyebrow ui-eyebrow-large relative mt-3 text-[15px] font-extrabold uppercase tracking-[0.08em] text-[#073f60] sm:text-[16px]">
-                      {stat.label}
-                    </p>
-
-                    <div className="relative mx-auto mt-4 h-1 w-12 rounded-full bg-[#3695b9]/40" />
-
-                    <p className="relative mt-3 text-[12px] font-medium leading-relaxed text-[#506e80]">
-                      {isKm
-                        ? 'ការថែទាំធ្មេញប្រកបដោយការយកចិត្តទុកដាក់ និងជំនាញទុកចិត្តបាន'
-                        : 'Dedicated dental care & trusted clinical expertise'}
-                    </p>
+            <aside className="mx-auto w-full max-w-[320px] lg:mx-0 lg:max-w-none">
+              {stats.map((stat) => (
+                <div className="border-t-2 border-[#075d83] pt-5" key={stat.label}>
+                  <ExperienceBadgeIcon />
+                  <div className="mt-4 flex items-baseline gap-1">
+                    <span className="text-[68px] font-black leading-[0.9] tracking-[-0.05em] text-[#075d83] sm:text-[76px]">{stat.value}</span>
+                    <span className="text-[30px] font-extrabold leading-none text-[#3695b9]">+</span>
                   </div>
-                );
-              })}
+                  <p className="ui-eyebrow mt-3 text-[12px] font-extrabold uppercase leading-4 tracking-[0.16em] text-[#073f60]">{stat.label}</p>
+                  <p className="mt-3 max-w-[240px] text-[12.5px] leading-5 text-[#61798a]">
+                    {isKm
+                      ? 'ការថែទាំធ្មេញប្រកបដោយការយកចិត្តទុកដាក់ និងជំនាញទុកចិត្តបាន'
+                      : 'Dedicated dental care & trusted clinical expertise'}
+                  </p>
+                </div>
+              ))}
             </aside>
           ) : null}
         </div>
+
+        {leadership.length > 0 ? (
+          <div className="border-t border-[#d6e5eb] pt-9 sm:pt-11">
+            <div className="grid gap-10 sm:grid-cols-2 sm:gap-0 sm:divide-x sm:divide-[#e4eef3]">
+              {leadership.map((doctor, index) => (
+                <div className="sm:px-9 sm:first:pl-0 sm:last:pr-0" key={doctor.profileHref}>
+                  <FounderProfile doctor={doctor} index={index} viewProfileLabel={aboutCopy.viewProfile} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );
@@ -441,7 +469,7 @@ function AboutPageView({ content }: { content: AboutPageContent }) {
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main>
         <AboutHero hero={content.hero} />
-        <StorySection editorial={content.editorial} featuredDoctor={content.featuredDoctor} stats={content.stats} story={content.story} />
+        <StorySection editorial={content.editorial} featuredDoctor={content.featuredDoctor} secondFeaturedDoctor={content.secondFeaturedDoctor} stats={content.stats} story={content.story} />
         <GrowthTimeline editorial={content.editorial} items={content.timeline ?? []} />
         <ProfessionalDevelopment editorial={content.editorial} items={content.professionalMedia ?? []} />
         <ClinicGallery branchGalleries={content.branchGalleries} editorial={content.editorial} images={content.clinicGallery ?? []} />
