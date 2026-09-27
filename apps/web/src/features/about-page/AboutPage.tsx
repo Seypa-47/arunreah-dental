@@ -131,7 +131,7 @@ function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPag
                       <span className="text-[36px] font-extrabold leading-none text-[#3695b9]">+</span>
                     </div>
 
-                    <p className="ui-eyebrow relative mt-3 text-[15px] font-extrabold uppercase tracking-[0.08em] text-[#073f60] sm:text-[16px]">
+                    <p className="ui-eyebrow ui-eyebrow-large relative mt-3 text-[15px] font-extrabold uppercase tracking-[0.08em] text-[#073f60] sm:text-[16px]">
                       {stat.label}
                     </p>
 
