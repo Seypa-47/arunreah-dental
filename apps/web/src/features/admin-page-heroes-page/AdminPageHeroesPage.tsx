@@ -16,9 +16,9 @@ import { Card } from '@/components/ui/card';
 import { queryKeys } from '@/lib/query-keys';
 import { cmsApi, type AdminPageMediaRecord } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
-import { ContactIcon } from '@/components/layout/public-ui';
+import { ContactIcon, renderHeroTitle } from '@/components/layout/public-ui';
 
-type HeroPreviewLayout = 'image-only' | 'light' | 'overlay' | 'overlay-or-text';
+type HeroPreviewLayout = 'doctors-overlay' | 'light' | 'overlay' | 'overlay-or-text';
 
 export type HeroPageConfig = {
   aspectRatio: string;
@@ -94,9 +94,8 @@ export const HERO_PAGES: HeroPageConfig[] = [
     id: 'doctors',
     name: 'Our Doctors',
     placement: 'DOCTORS_HERO',
-    previewLayout: 'image-only',
+    previewLayout: 'doctors-overlay',
     publicUrl: '/doctors',
-    supportsCopy: false,
     subtitle: 'Specialists team introduction and group photo banner',
   },
   {
@@ -460,8 +459,8 @@ export function AdminPageHeroesPage() {
               <div>
                 <h2 className="text-[16px] font-bold text-[#182238]">Homepage carousel</h2>
                 <p className="mt-0.5 max-w-2xl text-xs leading-5 text-[#71839e]">
-                  These are the published branch slides currently visible to website visitors.
-                  Edit a branch slide in Branches &amp; Locations.
+                  These are the published branch slides currently visible to website visitors. Edit
+                  a branch slide in Branches &amp; Locations.
                 </p>
               </div>
               <span className="rounded-full bg-[#eef8fb] px-3 py-1 text-xs font-bold text-[#2187a8]">
@@ -576,13 +575,13 @@ export function AdminPageHeroesPage() {
                   <div>
                     <h2 className="text-[16px] font-bold text-[#182238]">
                       {isPublishedHero
-                          ? `Live Page Layout · ${activePage.name}`
-                          : `Draft Editor Preview · ${activePage.name}`}
+                        ? `Live Page Layout · ${activePage.name}`
+                        : `Draft Editor Preview · ${activePage.name}`}
                     </h2>
                     <p className="mt-0.5 text-xs text-[#71839e]">
                       {isPublishedHero
-                          ? 'This is the layout currently shown to website visitors.'
-                          : 'Draft changes are not visible to website visitors until you publish them.'}
+                        ? 'This is the layout currently shown to website visitors.'
+                        : 'Draft changes are not visible to website visitors until you publish them.'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -689,9 +688,39 @@ export function AdminPageHeroesPage() {
                           ) : null}
                         </div>
                       </div>
-                    ) : activePage.previewLayout ===
-                      'image-only' /* Doctors hero displays the clean doctor team photo without text or overlay so all doctors are clearly visible */ ? null : activePage.previewLayout ===
-                        'overlay-or-text' && !previewShowsImage ? (
+                    ) : activePage.previewLayout === 'doctors-overlay' ? (
+                      <>
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/80 via-white/55 to-transparent sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.78)_0%,rgba(255,255,255,0.66)_24%,rgba(255,255,255,0.38)_40%,rgba(255,255,255,0.08)_54%,transparent_66%)]"
+                        />
+                        <div className="relative z-10 flex min-h-[220px] flex-col justify-end p-4 sm:min-h-[280px] sm:p-6">
+                          <div className="max-w-[340px] sm:max-w-[420px]">
+                            {previewEyebrow ? (
+                              <div className="flex items-center gap-2">
+                                <span
+                                  aria-hidden="true"
+                                  className="h-[2px] w-5 rounded-full bg-[#0080c8]"
+                                />
+                                <span className="ui-eyebrow text-[10px] font-bold uppercase tracking-[0.18em] text-[#0080c8]">
+                                  {previewEyebrow}
+                                </span>
+                              </div>
+                            ) : null}
+                            <h3
+                              className={`${previewEyebrow ? 'mt-2' : ''} text-[18px] font-black leading-[1.15] tracking-[-0.03em] text-[#073f60] sm:text-[22px]`}
+                            >
+                              {renderHeroTitle(previewTitle, previewLanguage)}
+                            </h3>
+                            {previewSubtitle ? (
+                              <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-[#526477] sm:text-[12px]">
+                                {previewSubtitle}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                      </>
+                    ) : activePage.previewLayout === 'overlay-or-text' && !previewShowsImage ? (
                       <div className="flex min-h-[220px] items-center justify-center p-6 text-center sm:min-h-[280px] sm:p-10">
                         <div className="max-w-[620px]">
                           {previewEyebrow ? (
@@ -780,14 +809,12 @@ export function AdminPageHeroesPage() {
                         value: form.imagePresentation,
                       }}
                       help={
-                        activePage.supportsCopy === false
+                        activePage.id === 'doctors'
                           ? 'Choose the team photo shown at the top of the Doctors page. JPEG, PNG, or WEBP up to 5 MB.'
                           : 'Choose a high quality landscape photo. JPEG, PNG, or WEBP up to 5 MB.'
                       }
                       label={
-                        activePage.supportsCopy === false
-                          ? 'Doctor Team Photo'
-                          : 'Hero Background Photo'
+                        activePage.id === 'doctors' ? 'Doctor Team Photo' : 'Hero Background Photo'
                       }
                       onClear={() => setForm((prev) => ({ ...prev, imageKey: '' }))}
                       onUploaded={(key) => setForm((prev) => ({ ...prev, imageKey: key }))}
@@ -919,12 +946,7 @@ export function AdminPageHeroesPage() {
                         </div>
                       </fieldset>
                     </>
-                  ) : (
-                    <p className="rounded-xl border border-[#dce5ef] bg-[#f8fcfd] px-4 py-3 text-sm leading-6 text-[#52647d]">
-                      The Doctors page hero is a team photo only. Its title and supporting copy are
-                      managed by the public page design, so there are no unused text fields here.
-                    </p>
-                  )}
+                  ) : null}
 
                   {/* Actions Footer */}
                   <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#edf1f5] pt-5">

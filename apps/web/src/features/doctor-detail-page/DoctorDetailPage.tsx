@@ -42,8 +42,9 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
         <div className="overflow-hidden rounded-xl border border-[#e2edf1] bg-[#edf5f8] shadow-[0_2px_8px_rgba(15,23,42,0.05)]">
           <ResilientImage
             alt={doctor.imageAlt || doctor.name}
-            className="h-[300px] w-full object-cover object-[center_18%] sm:h-[360px]"
+            className="h-[300px] w-full object-cover sm:h-[360px]"
             fallbackSrc="/assets/landing/hero-clinic.png"
+            presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }}
             src={doctor.imageUrl}
           />
         </div>

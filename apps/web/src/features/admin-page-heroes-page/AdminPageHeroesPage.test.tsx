@@ -114,10 +114,10 @@ describe('AdminPageHeroesPage', () => {
     expect(heroPreviewShowsImage(doctors!, '')).toBe(true);
   });
 
-  it('marks the doctors hero as image-only so unused copy fields are not offered', () => {
+  it('marks the doctors hero as a soft directional overlay with editable copy', () => {
     const doctors = HERO_PAGES.find((page) => page.id === 'doctors');
 
-    expect(doctors?.supportsCopy).toBe(false);
-    expect(doctors?.previewLayout).toBe('image-only');
+    expect(doctors?.supportsCopy).not.toBe(false);
+    expect(doctors?.previewLayout).toBe('doctors-overlay');
   });
 });
