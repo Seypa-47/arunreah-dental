@@ -10,7 +10,18 @@ import * as repo from '../repositories/service.repository';
 import { HttpError } from '../shared/http-error';
 import { localize } from '../shared/localize';
 import { listForOwners } from '../repositories/image-presentation.repository';
-const admin = (s: NonNullable<Awaited<ReturnType<typeof repo.findServiceById>>>) => s;
+function normalizeServiceSlug(id: string, slug: string, nameEn: string) {
+  if (slug && slug !== id) return slug;
+  const fallback = nameEn
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return fallback || slug || id;
+}
+const admin = (s: NonNullable<Awaited<ReturnType<typeof repo.findServiceById>>>) => ({
+  ...s,
+  slug: normalizeServiceSlug(s.id, s.slug, s.nameEn),
+});
 function presentationFor(rows: Awaited<ReturnType<typeof listForOwners>>, ownerId: string, slot = 'PRIMARY'): ImagePresentation {
   const row = rows.find((item) => item.ownerId === ownerId && item.slot === slot);
   return row ? { positionX: row.positionX, positionY: row.positionY, zoom: row.zoom } : defaultImagePresentation;
@@ -26,7 +37,7 @@ const local = (
   presentations: Awaited<ReturnType<typeof listForOwners>> = [],
 ) => ({
   id: s.id,
-  slug: s.slug,
+  slug: normalizeServiceSlug(s.id, s.slug, s.nameEn),
   name: localize(s.nameEn, s.nameKm, lang) ?? s.nameEn,
   shortDescription: localize(s.summaryEn, s.summaryKm, lang),
   listingThumbnailKey: s.imageKey,

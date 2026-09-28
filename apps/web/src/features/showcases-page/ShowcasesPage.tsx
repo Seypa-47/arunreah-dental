@@ -11,6 +11,7 @@ import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useShowcasesPageQuery } from './use-showcases-page';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 
 
 function ShowcaseCard({ showcase }: { showcase: PublicShowcaseSummary }) {
@@ -39,7 +40,7 @@ function ShowcasesHero({ heroMedia }: { heroMedia?: { badge: string | null; body
   const imageUrl = heroMedia?.imageKey ? getPublicMediaUrl(heroMedia.imageKey) : null;
   const eyebrow = heroMedia?.badge || copy.heroEyebrow;
   const title = heroMedia?.title || copy.heroTitle;
-  const description = heroMedia?.body;
+  const description = heroMedia?.body || copy.heroSubtitle;
 
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
@@ -78,6 +79,7 @@ export function ShowcasesPage() {
   const { data, isError, isLoading, refetch } = useShowcasesPageQuery();
   const { language } = usePublicLanguage();
   const copy = publicUiCopy(language);
+  usePublicDocumentTitle(data?.heroMedia?.title ?? copy.showcases.heroTitle);
 
   if (isLoading) return <ShowcasesPageSkeleton />;
   if (isError || !data) return <PageFeedback action={<Button onClick={() => void refetch()}>{copy.common.retry}</Button>} body={copy.showcases.errorBody} title={copy.showcases.errorTitle} />;

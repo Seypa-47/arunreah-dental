@@ -10,6 +10,7 @@ import type { BranchesPageContent } from '@/features/landing-page/types';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 import { getBranchCoordinates } from './branch-coordinates';
 import { useBranchesPageQuery } from './use-branches-page';
 
@@ -62,47 +63,55 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
 
   return (
     <section className="relative bg-[#f7fafc] pb-0 pt-5 sm:pt-7">
-      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-white sm:min-h-[340px]">
-        <ResilientImage
-          alt={hero.backgroundImageAlt}
-          className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
-          fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
-          presentation={hero.imagePresentation}
-          src={imageUrl}
-        />
-        <div className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
-          <div className="max-w-[560px] py-7">
-            <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
-              {hero.eyebrow}
-            </p>
-            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
-              {hero.title}
-            </h1>
-            <p className="mt-3 max-w-[500px] text-[16px] font-medium leading-7 text-[#0e3b5e]">{hero.subtitle}</p>
-            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3">
-              {hero.highlights.map((item) => (
-                <div className="flex items-center gap-3" key={item.label}>
-                  <span className="grid size-8 place-items-center rounded-full bg-[#eef8fb]">
-                    {item.label === '2 Modern Clinics' ? (
-                      <HighlightLocationIcon />
-                    ) : (
-                      <img alt="" aria-hidden="true" className="size-3.5" src={item.iconUrl} />
-                    )}
-                  </span>
-                  <span className="text-[14px] font-bold leading-5 text-[#005687]">{item.label}</span>
-                </div>
-              ))}
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-2xl border border-[#d9e9ee] bg-white sm:min-h-[340px]">
+          <ResilientImage
+            alt={hero.backgroundImageAlt}
+            className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
+            fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
+            presentation={hero.imagePresentation}
+            src={imageUrl}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
+          />
+          <div className="relative z-10 flex items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
+            <div className="max-w-[560px] py-7">
+              <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+                {hero.eyebrow}
+              </p>
+              <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[38px]">
+                {hero.title}
+              </h1>
+              <p className="mt-3 max-w-[500px] text-[16px] font-medium leading-7 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)]">
+                {hero.subtitle}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3">
+                {hero.highlights.map((item) => (
+                  <div className="flex items-center gap-3" key={item.label}>
+                    <span className="grid size-8 place-items-center rounded-full bg-[#eef8fb]">
+                      {item.label === '2 Modern Clinics' ? (
+                        <HighlightLocationIcon />
+                      ) : (
+                        <img alt="" aria-hidden="true" className="size-3.5" src={item.iconUrl} />
+                      )}
+                    </span>
+                    <span className="text-[14px] font-bold leading-5 text-[#005687]">{item.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <Card className="relative z-10 -mt-5 grid w-full gap-4 rounded-xl border-[#dfecef] bg-white px-5 py-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)] sm:px-6 lg:grid-cols-[1fr_1fr_1fr_220px] lg:items-center">
+        <Card className="relative z-10 -mt-5 grid w-full gap-4 rounded-xl border-[#dfecef] bg-white px-5 py-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)] sm:px-6 lg:grid-cols-[1fr_1fr_220px] lg:items-center">
           {hero.metrics.map((metric, index) => (
             <div
               className="flex items-center gap-3 border-[#e7eff3] lg:border-r lg:last:border-r-0"
-              key={metric.title}
+              key={metric.label}
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#eef8fb]">
                 {index === 0 ? (
@@ -195,7 +204,7 @@ function BranchCard({
               </dt>
               <dd className="flex flex-wrap gap-x-6 gap-y-1 font-extrabold text-[#005687]">
                 {branch.phones.map((phone) => (
-                  <a className="hover:text-[#3695B9] hover:underline" href={`tel:${phone.replaceAll(' ', '')}`} key={phone}>
+                  <a className="inline-flex min-h-11 items-center hover:text-[#3695B9] hover:underline sm:min-h-0" href={`tel:${phone.replaceAll(' ', '')}`} key={phone}>
                     {phone}
                   </a>
                 ))}
@@ -216,7 +225,7 @@ function BranchCard({
 
         <div className="mt-5 flex flex-wrap items-center gap-2.5 sm:gap-3">
           <a
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#3695B9] px-5 text-[13px] font-bold text-white shadow-none transition hover:bg-[#2c84a5]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#3695B9] px-5 text-[13px] font-bold text-white shadow-none transition hover:bg-[#2c84a5]"
             href={branch.directionsUrl}
             rel="noopener noreferrer"
             target="_blank"
@@ -225,14 +234,14 @@ function BranchCard({
             {branch.directionsLabel}
           </a>
           <a
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#f1f6fa] px-5 text-[13px] font-bold text-[#3695B9] transition hover:bg-[#e4eff5]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#f1f6fa] px-5 text-[13px] font-bold text-[#3695B9] transition hover:bg-[#e4eff5]"
             href={phoneHref}
           >
             <AssetIcon className="size-3.5" name="branch-card-phone.svg" />
             {branch.phoneLabel}
           </a>
           <Link
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#d8e6ee] bg-white px-5 text-[13px] font-bold text-[#3695B9] transition hover:border-[#3695B9] hover:bg-[#f9fcfd]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#d8e6ee] bg-white px-5 text-[13px] font-bold text-[#3695B9] transition hover:border-[#3695B9] hover:bg-[#f9fcfd]"
             to={branch.id ? `/book-appointment?branch=${encodeURIComponent(branch.id)}` : '/book-appointment'}
           >
             <AssetIcon className="size-3.5" name="hero-calendar.svg" />
@@ -279,12 +288,12 @@ function BranchCard({
 
         {/* Floating Google Maps Link Button */}
         <a
-          className="group/map absolute bottom-4 left-4 z-10 inline-flex h-10 items-center overflow-hidden rounded-full bg-white shadow-[0_3px_10px_rgba(15,23,42,0.10)] backdrop-blur transition duration-200 hover:bg-[#f8fcfd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
+          className="group/map absolute bottom-4 left-4 z-10 inline-flex h-11 items-center overflow-hidden rounded-full bg-white shadow-[0_3px_10px_rgba(15,23,42,0.10)] backdrop-blur transition duration-200 hover:bg-[#f8fcfd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
           href={branch.mapUrl}
           rel="noopener noreferrer"
           target="_blank"
         >
-          <span className="grid size-10 place-items-center bg-[#edf7fb] transition-colors group-hover/map:bg-[#3695B9]">
+          <span className="grid size-11 place-items-center bg-[#edf7fb] transition-colors group-hover/map:bg-[#3695B9]">
             <AssetIcon className="size-[16px] transition group-hover/map:brightness-0 group-hover/map:invert" name="branch-card-pin-alt.svg" />
           </span>
           <span className="px-4 text-[12.5px] font-bold text-[#005687] transition-colors group-hover/map:text-[#3695B9]">
@@ -508,6 +517,8 @@ function hasBranchesContent(content: BranchesPageContent | undefined): content i
 
 export function BranchesPage() {
   const { data, isError, isLoading, refetch } = useBranchesPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'សាខា' : 'Branches'));
 
   if (isLoading) {
     return <BranchesPageSkeleton />;

@@ -54,4 +54,27 @@ describe('public site layout', () => {
     expect(html).toContain('aria-controls="mobile-primary-navigation"');
     expect(html).toContain('aria-label="Language selector"');
   });
+
+  it('marks Showcases as active on /showcases/:slug and exposes Contact Us on lg viewports', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/showcases/smile-makeover']}>
+        <SiteLayout
+          actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }}
+          navigation={[
+            { href: '/', label: 'Home' },
+            { href: '/showcases', label: 'Showcases' },
+          ]}
+        >
+          <main>
+            <h1>Showcase detail</h1>
+          </main>
+        </SiteLayout>
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('aria-current="page"');
+    expect(html).toContain('aria-label="Contact Us"');
+    expect(html).toContain('lg:inline-flex');
+    expect(html).toContain('xl:inline-block');
+  });
 });

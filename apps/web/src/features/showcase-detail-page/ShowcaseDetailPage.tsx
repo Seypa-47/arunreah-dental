@@ -10,15 +10,19 @@ import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useShowcaseDetailPageQuery } from './use-showcase-detail-page';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { isPublicNotFoundError } from '@/features/public-content/public-errors';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 
 export function ShowcaseDetailPage() {
   const { showcaseSlug } = useParams();
-  const { data, isError, isLoading, refetch } = useShowcaseDetailPageQuery(showcaseSlug);
+  const { data, error, isError, isLoading, refetch } = useShowcaseDetailPageQuery(showcaseSlug);
   const { language } = usePublicLanguage();
   const copy = publicUiCopy(language);
+  usePublicDocumentTitle(data?.showcase.title ?? (language === 'km' ? 'ស្នាដៃ' : 'Showcase'));
 
   if (isLoading) return <ShowcaseDetailPageSkeleton />;
-  if (isError || !data) return <main className="grid min-h-screen place-items-center bg-[#f7fafc] px-4"><Card className="max-w-lg p-8 text-center"><Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.showcaseDetail.notFound}</Badge><h1 className="mt-4 text-2xl font-extrabold text-[#005687]">{copy.showcaseDetail.errorTitle}</h1><p className="mt-2 text-sm text-[#62798b]">{copy.showcaseDetail.errorBody}</p><Button className="mt-6" onClick={() => void refetch()}>{copy.common.retry}</Button></Card></main>;
+  if ((isError && isPublicNotFoundError(error)) || (!isError && !data)) return <main className="grid min-h-screen place-items-center bg-[#f7fafc] px-4"><Card className="max-w-lg p-8 text-center"><Badge>{copy.showcaseDetail.notFound}</Badge><h1 className="mt-4 text-2xl font-extrabold text-[#005687]">{copy.showcaseDetail.errorTitle}</h1><p className="mt-2 text-sm text-[#62798b]">{copy.showcaseDetail.errorBody}</p><Link className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695B9] px-5 text-sm font-extrabold text-white hover:bg-[#2c84a5]" to="/showcases">{language === 'km' ? 'មើលស្នាដៃទាំងអស់' : 'Browse Showcases'}</Link></Card></main>;
+  if (isError || !data) return <main className="grid min-h-screen place-items-center bg-[#f7fafc] px-4"><Card className="max-w-lg p-8 text-center"><Badge className="bg-[#fff1e6] text-[#9d4d18]">{copy.common.error}</Badge><h1 className="mt-4 text-2xl font-extrabold text-[#005687]">{language === 'km' ? 'យើងមិនអាចផ្ទុកស្នាដៃនេះបានទេ' : 'We could not load this showcase'}</h1><p className="mt-2 text-sm text-[#62798b]">{language === 'km' ? 'សូមព្យាយាមម្ដងទៀត។' : 'Please try again to refresh this article.'}</p><Button className="mt-6" onClick={() => void refetch()}>{copy.common.retry}</Button></Card></main>;
 
   const { showcase } = data;
   const coverImageUrl = getPublicMediaUrl(showcase.coverImageKey);
@@ -29,14 +33,25 @@ export function ShowcaseDetailPage() {
         <article>
           <div className="border-b border-[#e7eff3] bg-[#f7fafc] py-6 sm:py-8">
             <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-              <CmsImage
-                alt={showcase.title}
-                className="h-[250px] w-full rounded-xl bg-[#edf5f8] object-cover sm:h-[390px]"
-                fallbackSrc="/assets/landing/showcase-room.png"
-                loading="eager"
-                presentation={showcase.coverImagePresentation}
-                src={coverImageUrl}
-              />
+              <div className="mb-4">
+                <Link
+                  className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#3695B9] transition hover:text-[#167ea7]"
+                  to="/showcases"
+                >
+                  <span aria-hidden="true">←</span>
+                  <span>{copy.showcaseDetail.backToShowcases}</span>
+                </Link>
+              </div>
+              <div className="overflow-hidden rounded-xl bg-[#edf5f8]">
+                <CmsImage
+                  alt={showcase.title}
+                  className="h-[250px] w-full object-cover sm:h-[390px]"
+                  fallbackSrc="/assets/landing/showcase-room.png"
+                  loading="eager"
+                  presentation={showcase.coverImagePresentation}
+                  src={coverImageUrl}
+                />
+              </div>
             </div>
           </div>
           <div className="mx-auto max-w-[820px] px-4 py-10 sm:px-6 sm:py-14">
@@ -67,7 +82,11 @@ export function ShowcaseDetailPage() {
 
                   return (
                     <Link className={`group flex min-h-[150px] overflow-hidden rounded-xl border border-[#e1ebef] bg-white transition duration-200 hover:-translate-y-0.5 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)] ${relatedImageUrl ? 'sm:block' : 'sm:flex'}`} key={related.slug} to={`/showcases/${related.slug}`}>
-                      {relatedImageUrl ? <CmsImage alt={related.title} className="h-[150px] w-[40%] shrink-0 bg-[#edf5f8] object-cover sm:h-40 sm:w-full" presentation={related.coverImagePresentation} src={relatedImageUrl} /> : null}
+                      {relatedImageUrl ? (
+                        <div className="h-[150px] w-[40%] shrink-0 overflow-hidden bg-[#edf5f8] sm:h-40 sm:w-full">
+                          <CmsImage alt={related.title} className="h-full w-full object-cover" presentation={related.coverImagePresentation} src={relatedImageUrl} />
+                        </div>
+                      ) : null}
                       <div className="flex min-w-0 flex-1 items-center p-4 sm:block">
                         <h3 className="line-clamp-2 text-[15px] font-bold leading-5 text-[#005687] transition group-hover:text-[#167ea7]">{related.title}</h3>
                       </div>

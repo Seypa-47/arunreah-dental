@@ -9,6 +9,7 @@ import { publicShell } from '@/features/public-content/public-page-chrome';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { useServicesPageQuery } from './use-services-page';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 
 const serviceId = (name: string) =>
   `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
@@ -16,6 +17,7 @@ const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/
 
 function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
   const servicesCopy = publicUiCopy(usePublicLanguage().language).services;
+  const eyebrow = hero.eyebrow || servicesCopy.heroEyebrow;
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <PageContainer>
@@ -28,20 +30,20 @@ function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
             />
             <div className="relative z-10 flex min-h-[320px] max-w-[720px] flex-col justify-end p-6 sm:min-h-[380px] sm:p-10 lg:min-h-[420px] lg:p-12">
               <div>
-                {hero.eyebrow ? (
+                {eyebrow ? (
                   <div className="ui-eyebrow inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-[11px] font-bold uppercase tracking-[1.8px] text-[#7ee1f8] backdrop-blur-md sm:text-[12px]">
                     <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
-                    <span>{hero.eyebrow}</span>
+                    <span>{eyebrow}</span>
                   </div>
                 ) : null}
-                <h1 className={`${hero.eyebrow ? 'mt-3.5' : ''} text-[28px] font-extrabold leading-[1.18] tracking-[-0.03em] text-white sm:text-[38px] lg:text-[44px]`}>{hero.title}</h1>
+                <h1 className={`${eyebrow ? 'mt-3.5' : ''} text-[28px] font-extrabold leading-[1.18] tracking-[-0.03em] text-white sm:text-[38px] lg:text-[44px]`}>{hero.title}</h1>
                 {hero.description ? <p className="mt-3.5 max-w-[600px] text-[15px] font-normal leading-relaxed text-[#e1f0f5] sm:text-[16px] sm:leading-7">{hero.description}</p> : null}
               </div>
             </div>
           </div>
         ) : (
           <div className="rounded-2xl border border-[#d9e9ee] bg-[linear-gradient(120deg,#fafdfe_0%,#edf7fa_100%)] px-5 py-11 text-center shadow-[0_5px_20px_rgba(15,61,84,0.04)] sm:px-8 sm:py-14">
-            <SectionIntro align="center" as="h1" description={hero.description} eyebrow={hero.eyebrow ?? servicesCopy.heroEyebrow} title={hero.title} />
+            <SectionIntro align="center" as="h1" description={hero.description} eyebrow={eyebrow} title={hero.title} />
           </div>
         )}
       </PageContainer>
@@ -217,6 +219,8 @@ function hasServicesContent(content: ServicesPageContent | undefined): content i
 
 export function ServicesPage() {
   const { data, isError, isLoading, refetch } = useServicesPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'សេវាកម្ម' : 'Services'));
 
   if (isLoading) {
     return <ServicesPageSkeleton />;

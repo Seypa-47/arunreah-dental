@@ -11,6 +11,7 @@ import { useDoctorsPageQuery } from './use-doctors-page';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 
 const asset = (name: string) => `/assets/landing/${name}`;
 
@@ -61,8 +62,17 @@ function DoctorsHero({
         <div className="relative min-h-[260px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] sm:min-h-[360px] md:min-h-[420px] lg:min-h-[460px]">
           <ResilientImage
             alt={uiCopy.teamImageAlt}
-            className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.04] saturate-[1.04]"
+            className="absolute inset-0 h-full w-full bg-white object-contain object-top contrast-[1.04] saturate-[1.04] sm:hidden"
             fallbackSrc={fallbackImageUrl}
+            loading="eager"
+            presentation={heroMedia?.imagePresentation ? { ...heroMedia.imagePresentation, zoom: 1 } : undefined}
+            src={imageUrl}
+          />
+          <ResilientImage
+            alt=""
+            className="absolute inset-0 hidden h-full w-full object-cover object-center contrast-[1.04] saturate-[1.04] sm:block"
+            fallbackSrc={fallbackImageUrl}
+            loading="eager"
             presentation={heroMedia?.imagePresentation}
             src={imageUrl}
           />
@@ -103,12 +113,14 @@ function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
         to={doctor.detail.profileHref}
       >
         {hasImage ? (
-          <CmsImage
-            alt={doctor.imageAlt || doctor.name}
-            className="h-[196px] w-[42%] shrink-0 bg-[#edf5f8] object-cover sm:h-[236px] sm:w-full"
-            presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }}
-            src={doctor.imageUrl}
-          />
+          <div className="h-[196px] w-[42%] shrink-0 overflow-hidden bg-[#edf5f8] sm:h-[236px] sm:w-full">
+            <CmsImage
+              alt={doctor.imageAlt || doctor.name}
+              className="h-full w-full object-cover"
+              presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }}
+              src={doctor.imageUrl}
+            />
+          </div>
         ) : (
           <div
             aria-hidden="true"
@@ -208,12 +220,14 @@ function PatientFirstApproach({
                 key={item.id}
               >
                 {imageUrl ? (
-                  <CmsImage
-                    alt={item.title ?? ''}
-                    className="h-[280px] w-full rounded-t-xl md:rounded-xl"
-                    presentation={item.imagePresentation}
-                    src={imageUrl}
-                  />
+                  <div className="h-[280px] w-full overflow-hidden rounded-t-xl md:rounded-xl">
+                    <CmsImage
+                      alt={item.title ?? ''}
+                      className="h-full w-full"
+                      presentation={item.imagePresentation}
+                      src={imageUrl}
+                    />
+                  </div>
                 ) : null}
                 <div
                   className={`p-5 sm:p-6 ${items.length === 1 ? 'rounded-b-xl border border-t-0 border-[#dce9ee] bg-white md:rounded-xl md:border' : ''}`}
@@ -334,6 +348,8 @@ function hasDoctorsContent(content: DoctorsPageContent | undefined): content is 
 
 export function DoctorsPage() {
   const { data, isError, isLoading, refetch } = useDoctorsPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'ទន្តបណ្ឌិត' : 'Doctors'));
 
   if (isLoading) {
     return <DoctorsPageSkeleton />;

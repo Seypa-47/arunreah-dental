@@ -11,6 +11,7 @@ import { useContactPageQuery } from './use-contact-page';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 
 type ContactIconName = ContactPageContent['contactCards'][number]['icon'];
 
@@ -315,6 +316,8 @@ function hasContactContent(content: ContactPageContent | undefined): content is 
 
 export function ContactPage() {
   const { data, isError, isLoading, refetch } = useContactPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'ទំនាក់ទំនង' : 'Contact'));
 
   if (isLoading) {
     return <ContactPageSkeleton />;

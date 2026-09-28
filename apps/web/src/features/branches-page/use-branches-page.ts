@@ -4,17 +4,9 @@ import { queryKeys } from '@/lib/query-keys';
 import { getPublicBranches, getPublicPageMedia } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { formatPublicBranchHours } from '@/features/public-content/public-branch';
 
-function formatBranchHours(openingDays: string | null | undefined, openingHours: string | null | undefined, openingTime: string | null | undefined, closingTime: string | null | undefined) {
-  const days = openingDays?.trim() ?? '';
-  const hours = openingHours?.trim() ?? [openingTime, closingTime].filter(Boolean).join(' - ');
-
-  if (!days || !hours.toLocaleLowerCase().startsWith(days.toLocaleLowerCase())) {
-    return { days, hours };
-  }
-
-  return { days, hours: hours.slice(days.length).replace(/^[:\s-]+/, '') };
-}
+export { formatPublicBranchHours as formatBranchHours };
 
 export function useBranchesPageQuery() {
   const { language } = usePublicLanguage();
@@ -34,7 +26,7 @@ export function useBranchesPageQuery() {
       return {
         ...chrome,
         branches: publicBranches.map((branch) => {
-          const hours = formatBranchHours(branch.openingDays, branch.openingHours, branch.openingTime, branch.closingTime);
+          const hours = formatPublicBranchHours(branch);
 
           return {
             address: branch.address,
@@ -43,7 +35,7 @@ export function useBranchesPageQuery() {
             directionsLabel: isKm ? 'ស្វែងរកផ្លូវ' : 'Get Directions',
             directionsUrl: branch.googleMapsUrl ?? '#',
             hoursDays: hours.days,
-            hoursTime: hours.hours,
+            hoursTime: hours.time,
             id: branch.id,
             imageAlt: branch.name,
             imagePresentation: branch.branchImagePresentation,
@@ -81,7 +73,7 @@ export function useBranchesPageQuery() {
               title: String(appointmentBranches.length),
             },
           ],
-          subtitle: heroItem?.body || primaryBranch?.heroSupportingText || chrome.hero.subtitle,
+          subtitle: heroItem?.body || chrome.hero.subtitle,
         },
       };
     },

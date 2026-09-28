@@ -97,6 +97,10 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
       return pathname.startsWith('/services');
     }
 
+    if (item.href.startsWith('/showcases')) {
+      return pathname.startsWith('/showcases');
+    }
+
     if (!item.href.includes('#') && item.href !== '/') {
       return pathname === item.href;
     }
@@ -191,16 +195,18 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
 
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-3 xl:gap-5">
             <button
-              className="hidden min-h-11 items-center gap-2.5 rounded-full px-2 text-[14px] font-extrabold text-[#087b9f] transition hover:bg-[#eef8fb] xl:inline-flex"
+              aria-label={actions.contactLabel}
+              className="hidden min-h-11 items-center gap-2.5 rounded-full px-2 text-[14px] font-extrabold text-[#087b9f] transition hover:bg-[#eef8fb] lg:inline-flex"
               onClick={() => navigate('/contact')}
+              title={actions.contactLabel}
               type="button"
             >
               <span className="grid size-[38px] place-items-center rounded-full border border-[#3695B9]">
                 <img alt="" aria-hidden="true" className="size-3.5" src={asset('header-phone.svg')} />
               </span>
-              <span>{actions.contactLabel}</span>
+              <span className="hidden xl:inline">{actions.contactLabel}</span>
             </button>
-            <span aria-hidden="true" className="hidden h-5 w-[1.5px] bg-[#3695B9]/40 sm:inline-block" />
+            <span aria-hidden="true" className="hidden h-5 w-[1.5px] bg-[#3695B9]/40 xl:inline-block" />
             <button
               className="min-h-11 max-w-[112px] rounded-full bg-[#168aad] px-3 text-[12px] font-extrabold leading-4 text-white shadow-[0_6px_16px_rgba(22,138,173,0.2)] transition-all duration-150 hover:bg-[#0d7596] active:scale-95 sm:max-w-none sm:min-h-[44px] sm:px-5 sm:text-[14px] xl:px-6 xl:text-[15px]"
               onClick={() => navigate('/book-appointment')}

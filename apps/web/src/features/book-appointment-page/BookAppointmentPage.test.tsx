@@ -6,6 +6,9 @@ import {
   AvailableTimes,
   dateLabel,
   formatDisplayTime,
+  getPhnomPenhDateTime,
+  isTimeSlotPastForPhnomPenh,
+  matchesBookingOption,
   toDateKey,
 } from './BookAppointmentPage';
 import { PublicLanguageProvider } from '@/features/public-content/public-language-provider';
@@ -30,6 +33,47 @@ describe('BookAppointmentPage Date & Time features', () => {
     it('formats dates as YYYY-MM-DD strings', () => {
       expect(toDateKey(new Date(2026, 9, 9))).toBe('2026-10-09');
       expect(toDateKey(new Date(2026, 8, 20))).toBe('2026-09-20');
+    });
+  });
+
+  describe('matchesBookingOption', () => {
+    it('matches booking options by id/value, slug, or case-insensitive name', () => {
+      const branch = { id: 'branch-1', name: 'Psa Chas Branch', slug: 'psa-chas' };
+      expect(matchesBookingOption(branch, 'branch-1')).toBe(true);
+      expect(matchesBookingOption(branch, 'psa-chas')).toBe(true);
+      expect(matchesBookingOption(branch, 'PSA-CHAS')).toBe(true);
+      expect(matchesBookingOption(branch, 'psa chas branch')).toBe(true);
+      expect(matchesBookingOption(branch, 'toul-tompoung')).toBe(false);
+
+      const doctor = { name: 'Dr. Dara', slug: 'dara', value: 'doc-uuid' };
+      expect(matchesBookingOption(doctor, 'doc-uuid')).toBe(true);
+      expect(matchesBookingOption(doctor, 'dara')).toBe(true);
+      expect(matchesBookingOption(doctor, 'dr. dara')).toBe(true);
+    });
+  });
+
+  describe('Asia/Phnom_Penh date & time helpers', () => {
+    it('computes Asia/Phnom_Penh (UTC+7) date and time parts regardless of host timezone', () => {
+      // 2026-09-28T03:20:00Z is 2026-09-28 10:20 in Asia/Phnom_Penh (UTC+7)
+      const instant = new Date('2026-09-28T03:20:00.000Z');
+      const pp = getPhnomPenhDateTime(instant);
+      expect(pp).toEqual({
+        dateKey: '2026-09-28',
+        day: 28,
+        hour: 10,
+        minute: 20,
+        month: 9,
+        year: 2026,
+      });
+    });
+
+    it('identifies past time slots for today in Asia/Phnom_Penh time', () => {
+      // 10:20 AM Phnom Penh time on 2026-09-28
+      const instant = new Date('2026-09-28T03:20:00.000Z');
+      expect(isTimeSlotPastForPhnomPenh('09:45', '2026-09-28', instant)).toBe(true);
+      expect(isTimeSlotPastForPhnomPenh('10:15', '2026-09-28', instant)).toBe(true);
+      expect(isTimeSlotPastForPhnomPenh('10:30', '2026-09-28', instant)).toBe(false);
+      expect(isTimeSlotPastForPhnomPenh('08:00', '2026-09-29', instant)).toBe(false);
     });
   });
 
@@ -141,6 +185,30 @@ describe('BookAppointmentPage Date & Time features', () => {
       expect(html).toContain(':30');
       expect(html).toContain(':45');
       // The selected minute :30 has aria-pressed="true"
+      expect(html).toContain('aria-label="10:30 AM" aria-pressed="true"');
+    });
+
+    it('disables already-passed hours and minutes for today in Asia/Phnom_Penh time', () => {
+      // 10:20 AM Phnom Penh time on 2026-09-28
+      const instant = new Date('2026-09-28T03:20:00.000Z');
+      const html = renderToStaticMarkup(
+        <PublicLanguageProvider>
+          <AvailableTimes
+            now={instant}
+            onSelectTime={vi.fn()}
+            selectedDate="2026-09-28"
+            selectedTime="10:30"
+            times={times}
+          />
+        </PublicLanguageProvider>,
+      );
+
+      // 08:00 AM and 09:00 AM hours are completely in the past -> disabled
+      expect(html).toMatch(/aria-label="Select 08:00 AM"[^>]*disabled=""/);
+      expect(html).toMatch(/aria-label="Select 09:00 AM"[^>]*disabled=""/);
+      // Within active 10:xx hour, 10:00 AM and 10:15 AM are disabled while 10:30 AM is active
+      expect(html).toMatch(/aria-label="10:00 AM"[^>]*disabled=""/);
+      expect(html).toMatch(/aria-label="10:15 AM"[^>]*disabled=""/);
       expect(html).toContain('aria-label="10:30 AM" aria-pressed="true"');
     });
   });

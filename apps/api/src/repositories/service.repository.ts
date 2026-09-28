@@ -19,7 +19,17 @@ export async function findPublicServiceBySlug(db: DatabaseClient, slug: string) 
     .from(services)
     .where(and(eq(services.slug, slug), eq(services.status, 'PUBLISHED')))
     .limit(1);
-  return x;
+  if (x) return x;
+  const published = await listPublicServices(db);
+  return published.find(
+    (item) =>
+      item.id === slug ||
+      (item.slug === item.id &&
+        item.nameEn
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '') === slug),
+  );
 }
 export async function createService(db: DatabaseClient, input: CreateServiceInput) {
   const id = crypto.randomUUID(),

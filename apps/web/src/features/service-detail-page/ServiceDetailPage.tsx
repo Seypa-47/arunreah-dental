@@ -10,6 +10,8 @@ import { usePublicLanguage } from '@/features/public-content/public-language-pro
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useServiceDetailPageQuery } from './use-service-detail-page';
+import { isPublicNotFoundError } from '@/features/public-content/public-errors';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 
 const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
 
@@ -116,6 +118,7 @@ function DetailIcon({
 function ServiceHero({ editorial, service }: { editorial: boolean; service: ServiceDetail }) {
   const navigate = useNavigate();
   const { language } = usePublicLanguage();
+  const detailCopy = publicUiCopy(language).serviceDetail;
   const guideCopy = service.detailPresentation === 'JOURNEY'
     ? language === 'km'
       ? { eyebrow: 'ព័ត៌មានអំពីការព្យាបាល', body: 'ស្វែងយល់ពីដំណើរការព្យាបាល មួយជំហានម្តងៗ។' }
@@ -125,7 +128,16 @@ function ServiceHero({ editorial, service }: { editorial: boolean; service: Serv
       : { eyebrow: 'Service guide', body: 'Explore care options that fit your needs.' };
 
   return (
-    <section className="border-b border-[#e7eff3] bg-[#f7fafc] pb-12 pt-12 sm:pb-14 sm:pt-14">
+    <section className="border-b border-[#e7eff3] bg-[#f7fafc] pb-12 pt-10 sm:pb-14 sm:pt-12">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <Link
+          className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#3695B9] transition hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+          to="/services"
+        >
+          <span aria-hidden="true">←</span>
+          <span>{detailCopy.backToServices}</span>
+        </Link>
+      </div>
       <div className={`mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:gap-12 lg:px-8 ${editorial ? 'lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end' : 'lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center'}`}>
         <div className={editorial ? 'max-w-[760px]' : ''}>
           <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{service.hero.eyebrow}</p>
@@ -396,7 +408,11 @@ function CareMenu({ family, service }: { family?: boolean; service: ServiceDetai
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {service.detailSections.map((section, index) => (
             <article className={`overflow-hidden rounded-2xl border ${family ? 'border-[#d6ebe4] bg-white' : 'border-[#dcebf0] bg-[#fbfdfe]'} shadow-[0_5px_18px_rgba(15,61,84,0.05)]`} key={`${section.heading}-${index}`}>
-              {section.imageUrl ? <CmsImage alt={section.imageAlt} className="h-40 w-full object-cover" fallbackSrc="/assets/landing/service-general.png" presentation={section.imagePresentation} src={section.imageUrl} /> : null}
+              {section.imageUrl ? (
+                <div className="h-40 w-full overflow-hidden">
+                  <CmsImage alt={section.imageAlt} className="h-full w-full object-cover" fallbackSrc="/assets/landing/service-general.png" presentation={section.imagePresentation} src={section.imageUrl} />
+                </div>
+              ) : null}
               <div className="p-5 sm:p-6"><span className={`grid size-8 place-items-center rounded-full text-[12px] font-extrabold ${family ? 'bg-[#e2f4ed] text-[#187a65]' : 'bg-[#e8f5f9] text-[#1682a4]'}`}>{String(index + 1).padStart(2, '0')}</span>{section.heading ? <h3 className="mt-4 text-[19px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div>
             </article>
           ))}
@@ -447,7 +463,11 @@ function OtherServiceCard({ service }: { service: LandingService }) {
   return (
     <Card className="overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.05)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:h-[326px]">
       <div className={`flex min-h-[192px] h-full flex-row ${hasImage ? 'sm:flex-col' : ''}`}>
-        {hasImage ? <CmsImage alt={service.imageAlt || service.name} className="h-[192px] w-[42%] shrink-0 bg-[#eaf2f6] object-cover sm:h-[188px] sm:w-full" fallbackSrc="/assets/landing/service-general.png" presentation={service.imagePresentation} src={service.imageUrl} /> : null}
+        {hasImage ? (
+          <div className="h-[192px] w-[42%] shrink-0 overflow-hidden bg-[#eaf2f6] sm:h-[188px] sm:w-full">
+            <CmsImage alt={service.imageAlt || service.name} className="h-full w-full object-cover" fallbackSrc="/assets/landing/service-general.png" presentation={service.imagePresentation} src={service.imageUrl} />
+          </div>
+        ) : null}
         <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
           <div>
             <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{service.name}</h3>
@@ -455,7 +475,7 @@ function OtherServiceCard({ service }: { service: LandingService }) {
           </div>
           <Link
             className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#3695B9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
-            to={`/services/${serviceSlug(service.name)}`}
+            to={`/services/${service.slug ?? serviceSlug(service.name)}`}
           >
             {detailCopy.viewService}
             <ArrowIcon />
@@ -682,10 +702,16 @@ function ServiceDetailError({ onRetry }: { onRetry: () => void }) {
 
 export function ServiceDetailPage() {
   const { serviceSlug: serviceSlugParam } = useParams();
-  const { data, isError, isLoading, refetch } = useServiceDetailPageQuery(serviceSlugParam);
+  const { data, error, isError, isLoading, refetch } = useServiceDetailPageQuery(serviceSlugParam);
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.service?.name ?? (language === 'km' ? 'សេវាកម្ម' : 'Service'));
 
   if (isLoading) {
     return <ServiceDetailSkeleton />;
+  }
+
+  if (isError && isPublicNotFoundError(error)) {
+    return <ServiceDetailEmpty />;
   }
 
   if (isError) {

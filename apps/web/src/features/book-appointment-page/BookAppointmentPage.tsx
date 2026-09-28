@@ -9,6 +9,7 @@ import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { BookAppointmentPageContent } from '@/features/landing-page/types';
 import { useBookAppointmentPageQuery } from './use-book-appointment-page';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 import { ApiClientError } from '@/lib/api';
 import { env } from '@/config/env';
 import { createPublicAppointment } from '@/services/public-content';
@@ -34,28 +35,31 @@ function createIdempotencyKey() {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-function validatePatientName(value: string): string | undefined {
+function validatePatientName(value: string, language: 'en' | 'km' = 'en'): string | undefined {
+  const isKm = language === 'km';
   const trimmed = value.trim();
-  if (!trimmed) return 'Enter your full name.';
-  if (trimmed.length < 2) return 'Full name must be at least 2 characters.';
-  if (trimmed.length > 160) return 'Full name is too long.';
+  if (!trimmed) return isKm ? 'សូមបញ្ចូលឈ្មោះពេញរបស់អ្នក។' : 'Enter your full name.';
+  if (trimmed.length < 2) return isKm ? 'ឈ្មោះពេញត្រូវមានយ៉ាងតិច ២ តួអក្សរ។' : 'Full name must be at least 2 characters.';
+  if (trimmed.length > 160) return isKm ? 'ឈ្មោះពេញវែងពេក។' : 'Full name is too long.';
   return undefined;
 }
 
-function validatePhone(value: string): string | undefined {
+function validatePhone(value: string, language: 'en' | 'km' = 'en'): string | undefined {
+  const isKm = language === 'km';
   const trimmed = value.trim();
-  if (!trimmed) return 'Enter your phone number.';
-  if (!/^[0-9+()\- ]+$/.test(trimmed)) return 'Use only digits, spaces, +, -, and parentheses.';
-  if (trimmed.replace(/\D/g, '').length < 8) return 'Enter a valid phone number.';
-  if (trimmed.length > 32) return 'Phone number is too long.';
+  if (!trimmed) return isKm ? 'សូមបញ្ចូលលេខទូរស័ព្ទរបស់អ្នក។' : 'Enter your phone number.';
+  if (!/^[0-9+()\- ]+$/.test(trimmed)) return isKm ? 'សូមប្រើតែលេខ ដកឃ្លា សញ្ញា +, - និងវង់ក្រចក។' : 'Use only digits, spaces, +, -, and parentheses.';
+  if (trimmed.replace(/\D/g, '').length < 8) return isKm ? 'សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ។' : 'Enter a valid phone number.';
+  if (trimmed.length > 32) return isKm ? 'លេខទូរស័ព្ទវែងពេក។' : 'Phone number is too long.';
   return undefined;
 }
 
-function validateEmail(value: string): string | undefined {
+function validateEmail(value: string, language: 'en' | 'km' = 'en'): string | undefined {
+  const isKm = language === 'km';
   const trimmed = value.trim();
-  if (!trimmed) return 'Enter your email address.';
-  if (trimmed.length > 320) return 'Email address is too long.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return 'Enter a valid email address.';
+  if (!trimmed) return isKm ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែលរបស់អ្នក។' : 'Enter your email address.';
+  if (trimmed.length > 320) return isKm ? 'អាសយដ្ឋានអ៊ីមែលវែងពេក។' : 'Email address is too long.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return isKm ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែលឱ្យបានត្រឹមត្រូវ។' : 'Enter a valid email address.';
   return undefined;
 }
 
@@ -269,21 +273,27 @@ function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] })
   const eyebrow = hero.eyebrow ?? bookingCopy.heroEyebrow;
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
-      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
-      <ResilientImage
-        alt={hero.backgroundImageAlt}
-        className="absolute inset-0 h-full w-full object-cover object-center"
-        fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg"
-        presentation={hero.imagePresentation}
-        src={imageUrl}
-      />
-      <div className="relative z-10 flex items-center py-8 sm:min-h-[250px] sm:py-10">
-        <div className="max-w-[600px]">
-          {eyebrow ? <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p> : null}
-          <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">{hero.title}</h1>
-          <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e]">{hero.subtitle}</p>
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
+          <ResilientImage
+            alt={hero.backgroundImageAlt}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg"
+            presentation={hero.imagePresentation}
+            src={imageUrl}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
+          />
+          <div className="relative z-10 flex items-center py-8 sm:min-h-[250px] sm:py-10">
+            <div className="max-w-[600px]">
+              {eyebrow ? <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p> : null}
+              <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:text-[38px]">{hero.title}</h1>
+              <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)]">{hero.subtitle}</p>
+            </div>
+          </div>
         </div>
-      </div>
       </div>
     </section>
   );
@@ -310,16 +320,70 @@ export function toDateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export interface PhnomPenhDateTime {
+  dateKey: string;
+  day: number;
+  hour: number;
+  minute: number;
+  month: number;
+  year: number;
+}
+
+export function getPhnomPenhDateTime(now: Date = new Date()): PhnomPenhDateTime {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    day: '2-digit',
+    hour: '2-digit',
+    hour12: false,
+    minute: '2-digit',
+    month: '2-digit',
+    timeZone: 'Asia/Phnom_Penh',
+    year: 'numeric',
+  }).formatToParts(now);
+
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value ?? '0');
+
+  const year = getPart('year');
+  const month = getPart('month');
+  const day = getPart('day');
+  const rawHour = getPart('hour');
+  const hour = rawHour === 24 ? 0 : rawHour;
+  const minute = getPart('minute');
+  const dateKey = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+  return { dateKey, day, hour, minute, month, year };
+}
+
+export function isTimeSlotPastForPhnomPenh(
+  slotTime: string,
+  selectedDate?: string,
+  now: Date = new Date(),
+): boolean {
+  if (!selectedDate) return false;
+  const ppNow = getPhnomPenhDateTime(now);
+  if (selectedDate !== ppNow.dateKey) {
+    return selectedDate < ppNow.dateKey;
+  }
+  const [hourStr, minuteStr] = slotTime.split(':');
+  const slotHour = Number(hourStr);
+  const slotMinute = Number(minuteStr ?? '0');
+  if (Number.isNaN(slotHour) || Number.isNaN(slotMinute)) return false;
+  return slotHour * 60 + slotMinute <= ppNow.hour * 60 + ppNow.minute;
+}
+
 export function AppointmentCalendar({
   calendar,
+  now,
   onSelectDate,
   selectedDate,
 }: {
   calendar?: BookAppointmentPageContent['calendar'];
+  now?: Date;
   onSelectDate: (date: string) => void;
   selectedDate: string;
 }) {
   const { language } = usePublicLanguage();
+  const ppNow = getPhnomPenhDateTime(now);
 
   const [viewDate, setViewDate] = useState(() => {
     const initialKey = selectedDate || calendar?.selectedDateKey;
@@ -329,13 +393,11 @@ export function AppointmentCalendar({
         return new Date(parts[0], parts[1] - 1, 1);
       }
     }
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
+    return new Date(ppNow.year, ppNow.month - 1, 1);
   });
 
-  const today = new Date();
-  const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const maxMonthStart = new Date(today.getFullYear() + 1, today.getMonth(), 1);
+  const currentMonthStart = new Date(ppNow.year, ppNow.month - 1, 1);
+  const maxMonthStart = new Date(ppNow.year + 1, ppNow.month - 1, 1);
 
   const canGoPrev = viewDate > currentMonthStart;
   const canGoNext = viewDate < maxMonthStart;
@@ -363,8 +425,6 @@ export function AppointmentCalendar({
   }, [language]);
 
   const calendarDates = useMemo(() => {
-    const now = new Date();
-    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
     const monthStart = new Date(year, month, 1);
@@ -374,7 +434,7 @@ export function AppointmentCalendar({
     return Array.from({ length: 42 }, (_, index) => {
       const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + index);
       const key = toDateKey(date);
-      const isPast = date < todayMidnight;
+      const isPast = key < ppNow.dateKey;
       const isCurrentMonth = date.getMonth() === month;
       return {
         date,
@@ -384,7 +444,7 @@ export function AppointmentCalendar({
         muted: !isCurrentMonth,
       };
     });
-  }, [viewDate]);
+  }, [ppNow.dateKey, viewDate]);
 
   const dateFormatter = { format: (value: Date) => formatFullDate(value, language) };
 
@@ -463,11 +523,15 @@ export function AppointmentCalendar({
 }
 
 export function AvailableTimes({
+  now,
   onSelectTime,
+  selectedDate,
   selectedTime,
   times,
 }: {
+  now?: Date;
   onSelectTime: (time: string) => void;
+  selectedDate?: string;
   selectedTime: string;
   times: string[];
 }) {
@@ -484,7 +548,11 @@ export function AvailableTimes({
       <h3 className="mb-5 text-center text-[15px] font-extrabold leading-6 text-[#005687]">{bookingCopy.availableTime}</h3>
       <div className="space-y-2.5">
         {baseHours.map((hour) => {
-          const isHourActive = selectedHour === hour;
+          const availableMinutes = MINUTE_OPTIONS.filter(
+            (minute) => !isTimeSlotPastForPhnomPenh(`${hour}:${minute}`, selectedDate, now),
+          );
+          const isHourDisabled = availableMinutes.length === 0;
+          const isHourActive = selectedHour === hour && !isHourDisabled;
           const formattedHourLabel = formatDisplayTime(`${hour}:00`);
 
           return (
@@ -493,12 +561,19 @@ export function AvailableTimes({
                 aria-label={`Select ${formattedHourLabel}`}
                 aria-pressed={isHourActive}
                 className={`min-h-12 w-full rounded-lg border text-[14px] font-bold transition sm:min-h-[42px] sm:text-[13px] ${
-                  isHourActive
-                    ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-none'
-                    : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
+                  isHourDisabled
+                    ? 'cursor-not-allowed border-[#edf2f7] bg-[#f8fafc] text-[#cbd5e1] opacity-50'
+                    : isHourActive
+                      ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-none'
+                      : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
                 }`}
+                disabled={isHourDisabled}
                 onClick={() => {
-                  onSelectTime(`${hour}:${selectedMinute || '00'}`);
+                  if (isHourDisabled) return;
+                  const candidateMinute = availableMinutes.includes(selectedMinute)
+                    ? selectedMinute
+                    : (availableMinutes[0] ?? '00');
+                  onSelectTime(`${hour}:${candidateMinute}`);
                 }}
                 type="button"
               >
@@ -516,21 +591,26 @@ export function AvailableTimes({
                   <div className="grid grid-cols-4 gap-1.5">
                     {MINUTE_OPTIONS.map((minute) => {
                       const slotTime = `${hour}:${minute}`;
-                      const isSlotSelected = selectedTime === slotTime;
+                      const isMinuteDisabled = isTimeSlotPastForPhnomPenh(slotTime, selectedDate, now);
+                      const isSlotSelected = selectedTime === slotTime && !isMinuteDisabled;
                       return (
                         <button
                           key={minute}
                           type="button"
                           aria-label={formatDisplayTime(slotTime)}
                           aria-pressed={isSlotSelected}
+                          disabled={isMinuteDisabled}
                           onClick={(e) => {
                             e.stopPropagation();
+                            if (isMinuteDisabled) return;
                             onSelectTime(slotTime);
                           }}
                           className={`h-9 rounded-lg text-[13px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3695b9] ${
-                            isSlotSelected
-                              ? 'bg-[#3695b9] text-white shadow-sm ring-2 ring-[#3695b9]/30'
-                              : 'border border-[#d2e4ec] bg-white text-[#005687] hover:border-[#3695b9] hover:bg-[#eaf4f8] hover:text-[#3695b9]'
+                            isMinuteDisabled
+                              ? 'cursor-not-allowed border border-[#e2e8f0] bg-[#f8fafc] text-[#cbd5e1] opacity-50'
+                              : isSlotSelected
+                                ? 'bg-[#3695b9] text-white shadow-sm ring-2 ring-[#3695b9]/30'
+                                : 'border border-[#d2e4ec] bg-white text-[#005687] hover:border-[#3695b9] hover:bg-[#eaf4f8] hover:text-[#3695b9]'
                           }`}
                         >
                           :{minute}
@@ -583,7 +663,9 @@ function AppointmentForm({
   submissionError: string | null;
   turnstileResetSignal: number;
 }) {
-  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
+  const { language } = usePublicLanguage();
+  const isKm = language === 'km';
+  const bookingCopy = publicUiCopy(language).booking;
   const [patientName, setPatientName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -607,9 +689,9 @@ function AppointmentForm({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextFieldErrors: AppointmentFieldErrors = {
-      email: validateEmail(email),
-      fullName: validatePatientName(patientName),
-      phone: validatePhone(phone),
+      email: validateEmail(email, language),
+      fullName: validatePatientName(patientName, language),
+      phone: validatePhone(phone, language),
     };
 
     if (nextFieldErrors.email || nextFieldErrors.fullName || nextFieldErrors.phone) {
@@ -659,7 +741,7 @@ function AppointmentForm({
           <SectionTitle number="2" title={bookingCopy.chooseDateTime} />
           <div className="mt-5 grid gap-7 lg:grid-cols-[1fr_300px]">
             <AppointmentCalendar calendar={content.calendar} onSelectDate={onSelectDate} selectedDate={selectedDate} />
-            <AvailableTimes onSelectTime={onSelectTime} selectedTime={selectedTime} times={content.times} />
+            <AvailableTimes onSelectTime={onSelectTime} selectedDate={selectedDate} selectedTime={selectedTime} times={content.times} />
           </div>
         </section>
 
@@ -695,7 +777,7 @@ function AppointmentForm({
         {submissionError ? <p className="text-sm font-medium text-[#9d4d18]" role="alert">{submissionError}</p> : null}
         <Button className="min-h-12 w-full rounded-full px-7 text-[14px] font-bold shadow-none sm:min-h-11 sm:w-auto" disabled={isSubmitting} type="submit">
           <AppointmentIcon className="size-[16px]" name="calendar" />
-          {isSubmitting ? 'Sending request…' : content.form.submitLabel}
+          {isSubmitting ? (isKm ? 'កំពុងផ្ញើសំណើ…' : 'Sending request…') : content.form.submitLabel}
         </Button>
       </form>
     </Card>
@@ -727,7 +809,9 @@ function AppointmentSummary({
   selectedServiceName: string;
   selectedTime: string;
 }) {
-  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
+  const { language } = usePublicLanguage();
+  const isKm = language === 'km';
+  const bookingCopy = publicUiCopy(language).booking;
   const hasBranchImage = Boolean(branch.imageUrl);
 
   return (
@@ -735,13 +819,19 @@ function AppointmentSummary({
       <h2 className="text-[18px] font-extrabold leading-6 text-[#005687] sm:text-[20px]">{content.summary.title}</h2>
       <div className="mt-5 rounded-xl bg-[#f2f9fb] p-3.5">
         <div className={`grid gap-4 ${hasBranchImage ? 'grid-cols-[80px_1fr]' : 'grid-cols-1'}`}>
-          {hasBranchImage ? <CmsImage alt={branch.imageAlt || branch.name} className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0] object-cover" presentation={branch.imagePresentation} src={branch.imageUrl} /> : null}
+          {hasBranchImage ? (
+            <div className="h-[80px] w-[80px] overflow-hidden rounded-lg bg-[#e8e8f0]">
+              <CmsImage alt={branch.imageAlt || branch.name} className="h-full w-full object-cover" presentation={branch.imagePresentation} src={branch.imageUrl} />
+            </div>
+          ) : null}
           <div>
             <h3 className="text-[13px] font-bold leading-5 text-[#005687]">{branch.name}</h3>
             <p className="mt-1 text-[12px] font-normal leading-4 text-[#64748b]">{branch.address}</p>
             <a
               className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-[#3695b9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
               href={branch.mapUrl}
+              rel="noopener noreferrer"
+              target="_blank"
             >
               <AppointmentIcon className="size-[13px]" name="location" />
               {branch.mapLabel}
@@ -761,7 +851,7 @@ function AppointmentSummary({
       {content.information.length > 0 ? <div className="mt-5 rounded-xl border border-[#d7e7ef] bg-[#f4fbfd] p-4">
         <h3 className="flex items-center gap-2 text-[13px] font-bold leading-5 text-[#3695b9]">
           <AppointmentIcon className="size-[15px]" name="doctor" />
-          Important Information
+          {isKm ? 'ព័ត៌មានសំខាន់ៗ' : 'Important Information'}
         </h3>
         <ul className="mt-3.5 space-y-3">
           {content.information.map((item) => (
@@ -944,6 +1034,22 @@ export function AppointmentSuccessModal({
   );
 }
 
+export function matchesBookingOption(
+  option: { id?: string; name: string; slug?: string; value?: string },
+  query: string,
+): boolean {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return false;
+  const candidateId = option.id ?? option.value ?? '';
+  if (candidateId && (candidateId === query.trim() || candidateId.toLowerCase() === normalized)) {
+    return true;
+  }
+  if (option.slug && option.slug.toLowerCase() === normalized) {
+    return true;
+  }
+  return option.name.trim().toLowerCase() === normalized;
+}
+
 function BookAppointmentView({ content }: { content: BookAppointmentPageContent }) {
   const { language } = usePublicLanguage();
   const [searchParams] = useSearchParams();
@@ -953,9 +1059,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 
   const initialBranch = useMemo<string>(() => {
     if (requestedBranch) {
-      const match = content.branches.find(
-        (b) => b.id === requestedBranch || b.name.toLowerCase() === requestedBranch.toLowerCase(),
-      );
+      const match = content.branches.find((b) => matchesBookingOption(b, requestedBranch));
       if (match?.id) return match.id;
     }
     return content.branches[0]?.id ?? '';
@@ -963,9 +1067,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 
   const initialService = useMemo<string>(() => {
     if (requestedService) {
-      const match = content.servicesList.find(
-        (s) => s.value === requestedService || s.name.toLowerCase() === requestedService.toLowerCase(),
-      );
+      const match = content.servicesList.find((s) => matchesBookingOption(s, requestedService));
       if (match?.value) return match.value;
     }
     return content.servicesList[0]?.value ?? '';
@@ -973,9 +1075,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 
   const initialDoctor = useMemo<string>(() => {
     if (requestedDoctor) {
-      const match = content.doctors.find(
-        (d) => d.value === requestedDoctor || d.name.toLowerCase() === requestedDoctor.toLowerCase(),
-      );
+      const match = content.doctors.find((d) => matchesBookingOption(d, requestedDoctor));
       if (match?.value) return match.value;
     }
     return content.doctors[0]?.value ?? '';
@@ -984,36 +1084,85 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
   const [selectedBranch, setSelectedBranch] = useState<string>(initialBranch);
   const [selectedService, setSelectedService] = useState<string>(initialService);
   const [selectedDoctor, setSelectedDoctor] = useState<string>(initialDoctor);
+  const appliedQueryRef = useRef({
+    branch: requestedBranch,
+    doctor: requestedDoctor,
+    service: requestedService,
+  });
 
   useEffect(() => {
-    if (requestedBranch) {
-      const match = content.branches.find(
-        (b) => b.id === requestedBranch || b.name.toLowerCase() === requestedBranch.toLowerCase(),
-      );
-      if (match?.id) setSelectedBranch(match.id);
+    const queryChanged = requestedBranch !== appliedQueryRef.current.branch;
+    const hasValidSelection = Boolean(selectedBranch && content.branches.some((b) => b.id === selectedBranch));
+    if (queryChanged || !hasValidSelection) {
+      appliedQueryRef.current.branch = requestedBranch;
+      if (requestedBranch) {
+        const match = content.branches.find((b) => matchesBookingOption(b, requestedBranch));
+        if (match?.id) {
+          setSelectedBranch(match.id);
+          return;
+        }
+      }
+      if (!hasValidSelection && content.branches[0]?.id) {
+        setSelectedBranch(content.branches[0].id);
+      }
     }
-  }, [content.branches, requestedBranch]);
+  }, [content.branches, requestedBranch, selectedBranch]);
 
   useEffect(() => {
-    if (requestedService) {
-      const match = content.servicesList.find(
-        (s) => s.value === requestedService || s.name.toLowerCase() === requestedService.toLowerCase(),
-      );
-      if (match?.value) setSelectedService(match.value);
+    const queryChanged = requestedService !== appliedQueryRef.current.service;
+    const hasValidSelection = Boolean(selectedService && content.servicesList.some((s) => s.value === selectedService));
+    if (queryChanged || !hasValidSelection) {
+      appliedQueryRef.current.service = requestedService;
+      if (requestedService) {
+        const match = content.servicesList.find((s) => matchesBookingOption(s, requestedService));
+        if (match?.value) {
+          setSelectedService(match.value);
+          return;
+        }
+      }
+      if (!hasValidSelection && content.servicesList[0]?.value) {
+        setSelectedService(content.servicesList[0].value);
+      }
     }
-  }, [content.servicesList, requestedService]);
+  }, [content.servicesList, requestedService, selectedService]);
 
   useEffect(() => {
-    if (requestedDoctor) {
-      const match = content.doctors.find(
-        (d) => d.value === requestedDoctor || d.name.toLowerCase() === requestedDoctor.toLowerCase(),
-      );
-      if (match?.value) setSelectedDoctor(match.value);
+    const queryChanged = requestedDoctor !== appliedQueryRef.current.doctor;
+    const hasValidSelection = content.doctors.some((d) => d.value === selectedDoctor);
+    if (queryChanged || !hasValidSelection) {
+      appliedQueryRef.current.doctor = requestedDoctor;
+      if (requestedDoctor) {
+        const match = content.doctors.find((d) => matchesBookingOption(d, requestedDoctor));
+        if (match?.value) {
+          setSelectedDoctor(match.value);
+          return;
+        }
+      }
+      if (!hasValidSelection) {
+        setSelectedDoctor(content.doctors[0]?.value ?? '');
+      }
     }
-  }, [content.doctors, requestedDoctor]);
+  }, [content.doctors, requestedDoctor, selectedDoctor]);
 
   const [selectedDate, setSelectedDate] = useState(content.calendar.selectedDateKey);
   const [selectedTime, setSelectedTime] = useState(content.times[2] ?? content.times[0] ?? '10:00');
+
+  useEffect(() => {
+    if (!isTimeSlotPastForPhnomPenh(selectedTime, selectedDate)) {
+      return;
+    }
+    const baseTimes = content.times && content.times.length > 0 ? content.times : DEFAULT_HOURS;
+    const baseHours = Array.from(new Set(baseTimes.map((t) => t.split(':')[0] ?? t)));
+    for (const hour of baseHours) {
+      for (const minute of MINUTE_OPTIONS) {
+        const candidate = `${hour}:${minute}`;
+        if (!isTimeSlotPastForPhnomPenh(candidate, selectedDate)) {
+          setSelectedTime(candidate);
+          return;
+        }
+      }
+    }
+  }, [content.times, selectedDate, selectedTime]);
   const [formKey, setFormKey] = useState(0);
   const idempotencyKey = useRef(createIdempotencyKey());
   const [acknowledgement, setAcknowledgement] = useState<{ message: string; reference: string; status: string } | null>(null);
@@ -1046,9 +1195,14 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
     return <BookAppointmentEmpty />;
   }
 
+  const isKm = language === 'km';
   const submit = (values: { email: string; notes: string; patientName: string; phone: string }) => {
     if (env.turnstileSiteKey && !turnstileToken) {
-      setTurnstileError('Please complete the verification challenge before sending your request.');
+      setTurnstileError(
+        isKm
+          ? 'សូមបំពេញការផ្ទៀងផ្ទាត់សុវត្ថិភាព មុននឹងផ្ញើសំណើរបស់អ្នក។'
+          : 'Please complete the verification challenge before sending your request.',
+      );
       return;
     }
     setTurnstileError(null);
@@ -1085,7 +1239,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 
   const requestError = submitMutation.error instanceof ApiClientError
     ? submitMutation.error.status === 429
-      ? 'Too many requests. Please wait a moment and try again.'
+      ? (isKm ? 'មានសំណើច្រើនពេក។ សូមរង់ចាំបន្តិច រួចព្យាយាមម្ដងទៀត។' : 'Too many requests. Please wait a moment and try again.')
       : submitMutation.error.message
     : null;
   const submissionError = turnstileError ?? requestError;
@@ -1262,6 +1416,8 @@ function hasBookAppointmentContent(content: BookAppointmentPageContent | undefin
 
 export function BookAppointmentPage() {
   const { data, isError, isLoading, refetch } = useBookAppointmentPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'ស្នើសុំការណាត់ជួប' : 'Book Appointment'));
 
   if (isLoading) {
     return <BookAppointmentSkeleton />;

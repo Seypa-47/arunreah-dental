@@ -8,6 +8,8 @@ import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { DoctorDetailContent, LandingDoctor } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { isPublicNotFoundError } from '@/features/public-content/public-errors';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useDoctorDetailPageQuery } from './use-doctor-detail-page';
 
@@ -31,6 +33,7 @@ function EducationIcon({ index }: { index: number }) {
 function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
   const navigate = useNavigate();
   const { language } = usePublicLanguage();
+  const detailCopy = publicUiCopy(language).doctorDetail;
   const appointmentLabel = language === 'km' ? 'ស្នើសុំការណាត់ជួប' : (doctor.bookingLabel ?? 'Book Appointment');
   const statLabels = language === 'km'
     ? { 'Patient Satisfaction': 'ការពេញចិត្តអ្នកជំងឺ', 'Successful Procedures': 'ករណីព្យាបាល', 'Years Experience': 'ឆ្នាំបទពិសោធន៍' }
@@ -38,6 +41,15 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
 
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <Link
+          className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#3695B9] transition hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+          to="/doctors"
+        >
+          <span aria-hidden="true">←</span>
+          <span>{detailCopy.backToDoctors}</span>
+        </Link>
+      </div>
       <div className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 sm:px-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-center lg:gap-10 lg:px-8">
         <div className="overflow-hidden rounded-xl border border-[#e2edf1] bg-[#edf5f8] shadow-[0_2px_8px_rgba(15,23,42,0.05)]">
           <ResilientImage
@@ -125,7 +137,11 @@ function OtherSpecialistCard({ doctor }: { doctor: LandingDoctor }) {
         className={`flex min-h-[156px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] ${hasImage ? 'sm:block' : 'sm:flex'}`}
         to={doctor.detail.profileHref}
       >
-        {hasImage ? <CmsImage alt={doctor.imageAlt || doctor.name} className="h-[156px] w-[40%] shrink-0 bg-[#edf5f8] object-cover sm:h-[210px] sm:w-full" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} /> : null}
+        {hasImage ? (
+          <div className="h-[156px] w-[40%] shrink-0 overflow-hidden bg-[#edf5f8] sm:h-[210px] sm:w-full">
+            <CmsImage alt={doctor.imageAlt || doctor.name} className="h-full w-full object-cover" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} />
+          </div>
+        ) : null}
         <div className="flex min-w-0 flex-1 flex-col justify-center bg-white p-4">
           <h3 className="text-[14px] font-semibold leading-5 text-[#005687]">{doctor.name}</h3>
           <p className="mt-1 text-[13px] font-medium leading-5 text-[#3695B9]">{doctor.focus ?? doctor.specialty}</p>
@@ -226,10 +242,6 @@ function OtherSpecialists({ doctors }: { doctors: LandingDoctor[] }) {
             <p className="mt-1 text-[14px] font-normal leading-5 text-[#64748b]">
               {copy.description}
             </p>
-          </div>
-          <div className="hidden gap-2 sm:flex" aria-hidden="true">
-            <span className="grid size-8 place-items-center rounded-full border border-[#3695B9] text-[#3695B9]">&lsaquo;</span>
-            <span className="grid size-8 place-items-center rounded-full bg-[#3695B9] text-white">&rsaquo;</span>
           </div>
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -393,10 +405,16 @@ function DoctorDetailError({ onRetry }: { onRetry: () => void }) {
 
 export function DoctorDetailPage() {
   const { doctorSlug } = useParams();
-  const { data, isError, isLoading, refetch } = useDoctorDetailPageQuery(doctorSlug);
+  const { data, error, isError, isLoading, refetch } = useDoctorDetailPageQuery(doctorSlug);
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.doctor?.name ?? (language === 'km' ? 'ទន្តបណ្ឌិត' : 'Doctor'));
 
   if (isLoading) {
     return <DoctorDetailSkeleton />;
+  }
+
+  if (isError && isPublicNotFoundError(error)) {
+    return <DoctorDetailEmpty />;
   }
 
   if (isError) {

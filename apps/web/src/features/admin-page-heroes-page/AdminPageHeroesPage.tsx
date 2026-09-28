@@ -152,8 +152,8 @@ export const HERO_PAGES: HeroPageConfig[] = [
   },
   {
     aspectRatio: 'aspect-[21/9]',
-    defaultEyebrowEn: '',
-    defaultEyebrowKm: '',
+    defaultEyebrowEn: 'Appointment request',
+    defaultEyebrowKm: 'ស្នើសុំការណាត់ជួប',
     defaultImage: '/assets/landing/figma-branches/image5_183_4173.jpg',
     defaultSubtitleEn: 'Send a preferred appointment request and our clinic will review it.',
     defaultSubtitleKm: 'ផ្ញើសំណើណាត់ជួបដែលអ្នកពេញចិត្ត ហើយគ្លីនិករបស់យើងនឹងពិនិត្យមើល។',
@@ -354,12 +354,8 @@ export function AdminPageHeroesPage() {
       : form.titleEn || activePage.defaultTitleEn;
   const previewSubtitle =
     previewLanguage === 'km'
-      ? form.bodyKm ||
-        (activePage.id === 'branches' ? primaryPublicBranch?.heroSupportingTextKm : undefined) ||
-        activePage.defaultSubtitleKm
-      : form.bodyEn ||
-        (activePage.id === 'branches' ? primaryPublicBranch?.heroSupportingTextEn : undefined) ||
-        activePage.defaultSubtitleEn;
+      ? form.bodyKm || activePage.defaultSubtitleKm
+      : form.bodyEn || activePage.defaultSubtitleEn;
   const isPublishedHero = existingRecord?.status === 'PUBLISHED';
   const previewShowsImage = heroPreviewShowsImage(activePage, form.imageKey);
   const contact = contactQuery.data?.contact;
@@ -625,69 +621,85 @@ export function AdminPageHeroesPage() {
                         src={previewImage}
                         style={{
                           objectPosition: `${form.imagePresentation.positionX}% ${form.imagePresentation.positionY}%`,
-                          transform: `scale(${form.imagePresentation.zoom})`,
+                          transform:
+                            form.imagePresentation.zoom > 1
+                              ? `scale(${form.imagePresentation.zoom})`
+                              : undefined,
+                          transformOrigin: `${form.imagePresentation.positionX}% ${form.imagePresentation.positionY}%`,
                         }}
                       />
                     ) : null}
                     {activePage.placement === 'CONTACT_HERO' ? (
-                      <div className="relative z-10 grid min-h-[220px] items-center gap-4 p-4 sm:min-h-[280px] sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-6 sm:p-6">
-                        <div className="max-w-[360px]">
-                          {previewEyebrow ? (
-                            <p className="text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
-                              {previewEyebrow}
-                            </p>
-                          ) : null}
-                          <h3 className="mt-1 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-2 sm:text-[24px]">
-                            {previewTitle}
-                          </h3>
-                          {previewSubtitle ? (
-                            <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#0e3b5e] sm:text-[13px]">
-                              {previewSubtitle}
-                            </p>
-                          ) : null}
-                        </div>
-                        <div className="hidden rounded-xl border border-[#d9e9ee] bg-white/95 p-3.5 shadow-[0_4px_16px_rgba(0,86,135,0.08)] backdrop-blur-md sm:block">
-                          {contactQuery.isLoading ? (
-                            <div className="h-24 animate-pulse rounded-lg bg-[#eef8fb]" />
-                          ) : (
-                            <div className="space-y-2.5">
-                              {contactPreviewItems.map((item) => (
-                                <div className="flex items-center gap-2.5" key={item.label}>
-                                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9]">
-                                    <ContactIcon className="size-3.5" name={item.icon} />
-                                  </span>
-                                  <div className="min-w-0">
-                                    <p className="text-[10px] font-bold text-[#3695b9]">
-                                      {item.label}
-                                    </p>
-                                    <p className="whitespace-pre-line text-[11px] font-extrabold text-[#005687]">
-                                      {item.value}
-                                    </p>
+                      <>
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
+                        />
+                        <div className="relative z-10 grid min-h-[220px] items-center gap-4 p-4 sm:min-h-[280px] sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-6 sm:p-6">
+                          <div className="max-w-[360px]">
+                            {previewEyebrow ? (
+                              <p className="text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
+                                {previewEyebrow}
+                              </p>
+                            ) : null}
+                            <h3 className="mt-1 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-2 sm:text-[24px]">
+                              {previewTitle}
+                            </h3>
+                            {previewSubtitle ? (
+                              <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)] sm:text-[13px]">
+                                {previewSubtitle}
+                              </p>
+                            ) : null}
+                          </div>
+                          <div className="hidden rounded-xl border border-[#d9e9ee] bg-white/95 p-3.5 shadow-[0_4px_16px_rgba(0,86,135,0.08)] backdrop-blur-md sm:block">
+                            {contactQuery.isLoading ? (
+                              <div className="h-24 animate-pulse rounded-lg bg-[#eef8fb]" />
+                            ) : (
+                              <div className="space-y-2.5">
+                                {contactPreviewItems.map((item) => (
+                                  <div className="flex items-center gap-2.5" key={item.label}>
+                                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9]">
+                                      <ContactIcon className="size-3.5" name={item.icon} />
+                                    </span>
+                                    <div className="min-w-0">
+                                      <p className="text-[10px] font-bold text-[#3695b9]">
+                                        {item.label}
+                                      </p>
+                                      <p className="whitespace-pre-line text-[11px] font-extrabold text-[#005687]">
+                                        {item.value}
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      </>
                     ) : activePage.previewLayout === 'light' ? (
-                      <div className="relative z-10 flex min-h-[220px] items-center p-4 sm:min-h-[280px] sm:p-6">
-                        <div className="max-w-[420px]">
-                          {previewEyebrow ? (
-                            <p className="text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
-                              {previewEyebrow}
-                            </p>
-                          ) : null}
-                          <h3 className="mt-1 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-2 sm:text-[24px]">
-                            {previewTitle}
-                          </h3>
-                          {previewSubtitle ? (
-                            <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#0e3b5e] sm:text-[13px]">
-                              {previewSubtitle}
-                            </p>
-                          ) : null}
+                      <>
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
+                        />
+                        <div className="relative z-10 flex min-h-[220px] items-center p-4 sm:min-h-[280px] sm:p-6">
+                          <div className="max-w-[420px]">
+                            {previewEyebrow ? (
+                              <p className="text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
+                                {previewEyebrow}
+                              </p>
+                            ) : null}
+                            <h3 className="mt-1 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-2 sm:text-[24px]">
+                              {previewTitle}
+                            </h3>
+                            {previewSubtitle ? (
+                              <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)] sm:text-[13px]">
+                                {previewSubtitle}
+                              </p>
+                            ) : null}
+                          </div>
                         </div>
-                      </div>
+                      </>
                     ) : activePage.previewLayout === 'doctors-overlay' ? (
                       <>
                         <div

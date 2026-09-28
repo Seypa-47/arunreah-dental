@@ -10,6 +10,7 @@ import type { AboutDoctorProfile, AboutPageContent } from '@/features/landing-pa
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 import { useAboutPageQuery } from './use-about-page';
 import { getPublicMediaUrl } from '@/services/media';
 
@@ -316,15 +317,19 @@ function ClinicGallery({
                     }`}
                     key={`${branch.branchSlug}-${image.imageUrl}-${index}`}
                   >
-                    <ResilientImage
-                      alt={image.imageAlt || branch.branchName}
-                      className={`w-full object-cover ${
+                    <div
+                      className={`w-full overflow-hidden ${
                         index === 0 ? 'h-[230px] sm:h-[300px]' : 'h-[190px] sm:h-[300px]'
                       }`}
-                      fallbackSrc="/assets/landing/branches-clinic.png"
-                      presentation={image.imagePresentation}
-                      src={image.imageUrl}
-                    />
+                    >
+                      <ResilientImage
+                        alt={image.imageAlt || branch.branchName}
+                        className="h-full w-full object-cover"
+                        fallbackSrc="/assets/landing/branches-clinic.png"
+                        presentation={image.imagePresentation}
+                        src={image.imageUrl}
+                      />
+                    </div>
                     {image.imageAlt ? (
                       <figcaption className="ui-caption px-4 pb-3 pt-2 text-[13px] font-semibold text-[#073f60]">
                         {image.imageAlt}
@@ -343,7 +348,7 @@ function ClinicGallery({
 
 function ProfessionalDevelopment({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['professionalMedia']> }) {
   if (items.length === 0) return null;
-  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <CmsImage alt={item.title || editorial.professionalTitle} className="h-[240px] w-full sm:h-[280px]" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
+  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <div className="h-[240px] w-full overflow-hidden sm:h-[280px]"><CmsImage alt={item.title || editorial.professionalTitle} className="h-full w-full" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /></div> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
 }
 
 function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['timeline']> }) {
@@ -587,6 +592,8 @@ function hasAboutContent(content: AboutPageContent | undefined): content is Abou
 
 export function AboutPage() {
   const { data, isError, isLoading, refetch } = useAboutPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'អំពីយើង' : 'About Us'));
 
   if (isLoading) {
     return <AboutPageSkeleton />;

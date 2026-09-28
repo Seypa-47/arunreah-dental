@@ -6,6 +6,7 @@ export type LandingNavigationItem = {
 export type LandingHero = {
   address: string;
   appointmentLabel: string;
+  branchSlug?: string;
   callLabel: string;
   imageAlt: string;
   imageUrl: string;
@@ -65,7 +66,8 @@ export type LandingDoctor = {
 };
 
 export type LandingBranch = {
-  hours: string;
+  hoursDays: string;
+  hoursTime: string;
   imageAlt: string;
   imageUrl: string;
   imagePresentation?: import('@arunreah/shared').ImagePresentation;
@@ -459,6 +461,7 @@ export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'f
   branches: {
     address: string;
     id?: string;
+    slug?: string;
     imageAlt: string;
     imagePresentation?: import('@arunreah/shared').ImagePresentation;
     imageUrl: string;
@@ -480,6 +483,7 @@ export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'f
   };
   doctors: {
     name: string;
+    slug?: string;
     value: string;
   }[];
   form: {
@@ -514,6 +518,7 @@ export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'f
   information: string[];
   servicesList: {
     name: string;
+    slug?: string;
     value: string;
   }[];
   summary: {

@@ -680,14 +680,16 @@ const landingPageContent: LandingPageContent = {
   doctors: doctorProfiles,
   branches: [
     {
-      hours: 'Mon - Sun, 8:00 AM - 7:00 PM',
+      hoursDays: 'Mon - Sun',
+      hoursTime: '8:00 AM - 7:00 PM',
       imageAlt: 'Bright Arunreah Dental Clinic reception interior',
       imageUrl: '/assets/landing/branch-card-clinic.png',
       name: 'Arunreah Dental Clinic-TTP',
       phones: ['098 701 302', '012 964 200'],
     },
     {
-      hours: 'Mon - Sun, 8:00 AM - 7:00 PM',
+      hoursDays: 'Mon - Sun',
+      hoursTime: '8:00 AM - 7:00 PM',
       imageAlt: 'Modern dental clinic reception area',
       imageUrl: '/assets/landing/branch-card-clinic.png',
       name: 'Arunreah Dental Clinic-Psa Chas',

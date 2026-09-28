@@ -17,10 +17,15 @@ import { usePublicLanguage } from '@/features/public-content/public-language-pro
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { formatShortDate } from '@/features/public-content/public-dates';
 import { CmsImage } from '@/components/layout/public-ui';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 
 const asset = (name: string) => `/assets/landing/${name}`;
 const serviceId = (name: string) => `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
 const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
+
+export function branchBookingHref(branchSlug?: string) {
+  return branchSlug ? `/book-appointment?branch=${encodeURIComponent(branchSlug)}` : '/book-appointment';
+}
 
 function AssetIcon({ alt = '', className, name }: { alt?: string; className: string; name: string }) {
   return <img alt={alt} aria-hidden={alt ? undefined : true} className={className} src={asset(name)} />;
@@ -111,7 +116,7 @@ function SectionHeader({
   );
 }
 
-function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
+function HeroSlide({ hero, priority = false }: { hero: LandingPageContent['heroes'][number]; priority?: boolean }) {
   const navigate = useNavigate();
   const imageUrl = hero.imageUrl || '/assets/landing/hero-clinic.png';
 
@@ -124,7 +129,8 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
               alt={hero.imageAlt || 'Arunreah Dental Clinic'}
               className="h-full w-full object-cover"
               fallbackSrc="/assets/landing/hero-clinic.png"
-              loading="eager"
+              fetchPriority={priority ? 'high' : 'auto'}
+              loading={priority ? 'eager' : 'lazy'}
               presentation={hero.imagePresentation}
               src={imageUrl}
             />
@@ -143,7 +149,9 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
               <Button
                 className="min-h-11 w-full max-w-[224px] rounded-lg bg-[#3695B9] px-5 text-[15px] font-bold text-white shadow-none hover:bg-[#2c84a5]"
                 icon={<AssetIcon className="h-4 w-[14px]" name="hero-calendar.svg" />}
-                onClick={() => navigate('/book-appointment')}
+                onClick={() => {
+                  navigate(branchBookingHref(hero.branchSlug));
+                }}
               >
                 {hero.appointmentLabel}
               </Button>
@@ -170,7 +178,7 @@ function HeroSlide({ hero }: { hero: LandingPageContent['heroes'][number] }) {
   );
 }
 
-function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
+export function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
   const copy = publicUiCopy(usePublicLanguage().language).landing;
   const carouselRef = useRef<HTMLDivElement>(null);
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
@@ -213,8 +221,8 @@ function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }) {
         ref={carouselRef}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {heroes.map((hero) => (
-          <HeroSlide hero={hero} key={hero.address} />
+        {heroes.map((hero, index) => (
+          <HeroSlide hero={hero} key={hero.address} priority={index === 0} />
         ))}
       </div>
       {heroes.length > 1 ? (
@@ -550,7 +558,11 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                   }}
                   to={`/services/${slug}`}
                 >
-                  {hasImage ? <CmsImage alt={service.imageAlt || service.name} className="pointer-events-none h-[182px] w-full bg-[#eaf2f6] object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[196px]" draggable={false} fallbackSrc="/assets/landing/service-general.png" presentation={service.imagePresentation} src={service.imageUrl} /> : null}
+                  {hasImage ? (
+                    <div className="h-[182px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[196px]">
+                      <CmsImage alt={service.imageAlt || service.name} className="pointer-events-none h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" draggable={false} fallbackSrc="/assets/landing/service-general.png" presentation={service.imagePresentation} src={service.imageUrl} />
+                    </div>
+                  ) : null}
                   <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'h-[136px] sm:h-[138px]' : 'min-h-[176px]'}`}>
                     <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{service.name}</h3>
                     <p className="mt-2 line-clamp-2 text-[13px] font-medium leading-[19px] text-[#607486]">
@@ -655,7 +667,11 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
                 }}
                 to={doctor.detail?.profileHref || '/doctors'}
               >
-                  {hasImage ? <CmsImage alt={doctor.imageAlt || doctor.name} className="pointer-events-none h-[226px] w-full bg-[#eaf2f6] object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[242px]" draggable={false} fallbackSrc="/assets/landing/doctor-chea-kimly.png" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} /> : null}
+                {hasImage ? (
+                  <div className="h-[226px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[242px]">
+                    <CmsImage alt={doctor.imageAlt || doctor.name} className="pointer-events-none h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" draggable={false} fallbackSrc="/assets/landing/doctor-chea-kimly.png" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} />
+                  </div>
+                ) : null}
                 <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'h-[100px]' : 'min-h-[176px]'}`}>
                   <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{doctor.name}</h3>
                   <p className="mt-1.5 text-[13px] font-semibold leading-4 text-[#168aad]">{doctor.specialty}</p>
@@ -676,7 +692,6 @@ export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch
       <SectionHeader actionHref="/branches" actionLabel={copy.seeAllBranches} eyebrow={eyebrow} title={copy.branchesTitle} />
       <div className="mx-auto mt-6 grid w-full max-w-[1280px] gap-5 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         {branches.map((branch) => {
-          const [days, time] = branch.hours.split(', ');
           const hasImage = Boolean(branch.imageUrl);
 
           return (
@@ -704,12 +719,16 @@ export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch
                 <p className="mt-3 flex items-start gap-2 text-[12px] leading-4 text-[#607486] sm:mt-4 sm:gap-3 sm:text-[13px] sm:leading-5">
                   <img alt="" aria-hidden="true" className="size-5" src={asset('branch-card-clock.svg')} />
                   <span>
-                    {days}
-                    <span className="block font-semibold text-[#005687]">{time}</span>
+                    {branch.hoursDays}
+                    <span className="block font-semibold text-[#005687]">{branch.hoursTime}</span>
                   </span>
                 </p>
               </div>
-              {hasImage ? <CmsImage alt={branch.imageAlt || branch.name} className="h-full min-h-[212px] w-full bg-[#e5e7eb] object-cover md:min-h-0" fallbackSrc="/assets/landing/branch-card-clinic.png" presentation={branch.imagePresentation} src={branch.imageUrl} /> : null}
+              {hasImage ? (
+                <div className="h-full min-h-[212px] w-full overflow-hidden bg-[#e5e7eb] md:min-h-0">
+                  <CmsImage alt={branch.imageAlt || branch.name} className="h-full w-full object-cover" fallbackSrc="/assets/landing/branch-card-clinic.png" presentation={branch.imagePresentation} src={branch.imageUrl} />
+                </div>
+              ) : null}
             </Card>
           );
         })}
@@ -746,12 +765,20 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
                   className="group block overflow-hidden rounded-xl border border-white/10 bg-white/[0.05] p-2 transition duration-200 hover:bg-white/[0.10] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                   to={`/showcases/${item.slug}`}
                 >
-                  {item.imageUrl ? <CmsImage alt={item.imageAlt || item.title} className="h-[212px] w-full rounded-lg object-cover transition duration-500 group-hover:scale-[1.02]" fallbackSrc="/assets/landing/showcase-family.png" presentation={item.imagePresentation} src={item.imageUrl} /> : null}
+                  {item.imageUrl ? (
+                    <div className="h-[212px] w-full overflow-hidden rounded-lg">
+                      <CmsImage alt={item.imageAlt || item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" fallbackSrc="/assets/landing/showcase-family.png" presentation={item.imagePresentation} src={item.imageUrl} />
+                    </div>
+                  ) : null}
                   <h3 className="px-2 pb-3 pt-4 text-[18px] font-bold leading-6 text-white group-hover:underline">{item.title}</h3>
                 </Link>
               ) : (
                 <>
-                  {item.imageUrl ? <CmsImage alt={item.imageAlt || item.title} className="h-[212px] w-full rounded-lg object-cover" fallbackSrc="/assets/landing/showcase-family.png" presentation={item.imagePresentation} src={item.imageUrl} /> : null}
+                  {item.imageUrl ? (
+                    <div className="h-[212px] w-full overflow-hidden rounded-lg">
+                      <CmsImage alt={item.imageAlt || item.title} className="h-full w-full object-cover" fallbackSrc="/assets/landing/showcase-family.png" presentation={item.imagePresentation} src={item.imageUrl} />
+                    </div>
+                  ) : null}
                   <h3 className="px-2 pb-3 pt-4 text-[18px] font-bold leading-6 text-white">{item.title}</h3>
                 </>
               )}
@@ -919,6 +946,8 @@ function hasLandingContent(content: LandingPageContent | undefined): content is 
 
 export function LandingPage() {
   const { data, isError, isLoading, refetch } = useLandingPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(language === 'km' ? 'ទំព័រដើម' : 'Home');
 
   if (isLoading) {
     return <LandingPageSkeleton />;

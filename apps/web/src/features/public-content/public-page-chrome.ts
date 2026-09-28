@@ -318,7 +318,7 @@ export function publicBranchesChrome(language: 'en' | 'km'): BranchesPageContent
       buttonLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
       eyebrow: '',
       subtitle: isKm ? 'ជ្រើសរើសសាខា និងផ្ញើសំណើណាត់ជួបរបស់អ្នក។' : 'Choose a branch and send an appointment request.',
-      title: isKm ? 'មកកាន់ គ្លីនិកធ្មេញ អារុណរះ' : 'Visit Arunreah Dental Clinic',
+      title: isKm ? 'មកកាន់ គ្លីនិកធ្មេញ អរុណរះ' : 'Visit Arunreah Dental Clinic',
     },
     hero: {
       appointmentLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',

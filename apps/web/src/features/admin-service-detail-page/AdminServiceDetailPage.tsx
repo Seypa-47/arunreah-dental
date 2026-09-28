@@ -771,6 +771,13 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDirty, setIsDirty] = useState(false);
+  const initialSlug =
+    content.service.slug && content.service.slug !== content.service.id
+      ? content.service.slug
+      : content.service.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '') || content.service.id;
   const [service, setServiceState] = useState<EditableService>(() => ({
     ...content.service,
     aboutContent: content.service.saved.aboutBodyEn ?? content.preview.aboutDescription,
@@ -784,7 +791,7 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     bottomCtaButton: 'Book Consultation',
     bottomCtaDescription: 'Schedule a personalized consultation with our experienced dental team today.',
     bottomCtaTitle: `Ready to Restore Your Smile with ${content.service.name}?`,
-    canonicalUrl: `/services/${content.service.id}`,
+    canonicalUrl: `/services/${initialSlug}`,
     duration: '1 - 2 Hours',
     detailSections: content.service.detailSections,
     detailPresentation: content.service.detailPresentation,
@@ -805,7 +812,7 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     recovery: '3 - 6 Months',
     relatedCategory: content.service.category,
     relatedServices: ['Teeth Whitening', 'Routine Cleaning', 'Orthodontics'],
-    slug: content.service.slug || content.service.id,
+    slug: initialSlug,
   }));
   const setService: typeof setServiceState = (value) => {
     setIsDirty(true);
