@@ -68,10 +68,10 @@ function DoctorsHero({
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-[54%] bg-gradient-to-t from-white/70 via-white/36 to-transparent sm:right-auto sm:h-[56%] sm:w-[62%] sm:bg-[radial-gradient(100%_100%_at_0%_100%,rgba(255,255,255,0.64)_0%,rgba(255,255,255,0.38)_44%,rgba(255,255,255,0.12)_72%,transparent_100%)]"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[54%] bg-gradient-to-t from-white/70 via-white/36 to-transparent sm:left-auto sm:right-0 sm:h-[56%] sm:w-[66%] sm:bg-[radial-gradient(95%_100%_at_72%_100%,rgba(255,255,255,0.66)_0%,rgba(255,255,255,0.42)_48%,rgba(255,255,255,0.12)_76%,transparent_100%)]"
           />
-          <div className="relative z-10 flex min-h-[260px] flex-col justify-end p-4 pb-5 sm:min-h-[360px] sm:p-7 sm:pb-7 md:min-h-[420px] lg:min-h-[460px] lg:px-9 lg:pb-8">
-            <div className="max-w-[460px] sm:max-w-[520px]">
+          <div className="relative z-10 flex min-h-[260px] flex-col items-end justify-end p-4 pb-5 sm:min-h-[360px] sm:p-7 sm:pb-7 md:min-h-[420px] lg:min-h-[460px] lg:px-9 lg:pb-8">
+            <div className="w-full max-w-[460px] sm:max-w-[500px]">
               <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
                 {eyebrow}
               </p>
