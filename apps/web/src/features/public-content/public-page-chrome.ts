@@ -290,8 +290,10 @@ export function publicDoctorsChrome(language: 'en' | 'km'): DoctorsPageContent {
     ...publicShell(language),
     doctors: [],
     hero: {
-      description: isKm ? 'ជួបជាមួយក្រុមទន្តបណ្ឌិតឯកទេសរបស់យើង។' : 'Meet our clinic professionals.',
-      title: isKm ? 'ទន្តបណ្ឌិតឯកទេស' : 'Our Specialists',
+      description: isKm
+        ? 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ពីក្រុមទន្តបណ្ឌិតរបស់យើង។'
+        : 'Thoughtful dental care from our experienced clinic team.',
+      title: isKm ? 'ជួបជាមួយក្រុមទន្តបណ្ឌិតអរុណរះ' : 'Meet the Arunreah Dental Team',
     },
   };
 }

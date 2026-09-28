@@ -16,7 +16,7 @@ import { Card } from '@/components/ui/card';
 import { queryKeys } from '@/lib/query-keys';
 import { cmsApi, type AdminPageMediaRecord } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
-import { ContactIcon, renderHeroTitle } from '@/components/layout/public-ui';
+import { ContactIcon } from '@/components/layout/public-ui';
 
 type HeroPreviewLayout = 'doctors-overlay' | 'light' | 'overlay' | 'overlay-or-text';
 
@@ -83,13 +83,13 @@ export const HERO_PAGES: HeroPageConfig[] = [
   },
   {
     aspectRatio: 'aspect-[16/9]',
-    defaultEyebrowEn: 'Our Dental Team',
+    defaultEyebrowEn: 'OUR DENTAL TEAM',
     defaultEyebrowKm: 'ក្រុមទន្តបណ្ឌិតរបស់យើង',
     defaultImage: '/assets/landing/hero-clinic.png',
-    defaultSubtitleEn: 'Meet our clinic professionals committed to exceptional patient care.',
-    defaultSubtitleKm: 'ជួបជាមួយក្រុមទន្តបណ្ឌិតឯកទេសរបស់យើងដែលប្តេជ្ញាផ្តល់ការថែទាំដ៏ល្អបំផុត។',
-    defaultTitleEn: 'Our Specialists',
-    defaultTitleKm: 'ទន្តបណ្ឌិតឯកទេស',
+    defaultSubtitleEn: 'Thoughtful dental care from our experienced clinic team.',
+    defaultSubtitleKm: 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ពីក្រុមទន្តបណ្ឌិតរបស់យើង។',
+    defaultTitleEn: 'Meet the Arunreah Dental Team',
+    defaultTitleKm: 'ជួបជាមួយក្រុមទន្តបណ្ឌិតអរុណរះ',
     icon: 'doctors',
     id: 'doctors',
     name: 'Our Doctors',
@@ -692,28 +692,22 @@ export function AdminPageHeroesPage() {
                       <>
                         <div
                           aria-hidden="true"
-                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/80 via-white/55 to-transparent sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.78)_0%,rgba(255,255,255,0.66)_24%,rgba(255,255,255,0.38)_40%,rgba(255,255,255,0.08)_54%,transparent_66%)]"
+                          className="pointer-events-none absolute inset-x-0 bottom-0 h-[54%] bg-gradient-to-t from-white/70 via-white/36 to-transparent sm:right-auto sm:h-[56%] sm:w-[62%] sm:bg-[radial-gradient(100%_100%_at_0%_100%,rgba(255,255,255,0.64)_0%,rgba(255,255,255,0.38)_44%,rgba(255,255,255,0.12)_72%,transparent_100%)]"
                         />
                         <div className="relative z-10 flex min-h-[220px] flex-col justify-end p-4 sm:min-h-[280px] sm:p-6">
-                          <div className="max-w-[340px] sm:max-w-[420px]">
+                          <div className="max-w-[360px] sm:max-w-[420px]">
                             {previewEyebrow ? (
-                              <div className="flex items-center gap-2">
-                                <span
-                                  aria-hidden="true"
-                                  className="h-[2px] w-5 rounded-full bg-[#0080c8]"
-                                />
-                                <span className="ui-eyebrow text-[10px] font-bold uppercase tracking-[0.18em] text-[#0080c8]">
-                                  {previewEyebrow}
-                                </span>
-                              </div>
+                              <p className="ui-eyebrow text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
+                                {previewEyebrow}
+                              </p>
                             ) : null}
                             <h3
-                              className={`${previewEyebrow ? 'mt-2' : ''} text-[18px] font-black leading-[1.15] tracking-[-0.03em] text-[#073f60] sm:text-[22px]`}
+                              className={`${previewEyebrow ? 'mt-1 sm:mt-1.5' : ''} text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:text-[24px]`}
                             >
-                              {renderHeroTitle(previewTitle, previewLanguage)}
+                              {previewTitle}
                             </h3>
                             {previewSubtitle ? (
-                              <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-[#526477] sm:text-[12px]">
+                              <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)] sm:text-[13px]">
                                 {previewSubtitle}
                               </p>
                             ) : null}

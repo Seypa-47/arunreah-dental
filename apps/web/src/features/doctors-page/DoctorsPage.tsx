@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, ResilientImage, renderHeroTitle } from '@/components/layout/public-ui';
+import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { DoctorsPageContent, LandingDoctor } from '@/features/landing-page/types';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useDoctorsPageQuery } from './use-doctors-page';
@@ -16,6 +16,27 @@ const asset = (name: string) => `/assets/landing/${name}`;
 
 function CalendarIcon() {
   return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
+}
+
+const LEGACY_LONG_DOCTORS_SUBTITLES = new Set([
+  "our dental team brings together experience, continuous learning, and a thoughtful approach to every patient's care.",
+  'our dental team brings together experience, continuous learning, and a thoughtful approach to every patient’s care.',
+  'meet our clinic professionals committed to exceptional patient care.',
+  'ក្រុមទន្តបណ្ឌិតរបស់យើង រួមបញ្ចូលបទពិសោធន៍ ការរៀនសូត្រជាបន្តបន្ទាប់ និងការយកចិត្តទុកដាក់ចំពោះអ្នកជំងឺគ្រប់រូប។',
+  'ជួបជាមួយក្រុមទន្តបណ្ឌិតឯកទេសរបស់យើងដែលប្តេជ្ញាផ្តល់ការថែទាំដ៏ល្អបំផុត។',
+]);
+
+function getConciseDoctorsSubtitle(raw: string | null | undefined, language: 'en' | 'km') {
+  const defaultSubtitle =
+    language === 'km'
+      ? 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ពីក្រុមទន្តបណ្ឌិតរបស់យើង។'
+      : 'Thoughtful dental care from our experienced clinic team.';
+  const trimmed = raw?.trim();
+  if (!trimmed) return defaultSubtitle;
+  if (LEGACY_LONG_DOCTORS_SUBTITLES.has(trimmed.toLowerCase())) {
+    return defaultSubtitle;
+  }
+  return trimmed;
 }
 
 function DoctorsHero({
@@ -30,41 +51,35 @@ function DoctorsHero({
   const imageUrl = heroMedia ? getPublicMediaUrl(heroMedia.imageKey) : null;
   const fallbackImageUrl = '/assets/landing/hero-clinic.png';
   const title = heroMedia?.title ?? hero.title;
-  const description = heroMedia?.body ?? hero.description;
+  const description = getConciseDoctorsSubtitle(heroMedia?.body ?? hero.description, language);
   const eyebrow =
-    heroMedia?.badge || (language === 'km' ? 'ក្រុមទន្តបណ្ឌិតរបស់យើង' : 'Our dental team');
+    heroMedia?.badge || (language === 'km' ? 'ក្រុមទន្តបណ្ឌិតរបស់យើង' : 'OUR DENTAL TEAM');
 
   return (
-    <section className="border-b border-[#dceaf0] bg-[#f7fafc] py-6 sm:py-8 lg:py-10">
+    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="relative min-h-[380px] overflow-hidden rounded-2xl border border-[#dce6ed] bg-[#f8fafc] shadow-[0_4px_24px_rgba(0,0,0,0.03)] sm:min-h-[440px] sm:rounded-[28px] lg:min-h-[480px] lg:rounded-[32px]">
+        <div className="relative min-h-[260px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] sm:min-h-[360px] md:min-h-[420px] lg:min-h-[460px]">
           <ResilientImage
             alt={uiCopy.teamImageAlt}
-            className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.03] saturate-[1.03]"
+            className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.04] saturate-[1.04]"
             fallbackSrc={fallbackImageUrl}
             presentation={heroMedia?.imagePresentation}
             src={imageUrl}
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/80 via-white/55 to-transparent sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.78)_0%,rgba(255,255,255,0.66)_24%,rgba(255,255,255,0.38)_40%,rgba(255,255,255,0.08)_54%,transparent_66%)]"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[54%] bg-gradient-to-t from-white/70 via-white/36 to-transparent sm:right-auto sm:h-[56%] sm:w-[62%] sm:bg-[radial-gradient(100%_100%_at_0%_100%,rgba(255,255,255,0.64)_0%,rgba(255,255,255,0.38)_44%,rgba(255,255,255,0.12)_72%,transparent_100%)]"
           />
-          <div className="relative z-10 flex min-h-[380px] flex-col justify-end p-6 sm:min-h-[440px] sm:p-8 lg:min-h-[480px] lg:p-10">
-            <div className="max-w-[460px] sm:max-w-[500px]">
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                <span
-                  aria-hidden="true"
-                  className="h-[2.5px] w-6 rounded-full bg-[#0080c8] sm:w-8"
-                />
-                <span className="ui-eyebrow text-[11px] font-bold uppercase tracking-[0.2em] text-[#0080c8] sm:text-[12px]">
-                  {eyebrow}
-                </span>
-              </div>
-              <h1 className="mt-2.5 text-[26px] font-black leading-[1.15] tracking-[-0.035em] text-[#073f60] sm:mt-3 sm:text-[34px] lg:text-[40px]">
-                {renderHeroTitle(title, language)}
+          <div className="relative z-10 flex min-h-[260px] flex-col justify-end p-4 pb-5 sm:min-h-[360px] sm:p-7 sm:pb-7 md:min-h-[420px] lg:min-h-[460px] lg:px-9 lg:pb-8">
+            <div className="max-w-[460px] sm:max-w-[520px]">
+              <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+                {eyebrow}
+              </p>
+              <h1 className="mt-1.5 text-[24px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-2 sm:text-[32px] lg:text-[36px]">
+                {title}
               </h1>
               {description ? (
-                <p className="mt-2 max-w-[440px] text-[13px] font-medium leading-relaxed text-[#526477] sm:mt-2.5 sm:text-[14px] lg:text-[15px]">
+                <p className="mt-2 max-w-[460px] text-[14px] font-medium leading-6 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)] sm:mt-2.5 sm:text-[16px] sm:leading-7">
                   {description}
                 </p>
               ) : null}
