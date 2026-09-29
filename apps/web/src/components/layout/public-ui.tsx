@@ -461,11 +461,11 @@ export function PublicPageHero({
           <div className={`relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 ${info && info.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8' : ''}`}>
             <div className="max-w-[620px]">
               {eyebrow ? (
-                <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#086c91] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[12px]">
+                <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
                   {eyebrow}
                 </p>
               ) : null}
-              <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[38px]">
+              <h1 className="mt-2.5 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[38px]">
                 {title}
               </h1>
               {subtitle ? (

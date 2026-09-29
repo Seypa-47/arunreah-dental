@@ -78,10 +78,12 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
           />
           <div className="relative z-10 flex items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
             <div className="max-w-[560px] py-7">
-              <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#086c91] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[12px]">
-                {hero.eyebrow}
-              </p>
-              <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[38px]">
+              {hero.eyebrow ? (
+                <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
+                  {hero.eyebrow}
+                </p>
+              ) : null}
+              <h1 className="mt-2.5 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[38px]">
                 {hero.title}
               </h1>
               <p className="mt-3 max-w-[500px] text-[16px] font-medium leading-7 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)]">

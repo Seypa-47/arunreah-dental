@@ -100,8 +100,8 @@ export const HERO_PAGES: HeroPageConfig[] = [
   },
   {
     aspectRatio: 'aspect-[21/9]',
-    defaultEyebrowEn: '',
-    defaultEyebrowKm: '',
+    defaultEyebrowEn: 'PHNOM PENH CLINIC',
+    defaultEyebrowKm: 'គ្លីនិកនៅរាជធានីភ្នំពេញ',
     defaultImage: '/assets/landing/figma-branches/image2_183_4173.png',
     defaultSubtitleEn: 'Find a clinic branch that works for you.',
     defaultSubtitleKm: 'ស្វែងរកសាខាគ្លីនិកដែលសមស្របសម្រាប់អ្នក។',
@@ -638,11 +638,11 @@ export function AdminPageHeroesPage() {
                         <div className="relative z-10 grid min-h-[220px] items-center gap-4 p-4 sm:min-h-[280px] sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-6 sm:p-6">
                           <div className="max-w-[360px]">
                             {previewEyebrow ? (
-                              <p className="ui-eyebrow text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#086c91] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[11px]">
+                              <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-2.5 py-0.5 text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[11px]">
                                 {previewEyebrow}
                               </p>
                             ) : null}
-                            <h3 className="mt-1 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-2 sm:text-[24px]">
+                            <h3 className="mt-1.5 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-2 sm:text-[24px]">
                               {previewTitle}
                             </h3>
                             {previewSubtitle ? (
@@ -685,11 +685,11 @@ export function AdminPageHeroesPage() {
                         <div className="relative z-10 flex min-h-[220px] items-center p-4 sm:min-h-[280px] sm:p-6">
                           <div className="max-w-[420px]">
                             {previewEyebrow ? (
-                              <p className="ui-eyebrow text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#086c91] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[11px]">
+                              <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-2.5 py-0.5 text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[11px]">
                                 {previewEyebrow}
                               </p>
                             ) : null}
-                            <h3 className="mt-1 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-2 sm:text-[24px]">
+                            <h3 className="mt-1.5 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-2 sm:text-[24px]">
                               {previewTitle}
                             </h3>
                             {previewSubtitle ? (
@@ -730,11 +730,11 @@ export function AdminPageHeroesPage() {
                       <div className="flex min-h-[220px] items-center justify-center p-6 text-center sm:min-h-[280px] sm:p-10">
                         <div className="max-w-[620px]">
                           {previewEyebrow ? (
-                            <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[0.06em] text-[#3695B9] sm:text-[12px]">
+                            <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-2.5 py-0.5 text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[11px]">
                               {previewEyebrow}
                             </p>
                           ) : null}
-                          <h3 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">
+                          <h3 className="mt-2.5 text-[28px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">
                             {previewTitle}
                           </h3>
                           {previewSubtitle ? (
@@ -752,8 +752,7 @@ export function AdminPageHeroesPage() {
                         />
                         <div className="relative z-10 flex min-h-[220px] max-w-[640px] flex-col justify-end p-6 text-white sm:min-h-[280px] sm:p-8">
                           {previewEyebrow ? (
-                            <div className="ui-eyebrow inline-flex w-fit items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#7ee1f8] backdrop-blur-md">
-                              <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
+                            <div className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-2.5 py-0.5 text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[11px]">
                               <span>{previewEyebrow}</span>
                             </div>
                           ) : null}
