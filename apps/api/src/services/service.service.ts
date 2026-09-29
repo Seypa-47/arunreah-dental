@@ -39,7 +39,10 @@ const local = (
   id: s.id,
   slug: normalizeServiceSlug(s.id, s.slug, s.nameEn),
   name: localize(s.nameEn, s.nameKm, lang) ?? s.nameEn,
-  shortDescription: localize(s.summaryEn, s.summaryKm, lang),
+  shortDescription:
+    localize(s.summaryEn, s.summaryKm, lang) ??
+    localize(s.heroSummaryEn, s.heroSummaryKm, lang) ??
+    localize(s.descriptionEn, s.descriptionKm, lang),
   listingThumbnailKey: s.imageKey,
   imagePresentation: presentationFor(presentations, s.id),
   category: s.category,
@@ -149,7 +152,10 @@ export async function getPublicService(db: DatabaseClient, slug: string, l: Serv
     hero: {
       eyebrow: localize(s.heroEyebrowEn, s.heroEyebrowKm, l),
       title: localize(s.heroTitleEn, s.heroTitleKm, l),
-      summary: localize(s.heroSummaryEn, s.heroSummaryKm, l),
+      summary:
+        localize(s.summaryEn, s.summaryKm, l) ??
+        localize(s.heroSummaryEn, s.heroSummaryKm, l) ??
+        localize(s.descriptionEn, s.descriptionKm, l),
       imageKey: s.heroImageKey,
       imagePresentation: presentationFor(presentations, s.id, 'HERO'),
     },

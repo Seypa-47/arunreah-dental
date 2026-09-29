@@ -186,7 +186,7 @@ export function mapServiceDetail(
       imageAlt: detail.name,
       imageUrl: getPublicMediaUrl(detail.hero.imageKey) ?? '',
       imagePresentation: detail.hero.imagePresentation,
-      subtitle: detail.hero.summary ?? detail.shortDescription ?? '',
+      subtitle: detail.shortDescription ?? detail.hero.summary ?? '',
       title: detail.hero.title ?? detail.name,
     },
   };

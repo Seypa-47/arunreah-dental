@@ -278,15 +278,27 @@ function BasicInformation({
             <Field label={`${content.editor.descriptionLabel} · English`}>
               <TextAreaInput
                 className="h-[130px] resize-none"
-                onChange={(event) => setService((current) => ({ ...current, description: event.target.value }))}
+                onChange={(event) =>
+                  setService((current) => ({
+                    ...current,
+                    description: event.target.value,
+                    heroSummary: event.target.value,
+                  }))
+                }
                 value={service.description}
               />
             </Field>
-            <Field label="ពិពណ៌នាខ្លី · ខ្មែរ">
+            <Field label="ការពិពណ៌នាសេវា (កាតបញ្ជី និងទំព័រលម្អិត) · ខ្មែរ">
               <TextAreaInput
                 className="h-[130px] resize-none"
                 lang="km"
-                onChange={(event) => setService((current) => ({ ...current, descriptionKm: event.target.value }))}
+                onChange={(event) =>
+                  setService((current) => ({
+                    ...current,
+                    descriptionKm: event.target.value,
+                    heroSummaryKm: event.target.value,
+                  }))
+                }
                 value={service.descriptionKm}
               />
             </Field>
@@ -559,19 +571,31 @@ function HeroSectionCard({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Hero Summary (detail page intro under heading) · English">
+          <Field label="Service Description (shared with listing card & detail hero) · English">
             <TextAreaInput
               className="h-[110px] resize-none"
-              onChange={(e) => setService((c) => ({ ...c, heroSummary: e.target.value }))}
-              value={service.heroSummary}
+              onChange={(e) =>
+                setService((c) => ({
+                  ...c,
+                  description: e.target.value,
+                  heroSummary: e.target.value,
+                }))
+              }
+              value={service.description}
             />
           </Field>
-          <Field label="សេចក្តីសង្ខេប Hero (អត្ថបទក្រោមចំណងជើងលើទំព័រសេវា) · ខ្មែរ">
+          <Field label="ការពិពណ៌នាសេវា (បង្ហាញលើកាត និងទំព័រលម្អិត) · ខ្មែរ">
             <TextAreaInput
               className="h-[110px] resize-none"
               lang="km"
-              onChange={(e) => setService((c) => ({ ...c, heroSummaryKm: e.target.value }))}
-              value={service.heroSummaryKm}
+              onChange={(e) =>
+                setService((c) => ({
+                  ...c,
+                  descriptionKm: e.target.value,
+                  heroSummaryKm: e.target.value,
+                }))
+              }
+              value={service.descriptionKm}
             />
           </Field>
         </div>
@@ -1033,8 +1057,8 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     heroPrimaryCtaKm: content.service.saved.primaryCtaLabelKm ?? '',
     heroSecondaryCta: content.service.saved.secondaryCtaLabelEn ?? content.preview.requestLabel,
     heroSecondaryCtaKm: content.service.saved.secondaryCtaLabelKm ?? '',
-    heroSummary: content.service.saved.heroSummaryEn ?? content.service.description,
-    heroSummaryKm: content.service.saved.heroSummaryKm ?? content.service.descriptionKm,
+    heroSummary: content.service.description,
+    heroSummaryKm: content.service.descriptionKm,
     longevity: 'Permanent / Long-Term',
     metaDescription: content.service.saved.metaDescriptionEn ?? content.service.description,
     metaDescriptionKm: content.service.saved.metaDescriptionKm ?? '',
@@ -1065,8 +1089,8 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       category: service.category || null,
       summaryEn: service.description || null,
       summaryKm: service.descriptionKm || null,
-      descriptionEn: service.heroSummary || null,
-      descriptionKm: service.heroSummaryKm || null,
+      descriptionEn: service.description || null,
+      descriptionKm: service.descriptionKm || null,
       imageKey: toMediaKey(service.imageUrl),
       imagePresentation: service.imagePresentation,
       heroImagePresentation: service.heroImagePresentation,
@@ -1077,8 +1101,8 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       heroEyebrowKm: service.heroEyebrowKm || null,
       heroTitleEn: service.heroHeading || null,
       heroTitleKm: service.heroHeadingKm || null,
-      heroSummaryEn: service.heroSummary || null,
-      heroSummaryKm: service.heroSummaryKm || null,
+      heroSummaryEn: service.description || null,
+      heroSummaryKm: service.descriptionKm || null,
       heroImageKey: toMediaKey(service.heroImageUrl),
       aboutTitleEn: service.aboutTitle || null,
       aboutTitleKm: service.aboutTitleKm || null,

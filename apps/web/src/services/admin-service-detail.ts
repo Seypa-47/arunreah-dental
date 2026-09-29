@@ -159,7 +159,7 @@ const adminServiceDetailLabels = {
       'Orthodontics',
       'Oral Surgery',
     ],
-    descriptionLabel: 'Short listing description (for services listing page card)',
+    descriptionLabel: 'Service description (for listing card & detail page)',
     featuredLabel: 'Featured',
     imageHelp: 'Recommended: 800x600px',
     imageLabel: 'Thumbnail / Card Image',
@@ -236,14 +236,16 @@ export async function fetchAdminServiceDetailContent(serviceId: string | undefin
   const servicesContent = await fetchAdminServicesContent();
   if (!serviceId) return { ...adminServiceDetailLabels, brand: servicesContent.brand, footer: servicesContent.footer, navigation: servicesContent.navigation, service: undefined };
   const { service: detail } = await cmsApi.services.get(serviceId);
+  const unifiedDescriptionEn = detail.summaryEn ?? detail.heroSummaryEn ?? detail.descriptionEn ?? '';
+  const unifiedDescriptionKm = detail.summaryKm ?? detail.heroSummaryKm ?? detail.descriptionKm ?? '';
   const service: AdminService = {
     id: detail.id,
     slug: detail.slug,
     name: detail.nameEn,
     nameKm: detail.nameKm,
     category: detail.category ?? 'Uncategorized',
-    description: detail.summaryEn ?? detail.descriptionEn ?? '',
-    descriptionKm: detail.summaryKm ?? detail.descriptionKm ?? '',
+    description: unifiedDescriptionEn,
+    descriptionKm: unifiedDescriptionKm,
     imageAlt: detail.nameEn,
     imageUrl: getPublicMediaUrl(detail.imageKey) ?? '',
     status: detail.status === 'PUBLISHED' ? 'published' : 'draft',
@@ -288,8 +290,8 @@ export async function fetchAdminServiceDetailContent(serviceId: string | undefin
         heroEyebrowKm: detail.heroEyebrowKm ?? null,
         heroImageKey: detail.heroImageKey ?? null,
         heroImagePresentation: detail.heroImagePresentation,
-        heroSummaryEn: detail.heroSummaryEn ?? null,
-        heroSummaryKm: detail.heroSummaryKm ?? null,
+        heroSummaryEn: unifiedDescriptionEn || null,
+        heroSummaryKm: unifiedDescriptionKm || null,
         heroTitleEn: detail.heroTitleEn ?? null,
         heroTitleKm: detail.heroTitleKm ?? null,
         imagePresentation: detail.imagePresentation,
