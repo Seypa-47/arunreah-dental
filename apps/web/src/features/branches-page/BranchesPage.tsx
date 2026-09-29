@@ -11,7 +11,7 @@ import { publicShell } from '@/features/public-content/public-page-chrome';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
-import { getBranchCoordinates } from './branch-coordinates';
+import { getBranchSatelliteEmbedUrl } from './branch-coordinates';
 import { useBranchesPageQuery } from './use-branches-page';
 
 const asset = (name: string) => `/assets/landing/${name}`;
@@ -171,11 +171,12 @@ function BranchCard({
   const branchCopy = publicUiCopy(language).branches;
   const [viewMode, setViewMode] = useState<'photo' | 'satellite'>('photo');
   const phoneHref = `tel:${branch.phones[0]?.replaceAll(' ', '') ?? ''}`;
-  const coords = getBranchCoordinates(branch.name);
   const apiKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined)?.trim();
-  const embedUrl = apiKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${coords.lat},${coords.lng}&maptype=satellite&zoom=17`
-    : `https://maps.google.com/maps?q=${coords.lat},${coords.lng}&t=k&z=17&ie=UTF8&iwloc=&output=embed`;
+  const embedUrl = getBranchSatelliteEmbedUrl({
+    apiKey,
+    googleMapsUrl: branch.mapUrl,
+    nameOrSlug: branch.name,
+  });
 
   return (
     <Card className="grid overflow-hidden rounded-xl border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)] lg:h-[360px] lg:grid-cols-2">

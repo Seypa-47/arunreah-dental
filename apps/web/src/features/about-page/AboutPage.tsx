@@ -207,7 +207,7 @@ function ClinicGallery({
           address: isKm ? 'ផ្ទះ159c ផ្លូវ 113 ភូមិ 4 សង្កាត់បឹងកេងកង3 ខណ្ឌបឹងកេងកង' : '#159c, st113, Boeng Keng Kang 3, Phnom Penh',
           openingHours: isKm ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM',
           phone: '061 978 997',
-          googleMapsUrl: 'https://maps.app.goo.gl/LHQeXEkpcAvcfnT18',
+          googleMapsUrl: 'https://maps.app.goo.gl/6HenBVpmvf4PiWwv6',
           images,
         },
       ];

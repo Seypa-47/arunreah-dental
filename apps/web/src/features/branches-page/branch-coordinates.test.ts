@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_BRANCH_COORDINATES,
   PSA_CHAS_COORDINATES,
+  PSA_CHAS_SATELLITE_EMBED_URL,
+  TOUL_TOMPOUNG_SATELLITE_EMBED_URL,
   getBranchCoordinates,
+  getBranchSatelliteEmbedUrl,
 } from './branch-coordinates';
 
 describe('getBranchCoordinates', () => {
@@ -22,5 +25,20 @@ describe('getBranchCoordinates', () => {
     expect(getBranchCoordinates(null)).toEqual(DEFAULT_BRANCH_COORDINATES);
     expect(getBranchCoordinates(undefined)).toEqual(DEFAULT_BRANCH_COORDINATES);
     expect(getBranchCoordinates('')).toEqual(DEFAULT_BRANCH_COORDINATES);
+  });
+
+  it('returns official satellite place embed URLs for Toul Tompoung and Psa Chas when no API key is set', () => {
+    expect(getBranchSatelliteEmbedUrl({ nameOrSlug: 'Toul Tompoung Branch' })).toBe(
+      TOUL_TOMPOUNG_SATELLITE_EMBED_URL,
+    );
+    expect(getBranchSatelliteEmbedUrl({ nameOrSlug: 'សាខាទួលទំពូង' })).toBe(
+      TOUL_TOMPOUNG_SATELLITE_EMBED_URL,
+    );
+    expect(getBranchSatelliteEmbedUrl({ nameOrSlug: 'Psa Chas Branch' })).toBe(
+      PSA_CHAS_SATELLITE_EMBED_URL,
+    );
+    expect(getBranchSatelliteEmbedUrl({ nameOrSlug: 'សាខាផ្សារចាស់' })).toBe(
+      PSA_CHAS_SATELLITE_EMBED_URL,
+    );
   });
 });

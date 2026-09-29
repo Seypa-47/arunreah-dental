@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { getBranchSatelliteEmbedUrl } from '@/features/branches-page/branch-coordinates';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 
@@ -68,11 +69,14 @@ export function GoogleSatelliteMap({
   const copy = publicUiCopy(language).contact;
   const apiKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined)?.trim();
 
-  // If a Google Maps API Key is provided, call the official Google Maps Embed v1 API in satellite mode.
-  // Otherwise, call the direct Google Maps satellite embed API (t=k for satellite imagery).
-  const embedUrl = apiKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${lat},${lng}&maptype=satellite&zoom=${zoom}`
-    : `https://maps.google.com/maps?q=${lat},${lng}&t=k&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
+  const embedUrl = getBranchSatelliteEmbedUrl({
+    apiKey,
+    googleMapsUrl: directionsUrl,
+    lat,
+    lng,
+    nameOrSlug: name,
+    zoom,
+  });
 
   return (
     <Card className="flex w-full flex-col overflow-hidden rounded-xl border border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
