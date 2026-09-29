@@ -16,6 +16,16 @@ vi.mock('@tanstack/react-query', () => ({
         isLoading: false,
       };
     }
+    if (queryKey[1] === 'contact') {
+      return {
+        data: {
+          facebookUrl: 'https://facebook.com/arunreah',
+          telegramUrl: 'https://t.me/arunreah',
+          instagramUrl: 'https://instagram.com/arunreah',
+        },
+        isLoading: false,
+      };
+    }
     return { data: undefined, isLoading: false };
   }),
 }));
@@ -57,5 +67,23 @@ describe('SiteFooter', () => {
 
     expect(html).toContain('សាខារបស់យើង');
     expect(html).toContain('សាខាផ្សារចាស់');
+  });
+
+  it('renders visible inline SVG social icons for Facebook, Telegram, and Instagram', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <SiteFooter
+          branchLinks={[]}
+          description="Clinic description"
+          linkGroups={[]}
+          tagline="Clinic tagline"
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('aria-label="Visit the clinic on Facebook"');
+    expect(html).toContain('aria-label="Contact the clinic on Telegram"');
+    expect(html).toContain('aria-label="Visit the clinic on Instagram"');
+    expect(html).toContain('fill="currentColor"');
   });
 });
