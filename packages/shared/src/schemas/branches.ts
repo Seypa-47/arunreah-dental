@@ -6,7 +6,7 @@ export const branchStatusValues = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 export const publicBranchLanguageValues = ['en', 'km'] as const;
 
 const phonePattern = /^[0-9+()\-\s]+$/;
-const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d(?:\s*\|\s*(?:[01]\d|2[0-3]):[0-5]\d)*$/;
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function optionalText(maxLength: number) {

@@ -4,7 +4,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { getPublicBranches, getPublicPageMedia } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
-import { formatPublicBranchHours } from '@/features/public-content/public-branch';
+import { formatPublicBranchHours, formatPublicBranchSchedules } from '@/features/public-content/public-branch';
 
 export { formatPublicBranchHours as formatBranchHours };
 
@@ -27,6 +27,7 @@ export function useBranchesPageQuery() {
         ...chrome,
         branches: publicBranches.map((branch) => {
           const hours = formatPublicBranchHours(branch);
+          const hoursSchedules = formatPublicBranchSchedules(branch);
 
           return {
             address: branch.address,
@@ -36,6 +37,7 @@ export function useBranchesPageQuery() {
             directionsUrl: branch.googleMapsUrl ?? '#',
             hoursDays: hours.days,
             hoursTime: hours.time,
+            hoursSchedules,
             id: branch.id,
             imageAlt: branch.name,
             imagePresentation: branch.branchImagePresentation,

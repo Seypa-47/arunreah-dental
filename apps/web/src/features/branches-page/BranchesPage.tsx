@@ -78,7 +78,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
           />
           <div className="relative z-10 flex items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
             <div className="max-w-[560px] py-7">
-              <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+              <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#086c91] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[12px]">
                 {hero.eyebrow}
               </p>
               <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[38px]">
@@ -151,7 +151,7 @@ function SectionIntro({
 }) {
   return (
     <div className="mx-auto max-w-[720px] px-4 text-center sm:px-6">
-      <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p>
+      <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9] sm:text-[12px]">{eyebrow}</p>
       <h2 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[32px]">
         {title}
       </h2>
@@ -210,14 +210,25 @@ function BranchCard({
                 ))}
               </dd>
             </div>
-            <div className="flex items-center gap-3.5">
-              <dt className="shrink-0">
+            <div className="flex items-start gap-3.5">
+              <dt className="shrink-0 pt-1">
                 <span className="sr-only">{branchCopy.openingHours}</span>
                 <AssetIcon className="size-4" name="branch-card-clock.svg" />
               </dt>
-              <dd>
-                <span className="mr-4 text-[#64748b]">{branch.hoursDays}</span>
-                <span className="font-extrabold text-[#005687]">{branch.hoursTime}</span>
+              <dd className="space-y-1">
+                {branch.hoursSchedules && branch.hoursSchedules.length > 1 ? (
+                  branch.hoursSchedules.map((schedule, idx) => (
+                    <div className="flex flex-wrap items-baseline gap-x-3" key={`${schedule.days}-${idx}`}>
+                      {schedule.days ? <span className="text-[#64748b]">{schedule.days}</span> : null}
+                      <span className="font-extrabold text-[#005687]">{schedule.time}</span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <span className="mr-4 text-[#64748b]">{branch.hoursDays}</span>
+                    <span className="font-extrabold text-[#005687]">{branch.hoursTime}</span>
+                  </>
+                )}
               </dd>
             </div>
           </dl>

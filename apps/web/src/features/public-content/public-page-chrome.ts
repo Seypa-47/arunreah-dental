@@ -14,6 +14,7 @@ import type {
 import type { ClinicSettingsPublicRead, PublicBranchRead } from '@arunreah/shared';
 import { getPublicMediaUrl } from '@/services/media';
 import type { PublicDoctorSummary, PublicShowcaseDetail } from '@/services/public-content';
+import { formatPublicBranchHours } from './public-branch';
 
 // These values are interface copy and layout configuration. CMS-owned records
 // (clinic, contact, services, doctors, branches, showcases and images) are
@@ -167,6 +168,8 @@ export function publicAboutContent(
     exteriorCaption,
     defaultPsaChasImages,
   );
+  const psaChasFormattedHours = psaChasBranch ? formatPublicBranchHours(psaChasBranch) : { days: '', time: '' };
+  const psaChasHoursLabel = [psaChasFormattedHours.days, psaChasFormattedHours.time].filter(Boolean).join(': ') || psaChasBranch?.openingHours;
 
   const toulTompoungBranch = branches.find((b) => b.slug === 'toul-tompoung');
   const toulTompoungGallery = extractShowcaseGallery(
@@ -174,6 +177,10 @@ export function publicAboutContent(
     exteriorCaption,
     defaultToulTompoungImages,
   );
+  const toulTompoungFormattedHours = toulTompoungBranch ? formatPublicBranchHours(toulTompoungBranch) : { days: '', time: '' };
+  const toulTompoungHoursLabel = [toulTompoungFormattedHours.days, toulTompoungFormattedHours.time].filter(Boolean).join(': ') || toulTompoungBranch?.openingHours;
+
+  const extraBranches = branches.filter((b) => b.slug !== 'psa-chas' && b.slug !== 'toul-tompoung');
 
   const branchGalleries: ClinicBranchGallery[] = [
     {
@@ -183,8 +190,8 @@ export function publicAboutContent(
       badge: psaChasBranch?.badge ?? (language === 'km' ? 'សាខាក្នុងក្រុង' : 'City Branch'),
       shortLocationLabel: psaChasBranch?.shortLocationLabel ?? (language === 'km' ? 'ជិតផ្សារចាស់ រាជធានីភ្នំពេញ' : 'Near Old Market, Phnom Penh'),
       address: psaChasBranch?.address ?? (language === 'km' ? '#៤៥ ផ្លូវលេខ ១៣ សង្កាត់វត្តភ្នំ ខណ្ឌដូនពេញ រាជធានីភ្នំពេញ កម្ពុជា (ជិតផ្សារចាស់)' : '#45, Street 13, Sangkat Wat Phnom, Khan Daun Penh, Phnom Penh, Cambodia (Near Old Market)'),
-      openingHours: psaChasBranch?.openingHours ?? (language === 'km' ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM'),
-      phone: psaChasBranch?.phone ?? '069 978 997',
+      openingHours: psaChasHoursLabel || (language === 'km' ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM'),
+      phone: [psaChasBranch?.phone, psaChasBranch?.secondaryPhone].filter(Boolean).join(' / ') || '069 978 997',
       googleMapsUrl: psaChasBranch?.googleMapsUrl ?? 'https://maps.app.goo.gl/M5gvtMWpzYydHM2v5',
       showcaseTitle: branchShowcases?.psaChas?.title ?? (language === 'km' ? 'អ្វីដែលត្រូវរំពឹងក្នុងការមកពិនិត្យលើកដំបូង - សាខាផ្សារចាស់' : 'What To Expect During Your First Visit - Psa Chas Branch'),
       images: psaChasGallery,
@@ -196,12 +203,29 @@ export function publicAboutContent(
       badge: toulTompoungBranch?.badge ?? (language === 'km' ? 'សាខាចម្បង' : 'Main Branch'),
       shortLocationLabel: toulTompoungBranch?.shortLocationLabel ?? (language === 'km' ? 'ទួលទំពូង រាជធានីភ្នំពេញ' : 'Toul Tompoung, Phnom Penh'),
       address: toulTompoungBranch?.address ?? (language === 'km' ? 'ផ្ទះ159c ផ្លូវ 113 ភូមិ 4 សង្កាត់បឹងកេងកង3 ខណ្ឌបឹងកេងកង' : '#159c, st113, Boeng Keng Kang 3, Phnom Penh'),
-      openingHours: toulTompoungBranch?.openingHours ?? (language === 'km' ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM'),
-      phone: toulTompoungBranch?.phone ?? '061 978 997',
+      openingHours: toulTompoungHoursLabel || (language === 'km' ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM'),
+      phone: [toulTompoungBranch?.phone, toulTompoungBranch?.secondaryPhone].filter(Boolean).join(' / ') || '061 978 997',
       googleMapsUrl: toulTompoungBranch?.googleMapsUrl ?? 'https://maps.app.goo.gl/LHQeXEkpcAvcfnT18',
       showcaseTitle: (branchShowcases?.toulTompoung ?? clinicShowcase)?.title ?? (language === 'km' ? 'អ្វីដែលត្រូវរំពឹងក្នុងការមកពិនិត្យលើកដំបូង - សាខាទួលទំពូង' : 'What To Expect During Your First Visit - Toul Tompoung Branch'),
       images: toulTompoungGallery,
     },
+    ...extraBranches.map((branch) => {
+      const hours = formatPublicBranchHours(branch);
+      const branchPhotoUrl = getPublicMediaUrl(branch.branchImageKey) ?? getPublicMediaUrl(branch.heroImageKey);
+      return {
+        branchId: branch.id,
+        branchSlug: branch.slug,
+        branchName: branch.name,
+        badge: branch.badge ?? branch.name,
+        shortLocationLabel: branch.shortLocationLabel ?? branch.cityProvince ?? '',
+        address: branch.address,
+        openingHours: [hours.days, hours.time].filter(Boolean).join(': ') || branch.openingHours || '',
+        phone: [branch.phone, branch.secondaryPhone].filter(Boolean).join(' / '),
+        googleMapsUrl: branch.googleMapsUrl ?? '',
+        showcaseTitle: branch.name,
+        images: branchPhotoUrl ? [{ imageAlt: branch.name, imagePresentation: branch.branchImagePresentation, imageUrl: branchPhotoUrl }] : defaultToulTompoungImages,
+      };
+    }),
   ];
 
   return {
@@ -252,7 +276,7 @@ export function publicAboutContent(
       imageAlt: clinicName,
       imageUrl: '/assets/landing/figma-branches/image2_183_4173.png',
       subtitle: tagline ?? (language === 'km' ? 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ ដើម្បីស្នាមញញឹមមានសុខភាពល្អ និងទំនុកចិត្ត។' : 'Thoughtful dental care for a healthier, more confident smile.'),
-      title: language === 'km' ? 'អំពី គ្លីនិកធ្មេញ អរុណរះ' : 'About Arunreah Dental Clinic',
+      title: clinicName ? (language === 'km' ? `អំពី ${clinicName}` : `About ${clinicName}`) : (language === 'km' ? 'អំពី គ្លីនិកធ្មេញ អរុណរះ' : 'About Arunreah Dental Clinic'),
     },
     mission: { description: '', iconUrl: '', title: '' },
     stats: [

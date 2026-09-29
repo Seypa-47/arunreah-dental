@@ -5,7 +5,7 @@ import { getPublicMediaUrl } from '@/services/media';
 import { mapLandingBranchHero, toLandingDoctor, toLandingService } from '@/services/public-page-mappers';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { queryKeys } from '@/lib/query-keys';
-import { formatPublicBranchHours } from '@/features/public-content/public-branch';
+import { formatPublicBranchHours, formatPublicBranchSchedules } from '@/features/public-content/public-branch';
 
 export function useLandingPageQuery() {
   const { language } = usePublicLanguage();
@@ -31,9 +31,11 @@ export function useLandingPageQuery() {
         ...publicLandingChrome(language),
         branches: homepageBranches.map((branch) => {
           const hours = formatPublicBranchHours(branch);
+          const hoursSchedules = formatPublicBranchSchedules(branch);
           return {
             hoursDays: hours.days,
             hoursTime: hours.time,
+            hoursSchedules,
             imageAlt: branch.name,
             imagePresentation: branch.branchImagePresentation,
             imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',

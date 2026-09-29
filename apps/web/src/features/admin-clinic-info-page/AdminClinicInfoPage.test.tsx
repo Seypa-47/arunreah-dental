@@ -44,6 +44,33 @@ const mockClinicData = {
       heroImageKey: '',
       photoKeys: [],
     },
+    {
+      id: 'branch-2',
+      slug: 'psa-chas',
+      nameEn: 'Psa Chas Branch',
+      nameKm: 'សាខាផ្សារចាស់',
+      name: 'Psa Chas Branch',
+      addressEn: 'Street 13, Daun Penh',
+      addressKm: 'ផ្លូវ ១៣ ដូនពេញ',
+      address: 'Street 13, Daun Penh',
+      phone1: '069 978 997',
+      phone2: '061 978 997',
+      phone: '069 978 997',
+      displayOrder: 2,
+      status: 'PUBLISHED' as const,
+      featured: false,
+      acceptsAppointments: true,
+      showOnBranchesPage: true,
+      showOnHomepage: true,
+      includeInHomepageHero: true,
+      descriptionEn: '',
+      descriptionKm: '',
+      latitude: null,
+      longitude: null,
+      mapEmbedUrl: '',
+      heroImageKey: '',
+      photoKeys: [],
+    },
   ],
   contactSettings: {
     primaryPhone: '023 123 456',
@@ -80,7 +107,7 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
       data: {
         items: mockClinicData.branches,
         meta: {
-          total: 1,
+          total: 2,
           page: 1,
           limit: 20,
           totalPages: 1,
@@ -140,6 +167,8 @@ describe('AdminClinicInfoPage tab synchronisation with router', () => {
     // Tab content
     expect(html).toContain('Clinic Name (English)');
     expect(html).toContain('Clinic Name (Khmer)');
+    expect(html).toContain('Primary Contact &amp; Location');
+    expect(html).toContain('Location / Address (English)');
     // Other tabs content should not be rendered
     expect(html).not.toContain('Branch Directory');
     expect(html).not.toContain('Website Contact Details');
@@ -152,16 +181,20 @@ describe('AdminClinicInfoPage tab synchronisation with router', () => {
     // Tab content
     expect(html).toContain('Branch Directory');
     expect(html).toContain('Add New Branch');
+    expect(html).toContain('Add Open Day &amp; Hours');
     // Other tabs content should not be rendered
     expect(html).not.toContain('Clinic identity');
     expect(html).not.toContain('Website Contact Details');
   });
 
-  it('renders Contact Settings tab content when at /admin/clinic-info/contact', () => {
+  it('renders Contact Settings tab content with two branches switcher when at /admin/clinic-info/contact', () => {
     const html = renderAt('/admin/clinic-info/contact');
     // Tab active indicator
     expect(html).toMatch(/aria-current="page"[^>]*>Contact Settings<\/button>/);
-    // Tab content
+    // Tab content & branch switcher
+    expect(html).toContain('Select Branch to Edit Contact &amp; Hours');
+    expect(html).toContain('Toul Tompoung Branch');
+    expect(html).toContain('Psa Chas Branch');
     expect(html).toContain('Website Contact Details');
     expect(html).toContain('Main Phone Number');
     // Other tabs content should not be rendered

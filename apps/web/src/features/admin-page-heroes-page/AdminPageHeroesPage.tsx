@@ -638,7 +638,7 @@ export function AdminPageHeroesPage() {
                         <div className="relative z-10 grid min-h-[220px] items-center gap-4 p-4 sm:min-h-[280px] sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-6 sm:p-6">
                           <div className="max-w-[360px]">
                             {previewEyebrow ? (
-                              <p className="text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
+                              <p className="ui-eyebrow text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#086c91] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[11px]">
                                 {previewEyebrow}
                               </p>
                             ) : null}
@@ -685,7 +685,7 @@ export function AdminPageHeroesPage() {
                         <div className="relative z-10 flex min-h-[220px] items-center p-4 sm:min-h-[280px] sm:p-6">
                           <div className="max-w-[420px]">
                             {previewEyebrow ? (
-                              <p className="text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
+                              <p className="ui-eyebrow text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#086c91] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[11px]">
                                 {previewEyebrow}
                               </p>
                             ) : null}
@@ -704,22 +704,22 @@ export function AdminPageHeroesPage() {
                       <>
                         <div
                           aria-hidden="true"
-                          className="pointer-events-none absolute inset-x-0 bottom-0 h-[54%] bg-gradient-to-t from-white/70 via-white/36 to-transparent sm:right-auto sm:h-[56%] sm:w-[62%] sm:bg-[radial-gradient(100%_100%_at_0%_100%,rgba(255,255,255,0.64)_0%,rgba(255,255,255,0.38)_44%,rgba(255,255,255,0.12)_72%,transparent_100%)]"
+                          className="pointer-events-none absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-white/90 via-white/65 to-transparent sm:right-auto sm:h-[68%] sm:w-[66%] sm:bg-[radial-gradient(100%_100%_at_0%_100%,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.62)_48%,rgba(255,255,255,0.22)_76%,transparent_100%)]"
                         />
                         <div className="relative z-10 flex min-h-[220px] flex-col justify-end p-4 sm:min-h-[280px] sm:p-6">
                           <div className="max-w-[360px] sm:max-w-[420px]">
                             {previewEyebrow ? (
-                              <p className="ui-eyebrow text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
+                              <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-2.5 py-0.5 text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[11px]">
                                 {previewEyebrow}
                               </p>
                             ) : null}
                             <h3
-                              className={`${previewEyebrow ? 'mt-1 sm:mt-1.5' : ''} text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:text-[24px]`}
+                              className={`${previewEyebrow ? 'mt-1.5 sm:mt-2' : ''} text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.9)] sm:text-[24px]`}
                             >
                               {previewTitle}
                             </h3>
                             {previewSubtitle ? (
-                              <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)] sm:text-[13px]">
+                              <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[13px]">
                                 {previewSubtitle}
                               </p>
                             ) : null}
@@ -730,7 +730,7 @@ export function AdminPageHeroesPage() {
                       <div className="flex min-h-[220px] items-center justify-center p-6 text-center sm:min-h-[280px] sm:p-10">
                         <div className="max-w-[620px]">
                           {previewEyebrow ? (
-                            <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+                            <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[0.06em] text-[#3695B9] sm:text-[12px]">
                               {previewEyebrow}
                             </p>
                           ) : null}
@@ -752,7 +752,7 @@ export function AdminPageHeroesPage() {
                         />
                         <div className="relative z-10 flex min-h-[220px] max-w-[640px] flex-col justify-end p-6 text-white sm:min-h-[280px] sm:p-8">
                           {previewEyebrow ? (
-                            <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-0.5 text-[11px] font-bold uppercase tracking-[1.5px] text-[#7ee1f8] backdrop-blur-md">
+                            <div className="ui-eyebrow inline-flex w-fit items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#7ee1f8] backdrop-blur-md">
                               <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
                               <span>{previewEyebrow}</span>
                             </div>

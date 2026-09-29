@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, PublicPageHero } from '@/components/layout/public-ui';
-import type { ContactPageContent } from '@/features/landing-page/types';
+import type { ContactBranchInfo, ContactPageContent } from '@/features/landing-page/types';
 import { GoogleSatelliteMap } from './GoogleSatelliteMap';
 import { useContactPageQuery } from './use-contact-page';
 import { publicShell } from '@/features/public-content/public-page-chrome';
@@ -87,29 +88,133 @@ function InfoBlock({ item, compact = false }: { compact?: boolean; item: Contact
   );
 }
 
-function ContactHero({ hero }: { hero: ContactPageContent['hero'] }) {
+function ContactHero({
+  activeBranchSlug,
+  branchContacts,
+  hero,
+  onSelectBranch,
+}: {
+  activeBranchSlug?: string;
+  branchContacts?: ContactBranchInfo[];
+  hero: ContactPageContent['hero'];
+  onSelectBranch?: (slug: string) => void;
+}) {
+  const { language } = usePublicLanguage();
+  const isKm = language === 'km';
+  const activeBranch = branchContacts?.find((branch) => branch.slug === activeBranchSlug) ?? branchContacts?.[0];
+  const activeInfo = activeBranch?.info ?? hero.info;
+
+  const infoHeader =
+    branchContacts && branchContacts.length > 1 && onSelectBranch ? (
+      <div className="border-b border-[#e5eff3] pb-3.5">
+        <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#3695b9]">
+          {isKm ? 'ជ្រើសរើសសាខា' : 'Switch Branch Contact'}
+        </p>
+        <div
+          aria-label={isKm ? 'ជ្រើសរើសសាខាទំនាក់ទំនង' : 'Switch branch contact details'}
+          className="grid grid-cols-2 gap-1.5 rounded-xl bg-[#f0f7fa] p-1"
+          role="tablist"
+        >
+          {branchContacts.map((branch) => {
+            const isActive = branch.slug === activeBranch?.slug;
+            return (
+              <button
+                aria-selected={isActive}
+                className={`rounded-lg px-2.5 py-2 text-center text-[12px] font-extrabold leading-tight transition ${
+                  isActive
+                    ? 'bg-[#005687] text-white shadow-xs'
+                    : 'text-[#526879] hover:bg-white/70 hover:text-[#005687]'
+                }`}
+                key={branch.slug}
+                onClick={() => onSelectBranch(branch.slug)}
+                role="tab"
+                type="button"
+              >
+                {branch.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    ) : undefined;
+
   return (
     <PublicPageHero
       backgroundImageAlt={hero.backgroundImageAlt}
       backgroundImageUrl={hero.backgroundImageUrl}
       eyebrow={hero.eyebrow}
       imagePresentation={hero.imagePresentation}
-      info={hero.info}
+      info={activeInfo}
+      infoHeader={infoHeader}
       subtitle={hero.subtitle}
       title={hero.title}
     />
   );
 }
 
-function ContactCards({ cards }: { cards: ContactPageContent['contactCards'] }) {
+function ContactCards({
+  activeBranchSlug,
+  branchContacts,
+  cards,
+  onSelectBranch,
+}: {
+  activeBranchSlug?: string;
+  branchContacts?: ContactBranchInfo[];
+  cards: ContactPageContent['contactCards'];
+  onSelectBranch?: (slug: string) => void;
+}) {
+  const { language } = usePublicLanguage();
+  const isKm = language === 'km';
+  const activeBranch = branchContacts?.find((branch) => branch.slug === activeBranchSlug) ?? branchContacts?.[0];
+
   return (
     <section className="bg-white py-8 sm:py-10">
-      <div className="mx-auto grid w-full max-w-[1180px] gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-        {cards.map((card) => (
-          <Card className="rounded-xl border-[#e1ebef] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-5" key={card.label}>
-            <InfoBlock compact item={card} />
-          </Card>
-        ))}
+      <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
+        {branchContacts && branchContacts.length > 1 && onSelectBranch ? (
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="ui-eyebrow text-[11.5px] font-extrabold uppercase tracking-[0.06em] text-[#3695B9]">
+                {isKm ? 'ព័ត៌មានទំនាក់ទំនងតាមសាខា' : 'Branch Contact Details'}
+              </p>
+              <h2 className="mt-1 text-[20px] font-extrabold text-[#005687] sm:text-[22px]">
+                {activeBranch?.name}
+              </h2>
+            </div>
+            <div
+              aria-label={isKm ? 'ប្ដូរសាខា' : 'Select branch'}
+              className="inline-flex flex-wrap gap-1.5 self-start rounded-full border border-[#d6e5eb] bg-[#f7fafc] p-1 shadow-xs sm:self-auto"
+              role="tablist"
+            >
+              {branchContacts.map((branch) => {
+                const isActive = branch.slug === activeBranch?.slug;
+                return (
+                  <button
+                    aria-selected={isActive}
+                    className={`rounded-full px-4 py-1.5 text-[12.5px] font-bold transition ${
+                      isActive
+                        ? 'bg-[#005687] text-white shadow-xs'
+                        : 'text-[#62778a] hover:text-[#005687]'
+                    }`}
+                    key={branch.slug}
+                    onClick={() => onSelectBranch(branch.slug)}
+                    role="tab"
+                    type="button"
+                  >
+                    {branch.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {cards.map((card) => (
+            <Card className="rounded-xl border-[#e1ebef] p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-5" key={card.label}>
+              <InfoBlock compact item={card} />
+            </Card>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -183,11 +288,31 @@ function MapsSection({ maps }: { maps: ContactPageContent['maps'] }) {
 }
 
 function ContactPageView({ content }: { content: ContactPageContent }) {
+  const branchContacts = content.branchContacts ?? [];
+  const [selectedBranchSlug, setSelectedBranchSlug] = useState<string>(() => branchContacts[0]?.slug ?? '');
+  const activeBranch = branchContacts.find((branch) => branch.slug === selectedBranchSlug) ?? branchContacts[0];
+  const activeCards = activeBranch?.info ?? content.contactCards;
+
   return (
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main>
-        <ContactHero hero={content.hero} />
-        {content.contactCards.some((card) => !content.hero.info.some((item) => item.icon === card.icon && item.value === card.value)) ? <ContactCards cards={content.contactCards.filter((card) => !content.hero.info.some((item) => item.icon === card.icon && item.value === card.value))} /> : null}
+        <ContactHero
+          activeBranchSlug={activeBranch?.slug}
+          branchContacts={branchContacts}
+          hero={content.hero}
+          onSelectBranch={setSelectedBranchSlug}
+        />
+        {(branchContacts.length > 1 ||
+          content.contactCards.some(
+            (card) => !content.hero.info.some((item) => item.icon === card.icon && item.value === card.value),
+          )) ? (
+          <ContactCards
+            activeBranchSlug={activeBranch?.slug}
+            branchContacts={branchContacts}
+            cards={activeCards}
+            onSelectBranch={setSelectedBranchSlug}
+          />
+        ) : null}
         <ContactForm form={content.form} />
         <MapsSection maps={content.maps} />
       </main>

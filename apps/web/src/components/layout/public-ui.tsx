@@ -28,7 +28,7 @@ export function SectionIntro({
 }: SectionIntroProps) {
   return (
     <div className={cn(align === 'center' ? 'mx-auto max-w-[680px] text-center' : 'max-w-[680px]', className)}>
-      {eyebrow ? <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-5 tracking-[0.16em] text-[#168aad] sm:tracking-[0.22em]">{eyebrow}</p> : null}
+      {eyebrow ? <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-5 tracking-[0.06em] text-[#168aad]">{eyebrow}</p> : null}
       <Heading className="ui-copy-safe mt-2 text-[26px] font-extrabold leading-[1.18] tracking-[-0.03em] text-[#005687] sm:text-[34px] sm:tracking-[-0.035em]">{title}</Heading>
       {description ? <p className="ui-prose mt-3 text-[#607486]">{description}</p> : null}
     </div>
@@ -426,6 +426,7 @@ export type PublicPageHeroProps = {
   fallbackSrc?: string;
   imagePresentation?: ImagePresentation;
   info?: HeroInfoItem[];
+  infoHeader?: ReactNode;
   subtitle?: string;
   title: string;
 };
@@ -437,6 +438,7 @@ export function PublicPageHero({
   fallbackSrc = '/assets/landing/figma-branches/image2_183_4173.png',
   imagePresentation,
   info,
+  infoHeader,
   subtitle,
   title,
 }: PublicPageHeroProps) {
@@ -456,10 +458,10 @@ export function PublicPageHero({
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
           />
-          <div className={`relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 ${info && info.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8' : ''}`}>
+          <div className={`relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 ${info && info.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8' : ''}`}>
             <div className="max-w-[620px]">
               {eyebrow ? (
-                <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+                <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#086c91] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[12px]">
                   {eyebrow}
                 </p>
               ) : null}
@@ -474,6 +476,7 @@ export function PublicPageHero({
             </div>
             {info && info.length > 0 ? (
               <Card className="rounded-2xl border-[#d9e9ee] bg-white/95 p-5 shadow-[0_4px_20px_rgba(0,86,135,0.08)] backdrop-blur-md sm:p-6">
+                {infoHeader ? <div className="mb-4">{infoHeader}</div> : null}
                 <div className="space-y-4">
                   {info.map((item) => (
                     <InfoBlock compact item={item} key={item.label} />

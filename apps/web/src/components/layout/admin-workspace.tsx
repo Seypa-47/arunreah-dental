@@ -1,4 +1,4 @@
-import { useRef, useState, type PropsWithChildren } from 'react';
+import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AdminSidebar } from './admin-sidebar';
 import { getAdminPageInfo } from '@/features/admin-auth/admin-page-navigation';
@@ -20,6 +20,16 @@ export function AdminWorkspace({ children }: PropsWithChildren) {
   const page = getAdminPageInfo(pathname);
   const open = openPath === pathname;
   const close = () => { setOpenPath(null); toggle.current?.focus(); };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    if (content.current) {
+      content.current.scrollTop = 0;
+    }
+  }, [pathname]);
+
   return <div className="admin-workspace" data-sidebar-collapsed={sidebarCollapsed} onKeyDown={(event) => { if (event.key === 'Escape' && open) { event.preventDefault(); close(); } }}>
     <a className="admin-skip" href="#admin-content" onClick={() => content.current?.focus()}>Skip to page content</a>
     <header className="admin-topbar">

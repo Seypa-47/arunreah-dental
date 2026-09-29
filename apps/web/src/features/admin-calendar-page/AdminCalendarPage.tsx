@@ -42,6 +42,66 @@ export function getWeekDays(d: Date): Date[] {
   return days;
 }
 
+export function getCalendarPeriodLabel(
+  selectedDate: Date,
+  view: 'Month' | 'Week' | 'Day',
+  today: Date = new Date(),
+  todayLabel = 'Today',
+): string {
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const startOfSelected = new Date(
+    selectedDate.getFullYear(),
+    selectedDate.getMonth(),
+    selectedDate.getDate(),
+  );
+  const diffDays = Math.round(
+    (startOfSelected.getTime() - startOfToday.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (diffDays === 0) return todayLabel;
+  if (diffDays === 1 && view !== 'Month') return 'Tomorrow';
+  if (diffDays === -1 && view !== 'Month') return 'Yesterday';
+
+  if (view === 'Day') {
+    const includeYear = selectedDate.getFullYear() !== today.getFullYear();
+    return selectedDate.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      weekday: 'short',
+      ...(includeYear ? { year: 'numeric' } : {}),
+    });
+  }
+
+  if (view === 'Week') {
+    const todayWeekStart = getWeekDays(startOfToday)[0]!;
+    const selectedWeekStart = getWeekDays(startOfSelected)[0]!;
+    const weekDiff = Math.round(
+      (selectedWeekStart.getTime() - todayWeekStart.getTime()) / (7 * 1000 * 60 * 60 * 24),
+    );
+    if (weekDiff === 0) return 'This Week';
+    if (weekDiff === 1) return 'Next Week';
+    if (weekDiff === -1) return 'Last Week';
+    const days = getWeekDays(selectedDate);
+    const first = days[0]!;
+    const last = days[6]!;
+    const firstMonth = first.toLocaleDateString('en-US', { month: 'short' });
+    const lastMonth = last.toLocaleDateString('en-US', { month: 'short' });
+    return firstMonth === lastMonth
+      ? `${firstMonth} ${first.getDate()} – ${last.getDate()}`
+      : `${firstMonth} ${first.getDate()} – ${lastMonth} ${last.getDate()}`;
+  }
+
+  const isSameMonth =
+    selectedDate.getFullYear() === today.getFullYear() &&
+    selectedDate.getMonth() === today.getMonth();
+  if (isSameMonth) {
+    if (diffDays === 1) return 'Tomorrow';
+    if (diffDays === -1) return 'Yesterday';
+    return 'This Month';
+  }
+  return selectedDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
+
 function CalendarFooter({ footer }: { footer: AdminCalendarContent['footer'] }) {
   return (
     <footer className="mt-11 flex flex-wrap items-center justify-between gap-5 text-[13px] text-[#9badc5]">
@@ -930,7 +990,7 @@ function CalendarContent({
                   ))}
                 </div>
 
-                {/* Previous / Today / Next Controls */}
+                {/* Previous / Dynamic Period Label / Next Controls */}
                 <button
                   aria-label="Previous period"
                   className="grid size-[42px] place-items-center rounded-xl border border-[#dce5ef] text-[#71839e] hover:bg-[#f8fafc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8]"
@@ -940,11 +1000,12 @@ function CalendarContent({
                   <AdminIcon className="size-4 rotate-180" name="chevronRight" />
                 </button>
                 <button
-                  className="text-[14px] font-bold text-[#2187a8] hover:text-[#096d91] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8]"
+                  className="min-w-[84px] text-center text-[14px] font-bold text-[#2187a8] hover:text-[#096d91] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8]"
                   onClick={handleToday}
+                  title="Click to return to Today"
                   type="button"
                 >
-                  {content.controls.todayLabel}
+                  {getCalendarPeriodLabel(selectedDate, view, new Date(), content.controls.todayLabel)}
                 </button>
                 <button
                   aria-label="Next period"

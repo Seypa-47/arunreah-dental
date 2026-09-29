@@ -68,6 +68,10 @@ export type LandingDoctor = {
 export type LandingBranch = {
   hoursDays: string;
   hoursTime: string;
+  hoursSchedules?: {
+    days: string;
+    time: string;
+  }[];
   imageAlt: string;
   imageUrl: string;
   imagePresentation?: import('@arunreah/shared').ImagePresentation;
@@ -270,6 +274,10 @@ export type BranchesPageContent = Pick<LandingPageContent, 'actions' | 'footer' 
     directionsUrl: string;
     hoursDays: string;
     hoursTime: string;
+    hoursSchedules?: {
+      days: string;
+      time: string;
+    }[];
     imageAlt: string;
     imagePresentation?: import('@arunreah/shared').ImagePresentation;
     imageUrl: string;
@@ -391,7 +399,25 @@ export type ServiceDetailContent = Pick<LandingPageContent, 'actions' | 'footer'
     | undefined;
 };
 
+export type ContactBranchInfo = {
+  address: string;
+  badge?: string;
+  directionsUrl?: string;
+  hours: string;
+  id: string;
+  info: {
+    description: string;
+    icon: 'clock' | 'email' | 'location' | 'phone';
+    label: string;
+    value: string;
+  }[];
+  name: string;
+  phones: string[];
+  slug: string;
+};
+
 export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  branchContacts?: ContactBranchInfo[];
   contactCards: {
     description: string;
     icon: 'clock' | 'email' | 'location' | 'phone';

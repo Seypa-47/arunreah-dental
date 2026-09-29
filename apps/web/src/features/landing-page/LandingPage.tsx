@@ -97,7 +97,7 @@ function SectionHeader({
     <div className="mx-auto flex w-full max-w-[1280px] items-end justify-between gap-4 px-4 sm:px-6 lg:px-8">
       <div className={align === 'center' ? 'mx-auto text-center' : undefined}>
         {eyebrow ? (
-          <p className="ui-eyebrow mb-4 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695b9]">
+          <p className="ui-eyebrow mb-4 text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695b9]">
             {eyebrow}
           </p>
         ) : null}
@@ -261,7 +261,7 @@ function PromotionsSection({
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-[680px]">
-            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.eyebrow}</p>
+            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{editorial.eyebrow}</p>
             <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]" id="promotions-title">{editorial.title}</h2>
             <p className="mt-3 max-w-[620px] text-[15px] leading-6 text-[#607486] sm:text-[16px]">{editorial.subtitle}</p>
           </div>
@@ -273,7 +273,7 @@ function PromotionsSection({
           {promotions.map((promotion) => (
             <article className="group overflow-hidden rounded-2xl border border-[#dceaf0] bg-white shadow-[0_2px_12px_rgba(15,61,84,0.06)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,61,84,0.12)]" key={`${promotion.title}-${promotion.imageUrl}`}>
               <div className="relative overflow-hidden bg-[#eaf2f6]">
-                <CmsImage alt={promotion.imageAlt} className="aspect-[16/10] w-full transition duration-500 group-hover:scale-[1.03]" fallbackSrc="/assets/landing/hero-clinic.png" presentation={promotion.imagePresentation} src={promotion.imageUrl} />
+                <CmsImage alt={promotion.imageAlt} className="aspect-[16/10] w-full" fallbackSrc="/assets/landing/hero-clinic.png" presentation={promotion.imagePresentation} src={promotion.imageUrl} />
                 {promotion.badge ? <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-bold text-[#07577f] shadow-sm">{promotion.badge}</span> : null}
               </div>
               <div className="p-5 sm:p-6">
@@ -483,7 +483,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695b9]">
+            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695b9]">
               {copy.servicesEyebrow}
             </p>
             <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">{copy.servicesTitle}</h2>
@@ -560,7 +560,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                 >
                   {hasImage ? (
                     <div className="h-[182px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[196px]">
-                      <CmsImage alt={service.imageAlt || service.name} className="pointer-events-none h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" draggable={false} fallbackSrc="/assets/landing/service-general.png" presentation={service.imagePresentation} src={service.imageUrl} />
+                      <CmsImage alt={service.imageAlt || service.name} className="pointer-events-none h-full w-full object-cover" draggable={false} fallbackSrc="/assets/landing/service-general.png" presentation={service.imagePresentation} src={service.imageUrl} />
                     </div>
                   ) : null}
                   <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'h-[136px] sm:h-[138px]' : 'min-h-[176px]'}`}>
@@ -597,7 +597,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
+            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">
               {copy.specialistsEyebrow}
             </p>
             <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">{copy.specialistsTitle}</h2>
@@ -669,7 +669,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
               >
                 {hasImage ? (
                   <div className="h-[226px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[242px]">
-                    <CmsImage alt={doctor.imageAlt || doctor.name} className="pointer-events-none h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" draggable={false} fallbackSrc="/assets/landing/doctor-chea-kimly.png" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} />
+                    <CmsImage alt={doctor.imageAlt || doctor.name} className="pointer-events-none h-full w-full object-cover" draggable={false} fallbackSrc="/assets/landing/doctor-chea-kimly.png" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} />
                   </div>
                 ) : null}
                 <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'h-[100px]' : 'min-h-[176px]'}`}>
@@ -696,18 +696,24 @@ export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch
 
           return (
             <Card
-              className={`grid min-h-[212px] overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] md:min-h-[232px] ${hasImage ? 'grid-cols-[1.15fr_0.85fr] md:grid-cols-[1.08fr_0.92fr]' : 'grid-cols-1'}`}
+              className={`group relative grid min-h-[212px] overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] md:min-h-[232px] ${hasImage ? 'grid-cols-[1.15fr_0.85fr] md:grid-cols-[1.08fr_0.92fr]' : 'grid-cols-1'}`}
               key={branch.name}
             >
               <div className="p-4 sm:p-5 md:p-6">
-                <h3 className="mb-4 flex items-center gap-2 text-[16px] font-bold leading-5 text-[#005687] sm:text-[19px] sm:leading-[22px]">
-                  <img alt="" aria-hidden="true" className="size-6" src={asset('branch-card-pin.svg')} />
-                  {branch.name}
+                <h3 className="mb-4 text-[16px] font-bold leading-5 text-[#005687] sm:text-[19px] sm:leading-[22px]">
+                  <Link
+                    aria-label={`View ${branch.name}`}
+                    className="inline-flex items-center gap-2 transition group-hover:text-[#3695B9] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] after:absolute after:inset-0 after:z-0"
+                    to="/branches"
+                  >
+                    <img alt="" aria-hidden="true" className="size-6" src={asset('branch-card-pin.svg')} />
+                    {branch.name}
+                  </Link>
                 </h3>
                 <div className="space-y-2 border-b border-[#edf2f7] pb-3 sm:space-y-3 sm:pb-4">
                   {branch.phones.map((phone) => (
                     <a
-                      className="flex min-h-11 items-center gap-2 text-[13px] font-semibold leading-4 text-[#005687] hover:underline sm:gap-3 sm:text-[14px] sm:leading-5"
+                      className="relative z-10 flex min-h-11 w-fit items-center gap-2 text-[13px] font-semibold leading-4 text-[#005687] hover:underline sm:gap-3 sm:text-[14px] sm:leading-5"
                       href={`tel:${phone.replaceAll(' ', '')}`}
                       key={phone}
                     >
@@ -718,9 +724,20 @@ export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch
                 </div>
                 <p className="mt-3 flex items-start gap-2 text-[12px] leading-4 text-[#607486] sm:mt-4 sm:gap-3 sm:text-[13px] sm:leading-5">
                   <img alt="" aria-hidden="true" className="size-5" src={asset('branch-card-clock.svg')} />
-                  <span>
-                    {branch.hoursDays}
-                    <span className="block font-semibold text-[#005687]">{branch.hoursTime}</span>
+                  <span className="space-y-1">
+                    {branch.hoursSchedules && branch.hoursSchedules.length > 1 ? (
+                      branch.hoursSchedules.map((schedule, idx) => (
+                        <span className="block" key={`${schedule.days}-${idx}`}>
+                          {schedule.days ? <span className="mr-1.5">{schedule.days}</span> : null}
+                          <span className="font-semibold text-[#005687]">{schedule.time}</span>
+                        </span>
+                      ))
+                    ) : (
+                      <>
+                        {branch.hoursDays}
+                        <span className="block font-semibold text-[#005687]">{branch.hoursTime}</span>
+                      </>
+                    )}
                   </span>
                 </p>
               </div>
@@ -745,7 +762,7 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
       <div className="relative mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="mb-7 flex items-end justify-between border-b border-white/25 pb-4">
           <div>
-            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase tracking-[0.22em] text-[#b9e8f5]">{copy.showcaseEyebrow}</p>
+            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase tracking-[0.06em] text-[#b9e8f5]">{copy.showcaseEyebrow}</p>
             <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] sm:text-[38px]">{copy.showcaseTitle}</h2>
           </div>
           <Link
@@ -767,7 +784,7 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
                 >
                   {item.imageUrl ? (
                     <div className="h-[212px] w-full overflow-hidden rounded-lg">
-                      <CmsImage alt={item.imageAlt || item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" fallbackSrc="/assets/landing/showcase-family.png" presentation={item.imagePresentation} src={item.imageUrl} />
+                      <CmsImage alt={item.imageAlt || item.title} className="h-full w-full object-cover" fallbackSrc="/assets/landing/showcase-family.png" presentation={item.imagePresentation} src={item.imageUrl} />
                     </div>
                   ) : null}
                   <h3 className="px-2 pb-3 pt-4 text-[18px] font-bold leading-6 text-white group-hover:underline">{item.title}</h3>

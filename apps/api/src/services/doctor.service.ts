@@ -172,11 +172,19 @@ export async function getPublicDoctor(
 ) {
   const doctor = await repository.findPublicDoctorBySlug(database, slug);
   if (!doctor) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
-  const [expertise, education, relatedDoctors, presentations] = await Promise.all([
+  const [expertise, education, relatedDoctors] = await Promise.all([
     repository.getExpertise(database, doctor.id),
     repository.getEducation(database, doctor.id),
     repository.getRelatedDoctors(database, doctor.id),
-    listForOwners(database, [{ ownerType: 'DOCTOR', ownerId: doctor.id, slot: 'PRIMARY' }]),
+  ]);
+  const publishedRelatedDoctors = relatedDoctors.filter((item) => item.doctor.status === 'PUBLISHED');
+  const presentations = await listForOwners(database, [
+    { ownerType: 'DOCTOR', ownerId: doctor.id, slot: 'PRIMARY' },
+    ...publishedRelatedDoctors.map((item) => ({
+      ownerType: 'DOCTOR' as const,
+      ownerId: item.doctor.id,
+      slot: 'PRIMARY',
+    })),
   ]);
   return {
     ...localize(doctor, language, presentations),
@@ -196,9 +204,7 @@ export async function getPublicDoctor(
       yearLabel: item.yearLabel,
       displayOrder: item.displayOrder,
     })),
-    relatedDoctors: relatedDoctors
-      .filter((item) => item.doctor.status === 'PUBLISHED')
-      .map((item) => localize(item.doctor, language)),
+    relatedDoctors: publishedRelatedDoctors.map((item) => localize(item.doctor, language, presentations)),
   };
 }
 

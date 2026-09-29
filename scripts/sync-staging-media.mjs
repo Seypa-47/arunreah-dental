@@ -72,6 +72,21 @@ const MEDIA_MAPPINGS = [
     file: join(PUBLIC_ASSETS, 'doctor-chuong-kunthy.jpg'),
     contentType: 'image/jpeg'
   },
+  {
+    key: 'doctors/e04fff49-7cd9-4734-9673-fc1af08b0047-dsc05833.jpg',
+    file: join(PUBLIC_ASSETS, 'doctor-taing-thanith-new.jpg'),
+    contentType: 'image/jpeg'
+  },
+  {
+    key: 'doctors/b661ef4f-d70d-44eb-bea2-4587825a3b9f-dsc05843.jpg',
+    file: join(PUBLIC_ASSETS, 'doctor-chea-kimly-new.jpg'),
+    contentType: 'image/jpeg'
+  },
+  {
+    key: 'doctors/ad427fdd-873b-45ec-af59-70e80d07adea-dsc05731.jpg',
+    file: join(PUBLIC_ASSETS, 'doctor-heng-bunhabb.jpg'),
+    contentType: 'image/jpeg'
+  },
   // Showcases
   {
     key: 'showcases/bb3cb831-3b2a-43ba-8d39-635998bf4f80-implant-story.jpg',

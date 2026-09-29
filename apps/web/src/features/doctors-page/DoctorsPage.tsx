@@ -78,18 +78,18 @@ function DoctorsHero({
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-[54%] bg-gradient-to-t from-white/70 via-white/36 to-transparent sm:right-auto sm:h-[56%] sm:w-[62%] sm:bg-[radial-gradient(100%_100%_at_0%_100%,rgba(255,255,255,0.64)_0%,rgba(255,255,255,0.38)_44%,rgba(255,255,255,0.12)_72%,transparent_100%)]"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-white/90 via-white/65 to-transparent sm:right-auto sm:h-[68%] sm:w-[66%] sm:bg-[radial-gradient(100%_100%_at_0%_100%,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.62)_48%,rgba(255,255,255,0.22)_76%,transparent_100%)]"
           />
           <div className="relative z-10 flex min-h-[260px] flex-col justify-end p-4 pb-5 sm:min-h-[360px] sm:p-7 sm:pb-7 md:min-h-[420px] lg:min-h-[460px] lg:px-9 lg:pb-8">
             <div className="max-w-[460px] sm:max-w-[520px]">
-              <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+              <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
                 {eyebrow}
               </p>
-              <h1 className="mt-1.5 text-[24px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-2 sm:text-[32px] lg:text-[36px]">
+              <h1 className="mt-2 text-[24px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.9)] sm:mt-2.5 sm:text-[32px] lg:text-[36px]">
                 {title}
               </h1>
               {description ? (
-                <p className="mt-2 max-w-[460px] text-[14px] font-medium leading-6 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)] sm:mt-2.5 sm:text-[16px] sm:leading-7">
+                <p className="mt-2 max-w-[460px] text-[14px] font-medium leading-6 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:mt-2.5 sm:text-[16px] sm:leading-7">
                   {description}
                 </p>
               ) : null}
@@ -101,12 +101,12 @@ function DoctorsHero({
   );
 }
 
-function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
+export function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
   const { language } = usePublicLanguage();
   const hasImage = Boolean(doctor.imageUrl);
 
   return (
-    <Card className="overflow-hidden rounded-xl border-[#e6edf1] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-0.5 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
+    <Card className="overflow-hidden rounded-xl border-[#e6edf1] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-[border-color,box-shadow] duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
       <Link
         aria-label={`View profile for ${doctor.name}`}
         className="group flex min-h-[196px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:block"
@@ -169,7 +169,7 @@ function DoctorsGrid({ doctors }: { doctors: LandingDoctor[] }) {
     >
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="mb-6 max-w-[650px] sm:mb-8">
-          <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+          <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[0.06em] text-[#3695B9] sm:text-[12px]">
             {copy.eyebrow}
           </p>
           <h2 className="mt-2 text-[27px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">
@@ -202,7 +202,7 @@ function PatientFirstApproach({
     <section className="border-t border-[#e7eff3] bg-[#f7fafc] py-12 sm:py-16">
       <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[640px]">
-          <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">
+          <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">
             {copy.eyebrow}
           </p>
           <h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">

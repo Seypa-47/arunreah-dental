@@ -288,7 +288,7 @@ function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] })
           />
           <div className="relative z-10 flex items-center py-8 sm:min-h-[250px] sm:py-10">
             <div className="max-w-[600px]">
-              {eyebrow ? <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p> : null}
+              {eyebrow ? <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[0.06em] text-[#086c91] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[12px]">{eyebrow}</p> : null}
               <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:text-[38px]">{hero.title}</h1>
               <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)]">{hero.subtitle}</p>
             </div>

@@ -20,37 +20,56 @@ import { toMediaKey } from './media-key';
 
 type EditableService = AdminService & {
   aboutContent: string;
+  aboutContentKm: string;
   aboutImagePresentation: ImagePresentation;
   aboutImageUrl: string;
   aboutTitle: string;
+  aboutTitleKm: string;
   anesthesia: string;
   benefits: BenefitPreview[];
   benefitsIntro: string;
   bottomCtaButton: string;
   bottomCtaDescription: string;
+  bottomCtaDescriptionKm: string;
   bottomCtaTitle: string;
+  bottomCtaTitleKm: string;
   canonicalUrl: string;
+  consultation: string;
+  consultationKm: string;
   duration: string;
+  durationKm: string;
   detailSections: CreateServiceInput['detailSections'];
   detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
   editorialLabelEn: string;
   editorialLabelKm: string;
   editorialTitleEn: string;
   editorialTitleKm: string;
+  heroEyebrow: string;
+  heroEyebrowKm: string;
   heroHeading: string;
+  heroHeadingKm: string;
   heroImagePresentation: ImagePresentation;
   heroImageUrl: string;
   imagePresentation: ImagePresentation;
   heroPrimaryCta: string;
+  heroPrimaryCtaKm: string;
   heroSecondaryCta: string;
+  heroSecondaryCtaKm: string;
   heroSummary: string;
+  heroSummaryKm: string;
   longevity: string;
   metaDescription: string;
+  metaDescriptionKm: string;
   metaTitle: string;
+  metaTitleKm: string;
   recovery: string;
+  recoveryKm: string;
   relatedCategory: string;
   relatedServices: string[];
+  serviceBenefits: CreateServiceInput['benefits'];
   slug: string;
+  visits: string;
+  visitsKm: string;
 };
 
 type EditableDetailSection = CreateServiceInput['detailSections'][number];
@@ -488,6 +507,122 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
   );
 }
 
+function HeroSectionCard({
+  service,
+  setService,
+}: {
+  service: EditableService;
+  setService: Dispatch<SetStateAction<EditableService>>;
+}) {
+  return (
+    <Card className="mt-4 rounded-[18px] border-[#dce5ef] p-6 shadow-none">
+      <div>
+        <h2 className="text-[16px] font-bold text-[#182238]">2. Hero Section (Service Detail Page Banner)</h2>
+        <p className="mt-1 text-[13px] leading-6 text-[#71839e]">
+          Edit the eyebrow, heading, summary paragraph, CTA buttons, and optional hero image displayed at the top of this service&apos;s detail page.
+        </p>
+      </div>
+
+      <div className="mt-5 space-y-5">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Hero Eyebrow · English">
+            <TextInput
+              onChange={(e) => setService((c) => ({ ...c, heroEyebrow: e.target.value }))}
+              placeholder="e.g. Surgical care"
+              value={service.heroEyebrow}
+            />
+          </Field>
+          <Field label="ស្លាកខាងលើ Hero · ខ្មែរ">
+            <TextInput
+              lang="km"
+              onChange={(e) => setService((c) => ({ ...c, heroEyebrowKm: e.target.value }))}
+              placeholder="ឧ. ការថែទាំវះកាត់"
+              value={service.heroEyebrowKm}
+            />
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Hero Heading · English">
+            <TextInput
+              onChange={(e) => setService((c) => ({ ...c, heroHeading: e.target.value }))}
+              value={service.heroHeading}
+            />
+          </Field>
+          <Field label="ចំណងជើង Hero · ខ្មែរ">
+            <TextInput
+              lang="km"
+              onChange={(e) => setService((c) => ({ ...c, heroHeadingKm: e.target.value }))}
+              value={service.heroHeadingKm}
+            />
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Hero Summary (detail page intro under heading) · English">
+            <TextAreaInput
+              className="h-[110px] resize-none"
+              onChange={(e) => setService((c) => ({ ...c, heroSummary: e.target.value }))}
+              value={service.heroSummary}
+            />
+          </Field>
+          <Field label="សេចក្តីសង្ខេប Hero (អត្ថបទក្រោមចំណងជើងលើទំព័រសេវា) · ខ្មែរ">
+            <TextAreaInput
+              className="h-[110px] resize-none"
+              lang="km"
+              onChange={(e) => setService((c) => ({ ...c, heroSummaryKm: e.target.value }))}
+              value={service.heroSummaryKm}
+            />
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Primary CTA Button · English">
+            <TextInput
+              onChange={(e) => setService((c) => ({ ...c, heroPrimaryCta: e.target.value }))}
+              value={service.heroPrimaryCta}
+            />
+          </Field>
+          <Field label="ប៊ូតុងទី១ · ខ្មែរ">
+            <TextInput
+              lang="km"
+              onChange={(e) => setService((c) => ({ ...c, heroPrimaryCtaKm: e.target.value }))}
+              value={service.heroPrimaryCtaKm}
+            />
+          </Field>
+          <Field label="Secondary CTA Button · English">
+            <TextInput
+              onChange={(e) => setService((c) => ({ ...c, heroSecondaryCta: e.target.value }))}
+              value={service.heroSecondaryCta}
+            />
+          </Field>
+          <Field label="ប៊ូតុងទី២ · ខ្មែរ">
+            <TextInput
+              lang="km"
+              onChange={(e) => setService((c) => ({ ...c, heroSecondaryCtaKm: e.target.value }))}
+              value={service.heroSecondaryCtaKm}
+            />
+          </Field>
+        </div>
+
+        <MediaUploader
+          category="services"
+          framing={{
+            frames: imageFrames.serviceHero,
+            onChange: (heroImagePresentation) => setService((c) => ({ ...c, heroImagePresentation })),
+            value: service.heroImagePresentation,
+          }}
+          help="Optional. Shown beside the service heading on standard layouts. Without one, the service card image is used."
+          label="Hero image"
+          onClear={() => setService((c) => ({ ...c, heroImageUrl: '' }))}
+          onUploaded={(heroImageUrl) => setService((c) => ({ ...c, heroImageUrl }))}
+          value={service.heroImageUrl || undefined}
+        />
+      </div>
+    </Card>
+  );
+}
+
 function SectionRows({
   sections,
   service,
@@ -524,82 +659,7 @@ function SectionRows({
 
             {isOpen ? (
               <div className="border-t border-[#e1e8f0] bg-[#fafbfd] px-6 py-5">
-                {section.title.includes('2. Hero Section') ? (
-                  <div className="space-y-4">
-                    <MediaUploader
-                      category="services"
-                      framing={{
-                        frames: imageFrames.serviceHero,
-                        onChange: (heroImagePresentation) => setService((c) => ({ ...c, heroImagePresentation })),
-                        value: service.heroImagePresentation,
-                      }}
-                      help="Optional. Shown beside the service heading. Without one, the service card image is used."
-                      label="Hero image"
-                      onClear={() => setService((c) => ({ ...c, heroImageUrl: '' }))}
-                      onUploaded={(heroImageUrl) => setService((c) => ({ ...c, heroImageUrl }))}
-                      value={service.heroImageUrl || undefined}
-                    />
-                    <Field label="Hero Heading">
-                      <TextInput
-                        onChange={(e) => setService((c) => ({ ...c, heroHeading: e.target.value }))}
-                        value={service.heroHeading}
-                      />
-                    </Field>
-                    <Field label="Hero Summary">
-                      <TextAreaInput
-                        className="h-20"
-                        onChange={(e) => setService((c) => ({ ...c, heroSummary: e.target.value }))}
-                        value={service.heroSummary}
-                      />
-                    </Field>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Primary CTA Button">
-                        <TextInput
-                          onChange={(e) => setService((c) => ({ ...c, heroPrimaryCta: e.target.value }))}
-                          value={service.heroPrimaryCta}
-                        />
-                      </Field>
-                      <Field label="Secondary CTA Button">
-                        <TextInput
-                          onChange={(e) => setService((c) => ({ ...c, heroSecondaryCta: e.target.value }))}
-                          value={service.heroSecondaryCta}
-                        />
-                      </Field>
-                    </div>
-                  </div>
-                ) : section.title.includes('2a. Page Presentation') ? (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Page presentation">
-                      <select
-                        className="h-10 w-full rounded-xl border border-[#64748b] bg-white px-3.5 text-[13px] font-medium text-[#182238] shadow-xs outline-none transition hover:border-[#475569] focus:border-[#096b89] focus:ring-2 focus:ring-[#096b89]/20"
-                        onChange={(e) => setService((c) => ({ ...c, detailPresentation: e.target.value as EditableService['detailPresentation'] }))}
-                        value={service.detailPresentation}
-                      >
-                        <option value="STANDARD">Standard information</option>
-                        <option value="JOURNEY">Multi-stage treatment</option>
-                        <option value="CARE_MENU">Care menu</option>
-                        <option value="CLINICAL_SCOPE">Clinical scope</option>
-                        <option value="IMAGING_GUIDE">Imaging guide</option>
-                        <option value="PROBLEM_TO_CARE">Problem to care</option>
-                        <option value="FAMILY_CARE">Family care</option>
-                      </select>
-                    </Field>
-                    <div className="hidden sm:block" aria-hidden="true" />
-                    <Field label="Guide label (English)">
-                      <TextInput onChange={(e) => setService((c) => ({ ...c, editorialLabelEn: e.target.value }))} value={service.editorialLabelEn} />
-                    </Field>
-                    <Field label="Guide label (Khmer)">
-                      <TextInput onChange={(e) => setService((c) => ({ ...c, editorialLabelKm: e.target.value }))} value={service.editorialLabelKm} />
-                    </Field>
-                    <Field label="Guide title (English)">
-                      <TextInput onChange={(e) => setService((c) => ({ ...c, editorialTitleEn: e.target.value }))} value={service.editorialTitleEn} />
-                    </Field>
-                    <Field label="Guide title (Khmer)">
-                      <TextInput onChange={(e) => setService((c) => ({ ...c, editorialTitleKm: e.target.value }))} value={service.editorialTitleKm} />
-                    </Field>
-                    <p className="sm:col-span-2 text-[12px] leading-5 text-[#71839e]">Select the presentation that matches the content. Use a multi-stage treatment only for genuinely ordered clinical stages.</p>
-                  </div>
-                ) : section.title.includes('3. About Section') ? (
+                {section.title.includes('3. About Section') ? (
                   <div className="space-y-4">
                     <MediaUploader
                       category="services"
@@ -614,69 +674,199 @@ function SectionRows({
                       onUploaded={(aboutImageUrl) => setService((c) => ({ ...c, aboutImageUrl }))}
                       value={service.aboutImageUrl || undefined}
                     />
-                    <Field label="About Heading">
-                      <TextInput
-                        onChange={(e) => setService((c) => ({ ...c, aboutTitle: e.target.value }))}
-                        value={service.aboutTitle}
-                      />
-                    </Field>
-                    <Field label="About Content">
-                      <TextAreaInput
-                        className="h-24"
-                        onChange={(e) => setService((c) => ({ ...c, aboutContent: e.target.value }))}
-                        value={service.aboutContent}
-                      />
-                    </Field>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="About Heading · English">
+                        <TextInput
+                          onChange={(e) => setService((c) => ({ ...c, aboutTitle: e.target.value }))}
+                          value={service.aboutTitle}
+                        />
+                      </Field>
+                      <Field label="ចំណងជើងអំពីសេវា · ខ្មែរ">
+                        <TextInput
+                          lang="km"
+                          onChange={(e) => setService((c) => ({ ...c, aboutTitleKm: e.target.value }))}
+                          value={service.aboutTitleKm}
+                        />
+                      </Field>
+                      <Field label="About Content · English">
+                        <TextAreaInput
+                          className="h-28"
+                          onChange={(e) => setService((c) => ({ ...c, aboutContent: e.target.value }))}
+                          value={service.aboutContent}
+                        />
+                      </Field>
+                      <Field label="ខ្លឹមសារអំពីសេវា · ខ្មែរ">
+                        <TextAreaInput
+                          className="h-28"
+                          lang="km"
+                          onChange={(e) => setService((c) => ({ ...c, aboutContentKm: e.target.value }))}
+                          value={service.aboutContentKm}
+                        />
+                      </Field>
+                    </div>
                   </div>
                 ) : section.title.includes('4. Treatment at a Glance') ? (
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Procedure Duration">
+                    <Field label="Procedure Duration · English">
                       <TextInput
                         onChange={(e) => setService((c) => ({ ...c, duration: e.target.value }))}
                         value={service.duration}
                       />
                     </Field>
-                    <Field label="Recovery Time">
+                    <Field label="រយៈពេល · ខ្មែរ">
+                      <TextInput
+                        lang="km"
+                        onChange={(e) => setService((c) => ({ ...c, durationKm: e.target.value }))}
+                        value={service.durationKm}
+                      />
+                    </Field>
+                    <Field label="Recovery Time · English">
                       <TextInput
                         onChange={(e) => setService((c) => ({ ...c, recovery: e.target.value }))}
                         value={service.recovery}
                       />
                     </Field>
-                    <Field label="Anesthesia Type">
+                    <Field label="ការជាសះស្បើយ · ខ្មែរ">
                       <TextInput
-                        onChange={(e) => setService((c) => ({ ...c, anesthesia: e.target.value }))}
-                        value={service.anesthesia}
+                        lang="km"
+                        onChange={(e) => setService((c) => ({ ...c, recoveryKm: e.target.value }))}
+                        value={service.recoveryKm}
                       />
                     </Field>
-                    <Field label="Expected Longevity">
+                    <Field label="Visits · English">
                       <TextInput
-                        onChange={(e) => setService((c) => ({ ...c, longevity: e.target.value }))}
-                        value={service.longevity}
+                        onChange={(e) => setService((c) => ({ ...c, visits: e.target.value }))}
+                        value={service.visits}
+                      />
+                    </Field>
+                    <Field label="ចំនួនដងមកពិនិត្យ · ខ្មែរ">
+                      <TextInput
+                        lang="km"
+                        onChange={(e) => setService((c) => ({ ...c, visitsKm: e.target.value }))}
+                        value={service.visitsKm}
+                      />
+                    </Field>
+                    <Field label="Consultation · English">
+                      <TextInput
+                        onChange={(e) => setService((c) => ({ ...c, consultation: e.target.value }))}
+                        value={service.consultation}
+                      />
+                    </Field>
+                    <Field label="ការពិគ្រោះយោបល់ · ខ្មែរ">
+                      <TextInput
+                        lang="km"
+                        onChange={(e) => setService((c) => ({ ...c, consultationKm: e.target.value }))}
+                        value={service.consultationKm}
                       />
                     </Field>
                   </div>
                 ) : section.title.includes('5. Benefits Section') ? (
                   <div className="space-y-4">
-                    <Field label="Benefits Intro Text">
-                      <TextInput
-                        onChange={(e) => setService((c) => ({ ...c, benefitsIntro: e.target.value }))}
-                        value={service.benefitsIntro}
-                      />
-                    </Field>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {service.benefits.map((b, idx) => (
-                        <Field key={b.icon} label={`Benefit #${idx + 1}`}>
-                          <TextInput
-                            onChange={(e) => {
-                              const newBenefits = [...service.benefits];
-                              newBenefits[idx] = { ...b, title: e.target.value };
-                              setService((c) => ({ ...c, benefits: newBenefits }));
-                            }}
-                            value={b.title}
-                          />
-                        </Field>
-                      ))}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="text-[12.5px] leading-5 text-[#61738d]">
+                        Highlights shown in &ldquo;At a glance — What to know before you begin&rdquo; or &ldquo;Key Benefits&rdquo; (up to 6 items).
+                      </p>
+                      {service.serviceBenefits.length < 6 ? (
+                        <Button
+                          className="min-h-9 px-3.5 text-[12px]"
+                          onClick={() =>
+                            setService((c) => ({
+                              ...c,
+                              serviceBenefits: [
+                                ...c.serviceBenefits,
+                                {
+                                  titleEn: '',
+                                  titleKm: '',
+                                  descriptionEn: null,
+                                  descriptionKm: null,
+                                  icon: 'check',
+                                  displayOrder: c.serviceBenefits.length,
+                                },
+                              ],
+                            }))
+                          }
+                          type="button"
+                          variant="secondary"
+                        >
+                          + Add highlight
+                        </Button>
+                      ) : null}
                     </div>
+                    {service.serviceBenefits.length > 0 ? (
+                      <div className="space-y-4">
+                        {service.serviceBenefits.map((benefitItem, idx) => (
+                          <div className="rounded-xl border border-[#dce5ef] bg-white p-4" key={idx}>
+                            <div className="mb-3 flex items-center justify-between">
+                              <span className="text-[12px] font-bold text-[#167ea7]">Highlight #{idx + 1}</span>
+                              <button
+                                className="text-[12px] font-bold text-[#b42318] hover:underline"
+                                onClick={() =>
+                                  setService((c) => ({
+                                    ...c,
+                                    serviceBenefits: c.serviceBenefits
+                                      .filter((_, i) => i !== idx)
+                                      .map((item, i) => ({ ...item, displayOrder: i })),
+                                  }))
+                                }
+                                type="button"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <Field label="Title · English">
+                                <TextInput
+                                  onChange={(e) => {
+                                    const next = [...service.serviceBenefits];
+                                    next[idx] = { ...benefitItem, titleEn: e.target.value };
+                                    setService((c) => ({ ...c, serviceBenefits: next }));
+                                  }}
+                                  value={benefitItem.titleEn}
+                                />
+                              </Field>
+                              <Field label="ចំណងជើង · ខ្មែរ">
+                                <TextInput
+                                  lang="km"
+                                  onChange={(e) => {
+                                    const next = [...service.serviceBenefits];
+                                    next[idx] = { ...benefitItem, titleKm: e.target.value };
+                                    setService((c) => ({ ...c, serviceBenefits: next }));
+                                  }}
+                                  value={benefitItem.titleKm}
+                                />
+                              </Field>
+                              <Field label="Description · English">
+                                <TextAreaInput
+                                  className="h-20"
+                                  onChange={(e) => {
+                                    const next = [...service.serviceBenefits];
+                                    next[idx] = { ...benefitItem, descriptionEn: e.target.value || null };
+                                    setService((c) => ({ ...c, serviceBenefits: next }));
+                                  }}
+                                  value={benefitItem.descriptionEn ?? ''}
+                                />
+                              </Field>
+                              <Field label="ការពិពណ៌នា · ខ្មែរ">
+                                <TextAreaInput
+                                  className="h-20"
+                                  lang="km"
+                                  onChange={(e) => {
+                                    const next = [...service.serviceBenefits];
+                                    next[idx] = { ...benefitItem, descriptionKm: e.target.value || null };
+                                    setService((c) => ({ ...c, serviceBenefits: next }));
+                                  }}
+                                  value={benefitItem.descriptionKm ?? ''}
+                                />
+                              </Field>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="rounded-xl border border-dashed border-[#dce5ef] bg-white p-4 text-[13px] text-[#71839e]">
+                        No highlights added yet. Click &ldquo;+ Add highlight&rdquo; to add one.
+                      </p>
+                    )}
                   </div>
                 ) : section.title.includes('6. Related Services') ? (
                   <div className="space-y-3">
@@ -712,42 +902,68 @@ function SectionRows({
                     </div>
                   </div>
                 ) : section.title.includes('7. Bottom CTA Section') ? (
-                  <div className="space-y-4">
-                    <Field label="CTA Heading">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="CTA Heading · English">
                       <TextInput
                         onChange={(e) => setService((c) => ({ ...c, bottomCtaTitle: e.target.value }))}
                         value={service.bottomCtaTitle}
                       />
                     </Field>
-                    <Field label="CTA Description">
+                    <Field label="ចំណងជើង CTA · ខ្មែរ">
+                      <TextInput
+                        lang="km"
+                        onChange={(e) => setService((c) => ({ ...c, bottomCtaTitleKm: e.target.value }))}
+                        value={service.bottomCtaTitleKm}
+                      />
+                    </Field>
+                    <Field label="CTA Description · English">
                       <TextAreaInput
                         className="h-20"
                         onChange={(e) => setService((c) => ({ ...c, bottomCtaDescription: e.target.value }))}
                         value={service.bottomCtaDescription}
                       />
                     </Field>
-                    <Field label="Button Text">
-                      <TextInput
-                        onChange={(e) => setService((c) => ({ ...c, bottomCtaButton: e.target.value }))}
-                        value={service.bottomCtaButton}
+                    <Field label="ការពិពណ៌នា CTA · ខ្មែរ">
+                      <TextAreaInput
+                        className="h-20"
+                        lang="km"
+                        onChange={(e) => setService((c) => ({ ...c, bottomCtaDescriptionKm: e.target.value }))}
+                        value={service.bottomCtaDescriptionKm}
                       />
                     </Field>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <Field label="Meta Title">
-                      <TextInput
-                        onChange={(e) => setService((c) => ({ ...c, metaTitle: e.target.value }))}
-                        value={service.metaTitle}
-                      />
-                    </Field>
-                    <Field label="Meta Description">
-                      <TextAreaInput
-                        className="h-20"
-                        onChange={(e) => setService((c) => ({ ...c, metaDescription: e.target.value }))}
-                        value={service.metaDescription}
-                      />
-                    </Field>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Meta Title · English">
+                        <TextInput
+                          onChange={(e) => setService((c) => ({ ...c, metaTitle: e.target.value }))}
+                          value={service.metaTitle}
+                        />
+                      </Field>
+                      <Field label="ចំណងជើង Meta · ខ្មែរ">
+                        <TextInput
+                          lang="km"
+                          onChange={(e) => setService((c) => ({ ...c, metaTitleKm: e.target.value }))}
+                          value={service.metaTitleKm}
+                        />
+                      </Field>
+                      <Field label="Meta Description · English">
+                        <TextAreaInput
+                          className="h-20"
+                          onChange={(e) => setService((c) => ({ ...c, metaDescription: e.target.value }))}
+                          value={service.metaDescription}
+                        />
+                      </Field>
+                      <Field label="ការពិពណ៌នា Meta · ខ្មែរ">
+                        <TextAreaInput
+                          className="h-20"
+                          lang="km"
+                          onChange={(e) => setService((c) => ({ ...c, metaDescriptionKm: e.target.value }))}
+                          value={service.metaDescriptionKm}
+                        />
+                      </Field>
+                    </div>
                     <Field label="Canonical URL">
                       <TextInput
                         onChange={(e) => setService((c) => ({ ...c, canonicalUrl: e.target.value }))}
@@ -767,7 +983,7 @@ function SectionRows({
 
 
 
-function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent & { service: AdminService } }) {
+function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent & { service: NonNullable<AdminServiceDetailContent['service']> } }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDirty, setIsDirty] = useState(false);
@@ -781,38 +997,57 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
   const [service, setServiceState] = useState<EditableService>(() => ({
     ...content.service,
     aboutContent: content.service.saved.aboutBodyEn ?? content.preview.aboutDescription,
+    aboutContentKm: content.service.saved.aboutBodyKm ?? '',
     aboutImagePresentation: content.service.saved.aboutImagePresentation ?? defaultImagePresentation,
     // Saved media keys only: template preview images must never be written back on save.
     aboutImageUrl: content.service.saved.aboutImageKey ?? '',
     aboutTitle: content.service.saved.aboutTitleEn ?? content.preview.aboutTitle,
+    aboutTitleKm: content.service.saved.aboutTitleKm ?? '',
     anesthesia: 'Local Anesthesia / Sedation',
     benefits: content.preview.benefits,
     benefitsIntro: `Why choose ${content.service.name} at Arunreah Dental Clinic`,
-    bottomCtaButton: 'Book Consultation',
-    bottomCtaDescription: 'Schedule a personalized consultation with our experienced dental team today.',
-    bottomCtaTitle: `Ready to Restore Your Smile with ${content.service.name}?`,
+    bottomCtaButton: content.service.saved.primaryCtaLabelEn ?? 'Book Consultation',
+    bottomCtaDescription: content.service.saved.ctaDescriptionEn ?? 'Schedule a personalized consultation with our experienced dental team today.',
+    bottomCtaDescriptionKm: content.service.saved.ctaDescriptionKm ?? '',
+    bottomCtaTitle: content.service.saved.ctaTitleEn ?? `Ready to Restore Your Smile with ${content.service.name}?`,
+    bottomCtaTitleKm: content.service.saved.ctaTitleKm ?? '',
     canonicalUrl: `/services/${initialSlug}`,
-    duration: '1 - 2 Hours',
+    consultation: content.service.saved.consultationEn ?? '',
+    consultationKm: content.service.saved.consultationKm ?? '',
+    duration: content.service.saved.durationEn ?? '',
+    durationKm: content.service.saved.durationKm ?? '',
     detailSections: content.service.detailSections,
     detailPresentation: content.service.detailPresentation,
     editorialLabelEn: content.service.editorialLabelEn,
     editorialLabelKm: content.service.editorialLabelKm,
     editorialTitleEn: content.service.editorialTitleEn,
     editorialTitleKm: content.service.editorialTitleKm,
+    heroEyebrow: content.service.saved.heroEyebrowEn ?? '',
+    heroEyebrowKm: content.service.saved.heroEyebrowKm ?? '',
     heroHeading: content.service.saved.heroTitleEn ?? `${content.preview.titlePrefix} ${content.service.name}`,
+    heroHeadingKm: content.service.saved.heroTitleKm ?? '',
     heroImagePresentation: content.service.saved.heroImagePresentation ?? defaultImagePresentation,
     heroImageUrl: content.service.saved.heroImageKey ?? '',
     imagePresentation: content.service.saved.imagePresentation ?? defaultImagePresentation,
-    heroPrimaryCta: 'Book an Appointment',
-    heroSecondaryCta: content.preview.requestLabel,
+    heroPrimaryCta: content.service.saved.primaryCtaLabelEn ?? 'Book an Appointment',
+    heroPrimaryCtaKm: content.service.saved.primaryCtaLabelKm ?? '',
+    heroSecondaryCta: content.service.saved.secondaryCtaLabelEn ?? content.preview.requestLabel,
+    heroSecondaryCtaKm: content.service.saved.secondaryCtaLabelKm ?? '',
     heroSummary: content.service.saved.heroSummaryEn ?? content.service.description,
+    heroSummaryKm: content.service.saved.heroSummaryKm ?? content.service.descriptionKm,
     longevity: 'Permanent / Long-Term',
     metaDescription: content.service.saved.metaDescriptionEn ?? content.service.description,
+    metaDescriptionKm: content.service.saved.metaDescriptionKm ?? '',
     metaTitle: content.service.saved.metaTitleEn ?? `${content.service.name} in Phnom Penh | Arunreah Dental Clinic`,
-    recovery: '3 - 6 Months',
+    metaTitleKm: content.service.saved.metaTitleKm ?? '',
+    recovery: content.service.saved.recoveryEn ?? '',
+    recoveryKm: content.service.saved.recoveryKm ?? '',
     relatedCategory: content.service.category,
     relatedServices: ['Teeth Whitening', 'Routine Cleaning', 'Orthodontics'],
+    serviceBenefits: content.service.benefits ?? [],
     slug: initialSlug,
+    visits: content.service.saved.visitsEn ?? '',
+    visitsKm: content.service.saved.visitsKm ?? '',
   }));
   const setService: typeof setServiceState = (value) => {
     setIsDirty(true);
@@ -831,23 +1066,56 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       summaryEn: service.description || null,
       summaryKm: service.descriptionKm || null,
       descriptionEn: service.heroSummary || null,
+      descriptionKm: service.heroSummaryKm || null,
       imageKey: toMediaKey(service.imageUrl),
       imagePresentation: service.imagePresentation,
       heroImagePresentation: service.heroImagePresentation,
       aboutImagePresentation: service.aboutImagePresentation,
       featured: service.featured,
       displayOrder: service.order,
+      heroEyebrowEn: service.heroEyebrow || null,
+      heroEyebrowKm: service.heroEyebrowKm || null,
       heroTitleEn: service.heroHeading || null,
+      heroTitleKm: service.heroHeadingKm || null,
       heroSummaryEn: service.heroSummary || null,
+      heroSummaryKm: service.heroSummaryKm || null,
       heroImageKey: toMediaKey(service.heroImageUrl),
       aboutTitleEn: service.aboutTitle || null,
+      aboutTitleKm: service.aboutTitleKm || null,
       aboutBodyEn: service.aboutContent || null,
+      aboutBodyKm: service.aboutContentKm || null,
       aboutImageKey: toMediaKey(service.aboutImageUrl),
+      durationEn: service.duration || null,
+      durationKm: service.durationKm || null,
+      recoveryEn: service.recovery || null,
+      recoveryKm: service.recoveryKm || null,
+      visitsEn: service.visits || null,
+      visitsKm: service.visitsKm || null,
+      consultationEn: service.consultation || null,
+      consultationKm: service.consultationKm || null,
+      ctaTitleEn: service.bottomCtaTitle || null,
+      ctaTitleKm: service.bottomCtaTitleKm || null,
+      ctaDescriptionEn: service.bottomCtaDescription || null,
+      ctaDescriptionKm: service.bottomCtaDescriptionKm || null,
+      primaryCtaLabelEn: service.heroPrimaryCta || null,
+      primaryCtaLabelKm: service.heroPrimaryCtaKm || null,
+      secondaryCtaLabelEn: service.heroSecondaryCta || null,
+      secondaryCtaLabelKm: service.heroSecondaryCtaKm || null,
       editorialLabelEn: service.editorialLabelEn || null,
       editorialLabelKm: service.editorialLabelKm || null,
       editorialTitleEn: service.editorialTitleEn || null,
       editorialTitleKm: service.editorialTitleKm || null,
       detailPresentation: service.detailPresentation,
+      benefits: (service.serviceBenefits || [])
+        .filter((b) => b.titleEn.trim() || b.titleKm.trim())
+        .map((b, index) => ({
+          titleEn: b.titleEn.trim() || b.titleKm.trim(),
+          titleKm: b.titleKm.trim() || b.titleEn.trim(),
+          descriptionEn: b.descriptionEn?.trim() || null,
+          descriptionKm: b.descriptionKm?.trim() || null,
+          icon: b.icon || 'check',
+          displayOrder: index,
+        })),
       detailSections: (service.detailSections || []).map((section, index) => ({
         sectionType: section.sectionType ?? 'TEXT',
         headingEn: section.headingEn || null,
@@ -859,7 +1127,9 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
         displayOrder: typeof section.displayOrder === 'number' ? section.displayOrder : index,
       })),
       metaTitleEn: service.metaTitle || null,
+      metaTitleKm: service.metaTitleKm || null,
       metaDescriptionEn: service.metaDescription || null,
+      metaDescriptionKm: service.metaDescriptionKm || null,
     }),
     onSuccess: async () => {
       setIsDirty(false);
@@ -982,10 +1252,13 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       <div className="mt-6">
         <section aria-label="Service editor" className="space-y-4">
           <BasicInformation content={content} service={service} setService={setService} />
+          <HeroSectionCard service={service} setService={setService} />
           <PagePresentation service={service} setService={setService} />
           <DetailSectionsEditor service={service} setService={setService} />
           <SectionRows
-            sections={content.editor.sections.filter((section) => !section.title.includes('2a. Page Presentation'))}
+            sections={content.editor.sections.filter(
+              (section) => !section.title.includes('2. Hero Section') && !section.title.includes('2a. Page Presentation'),
+            )}
             service={service}
             setService={setService}
           />

@@ -70,25 +70,51 @@ export type AdminServiceDetailContent = {
     updatedByValue: string;
   };
   service: (AdminService & {
+    benefits: CreateServiceInput['benefits'];
     detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
     editorialLabelEn: string;
     editorialLabelKm: string;
     editorialTitleEn: string;
     editorialTitleKm: string;
     detailSections: CreateServiceInput['detailSections'];
+    relatedServiceIds: string[];
     /** Saved values; the editor falls back to template copy only when these are empty. */
     saved: {
       aboutBodyEn: string | null;
+      aboutBodyKm: string | null;
       aboutImageKey: string | null;
       aboutImagePresentation?: ImagePresentation;
       aboutTitleEn: string | null;
+      aboutTitleKm: string | null;
+      consultationEn: string | null;
+      consultationKm: string | null;
+      ctaDescriptionEn: string | null;
+      ctaDescriptionKm: string | null;
+      ctaTitleEn: string | null;
+      ctaTitleKm: string | null;
+      durationEn: string | null;
+      durationKm: string | null;
+      heroEyebrowEn: string | null;
+      heroEyebrowKm: string | null;
       heroImageKey: string | null;
       heroImagePresentation?: ImagePresentation;
       heroSummaryEn: string | null;
+      heroSummaryKm: string | null;
       heroTitleEn: string | null;
+      heroTitleKm: string | null;
       imagePresentation?: ImagePresentation;
       metaDescriptionEn: string | null;
+      metaDescriptionKm: string | null;
       metaTitleEn: string | null;
+      metaTitleKm: string | null;
+      primaryCtaLabelEn: string | null;
+      primaryCtaLabelKm: string | null;
+      recoveryEn: string | null;
+      recoveryKm: string | null;
+      secondaryCtaLabelEn: string | null;
+      secondaryCtaLabelKm: string | null;
+      visitsEn: string | null;
+      visitsKm: string | null;
     };
   }) | undefined;
 };
@@ -131,6 +157,7 @@ const adminServiceDetailLabels = {
       'Preventative Dentistry',
       'Specialty Dentistry',
       'Orthodontics',
+      'Oral Surgery',
     ],
     descriptionLabel: 'Short listing description (for services listing page card)',
     featuredLabel: 'Featured',
@@ -170,6 +197,7 @@ const adminServiceDetailLabels = {
       'Preventative Dentistry',
       'Specialty Dentistry',
       'Orthodontics',
+      'Oral Surgery',
     ],
     showLabel: 'Show in Services Listing',
     sortLabel: 'Sort Order',
@@ -233,24 +261,50 @@ export async function fetchAdminServiceDetailContent(serviceId: string | undefin
     navigation: servicesContent.navigation,
     service: {
       ...service,
+      benefits: detail.benefits ?? [],
       detailPresentation: detail.detailPresentation,
       editorialLabelEn: detail.editorialLabelEn ?? '',
       editorialLabelKm: detail.editorialLabelKm ?? '',
       editorialTitleEn: detail.editorialTitleEn ?? '',
       editorialTitleKm: detail.editorialTitleKm ?? '',
       detailSections: detail.detailSections,
+      relatedServiceIds: detail.relatedServiceIds ?? [],
       saved: {
         aboutBodyEn: detail.aboutBodyEn ?? null,
+        aboutBodyKm: detail.aboutBodyKm ?? null,
         aboutImageKey: detail.aboutImageKey ?? null,
         aboutImagePresentation: detail.aboutImagePresentation,
         aboutTitleEn: detail.aboutTitleEn ?? null,
+        aboutTitleKm: detail.aboutTitleKm ?? null,
+        consultationEn: detail.consultationEn ?? null,
+        consultationKm: detail.consultationKm ?? null,
+        ctaDescriptionEn: detail.ctaDescriptionEn ?? null,
+        ctaDescriptionKm: detail.ctaDescriptionKm ?? null,
+        ctaTitleEn: detail.ctaTitleEn ?? null,
+        ctaTitleKm: detail.ctaTitleKm ?? null,
+        durationEn: detail.durationEn ?? null,
+        durationKm: detail.durationKm ?? null,
+        heroEyebrowEn: detail.heroEyebrowEn ?? null,
+        heroEyebrowKm: detail.heroEyebrowKm ?? null,
         heroImageKey: detail.heroImageKey ?? null,
         heroImagePresentation: detail.heroImagePresentation,
         heroSummaryEn: detail.heroSummaryEn ?? null,
+        heroSummaryKm: detail.heroSummaryKm ?? null,
         heroTitleEn: detail.heroTitleEn ?? null,
+        heroTitleKm: detail.heroTitleKm ?? null,
         imagePresentation: detail.imagePresentation,
         metaDescriptionEn: detail.metaDescriptionEn ?? null,
+        metaDescriptionKm: detail.metaDescriptionKm ?? null,
         metaTitleEn: detail.metaTitleEn ?? null,
+        metaTitleKm: detail.metaTitleKm ?? null,
+        primaryCtaLabelEn: detail.primaryCtaLabelEn ?? null,
+        primaryCtaLabelKm: detail.primaryCtaLabelKm ?? null,
+        recoveryEn: detail.recoveryEn ?? null,
+        recoveryKm: detail.recoveryKm ?? null,
+        secondaryCtaLabelEn: detail.secondaryCtaLabelEn ?? null,
+        secondaryCtaLabelKm: detail.secondaryCtaLabelKm ?? null,
+        visitsEn: detail.visitsEn ?? null,
+        visitsKm: detail.visitsKm ?? null,
       },
     },
   };

@@ -77,14 +77,14 @@ function FounderProfile({ doctor, index, viewProfileLabel }: { doctor: AboutDoct
       <div className="flex items-center gap-3">
         <span className="text-[11px] font-extrabold tabular-nums tracking-[0.2em] text-[#3695B9]">{String(index + 1).padStart(2, '0')}</span>
         <span aria-hidden="true" className="h-px flex-1 bg-[#dde9ef]" />
-        {doctor.specialty ? <span className="ui-eyebrow shrink-0 text-[10.5px] font-bold uppercase leading-4 tracking-[0.16em] text-[#5b8ca6]">{doctor.specialty}</span> : null}
+        {doctor.specialty ? <span className="ui-eyebrow shrink-0 text-[10.5px] font-bold uppercase leading-4 tracking-[0.06em] text-[#5b8ca6]">{doctor.specialty}</span> : null}
       </div>
 
       <div className="mt-5 flex flex-1 gap-5 sm:gap-6">
         <div className="shrink-0 overflow-hidden rounded-lg bg-[#eef5f8]">
           <ResilientImage
             alt={doctor.imageAlt || doctor.name}
-            className="aspect-[4/5] w-[124px] object-cover transition duration-500 ease-out group-hover:scale-[1.04] sm:w-[152px] lg:w-[196px]"
+            className="aspect-[4/5] w-[124px] object-cover sm:w-[152px] lg:w-[196px]"
             fallbackSrc="/assets/landing/doctor-chea-kimly.png"
             presentation={doctor.presentation}
             src={doctor.imageUrl}
@@ -125,7 +125,7 @@ function StorySection({ editorial, featuredDoctor, secondFeaturedDoctor, stats, 
         </div>
 
         <div className="border-b border-[#d6e5eb] py-8 sm:py-10">
-          <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.profileLabel}</p>
+          <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{editorial.profileLabel}</p>
           <h2 className="mt-3 max-w-[820px] text-[32px] font-extrabold leading-[1.08] tracking-[-0.045em] text-[#073f60] sm:text-[46px]">{editorial.profileTitle}</h2>
           <div className="mt-5 h-1 w-16 rounded-full bg-[#3695B9]" />
         </div>
@@ -154,7 +154,7 @@ function StorySection({ editorial, featuredDoctor, secondFeaturedDoctor, stats, 
                     <span className="text-[68px] font-black leading-[0.9] tracking-[-0.05em] text-[#075d83] sm:text-[76px]">{stat.value}</span>
                     <span className="text-[30px] font-extrabold leading-none text-[#3695b9]">+</span>
                   </div>
-                  <p className="ui-eyebrow mt-3 text-[12px] font-extrabold uppercase leading-4 tracking-[0.16em] text-[#073f60]">{stat.label}</p>
+                  <p className="ui-eyebrow mt-3 text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#073f60]">{stat.label}</p>
                   <p className="mt-3 max-w-[240px] text-[12.5px] leading-5 text-[#61798a]">
                     {isKm
                       ? 'ការថែទាំធ្មេញប្រកបដោយការយកចិត្តទុកដាក់ និងជំនាញទុកចិត្តបាន'
@@ -228,7 +228,7 @@ function ClinicGallery({
         {/* Section Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-[620px]">
-            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
+            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">
               {editorial.galleryEyebrow}
             </p>
             <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">
@@ -348,7 +348,7 @@ function ClinicGallery({
 
 function ProfessionalDevelopment({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['professionalMedia']> }) {
   if (items.length === 0) return null;
-  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <div className="h-[240px] w-full overflow-hidden sm:h-[280px]"><CmsImage alt={item.title || editorial.professionalTitle} className="h-full w-full" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /></div> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
+  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <div className="h-[240px] w-full overflow-hidden sm:h-[280px]"><CmsImage alt={item.title || editorial.professionalTitle} className="h-full w-full" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /></div> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
 }
 
 function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['timeline']> }) {
@@ -358,7 +358,7 @@ function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['edi
     <section className="border-y border-[#e2edf2] bg-[#f7fafc] py-12 sm:py-16">
       <div className="mx-auto max-w-[1040px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[620px]">
-          <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{editorial.timelineEyebrow}</p>
+          <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">{editorial.timelineEyebrow}</p>
           <h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.timelineTitle}</h2>
         </div>
         <ol className="relative mt-8 border-l border-[#b9dbe6] pl-7 sm:mt-10 sm:border-l-0 sm:pl-0 sm:before:absolute sm:before:inset-y-0 sm:before:left-1/2 sm:before:w-px sm:before:-translate-x-1/2 sm:before:bg-[#b9dbe6]">
@@ -424,7 +424,7 @@ function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences
   return (
     <section className="bg-white py-14 text-center sm:py-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{copy.whyTitle}</p>
+        <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{copy.whyTitle}</p>
         <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{copy.differenceTitle}</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {differences.map((item) => (
@@ -448,7 +448,7 @@ function FacilitiesSection({ editorial, facilities }: Pick<AboutPageContent, 'ed
     <section className="border-y border-[#e2edf2] bg-[#f7fafc] py-14 sm:py-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[720px]">
-          <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.facilitiesEyebrow}</p>
+          <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{editorial.facilitiesEyebrow}</p>
           <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{editorial.facilitiesTitle}</h2>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -6,6 +6,7 @@ import {
   NewAppointmentDialog,
   WeekView,
   formatDateKey,
+  getCalendarPeriodLabel,
   getWeekDays,
   parseDateKey,
 } from './AdminCalendarPage';
@@ -111,6 +112,16 @@ describe('AdminCalendarPage Date Utilities', () => {
     expect(week[0]?.getDay()).toBe(0); // Sunday
     expect(formatDateKey(week[0]!)).toBe('2026-09-06');
     expect(formatDateKey(week[6]!)).toBe('2026-09-12');
+  });
+
+  it('getCalendarPeriodLabel returns Today, Tomorrow, Yesterday, or formatted date/period', () => {
+    const today = new Date(2026, 8, 28); // Mon Sep 28, 2026
+    expect(getCalendarPeriodLabel(new Date(2026, 8, 28), 'Day', today)).toBe('Today');
+    expect(getCalendarPeriodLabel(new Date(2026, 8, 29), 'Day', today)).toBe('Tomorrow');
+    expect(getCalendarPeriodLabel(new Date(2026, 8, 27), 'Day', today)).toBe('Yesterday');
+    expect(getCalendarPeriodLabel(new Date(2026, 8, 30), 'Day', today)).toBe('Wed, Sep 30');
+    expect(getCalendarPeriodLabel(new Date(2026, 9, 5), 'Week', today)).toBe('Next Week');
+    expect(getCalendarPeriodLabel(new Date(2026, 9, 1), 'Month', today)).toBe('Oct 2026');
   });
 });
 

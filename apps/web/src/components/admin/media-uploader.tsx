@@ -159,6 +159,61 @@ export function MediaUploader({
       setValidationMessage('Choose a JPEG, PNG, WEBP, or AVIF image.');
       return;
     }
+
+    // Downscale oversized studio photos using progressive 2x step-down resampling
+    // so cards/portraits do not suffer from single-pass browser downscale aliasing.
+    if (typeof createImageBitmap === 'function' && (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp')) {
+      try {
+        const bitmap = await createImageBitmap(file);
+        const maxDimension = category === 'doctors' ? 1200 : 1920;
+        const longestEdge = Math.max(bitmap.width, bitmap.height);
+        if (longestEdge > maxDimension) {
+          const scale = maxDimension / longestEdge;
+          const targetWidth = Math.max(1, Math.round(bitmap.width * scale));
+          const targetHeight = Math.max(1, Math.round(bitmap.height * scale));
+
+          let currentSource: CanvasImageSource = bitmap;
+          let currentWidth = bitmap.width;
+          let currentHeight = bitmap.height;
+
+          while (currentWidth * 0.5 > targetWidth) {
+            const nextWidth = Math.max(targetWidth, Math.round(currentWidth * 0.5));
+            const nextHeight = Math.max(targetHeight, Math.round(currentHeight * 0.5));
+            const stepCanvas = document.createElement('canvas');
+            stepCanvas.width = nextWidth;
+            stepCanvas.height = nextHeight;
+            const stepCtx = stepCanvas.getContext('2d');
+            if (!stepCtx) break;
+            stepCtx.imageSmoothingEnabled = true;
+            stepCtx.imageSmoothingQuality = 'high';
+            stepCtx.drawImage(currentSource, 0, 0, currentWidth, currentHeight, 0, 0, nextWidth, nextHeight);
+            currentSource = stepCanvas;
+            currentWidth = nextWidth;
+            currentHeight = nextHeight;
+          }
+
+          const finalCanvas = document.createElement('canvas');
+          finalCanvas.width = targetWidth;
+          finalCanvas.height = targetHeight;
+          const finalCtx = finalCanvas.getContext('2d');
+          if (finalCtx) {
+            finalCtx.imageSmoothingEnabled = true;
+            finalCtx.imageSmoothingQuality = 'high';
+            finalCtx.drawImage(currentSource, 0, 0, currentWidth, currentHeight, 0, 0, targetWidth, targetHeight);
+            const outputMime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+            const blob = await new Promise<Blob | null>((resolve) =>
+              finalCanvas.toBlob(resolve, outputMime, 0.92),
+            );
+            if (blob && blob.size < file.size) {
+              file = new File([blob], file.name, { type: outputMime });
+            }
+          }
+        }
+      } catch {
+        // Fallback to original file if canvas resampling is unavailable
+      }
+    }
+
     if (file.size > maxImageBytes) {
       setLocalFile(null);
       setValidationMessage('Choose an image smaller than 5 MB.');
@@ -176,12 +231,12 @@ export function MediaUploader({
     onClear?.();
   };
 
-  return <fieldset className="rounded-xl border border-[#dce5ef] bg-[#fbfdff] p-4 sm:p-5">
+  return <fieldset className="relative rounded-xl border border-[#dce5ef] bg-[#fbfdff] p-4 sm:p-5">
     <legend className="px-1 text-sm font-semibold text-[#182238]">{label} {required ? <span className="text-[#c92727]">*</span> : null}</legend>
     <p className="mt-1 text-xs leading-5 text-[#71839e]">{help}</p>
     <div className={framing ? 'mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,15rem)] sm:items-start' : 'mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_9.5rem] sm:items-start'}>
       <div className="min-w-0">
-        <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-[#9bc9da] bg-white px-4 text-sm font-semibold text-[#167ea7] transition hover:border-[#2187a8] hover:bg-[#edf7fb] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#2187a8] focus-within:ring-offset-2">
+        <label className="relative inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-[#9bc9da] bg-white px-4 text-sm font-semibold text-[#167ea7] transition hover:border-[#2187a8] hover:bg-[#edf7fb] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#2187a8] focus-within:ring-offset-2">
           <span>{value ? 'Replace image' : 'Choose image'}</span>
           <input accept={`${acceptedTypes.join(',')},.jpg,.jpeg,.png,.webp,.avif,.gif`} className="sr-only" disabled={upload.isPending} id={inputId} onChange={(event) => { const file = event.target.files?.[0]; event.currentTarget.value = ''; if (file) chooseFile(file); }} type="file" />
         </label>

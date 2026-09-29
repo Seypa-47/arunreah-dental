@@ -61,8 +61,14 @@ export function ImageFramingDialog({ frames, onApply, onClose, open, src, title 
     if (open) {
       setDraft(normalizePresentation(value));
       if (!dialog.open && typeof dialog.showModal === 'function') dialog.showModal();
+      if (typeof window !== 'undefined' && window.scrollY !== 0 && dialog.closest('.admin-workspace')) {
+        window.scrollTo(0, 0);
+      }
     } else if (dialog.open) {
       dialog.close();
+      if (typeof window !== 'undefined' && window.scrollY !== 0 && dialog.closest('.admin-workspace')) {
+        window.scrollTo(0, 0);
+      }
     }
     // Only re-seed the draft when the dialog opens; live edits must not be overwritten.
     // eslint-disable-next-line react-hooks/exhaustive-deps

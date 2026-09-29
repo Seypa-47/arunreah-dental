@@ -22,6 +22,8 @@ describe('BranchesSection', () => {
     expect(html).toContain('<h2');
     expect(html).toContain('>Branches</h2>');
     expect(html).toContain('Psa Chas Branch');
+    expect(html).toContain('aria-label="View Psa Chas Branch"');
+    expect(html).toContain('href="/branches"');
   });
 });
 
