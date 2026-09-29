@@ -36,7 +36,15 @@ function optionalUrl() {
       }
       return trimmed;
     })
-    .pipe(z.string().url().max(2_048).nullable().optional());
+    .pipe(
+      z
+        .string()
+        .url()
+        .max(2_048)
+        .refine((val) => /^https?:\/\//i.test(val), 'URL must use http or https.')
+        .nullable()
+        .optional(),
+    );
 }
 
 function optionalEmail() {

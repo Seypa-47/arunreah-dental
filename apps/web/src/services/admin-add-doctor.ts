@@ -101,7 +101,8 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
 
   const response = await cmsApi.doctors.create({
     slug: id,
-    status: formData.status === 'published' ? 'PUBLISHED' : 'DRAFT',
+    status:
+      formData.status === 'published' && formData.showOnWebsite ? 'PUBLISHED' : 'DRAFT',
     featured: false,
     displayOrder: 0,
     nameEn: formData.name.trim(),
@@ -119,9 +120,14 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
     successfulProcedures: parseProcedures(formData.procedures),
     patientSatisfaction: parseSatisfaction(formData.satisfaction),
     phone: parsePhone(formData.contactPhone),
-    // The current creation form collects English expertise only. Do not copy it
-    // into Khmer fields; it can be added through the bilingual editor later.
-    expertise: [],
+    expertise: (formData.expertise ?? [])
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((item, displayOrder) => ({
+        titleEn: item,
+        titleKm: item,
+        displayOrder,
+      })),
     education: [],
     relatedDoctorIds: [],
   });

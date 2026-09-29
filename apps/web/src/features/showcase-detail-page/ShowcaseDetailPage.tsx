@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
+import { CmsImage, ContentBlocks, ResilientImage } from '@/components/layout/public-ui';
 import { getPublicMediaUrl } from '@/services/media';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useShowcaseDetailPageQuery } from './use-showcase-detail-page';
@@ -58,7 +58,7 @@ export function ShowcaseDetailPage() {
             {showcase.category ? <Badge className="bg-[#eef8fb] text-[11px] font-bold text-[#005687]">{showcase.category}</Badge> : null}
             <h1 className="ui-copy-safe mt-3 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[42px]">{showcase.title}</h1>
             {showcase.summary ? <p className="mt-4 max-w-[720px] text-[18px] leading-8 text-[#64748b]">{showcase.summary}</p> : null}
-            {showcase.body ? <div className="mt-7 whitespace-pre-line text-[16px] leading-8 text-[#465d6c]">{showcase.body}</div> : null}
+            {showcase.body ? <ContentBlocks className="mt-7 text-[16px] leading-8 text-[#465d6c]" value={showcase.body} /> : null}
             {showcase.sections.map((section) => {
               const sectionImageUrl = section.imageKey ? getPublicMediaUrl(section.imageKey) : null;
 
@@ -66,7 +66,7 @@ export function ShowcaseDetailPage() {
                 <section className="mt-9 border-t border-[#e7eff3] pt-8" key={`${section.displayOrder}-${section.heading ?? 'section'}`}>
                     {sectionImageUrl ? <div className="mb-5 overflow-hidden rounded-xl bg-[#edf5f8]"><ResilientImage alt={section.heading ?? showcase.title} className="h-[200px] w-full object-cover sm:h-[420px]" presentation={section.imagePresentation} src={sectionImageUrl} /></div> : null}
                   {section.heading ? <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{section.heading}</h2> : null}
-                  {section.body ? <p className="mt-3 whitespace-pre-line text-[16px] leading-8 text-[#465d6c]">{section.body}</p> : null}
+                  {section.body ? <ContentBlocks className="mt-3 text-[16px] leading-8 text-[#465d6c]" value={section.body} /> : null}
                 </section>
               );
             })}

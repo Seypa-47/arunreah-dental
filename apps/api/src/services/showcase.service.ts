@@ -164,10 +164,18 @@ export async function getPublicShowcase(
 ) {
   const showcase = await repository.findPublicShowcaseBySlug(database, slug);
   if (!showcase) throw new HttpError(404, 'NOT_FOUND', 'Showcase not found.');
-  const [sections, relatedShowcases, presentations] = await Promise.all([
+  const [sections, relatedShowcases] = await Promise.all([
     sectionsWithPresentation(database, showcase.id),
     repository.getRelatedShowcases(database, showcase.id),
-    listForOwners(database, [{ ownerType: 'SHOWCASE', ownerId: showcase.id, slot: 'PRIMARY' }]),
+  ]);
+  const publishedRelated = relatedShowcases.filter((item) => item.showcase.status === 'PUBLISHED');
+  const presentations = await listForOwners(database, [
+    { ownerType: 'SHOWCASE', ownerId: showcase.id, slot: 'PRIMARY' },
+    ...publishedRelated.map((item) => ({
+      ownerType: 'SHOWCASE' as const,
+      ownerId: item.showcase.id,
+      slot: 'PRIMARY',
+    })),
   ]);
   return {
     ...localize(showcase, language, presentations),
@@ -180,9 +188,9 @@ export async function getPublicShowcase(
       imagePresentation: section.imagePresentation,
       displayOrder: section.displayOrder,
     })),
-    relatedShowcases: relatedShowcases
-      .filter((item) => item.showcase.status === 'PUBLISHED')
-      .map((item) => localize(item.showcase, language)),
+    relatedShowcases: publishedRelated.map((item) =>
+      localize(item.showcase, language, presentations),
+    ),
     seo: {
       title: localizeText(showcase.metaTitleEn, showcase.metaTitleKm, language),
       description: localizeText(showcase.metaDescriptionEn, showcase.metaDescriptionKm, language),

@@ -208,6 +208,7 @@ export function DashboardContent({
             {[
               { label: 'Clinic information', to: '/admin/clinic-info' },
               { label: 'Contact settings', to: '/admin/clinic-info/contact' },
+              { label: 'Hero sections', to: '/admin/page-heroes' },
               { label: 'Page media', to: '/admin/page-media' },
               { label: 'About timeline', to: '/admin/about-timeline' },
               { label: 'Staff accounts', to: '/admin/admins' },

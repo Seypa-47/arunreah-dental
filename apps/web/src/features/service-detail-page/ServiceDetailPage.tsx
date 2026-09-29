@@ -140,7 +140,11 @@ function ServiceHero({ editorial, service }: { editorial: boolean; service: Serv
       </div>
       <div className={`mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:gap-12 lg:px-8 ${editorial ? 'lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end' : 'lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center'}`}>
         <div className={editorial ? 'max-w-[760px]' : ''}>
-          <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{service.hero.eyebrow}</p>
+          {service.hero.eyebrow ? (
+            <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
+              {service.hero.eyebrow}
+            </p>
+          ) : null}
           <h1 className="mt-3 max-w-[620px] text-[30px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">
             {service.hero.title}
           </h1>

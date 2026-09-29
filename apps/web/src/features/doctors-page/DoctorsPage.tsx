@@ -62,7 +62,7 @@ function DoctorsHero({
         <div className="relative min-h-[260px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] sm:min-h-[360px] md:min-h-[420px] lg:min-h-[460px]">
           <ResilientImage
             alt={uiCopy.teamImageAlt}
-            className="absolute inset-0 h-full w-full bg-white object-contain object-top contrast-[1.04] saturate-[1.04] sm:hidden"
+            className="absolute inset-0 h-full w-full object-cover object-top contrast-[1.04] saturate-[1.04] sm:hidden"
             fallbackSrc={fallbackImageUrl}
             loading="eager"
             presentation={heroMedia?.imagePresentation ? { ...heroMedia.imagePresentation, zoom: 1 } : undefined}

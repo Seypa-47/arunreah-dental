@@ -25,17 +25,23 @@ export async function getAdminDashboard(
   const contentAccess = hasPermission(admin, 'CMS_MANAGEMENT');
   const response: DashboardResponse = { role: admin.role };
 
-  if (appointmentAccess) {
-    const [appointments, recentAppointments] = await Promise.all([
-      repository.getAppointmentDashboardSummary(database, getClinicWeekRange()),
-      repository.getRecentDashboardAppointments(database),
-    ]);
-    response.appointments = appointments;
-    response.recentAppointments = recentAppointments;
+  const [appointmentData, contentData] = await Promise.all([
+    appointmentAccess
+      ? Promise.all([
+          repository.getAppointmentDashboardSummary(database, getClinicWeekRange()),
+          repository.getRecentDashboardAppointments(database),
+        ])
+      : Promise.resolve(null),
+    contentAccess ? repository.getContentDashboardSummary(database) : Promise.resolve(null),
+  ]);
+
+  if (appointmentData) {
+    response.appointments = appointmentData[0];
+    response.recentAppointments = appointmentData[1];
   }
 
-  if (contentAccess) {
-    response.content = await repository.getContentDashboardSummary(database);
+  if (contentData) {
+    response.content = contentData;
   }
 
   return response;

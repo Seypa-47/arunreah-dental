@@ -35,7 +35,6 @@ const placements: { description: string; label: string; value: PageMediaPlacemen
   { value: 'HOME_PROMOTIONS', label: 'Home · Promotions', description: 'Current clinic campaigns and announcements. Publish only active promotions, then archive or remove them when finished.' },
   { value: 'ABOUT_PROFESSIONAL_DEVELOPMENT', label: 'About · Professional Development', description: 'Editorial images that support the clinic story on the About page.' },
   { value: 'ABOUT_ADVANCED_FACILITIES', label: 'About · Advanced Facilities', description: 'Ordered facility cards for the technology section on the About page.' },
-  { value: 'DOCTORS_HERO', label: 'Doctors · Team Hero', description: 'The team photo and bilingual introduction at the top of the Doctors page.' },
   { value: 'DOCTORS_PATIENT_EDUCATION', label: 'Doctors · Patient-first Approach', description: 'A single educational image block on the Doctors page.' },
 ];
 

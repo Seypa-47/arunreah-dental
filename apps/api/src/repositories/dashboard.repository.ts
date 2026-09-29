@@ -1,4 +1,4 @@
-import { count, desc, sql } from 'drizzle-orm';
+import { count, desc, inArray, sql } from 'drizzle-orm';
 import { appointments, branches, doctors, services, showcases } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
 
@@ -23,7 +23,8 @@ export async function getAppointmentDashboardSummary(
       confirmedToday: sql<number>`coalesce(sum(case when ${appointments.status} = 'CONFIRMED' and ${appointments.preferredDate} = ${dates.today} then 1 else 0 end), 0)`,
       confirmedThisWeek: sql<number>`coalesce(sum(case when ${appointments.status} = 'CONFIRMED' and ${appointments.preferredDate} >= ${dates.fromDate} and ${appointments.preferredDate} <= ${dates.toDate} then 1 else 0 end), 0)`,
     })
-    .from(appointments);
+    .from(appointments)
+    .where(inArray(appointments.status, ['PENDING', 'CONFIRMED']));
 
   return {
     pending: Number(summary?.pending ?? 0),

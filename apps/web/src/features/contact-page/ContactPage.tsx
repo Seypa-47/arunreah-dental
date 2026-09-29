@@ -169,7 +169,7 @@ function ContactCards({
 
   return (
     <section className="bg-white py-8 sm:py-10">
-      <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         {branchContacts && branchContacts.length > 1 && onSelectBranch ? (
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -224,7 +224,7 @@ function ContactForm({ form }: { form: ContactPageContent['form'] }) {
   const contactCopy = publicUiCopy(usePublicLanguage().language).contact;
   return (
     <section className="border-y border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
-      <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <Card className="w-full rounded-xl border-[#e1ebef] bg-white p-6 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-8">
           <h2 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{form.title}</h2>
           <p className="mx-auto mt-3 max-w-xl text-[16px] leading-7 text-[#64748b]">{contactCopy.bookIntro}</p>
@@ -240,7 +240,7 @@ function ContactForm({ form }: { form: ContactPageContent['form'] }) {
 function MapsSection({ maps }: { maps: ContactPageContent['maps'] }) {
   return (
     <section className="bg-white py-10 sm:py-12">
-      <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="grid gap-5 sm:gap-6 lg:grid-cols-2">
           {maps.map((map) => {
             if (map.lat && map.lng) {
@@ -332,7 +332,7 @@ function ContactPageSkeleton() {
 
         <section aria-hidden="true" className="relative overflow-hidden border-b border-[#e7eff3] bg-[#f7fafc]">
           <div className="absolute inset-y-0 right-0 hidden w-[42%] bg-[linear-gradient(135deg,#dceef3_0%,#eff7f9_100%)] lg:block" />
-          <div className="relative mx-auto grid min-h-[340px] w-full max-w-[1180px] items-center gap-6 px-4 py-8 sm:min-h-[360px] sm:px-6 sm:py-10 lg:grid-cols-[1fr_340px] lg:gap-8 lg:px-8">
+          <div className="relative mx-auto grid min-h-[340px] w-full max-w-[1280px] items-center gap-6 px-4 py-8 sm:min-h-[360px] sm:px-6 sm:py-10 lg:grid-cols-[1fr_340px] lg:gap-8 lg:px-8">
             <div className="max-w-[620px] animate-pulse">
               <div className="h-3 w-28 rounded-full bg-[#dcebf0]" />
               <div className="mt-3 h-10 w-[82%] rounded-lg bg-[#d1e6ee] sm:h-11" />
@@ -356,7 +356,7 @@ function ContactPageSkeleton() {
         </section>
 
         <section aria-hidden="true" className="bg-white py-8 sm:py-10">
-          <div className="mx-auto grid w-full max-w-[1180px] gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+          <div className="mx-auto grid w-full max-w-[1280px] gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
             {Array.from({ length: 4 }, (_, index) => (
               <div className="flex min-h-[86px] items-center gap-4 rounded-xl border border-[#e1ebef] bg-white p-4 sm:p-5" key={index}>
                 <div className="size-[42px] shrink-0 animate-pulse rounded-full bg-[#e0f0f4]" />
@@ -370,7 +370,7 @@ function ContactPageSkeleton() {
         </section>
 
         <section aria-hidden="true" className="border-y border-[#e7eff3] bg-[#f7fafc] px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
-          <div className="mx-auto max-w-[1180px] rounded-xl border border-[#e1ebef] bg-white px-5 py-8 text-center sm:px-12 sm:py-10">
+          <div className="mx-auto max-w-[1280px] rounded-xl border border-[#e1ebef] bg-white px-5 py-8 text-center sm:px-12 sm:py-10">
             <div className="mx-auto h-8 w-60 max-w-full animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
             <div className="mx-auto mt-4 h-4 w-[84%] animate-pulse rounded-full bg-[#edf4f6] sm:w-[62%]" />
             <div className="mx-auto mt-2 h-4 w-[67%] animate-pulse rounded-full bg-[#edf4f6] sm:w-[46%]" />
@@ -379,7 +379,7 @@ function ContactPageSkeleton() {
         </section>
 
         <section aria-hidden="true" className="bg-white py-10 sm:py-12">
-          <div className="mx-auto grid w-full max-w-[1180px] gap-5 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+          <div className="mx-auto grid w-full max-w-[1280px] gap-5 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
             {Array.from({ length: 2 }, (_, index) => (
               <div className="overflow-hidden rounded-xl border border-[#e1ebef] bg-white" key={index}>
                 <div className="h-[230px] animate-pulse bg-[linear-gradient(135deg,#e1eff3_0%,#f5f9fa_100%)] sm:h-[280px]" />

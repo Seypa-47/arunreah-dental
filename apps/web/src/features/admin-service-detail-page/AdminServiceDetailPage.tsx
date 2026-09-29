@@ -65,6 +65,7 @@ type EditableService = AdminService & {
   recovery: string;
   recoveryKm: string;
   relatedCategory: string;
+  relatedServiceIds: string[];
   relatedServices: string[];
   serviceBenefits: CreateServiceInput['benefits'];
   slug: string;
@@ -73,12 +74,6 @@ type EditableService = AdminService & {
 };
 
 type EditableDetailSection = CreateServiceInput['detailSections'][number];
-
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .replaceAll(/[^a-z0-9]+/g, '-')
-    .replaceAll(/(^-|-$)/g, '');
 
 function AdminFooter({ footer }: { footer: AdminServiceDetailContent['footer'] }) {
   return (
@@ -176,6 +171,17 @@ function BasicInformation({
   service: EditableService;
   setService: Dispatch<SetStateAction<EditableService>>;
 }) {
+  const categoryOptions = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...content.editor.categoryOptions,
+          ...(service.category ? [service.category] : []),
+        ]),
+      ),
+    [content.editor.categoryOptions, service.category],
+  );
+
   return (
     <Card className="rounded-[18px] border-[#dce5ef] p-6 shadow-none">
       <h2 className="text-[16px] font-bold text-[#182238]">{content.editor.basicTitle}</h2>
@@ -188,9 +194,7 @@ function BasicInformation({
               onChange={(event) =>
                 setService((current) => ({
                   ...current,
-                  heroHeading: `Restore Your Smile with ${event.target.value}`,
                   name: event.target.value,
-                  slug: slugify(event.target.value),
                 }))
               }
               value={service.name}
@@ -219,7 +223,7 @@ function BasicInformation({
               onChange={(event) => setService((current) => ({ ...current, category: event.target.value }))}
               value={service.category}
             >
-              {content.editor.categoryOptions.map((opt) => (
+              {categoryOptions.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
                 </option>
@@ -648,10 +652,12 @@ function HeroSectionCard({
 }
 
 function SectionRows({
+  availableServices,
   sections,
   service,
   setService,
 }: {
+  availableServices: NonNullable<AdminServiceDetailContent['availableServices']>;
   sections: AdminServiceDetailContent['editor']['sections'];
   service: EditableService;
   setService: Dispatch<SetStateAction<EditableService>>;
@@ -895,10 +901,10 @@ function SectionRows({
                 ) : section.title.includes('6. Related Services') ? (
                   <div className="space-y-3">
                     <p className="text-[12px] font-bold text-[#61738d]">Select related services to recommend:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {['Teeth Whitening', 'Routine Cleaning', 'Orthodontics', 'Porcelain Veneers', 'Root Canal Therapy'].map(
-                        (rel) => {
-                          const isSelected = service.relatedServices.includes(rel);
+                    {availableServices.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {availableServices.map((rel) => {
+                          const isSelected = service.relatedServiceIds.includes(rel.id);
                           return (
                             <button
                               className={`rounded-lg border px-3 py-1.5 text-[12px] font-semibold transition ${
@@ -906,24 +912,28 @@ function SectionRows({
                                   ? 'border-[#2187a8] bg-[#eef8fb] text-[#2187a8]'
                                   : 'border-[#dce5ef] bg-white text-[#71839e] hover:bg-[#f4f8fb]'
                               }`}
-                              key={rel}
+                              key={rel.id}
                               onClick={() => {
                                 setService((c) => ({
                                   ...c,
-                                  relatedServices: isSelected
-                                    ? c.relatedServices.filter((s) => s !== rel)
-                                    : [...c.relatedServices, rel],
+                                  relatedServiceIds: isSelected
+                                    ? c.relatedServiceIds.filter((id) => id !== rel.id)
+                                    : [...c.relatedServiceIds, rel.id],
                                 }));
                               }}
                               type="button"
                             >
                               {isSelected ? '✓ ' : '+ '}
-                              {rel}
+                              {rel.name}
                             </button>
                           );
-                        },
-                      )}
-                    </div>
+                        })}
+                      </div>
+                    ) : (
+                      <p className="rounded-xl border border-dashed border-[#dce5ef] bg-white p-4 text-[13px] text-[#71839e]">
+                        No other services available to link yet.
+                      </p>
+                    )}
                   </div>
                 ) : section.title.includes('7. Bottom CTA Section') ? (
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -1020,20 +1030,20 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
           .replace(/(^-|-$)/g, '') || content.service.id;
   const [service, setServiceState] = useState<EditableService>(() => ({
     ...content.service,
-    aboutContent: content.service.saved.aboutBodyEn ?? content.preview.aboutDescription,
+    aboutContent: content.service.saved.aboutBodyEn ?? '',
     aboutContentKm: content.service.saved.aboutBodyKm ?? '',
     aboutImagePresentation: content.service.saved.aboutImagePresentation ?? defaultImagePresentation,
     // Saved media keys only: template preview images must never be written back on save.
     aboutImageUrl: content.service.saved.aboutImageKey ?? '',
-    aboutTitle: content.service.saved.aboutTitleEn ?? content.preview.aboutTitle,
+    aboutTitle: content.service.saved.aboutTitleEn ?? '',
     aboutTitleKm: content.service.saved.aboutTitleKm ?? '',
     anesthesia: 'Local Anesthesia / Sedation',
     benefits: content.preview.benefits,
     benefitsIntro: `Why choose ${content.service.name} at Arunreah Dental Clinic`,
     bottomCtaButton: content.service.saved.primaryCtaLabelEn ?? 'Book Consultation',
-    bottomCtaDescription: content.service.saved.ctaDescriptionEn ?? 'Schedule a personalized consultation with our experienced dental team today.',
+    bottomCtaDescription: content.service.saved.ctaDescriptionEn ?? '',
     bottomCtaDescriptionKm: content.service.saved.ctaDescriptionKm ?? '',
-    bottomCtaTitle: content.service.saved.ctaTitleEn ?? `Ready to Restore Your Smile with ${content.service.name}?`,
+    bottomCtaTitle: content.service.saved.ctaTitleEn ?? '',
     bottomCtaTitleKm: content.service.saved.ctaTitleKm ?? '',
     canonicalUrl: `/services/${initialSlug}`,
     consultation: content.service.saved.consultationEn ?? '',
@@ -1048,26 +1058,27 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
     editorialTitleKm: content.service.editorialTitleKm,
     heroEyebrow: content.service.saved.heroEyebrowEn ?? '',
     heroEyebrowKm: content.service.saved.heroEyebrowKm ?? '',
-    heroHeading: content.service.saved.heroTitleEn ?? `${content.preview.titlePrefix} ${content.service.name}`,
+    heroHeading: content.service.saved.heroTitleEn ?? '',
     heroHeadingKm: content.service.saved.heroTitleKm ?? '',
     heroImagePresentation: content.service.saved.heroImagePresentation ?? defaultImagePresentation,
     heroImageUrl: content.service.saved.heroImageKey ?? '',
     imagePresentation: content.service.saved.imagePresentation ?? defaultImagePresentation,
-    heroPrimaryCta: content.service.saved.primaryCtaLabelEn ?? 'Book an Appointment',
+    heroPrimaryCta: content.service.saved.primaryCtaLabelEn ?? '',
     heroPrimaryCtaKm: content.service.saved.primaryCtaLabelKm ?? '',
-    heroSecondaryCta: content.service.saved.secondaryCtaLabelEn ?? content.preview.requestLabel,
+    heroSecondaryCta: content.service.saved.secondaryCtaLabelEn ?? '',
     heroSecondaryCtaKm: content.service.saved.secondaryCtaLabelKm ?? '',
     heroSummary: content.service.description,
     heroSummaryKm: content.service.descriptionKm,
     longevity: 'Permanent / Long-Term',
-    metaDescription: content.service.saved.metaDescriptionEn ?? content.service.description,
+    metaDescription: content.service.saved.metaDescriptionEn ?? '',
     metaDescriptionKm: content.service.saved.metaDescriptionKm ?? '',
-    metaTitle: content.service.saved.metaTitleEn ?? `${content.service.name} in Phnom Penh | Arunreah Dental Clinic`,
+    metaTitle: content.service.saved.metaTitleEn ?? '',
     metaTitleKm: content.service.saved.metaTitleKm ?? '',
     recovery: content.service.saved.recoveryEn ?? '',
     recoveryKm: content.service.saved.recoveryKm ?? '',
     relatedCategory: content.service.category,
-    relatedServices: ['Teeth Whitening', 'Routine Cleaning', 'Orthodontics'],
+    relatedServiceIds: content.service.relatedServiceIds ?? [],
+    relatedServices: [],
     serviceBenefits: content.service.benefits ?? [],
     slug: initialSlug,
     visits: content.service.saved.visitsEn ?? '',
@@ -1150,6 +1161,7 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
         imagePresentation: section.imagePresentation,
         displayOrder: typeof section.displayOrder === 'number' ? section.displayOrder : index,
       })),
+      relatedServiceIds: service.relatedServiceIds,
       metaTitleEn: service.metaTitle || null,
       metaTitleKm: service.metaTitleKm || null,
       metaDescriptionEn: service.metaDescription || null,
@@ -1280,6 +1292,7 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
           <PagePresentation service={service} setService={setService} />
           <DetailSectionsEditor service={service} setService={setService} />
           <SectionRows
+            availableServices={content.availableServices ?? []}
             sections={content.editor.sections.filter(
               (section) => !section.title.includes('2. Hero Section') && !section.title.includes('2a. Page Presentation'),
             )}

@@ -10,7 +10,7 @@ import {
   useCreateDoctorMutation,
 } from './use-admin-add-doctor-page';
 import type { NewDoctorFormState } from '@/services/admin-add-doctor';
-import { uploadMedia } from '@/services/media';
+import { getPublicMediaUrl, uploadMedia } from '@/services/media';
 
 export function AdminAddDoctorPage() {
   const navigate = useNavigate();
@@ -38,13 +38,7 @@ export function AdminAddDoctorPage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   // Expertise tags
-  const [expertiseList, setExpertiseList] = useState<string[]>([
-    'Digital Dental Implants',
-    'Full Mouth Rehabilitation',
-    'Bone Grafting Procedures',
-    'Cosmetic Smile Makeovers',
-    'Advanced Oral Surgery',
-  ]);
+  const [expertiseList, setExpertiseList] = useState<string[]>([]);
   const [expertiseInput, setExpertiseInput] = useState('');
 
   // UI state
@@ -225,7 +219,7 @@ export function AdminAddDoctorPage() {
                           <img
                             alt="Doctor preview"
                             className="size-20 rounded-2xl object-cover shadow-sm ring-2 ring-[#2187a8]"
-                            src={photoPreview}
+                            src={getPublicMediaUrl(photoPreview) ?? photoPreview}
                           />
                           <div className="flex gap-2">
                             <button

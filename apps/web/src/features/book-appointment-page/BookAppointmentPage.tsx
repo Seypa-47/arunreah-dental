@@ -1252,7 +1252,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main className="bg-white">
         <AppointmentHero hero={content.hero} />
-        <section className="mx-auto grid w-full max-w-[1180px] gap-6 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:px-8">
+        <section className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:px-8">
           <AppointmentForm
             content={content}
             isSubmitting={submitMutation.isPending}

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { ResilientImage } from '@/components/layout/public-ui';
+import { ContentBlocks, ResilientImage } from '@/components/layout/public-ui';
 import { DoctorCard } from '@/features/doctors-page/DoctorsPage';
 import type { DoctorDetailContent, LandingDoctor } from '@/features/landing-page/types';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
@@ -191,38 +191,41 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
               <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#3695B9]">{copy.profile}</p>
             </div>
             <h2 className="mt-3 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{copy.about}</h2>
-            <div className="mt-4 max-w-[800px] space-y-4 text-[16px] font-normal leading-7 text-[#526879]">
-              {doctor.detail.about.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-            </div>
+            <ContentBlocks
+              className="mt-4 max-w-[800px] space-y-4 text-[16px] font-normal leading-7 text-[#526879]"
+              value={doctor.detail.about.join('\n\n')}
+            />
           </section>
 
-          <section className="mt-8">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#3695B9]">{copy.qualifications}</p>
-                <h2 className="mt-2 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{copy.education}</h2>
+          {doctor.detail.certifications.length > 0 ? (
+            <section className="mt-8">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#3695B9]">{copy.qualifications}</p>
+                  <h2 className="mt-2 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{copy.education}</h2>
+                </div>
               </div>
-            </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
-              {doctor.detail.certifications.map((certification, index) => (
-                <CertificationCard certification={certification} index={index} key={certification.title} />
-              ))}
-            </div>
-          </section>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                {doctor.detail.certifications.map((certification, index) => (
+                  <CertificationCard certification={certification} index={index} key={certification.title} />
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <Card className="overflow-hidden rounded-2xl border-[#dcebf0] bg-[#f8fcfd] p-0 shadow-none">
-            <div className="border-b border-[#dcebf0] bg-[#edf8fb] px-5 py-4">
-              <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#3695B9]">{copy.profile}</p>
-              <h2 className="mt-1 text-[19px] font-extrabold leading-6 text-[#005687]">{copy.expertise}</h2>
-            </div>
-            <div className="p-5">
-              <ExpertiseList items={doctor.detail.services} />
-            </div>
-          </Card>
+          {doctor.detail.services.length > 0 ? (
+            <Card className="overflow-hidden rounded-2xl border-[#dcebf0] bg-[#f8fcfd] p-0 shadow-none">
+              <div className="border-b border-[#dcebf0] bg-[#edf8fb] px-5 py-4">
+                <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#3695B9]">{copy.profile}</p>
+                <h2 className="mt-1 text-[19px] font-extrabold leading-6 text-[#005687]">{copy.expertise}</h2>
+              </div>
+              <div className="p-5">
+                <ExpertiseList items={doctor.detail.services} />
+              </div>
+            </Card>
+          ) : null}
           <Card className="rounded-2xl !border-transparent !bg-[#167ea7] p-5 text-white shadow-none">
             <h2 className="text-[18px] font-extrabold leading-6">{copy.appointment}</h2>
             <p className="mt-2 text-[14px] font-normal leading-6 text-white/85">

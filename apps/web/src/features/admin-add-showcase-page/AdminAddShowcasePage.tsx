@@ -944,7 +944,7 @@ export function AdminAddShowcasePage() {
                 <img
                   alt="Showcase thumbnail"
                   className="size-16 shrink-0 rounded-xl object-cover shadow-xs ring-1 ring-black/5"
-                  src={coverImageUrl || '/assets/landing/showcase-toothbrush.png'}
+                  src={getPublicMediaUrl(coverImageUrl) ?? (coverImageUrl || '/assets/landing/showcase-toothbrush.png')}
                 />
                 <p className="text-[12.5px] leading-relaxed text-[#71839e]">
                   This is how your showcase will appear on the public site.

@@ -10,6 +10,7 @@ export type BenefitPreview = {
 };
 
 export type AdminServiceDetailContent = {
+  availableServices?: { id: string; name: string; nameKm: string }[];
   brand: { logoAlt: string; logoUrl: string };
   checklist: {
     column1: string[];
@@ -256,9 +257,24 @@ export async function fetchAdminServiceDetailContent(serviceId: string | undefin
     updatedAt: detail.updatedAt,
   };
 
+  const categoryOptions = Array.from(
+    new Set([
+      ...adminServiceDetailLabels.editor.categoryOptions,
+      ...servicesContent.services.map((item) => item.category).filter(Boolean),
+      ...(detail.category ? [detail.category] : []),
+    ]),
+  );
+
   return {
     ...adminServiceDetailLabels,
+    availableServices: servicesContent.services
+      .filter((item) => item.id !== detail.id)
+      .map((item) => ({ id: item.id, name: item.name, nameKm: item.nameKm })),
     brand: servicesContent.brand,
+    editor: {
+      ...adminServiceDetailLabels.editor,
+      categoryOptions,
+    },
     footer: servicesContent.footer,
     navigation: servicesContent.navigation,
     service: {
