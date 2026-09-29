@@ -5,6 +5,7 @@ import { getPublicBranches, getPublicPageMedia } from '@/services/public-content
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { formatPublicBranchHours, formatPublicBranchSchedules } from '@/features/public-content/public-branch';
+import { getBranchDefaultMapUrl } from './branch-coordinates';
 
 export { formatPublicBranchHours as formatBranchHours };
 
@@ -28,13 +29,14 @@ export function useBranchesPageQuery() {
         branches: publicBranches.map((branch) => {
           const hours = formatPublicBranchHours(branch);
           const hoursSchedules = formatPublicBranchSchedules(branch);
+          const resolvedMapUrl = getBranchDefaultMapUrl(branch.slug || branch.name, branch.googleMapsUrl);
 
           return {
             address: branch.address,
             badge: branch.badge ?? branch.name,
             bookingLabel: branch.heroCtaLabel ?? (isKm ? 'កក់នៅសាខានេះ' : 'Book at this Branch'),
             directionsLabel: isKm ? 'ស្វែងរកផ្លូវ' : 'Get Directions',
-            directionsUrl: branch.googleMapsUrl ?? '#',
+            directionsUrl: resolvedMapUrl,
             hoursDays: hours.days,
             hoursTime: hours.time,
             hoursSchedules,
@@ -43,7 +45,7 @@ export function useBranchesPageQuery() {
             imagePresentation: branch.branchImagePresentation,
             imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
             mapLabel: isKm ? 'មើលលើផែនទី' : 'View on Map',
-            mapUrl: branch.googleMapsUrl ?? '#',
+            mapUrl: resolvedMapUrl,
             name: branch.name,
             phoneLabel: isKm ? 'ទូរស័ព្ទឥឡូវ' : 'Call Now',
             phones: [branch.phone, branch.secondaryPhone].filter((phone): phone is string => Boolean(phone)),

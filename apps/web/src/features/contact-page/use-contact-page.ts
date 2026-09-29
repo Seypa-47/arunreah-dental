@@ -6,7 +6,7 @@ import { getPublicBranches, getPublicContact, getPublicPageMedia, getPublicServi
 import { toLandingService } from '@/services/public-page-mappers';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
-import { getBranchCoordinates } from '@/features/branches-page/branch-coordinates';
+import { getBranchCoordinates, getBranchDefaultMapUrl } from '@/features/branches-page/branch-coordinates';
 
 export function useContactPageQuery() {
   const { language } = usePublicLanguage();
@@ -44,6 +44,7 @@ export function useContactPageQuery() {
         const branchPhones = [branch.phone, branch.secondaryPhone].filter((value): value is string => Boolean(value && value.trim()));
         const effectivePhones = branchPhones.length > 0 ? branchPhones : phones;
         const effectiveAddress = branch.address?.trim() || configuredAddress?.trim() || locationsCountText;
+        const resolvedDirectionsUrl = getBranchDefaultMapUrl(branch.slug || branch.name, branch.googleMapsUrl);
 
         const branchInfo = [
           effectivePhones.length > 0
@@ -81,7 +82,7 @@ export function useContactPageQuery() {
         return {
           address: effectiveAddress,
           badge: branch.badge ?? undefined,
-          directionsUrl: branch.googleMapsUrl ?? undefined,
+          directionsUrl: resolvedDirectionsUrl,
           hours: branchHours,
           id: branch.id,
           info: branchInfo,
@@ -117,7 +118,8 @@ export function useContactPageQuery() {
           title: heroItem?.title || chrome.hero.title,
         },
         maps: branches.map((branch) => {
-          const coords = getBranchCoordinates(branch.name ?? branch.slug);
+          const coords = getBranchCoordinates(branch.slug || branch.name, branch.googleMapsUrl);
+          const resolvedDirectionsUrl = getBranchDefaultMapUrl(branch.slug || branch.name, branch.googleMapsUrl);
           const schedules = formatPublicBranchSchedules(branch);
           const scheduleSummary = schedules
             .map((item) => (item.days && item.time ? `${item.days}: ${item.time}` : item.days || item.time))
@@ -128,7 +130,7 @@ export function useContactPageQuery() {
           return {
             address: branch.address,
             badge: branch.badge ?? undefined,
-            directionsUrl: branch.googleMapsUrl ?? undefined,
+            directionsUrl: resolvedDirectionsUrl,
             hours: formattedHours,
             imageAlt: branch.name,
             imagePresentation: branch.branchImagePresentation,

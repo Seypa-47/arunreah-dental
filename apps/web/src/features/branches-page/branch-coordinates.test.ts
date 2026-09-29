@@ -34,11 +34,32 @@ describe('getBranchCoordinates', () => {
     expect(getBranchSatelliteEmbedUrl({ nameOrSlug: 'សាខាទួលទំពូង' })).toBe(
       TOUL_TOMPOUNG_SATELLITE_EMBED_URL,
     );
+    expect(
+      getBranchSatelliteEmbedUrl({
+        googleMapsUrl: 'https://maps.app.goo.gl/6HenBVpmvf4PiWwv6',
+        nameOrSlug: 'Arunreah Dental Clinic',
+      }),
+    ).toBe(TOUL_TOMPOUNG_SATELLITE_EMBED_URL);
     expect(getBranchSatelliteEmbedUrl({ nameOrSlug: 'Psa Chas Branch' })).toBe(
       PSA_CHAS_SATELLITE_EMBED_URL,
     );
     expect(getBranchSatelliteEmbedUrl({ nameOrSlug: 'សាខាផ្សារចាស់' })).toBe(
       PSA_CHAS_SATELLITE_EMBED_URL,
     );
+    expect(
+      getBranchSatelliteEmbedUrl({
+        googleMapsUrl: 'https://maps.app.goo.gl/sxiKakoGPZEMzciB9',
+        nameOrSlug: 'Arunreah Dental Clinic',
+      }),
+    ).toBe(PSA_CHAS_SATELLITE_EMBED_URL);
+  });
+
+  it('extracts coordinates when a full Google Maps URL contains place or viewport coordinates', () => {
+    expect(
+      getBranchCoordinates(
+        'Custom Branch',
+        'https://www.google.com/maps/place/Test/@11.55555,104.93333,17z/data=!3m1!4b1!4m6!3m5!1s0x0:0x0!8m2!3d11.56666!4d104.94444',
+      ),
+    ).toEqual({ lat: 11.56666, lng: 104.94444 });
   });
 });

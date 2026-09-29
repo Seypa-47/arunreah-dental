@@ -256,7 +256,7 @@ export function mapBookingOptions(
       imagePresentation: branch.branchImagePresentation,
       imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
       mapLabel: isKm ? 'មើលលើផែនទី' : 'View on Map',
-      mapUrl: branch.googleMapsUrl ?? '#',
+      mapUrl: branch.googleMapsUrl ?? (branch.slug === 'psa-chas' ? 'https://maps.app.goo.gl/sxiKakoGPZEMzciB9' : 'https://maps.app.goo.gl/6HenBVpmvf4PiWwv6'),
       name: branch.name,
       slug: branch.slug,
     })) as BookAppointmentPageContent['branches'],

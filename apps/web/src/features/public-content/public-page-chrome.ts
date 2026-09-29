@@ -189,7 +189,7 @@ export function publicAboutContent(
       branchName: psaChasBranch?.name ?? (language === 'km' ? 'សាខាផ្សារចាស់' : 'Psa Chas Branch'),
       badge: psaChasBranch?.badge ?? (language === 'km' ? 'សាខាក្នុងក្រុង' : 'City Branch'),
       shortLocationLabel: psaChasBranch?.shortLocationLabel ?? (language === 'km' ? 'ជិតផ្សារចាស់ រាជធានីភ្នំពេញ' : 'Near Old Market, Phnom Penh'),
-      address: psaChasBranch?.address ?? (language === 'km' ? '#៤៥ ផ្លូវលេខ ១៣ សង្កាត់វត្តភ្នំ ខណ្ឌដូនពេញ រាជធានីភ្នំពេញ កម្ពុជា (ជិតផ្សារចាស់)' : '#45, Street 13, Sangkat Wat Phnom, Khan Daun Penh, Phnom Penh, Cambodia (Near Old Market)'),
+      address: psaChasBranch?.address ?? (language === 'km' ? 'ផ្ទះលេខ 111Eo ផ្លូវលេខ 110 សង្កាត់វត្តភ្នំ ខណ្ឌដូនពេញ រាជធានីភ្នំពេញ (ជិតផ្សារចាស់)' : '#111Eo, Street 110, SangKat Wat Phnom, Khan Daun Penh, Phnom Penh'),
       openingHours: psaChasHoursLabel || (language === 'km' ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM'),
       phone: [psaChasBranch?.phone, psaChasBranch?.secondaryPhone].filter(Boolean).join(' / ') || '069 978 997',
       googleMapsUrl: psaChasBranch?.googleMapsUrl ?? 'https://maps.app.goo.gl/sxiKakoGPZEMzciB9',
