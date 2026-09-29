@@ -17,7 +17,30 @@ import { useDoctorDetailPageQuery } from './use-doctor-detail-page';
 const asset = (name: string) => `/assets/landing/${name}`;
 
 function CalendarIcon() {
-  return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
+  return (
+    <svg aria-hidden="true" className="size-4 shrink-0" fill="currentColor" viewBox="0 0 14 16">
+      <path d="M4 0C4.41563 0 4.75 0.334375 4.75 0.75V2H9.25V0.75C9.25 0.334375 9.58437 0 10 0C10.4156 0 10.75 0.334375 10.75 0.75V2H12C13.1031 2 14 2.89688 14 4V14C14 15.1031 13.1031 16 12 16H2C0.896875 16 0 15.1031 0 14V4C0 2.89688 0.896875 2 2 2H3.25V0.75C3.25 0.334375 3.58437 0 4 0ZM12.5 6H1.5V14C1.5 14.275 1.725 14.5 2 14.5H12C12.275 14.5 12.5 14.275 12.5 14V6ZM10.2812 9.28125L6.78125 12.7812C6.4875 13.075 6.0125 13.075 5.72188 12.7812L3.72187 10.7812C3.42812 10.4875 3.42812 10.0125 3.72187 9.72188C4.01562 9.43125 4.49062 9.42813 4.78125 9.72188L6.25 11.1906L9.21875 8.22188C9.5125 7.92813 9.9875 7.92813 10.2781 8.22188C10.5687 8.51563 10.5719 8.99062 10.2781 9.28125H10.2812Z" />
+    </svg>
+  );
+}
+
+function ExperienceBadgeIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-5 shrink-0"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.9"
+      viewBox="0 0 24 24"
+    >
+      <circle cx="12" cy="8.5" r="5.5" />
+      <path d="M9.75 8.5 11.25 10l3-3" />
+      <path d="M8.5 13.2 7 21l5-2.6L17 21l-1.5-7.8" />
+    </svg>
+  );
 }
 
 function EducationIcon({ index }: { index: number }) {
@@ -39,6 +62,8 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
   const statLabels = language === 'km'
     ? { 'Patient Satisfaction': 'ការពេញចិត្តអ្នកជំងឺ', 'Successful Procedures': 'ករណីព្យាបាល', 'Years Experience': 'ឆ្នាំបទពិសោធន៍' }
     : {};
+  const singleStat = doctor.detail.stats.length === 1 ? doctor.detail.stats[0] : null;
+  const bookHref = doctor.id ? `/book-appointment?doctor=${encodeURIComponent(doctor.id)}` : '/book-appointment';
 
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
@@ -69,23 +94,40 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
             {doctor.name}
           </h1>
           <p className="mt-3 max-w-[600px] text-[16px] font-normal leading-7 text-[#64748b]">{doctor.detail.heroSummary}</p>
-          {doctor.detail.stats.length > 0 ? (
-            <div className={doctor.detail.stats.length === 1 ? 'mt-5 inline-flex overflow-hidden rounded-xl border border-[#dfecef] bg-white' : 'mt-5 grid overflow-hidden rounded-xl border border-[#dfecef] bg-white sm:grid-cols-3'}>
+          { doctor.detail.stats.length > 1 ? (
+            <div className="mt-6 grid overflow-hidden rounded-xl border border-[#dfecef] bg-white shadow-[0_2px_10px_rgba(7,93,131,0.04)] sm:grid-cols-3">
               {doctor.detail.stats.map((stat) => (
-                <div className={doctor.detail.stats.length === 1 ? 'px-4 py-3' : 'border-b border-[#e7eff3] px-4 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0'} key={stat.label}>
+                <div className="border-b border-[#e7eff3] px-4 py-3.5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0" key={stat.label}>
                   <p className="text-[22px] font-extrabold leading-7 text-[#167ea7]">{stat.value}</p>
                   <p className="mt-0.5 text-[12px] font-semibold leading-4 text-[#64748b]">{statLabels[stat.label as keyof typeof statLabels] ?? stat.label}</p>
                 </div>
               ))}
             </div>
-          ) : null}
-          <Button
-            className="mt-5 min-h-12 w-full rounded-full bg-[#3695B9] px-6 text-[14px] font-bold shadow-none hover:bg-[#2c84a5] sm:min-h-11 sm:w-auto"
-            icon={<CalendarIcon />}
-            onClick={() => navigate(doctor.id ? `/book-appointment?doctor=${encodeURIComponent(doctor.id)}` : '/book-appointment')}
-          >
-            {appointmentLabel}
-          </Button>
+          ) : null }
+          <div className="mt-6 flex flex-col items-stretch gap-3.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+            {singleStat ? (
+              <div className="inline-flex min-h-[52px] items-center gap-3.5 self-start rounded-full border border-[#d4e7ef] bg-white py-2 pl-2.5 pr-5 shadow-[0_2px_10px_rgba(7,93,131,0.06)]">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#edf8fb] text-[#168aad]">
+                  <ExperienceBadgeIcon />
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[20px] font-extrabold leading-none tracking-[-0.02em] text-[#005687]">
+                    {singleStat.value}
+                  </span>
+                  <span className="text-[13px] font-bold leading-4 text-[#526879]">
+                    {statLabels[singleStat.label as keyof typeof statLabels] ?? singleStat.label}
+                  </span>
+                </div>
+              </div>
+            ) : null}
+            <Button
+              className="min-h-[52px] w-full rounded-full bg-[#168aad] px-7 text-[15px] font-bold text-white shadow-[0_8px_18px_rgba(22,138,173,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#0d7596] hover:shadow-[0_10px_22px_rgba(22,138,173,0.28)] active:translate-y-0 sm:w-auto"
+              icon={<CalendarIcon />}
+              onClick={() => navigate(bookHref)}
+            >
+              {appointmentLabel}
+            </Button>
+          </div>
         </div>
       </div>
     </section>

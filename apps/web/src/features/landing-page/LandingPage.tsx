@@ -148,7 +148,7 @@ function HeroSlide({ hero, priority = false }: { hero: LandingPageContent['heroe
             <div className="order-1 flex items-center justify-center border-b border-[#e5eef1] px-5 py-3.5 sm:col-span-2 sm:border-y sm:px-6 sm:py-4 lg:order-none lg:col-span-1 lg:border-y-0 lg:border-x">
               <Button
                 className="min-h-11 w-full max-w-[224px] rounded-lg bg-[#3695B9] px-5 text-[15px] font-bold text-white shadow-none hover:bg-[#2c84a5]"
-                icon={<AssetIcon className="h-4 w-[14px]" name="hero-calendar.svg" />}
+                icon={<AssetIcon className="h-4 w-[14px] brightness-0 invert" name="hero-calendar.svg" />}
                 onClick={() => {
                   navigate(branchBookingHref(hero.branchSlug));
                 }}
