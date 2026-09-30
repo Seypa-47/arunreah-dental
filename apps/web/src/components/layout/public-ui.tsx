@@ -456,7 +456,7 @@ export function PublicPageHero({
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-white/80 sm:w-[75%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.58)_58%,transparent_100%)]"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
           />
           <div className={`relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 ${info && info.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8' : ''}`}>
             <div className="max-w-[620px]">
