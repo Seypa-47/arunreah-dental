@@ -654,7 +654,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
           {doctors.map((doctor) => {
             const hasImage = Boolean(doctor.imageUrl);
             return <Card
-              className={`w-[268px] shrink-0 overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:w-[286px] ${hasImage ? 'min-h-[326px] sm:min-h-[342px]' : 'min-h-[176px]'}`}
+              className={`w-[268px] shrink-0 overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:w-[286px] ${hasImage ? 'min-h-[344px] sm:min-h-[360px]' : 'min-h-[176px]'}`}
               key={doctor.name}
             >
               <Link
@@ -668,7 +668,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
                 to={doctor.detail?.profileHref || '/doctors'}
               >
                 {hasImage ? (
-                  <div className="h-[226px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[242px]">
+                  <div className="h-[244px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[260px]">
                     <CmsImage alt={doctor.imageAlt || doctor.name} className="pointer-events-none h-full w-full object-cover" draggable={false} fallbackSrc="/assets/landing/doctor-chea-kimly.png" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} />
                   </div>
                 ) : null}

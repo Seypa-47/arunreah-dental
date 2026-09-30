@@ -7,7 +7,7 @@ import type { FramingFrame } from './image-framing-dialog';
 export const imageFrames = {
   branchHero: [{ aspectRatio: 2.38, label: 'Homepage hero' }, { aspectRatio: 1.07, label: 'Mobile hero' }],
   branchPhoto: [{ aspectRatio: 1.69, label: 'Branches page' }, { aspectRatio: 1.1, label: 'Homepage card' }, { aspectRatio: 1.95, label: 'Contact page' }],
-  doctorPhoto: [{ aspectRatio: 1.2, label: 'Doctor card' }, { aspectRatio: 0.75, label: 'Mobile list' }, { aspectRatio: 0.94, label: 'Profile' }],
+  doctorPhoto: [{ aspectRatio: 1.1, label: 'Doctor card' }, { aspectRatio: 0.78, label: 'Mobile list' }, { aspectRatio: 0.94, label: 'Profile' }],
   serviceAbout: [{ aspectRatio: 2.8, label: 'Desktop' }, { aspectRatio: 1.43, label: 'Mobile' }],
   serviceCard: [{ aspectRatio: 2, label: 'Services grid' }, { aspectRatio: 1.46, label: 'Homepage card' }, { aspectRatio: 0.75, label: 'Mobile related' }],
   serviceHero: [{ aspectRatio: 1.33, label: 'Service hero' }, { aspectRatio: 1.29, label: 'Mobile' }],

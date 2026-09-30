@@ -113,7 +113,7 @@ export function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
         to={doctor.detail.profileHref}
       >
         {hasImage ? (
-          <div className="min-h-[196px] w-[42%] shrink-0 self-stretch overflow-hidden bg-[#edf5f8] sm:h-[236px] sm:min-h-0 sm:w-full">
+          <div className="min-h-[196px] w-[42%] max-w-[176px] shrink-0 self-stretch overflow-hidden bg-[#edf5f8] sm:aspect-[11/10] sm:h-auto sm:min-h-0 sm:w-full sm:max-w-none">
             <CmsImage
               alt={doctor.imageAlt || doctor.name}
               className="h-full w-full object-cover"
@@ -124,7 +124,7 @@ export function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
         ) : (
           <div
             aria-hidden="true"
-            className="min-h-[196px] w-[42%] shrink-0 self-stretch bg-[#edf5f8] sm:h-[236px] sm:min-h-0 sm:w-full"
+            className="min-h-[196px] w-[42%] max-w-[176px] shrink-0 self-stretch bg-[#edf5f8] sm:aspect-[11/10] sm:h-auto sm:min-h-0 sm:w-full sm:max-w-none"
           />
         )}
         <div className="flex min-w-0 flex-1 flex-col bg-white p-4 sm:min-h-[156px] sm:p-5">
@@ -289,10 +289,10 @@ function DoctorsPageSkeleton() {
           <div className="mx-auto grid w-full max-w-[1280px] gap-4 px-4 sm:grid-cols-2 sm:gap-5 sm:px-6 lg:grid-cols-3 lg:px-8 xl:grid-cols-4">
             {Array.from({ length: 8 }, (_, index) => (
               <div
-                className="flex min-h-[196px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white sm:block sm:h-[392px]"
+                className="flex min-h-[196px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white sm:block"
                 key={index}
               >
-                <div className="h-[196px] w-[42%] shrink-0 animate-pulse bg-[#e3eef2] sm:h-[236px] sm:w-full" />
+                <div className="h-[196px] w-[42%] max-w-[176px] shrink-0 animate-pulse bg-[#e3eef2] sm:aspect-[11/10] sm:h-auto sm:w-full sm:max-w-none" />
                 <div className="flex flex-1 flex-col justify-center space-y-3 p-4 sm:h-[156px] sm:justify-start sm:p-5">
                   <div className="h-4 w-3/4 animate-pulse rounded-full bg-[#dcebf0]" />
                   <div className="h-3 w-1/2 animate-pulse rounded-full bg-[#d1e6ee]" />

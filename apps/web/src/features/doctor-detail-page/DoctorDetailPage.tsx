@@ -80,7 +80,7 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
         <div className="mx-auto w-full max-w-[380px] overflow-hidden rounded-xl border border-[#e2edf1] bg-[#edf5f8] shadow-[0_2px_8px_rgba(15,23,42,0.05)] md:mx-0 md:max-w-none">
           <ResilientImage
             alt={doctor.imageAlt || doctor.name}
-            className="h-[300px] w-full object-cover sm:h-[360px]"
+            className="aspect-[15/16] w-full object-cover md:aspect-auto md:h-[360px]"
             fallbackSrc="/assets/landing/hero-clinic.png"
             presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }}
             src={doctor.imageUrl}
