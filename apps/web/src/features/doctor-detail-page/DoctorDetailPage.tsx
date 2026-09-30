@@ -76,8 +76,8 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
           <span>{detailCopy.backToDoctors}</span>
         </Link>
       </div>
-      <div className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 sm:px-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-center lg:gap-10 lg:px-8">
-        <div className="overflow-hidden rounded-xl border border-[#e2edf1] bg-[#edf5f8] shadow-[0_2px_8px_rgba(15,23,42,0.05)]">
+      <div className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 sm:px-6 md:grid-cols-[280px_minmax(0,1fr)] md:items-center md:gap-8 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-10 lg:px-8">
+        <div className="mx-auto w-full max-w-[380px] overflow-hidden rounded-xl border border-[#e2edf1] bg-[#edf5f8] shadow-[0_2px_8px_rgba(15,23,42,0.05)] md:mx-0 md:max-w-none">
           <ResilientImage
             alt={doctor.imageAlt || doctor.name}
             className="h-[300px] w-full object-cover sm:h-[360px]"
@@ -157,15 +157,17 @@ function CertificationCard({
   return (
     <Card className="group relative flex min-h-[92px] gap-3 rounded-xl border-[#e1ebef] bg-white p-4 shadow-none transition-colors hover:border-[#c9e2eb]">
       <EducationIcon index={index} />
-      <div className="min-w-0 flex-1 pr-12">
-        <h3 className="text-[14px] font-extrabold leading-5 text-[#005687]">{certification.title}</h3>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-[14px] font-extrabold leading-5 text-[#005687]">{certification.title}</h3>
+          {certification.yearLabel ? (
+            <span className="shrink-0 rounded-full bg-[#eef8fb] px-2 py-0.5 text-[11px] font-extrabold leading-4 text-[#167ea7]">
+              {certification.yearLabel}
+            </span>
+          ) : null}
+        </div>
         <p className="mt-1 text-[13px] font-medium leading-5 text-[#64748b]">{certification.institution}</p>
       </div>
-      {certification.yearLabel ? (
-        <span className="absolute right-4 top-4 rounded-full bg-[#eef8fb] px-2 py-0.5 text-[11px] font-extrabold leading-4 text-[#167ea7]">
-          {certification.yearLabel}
-        </span>
-      ) : null}
     </Card>
   );
 }
@@ -214,7 +216,7 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
           ) : null}
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           {doctor.detail.services.length > 0 ? (
             <Card className="overflow-hidden rounded-2xl border-[#dcebf0] bg-[#f8fcfd] p-0 shadow-none">
               <div className="border-b border-[#dcebf0] bg-[#edf8fb] px-5 py-4">
@@ -266,7 +268,7 @@ function OtherSpecialists({ doctors }: { doctors: LandingDoctor[] }) {
             </p>
           </div>
         </div>
-        <div className="mt-6 grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {doctors.map((doctor) => (
             <DoctorCard doctor={doctor} key={doctor.detail.profileHref} />
           ))}

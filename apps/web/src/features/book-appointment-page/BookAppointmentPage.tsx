@@ -493,7 +493,7 @@ export function AppointmentCalendar({
       </div>
       <div className="grid grid-cols-7 gap-y-2 text-center sm:gap-y-3">
         {weekdays.map((day) => (
-          <span className="text-[12px] font-bold leading-4 text-[#6b7280]" key={day}>
+          <span className="truncate px-0.5 text-[11px] font-bold leading-5 text-[#6b7280] sm:text-[12px]" key={day}>
             {day}
           </span>
         ))}
@@ -550,7 +550,7 @@ export function AvailableTimes({
   return (
     <div>
       <h3 className="mb-5 text-center text-[15px] font-extrabold leading-6 text-[#005687]">{bookingCopy.availableTime}</h3>
-      <div className="space-y-2.5">
+      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-1">
         {baseHours.map((hour) => {
           const availableMinutes = MINUTE_OPTIONS.filter(
             (minute) => !isTimeSlotPastForPhnomPenh(`${hour}:${minute}`, selectedDate, now),
@@ -560,7 +560,7 @@ export function AvailableTimes({
           const formattedHourLabel = formatDisplayTime(`${hour}:00`);
 
           return (
-            <div key={hour} className="space-y-2">
+            <div key={hour} className={`space-y-2 ${isHourActive ? 'col-span-2 md:col-span-1' : ''}`}>
               <button
                 aria-label={`Select ${formattedHourLabel}`}
                 aria-pressed={isHourActive}
@@ -743,7 +743,7 @@ function AppointmentForm({
 
         <section className="border-t border-[#e7eff3] pt-7 sm:pt-8">
           <SectionTitle number="2" title={bookingCopy.chooseDateTime} />
-          <div className="mt-5 grid gap-7 lg:grid-cols-[1fr_300px]">
+          <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_230px] lg:grid-cols-[minmax(0,1fr)_220px] xl:grid-cols-[minmax(0,1fr)_260px]">
             <AppointmentCalendar calendar={content.calendar} onSelectDate={onSelectDate} selectedDate={selectedDate} />
             <AvailableTimes onSelectTime={onSelectTime} selectedDate={selectedDate} selectedTime={selectedTime} times={content.times} />
           </div>
@@ -790,10 +790,10 @@ function AppointmentForm({
 
 function SummaryRow({ icon, label, value }: { icon: IconName; label: string; value: string }) {
   return (
-    <div className="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4">
-      <AppointmentIcon className="size-[15px] text-[#3695b9]" name={icon} />
-      <span className="text-[13px] font-medium leading-5 text-[#64748b]">{label}</span>
-      <span className="ui-copy-safe text-right text-[13px] font-bold leading-5 text-[#005687]">{value}</span>
+    <div className="grid grid-cols-[20px_auto_minmax(0,1fr)] items-start gap-3 sm:gap-4">
+      <AppointmentIcon className="mt-0.5 size-[15px] text-[#3695b9]" name={icon} />
+      <span className="shrink-0 text-[13px] font-medium leading-5 text-[#64748b]">{label}</span>
+      <span className="ui-copy-safe min-w-0 text-right text-[13px] font-bold leading-5 text-[#005687]">{value}</span>
     </div>
   );
 }
@@ -819,7 +819,7 @@ function AppointmentSummary({
   const hasBranchImage = Boolean(branch.imageUrl);
 
   return (
-    <Card className="sticky top-20 rounded-xl border-[#e1ebef] p-5 shadow-[0_1px_2px_rgba(15,23,42,0.05)] sm:p-6">
+    <Card className="rounded-xl border-[#e1ebef] p-5 shadow-[0_1px_2px_rgba(15,23,42,0.05)] sm:p-6 lg:sticky lg:top-24">
       <h2 className="text-[18px] font-extrabold leading-6 text-[#005687] sm:text-[20px]">{content.summary.title}</h2>
       <div className="mt-5 rounded-xl bg-[#f2f9fb] p-3.5">
         <div className={`grid gap-4 ${hasBranchImage ? 'grid-cols-[80px_1fr]' : 'grid-cols-1'}`}>
@@ -946,7 +946,7 @@ export function AppointmentSuccessModal({
       >
         <button
           aria-label={isKhmer ? 'បិទ' : 'Close'}
-          className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-[#3695B9]"
+          className="absolute right-3 top-3 grid size-11 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-[#3695B9]"
           onClick={onClose}
           type="button"
         >
@@ -976,7 +976,7 @@ export function AppointmentSuccessModal({
           <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#2c84a5]">
             {isKhmer ? 'លេខកូដសម្គាល់ការណាត់ជួប' : 'Booking Reference Code'}
           </p>
-          <div className="mt-1 flex items-center justify-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
             <span className="font-mono text-[22px] font-extrabold tracking-wider text-[#005687] sm:text-[26px]">
               {acknowledgement.reference}
             </span>
@@ -997,25 +997,25 @@ export function AppointmentSuccessModal({
         </div>
 
         <div className="mt-5 divide-y divide-[#edf3f6] rounded-xl border border-[#e2edf2] bg-[#fafcfd] text-[13px] sm:text-[14px]">
-          <div className="flex justify-between px-4 py-2.5">
-            <span className="font-medium text-[#64748b]">{isKhmer ? 'សាខា' : 'Branch'}</span>
-            <span className="text-right font-bold text-[#073f60]">{details.branchName}</span>
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 font-medium text-[#64748b]">{isKhmer ? 'សាខា' : 'Branch'}</span>
+            <span className="min-w-0 break-words text-right font-bold text-[#073f60]">{details.branchName}</span>
           </div>
-          <div className="flex justify-between px-4 py-2.5">
-            <span className="font-medium text-[#64748b]">{isKhmer ? 'សេវាកម្ម' : 'Service'}</span>
-            <span className="text-right font-bold text-[#073f60]">{details.serviceName}</span>
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 font-medium text-[#64748b]">{isKhmer ? 'សេវាកម្ម' : 'Service'}</span>
+            <span className="min-w-0 break-words text-right font-bold text-[#073f60]">{details.serviceName}</span>
           </div>
-          <div className="flex justify-between px-4 py-2.5">
-            <span className="font-medium text-[#64748b]">{isKhmer ? 'ទន្តបណ្ឌិត' : 'Doctor'}</span>
-            <span className="text-right font-bold text-[#073f60]">{details.doctorName}</span>
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 font-medium text-[#64748b]">{isKhmer ? 'ទន្តបណ្ឌិត' : 'Doctor'}</span>
+            <span className="min-w-0 break-words text-right font-bold text-[#073f60]">{details.doctorName}</span>
           </div>
-          <div className="flex justify-between px-4 py-2.5">
-            <span className="font-medium text-[#64748b]">{isKhmer ? 'កាលបរិច្ឆេទ & ម៉ោង' : 'Date & Time'}</span>
-            <span className="text-right font-bold text-[#073f60]">{details.dateLabel} — {details.time}</span>
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 font-medium text-[#64748b]">{isKhmer ? 'កាលបរិច្ឆេទ & ម៉ោង' : 'Date & Time'}</span>
+            <span className="min-w-0 break-words text-right font-bold text-[#073f60]">{details.dateLabel} — {details.time}</span>
           </div>
-          <div className="flex justify-between px-4 py-2.5">
-            <span className="font-medium text-[#64748b]">{isKhmer ? 'អ្នកជំងឺ' : 'Patient'}</span>
-            <span className="text-right font-bold text-[#073f60]">{details.patientName} ({details.phone})</span>
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 font-medium text-[#64748b]">{isKhmer ? 'អ្នកជំងឺ' : 'Patient'}</span>
+            <span className="min-w-0 break-words text-right font-bold text-[#073f60]">{details.patientName} ({details.phone})</span>
           </div>
         </div>
 
@@ -1351,7 +1351,7 @@ function BookAppointmentSkeleton() {
             </div>
           </div>
 
-          <aside className="h-fit rounded-xl border border-[#e1ebef] bg-[#f7fafc] p-5 sm:p-6 lg:sticky lg:top-6">
+          <aside className="h-fit rounded-xl border border-[#e1ebef] bg-[#f7fafc] p-5 sm:p-6 lg:sticky lg:top-24">
             <div className="h-6 w-40 animate-pulse rounded-lg bg-[#d5e7ed]" />
             <div className="mt-5 space-y-4">
               {Array.from({ length: 4 }, (_, index) => (

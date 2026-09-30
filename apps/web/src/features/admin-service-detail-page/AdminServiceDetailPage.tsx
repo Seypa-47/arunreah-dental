@@ -277,7 +277,7 @@ function BasicInformation({
         </div>
 
         {/* Short Descriptions & Thumbnail Card Image */}
-        <div className="grid gap-5 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px]">
+        <div className="grid grid-cols-1 gap-5 2xl:grid-cols-[1fr_420px]">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={`${content.editor.descriptionLabel} · English`}>
               <TextAreaInput
@@ -501,7 +501,7 @@ function DetailSectionsEditor({ service, setService }: { service: EditableServic
                     </div>
                     <div className="mt-4"><MediaUploader category="services" framing={{ frames: imageFrames.serviceSection, onChange: (imagePresentation) => updateSection(index, { imagePresentation }), value: section.imagePresentation }} help="Optional. Add one image only when it helps patients understand this section." label="Section image" onClear={() => updateSection(index, { imageKey: null })} onUploaded={(imageKey) => updateSection(index, { imageKey })} value={section.imageKey ?? undefined} /></div>
                     {repeatedImage ? <p className="mt-3 rounded-lg border border-[#f0c36d] bg-[#fff8e8] px-3 py-2 text-[12px] leading-5 text-[#7a4900]" role="status">This image is also used in another detail section. That can be intentional, but consider using a different image if the sections cover different topics.</p> : null}
-                    <div className="mt-5 flex items-center justify-between border-t border-[#edf1f5] pt-4">
+                    <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-[#edf1f5] pt-4">
                       <span className="text-[12px] text-[#71839e]">Section {index + 1} of {service.detailSections.length}</span>
                       <button
                         className="inline-flex items-center gap-1.5 rounded-lg border border-[#fecdca] bg-white px-3 py-1.5 text-[13px] font-bold text-[#b42318] transition hover:border-[#fda29b] hover:bg-[#fef3f2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318]"
@@ -673,7 +673,7 @@ function SectionRows({
           <Card className="rounded-[16px] border-[#dce5ef] shadow-none" key={section.title}>
             <button
               aria-expanded={isOpen}
-              className="flex min-h-[54px] w-full items-center justify-between gap-4 px-6 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8]"
+              className="flex min-h-[54px] w-full items-center justify-between gap-4 px-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2187a8] sm:px-6"
               onClick={() => setOpen((current) => (current === section.title ? undefined : section.title))}
               type="button"
             >
@@ -688,7 +688,7 @@ function SectionRows({
             </button>
 
             {isOpen ? (
-              <div className="border-t border-[#e1e8f0] bg-[#fafbfd] px-6 py-5">
+              <div className="border-t border-[#e1e8f0] bg-[#fafbfd] px-4 py-5 sm:px-6">
                 {section.title.includes('3. About Section') ? (
                   <div className="space-y-4">
                     <MediaUploader

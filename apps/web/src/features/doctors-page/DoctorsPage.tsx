@@ -113,7 +113,7 @@ export function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
         to={doctor.detail.profileHref}
       >
         {hasImage ? (
-          <div className="h-[196px] w-[42%] shrink-0 overflow-hidden bg-[#edf5f8] sm:h-[236px] sm:w-full">
+          <div className="min-h-[196px] w-[42%] shrink-0 self-stretch overflow-hidden bg-[#edf5f8] sm:h-[236px] sm:min-h-0 sm:w-full">
             <CmsImage
               alt={doctor.imageAlt || doctor.name}
               className="h-full w-full object-cover"
@@ -124,7 +124,7 @@ export function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
         ) : (
           <div
             aria-hidden="true"
-            className="h-[196px] w-[42%] shrink-0 bg-[#edf5f8] sm:h-[236px] sm:w-full"
+            className="min-h-[196px] w-[42%] shrink-0 self-stretch bg-[#edf5f8] sm:h-[236px] sm:min-h-0 sm:w-full"
           />
         )}
         <div className="flex min-w-0 flex-1 flex-col bg-white p-4 sm:min-h-[156px] sm:p-5">
@@ -137,7 +137,7 @@ export function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
           <p className="mt-2 line-clamp-2 text-[13px] font-normal leading-5 text-[#64748b]">
             {doctor.focus ?? doctor.specialty}
           </p>
-          <span className="mt-auto inline-flex min-h-9 items-center justify-center gap-2 pt-3 text-left text-[12px] font-bold leading-4 text-[#167ea7] transition group-hover:text-[#005687] sm:mt-3 sm:min-h-0 sm:justify-start sm:pt-0">
+          <span className="mt-auto inline-flex min-h-9 items-center justify-start gap-2 pt-3 text-left text-[12px] font-bold leading-4 text-[#167ea7] transition group-hover:text-[#005687] sm:mt-3 sm:min-h-0 sm:pt-0">
             <CalendarIcon />
             {doctor.bookingLabel ??
               (language === 'km' ? `កក់ជាមួយ ${doctor.name}` : `Book with ${doctor.name}`)}
@@ -177,7 +177,7 @@ function DoctorsGrid({ doctors }: { doctors: LandingDoctor[] }) {
           </h2>
           <p className="mt-2 text-[15px] leading-6 text-[#64748b]">{copy.body}</p>
         </div>
-        <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {doctors.map((doctor) => (
             <DoctorCard doctor={doctor} key={doctor.detail.profileHref} />
           ))}
@@ -286,7 +286,7 @@ function DoctorsPageSkeleton() {
         </section>
 
         <section aria-hidden="true" className="bg-white py-10 sm:py-14">
-          <div className="mx-auto grid w-full max-w-[1280px] gap-4 px-4 sm:gap-5 sm:px-6 md:grid-cols-2 lg:grid-cols-3 lg:px-8 xl:grid-cols-4">
+          <div className="mx-auto grid w-full max-w-[1280px] gap-4 px-4 sm:grid-cols-2 sm:gap-5 sm:px-6 lg:grid-cols-3 lg:px-8 xl:grid-cols-4">
             {Array.from({ length: 8 }, (_, index) => (
               <div
                 className="flex min-h-[196px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white sm:block sm:h-[392px]"

@@ -96,6 +96,20 @@ textarea {
   font-size: 0.9375rem;
 }
 
+:lang(km) :is(h1, h2, h3, h4) {
+  line-height: 1.45;
+  letter-spacing: normal;
+}
+
+:lang(km) :is([class*='line-clamp-']) {
+  line-height: 1.65;
+  padding-block: 0.0625rem;
+}
+
+:lang(km) :is([class*='tracking-']) {
+  letter-spacing: normal;
+}
+
 .ui-page-container {
   width: 100%;
   max-width: 80rem;

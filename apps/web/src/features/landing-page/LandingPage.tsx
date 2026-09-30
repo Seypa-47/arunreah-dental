@@ -122,7 +122,7 @@ function HeroSlide({ hero, priority = false }: { hero: LandingPageContent['heroe
 
   return (
     <article className="w-full shrink-0 snap-center">
-      <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:px-8 lg:h-[600px] lg:pb-0">
+      <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:px-8 lg:min-h-[600px] lg:pb-0">
         <div className="relative h-full">
           <div className="relative h-[320px] overflow-hidden rounded-[20px] bg-[#dfe9ee] shadow-[0_8px_22px_rgba(15,61,84,0.08)] sm:h-[390px] md:h-[460px] lg:absolute lg:inset-x-0 lg:top-3 lg:h-[510px] lg:rounded-[24px]">
             <CmsImage
@@ -147,7 +147,7 @@ function HeroSlide({ hero, priority = false }: { hero: LandingPageContent['heroe
             </div>
             <div className="order-1 flex items-center justify-center border-b border-[#e5eef1] px-5 py-3.5 sm:col-span-2 sm:border-y sm:px-6 sm:py-4 lg:order-none lg:col-span-1 lg:border-y-0 lg:border-x">
               <Button
-                className="min-h-11 w-full max-w-[224px] rounded-lg bg-[#3695B9] px-5 text-[15px] font-bold text-white shadow-none hover:bg-[#2c84a5]"
+                className="min-h-11 w-full rounded-lg bg-[#3695B9] px-5 text-[15px] font-bold text-white shadow-none hover:bg-[#2c84a5] sm:max-w-[240px]"
                 icon={<AssetIcon className="h-4 w-[14px] brightness-0 invert" name="hero-calendar.svg" />}
                 onClick={() => {
                   navigate(branchBookingHref(hero.branchSlug));
@@ -160,7 +160,7 @@ function HeroSlide({ hero, priority = false }: { hero: LandingPageContent['heroe
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#3695B9] sm:size-[43px]">
                 <AssetIcon className="size-[18px]" name="hero-phone.svg" />
               </span>
-              <div>
+              <div className="min-w-0">
                 <p className="mb-0.5 text-[11px] font-bold leading-[14px] text-[#3695B9]">{hero.callLabel}</p>
                 <div className="text-[15px] font-bold leading-5 text-[#005687]">
                   {hero.phones.map((phone) => (
@@ -265,11 +265,11 @@ function PromotionsSection({
             <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]" id="promotions-title">{editorial.title}</h2>
             <p className="mt-3 max-w-[620px] text-[15px] leading-6 text-[#607486] sm:text-[16px]">{editorial.subtitle}</p>
           </div>
-          <Link className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#3695B9] px-5 text-[14px] font-bold text-white transition hover:bg-[#2c84a5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]" to="/book-appointment">
+          <Link className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-lg bg-[#3695B9] px-5 text-[14px] font-bold text-white transition hover:bg-[#2c84a5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:self-auto" to="/book-appointment">
             {appointmentLabel}
           </Link>
         </div>
-        <div className="mt-7 grid gap-5 lg:grid-cols-3">
+        <div className="mt-7 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {promotions.map((promotion) => (
             <article className="group overflow-hidden rounded-2xl border border-[#dceaf0] bg-white shadow-[0_2px_12px_rgba(15,61,84,0.06)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,61,84,0.12)]" key={`${promotion.title}-${promotion.imageUrl}`}>
               <div className="relative overflow-hidden bg-[#eaf2f6]">
@@ -280,7 +280,7 @@ function PromotionsSection({
                 <h3 className="text-[18px] font-bold leading-6 text-[#073f60]">{promotion.title}</h3>
                 {promotion.description ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{promotion.description}</p> : null}
                 {promotion.discount ? <div className="mt-4 inline-flex rounded-full bg-[#e6f6fb] px-4 py-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#005687]">{promotion.discount}</div> : null}
-                <div className="mt-5 flex items-center justify-between gap-3">
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                   <Link className="inline-flex min-h-10 items-center text-[14px] font-bold text-[#0073a8] transition hover:text-[#005687] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]" to="/book-appointment">{appointmentLabel}<span aria-hidden="true" className="ml-2">→</span></Link>
                   {promotion.validUntil ? <p className="text-right text-[12px] leading-4 text-[#71839e]">{language === 'km' ? 'មានសុពលភាពដល់' : 'Valid until'} {formattedDate(promotion.validUntil)}</p> : null}
                 </div>
@@ -544,7 +544,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
 
             return (
               <Card
-                className={`w-full shrink-0 snap-start overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:w-[286px] ${hasImage ? 'min-h-[318px]' : 'min-h-[176px]'}`}
+                className={`w-[268px] shrink-0 snap-start overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:w-[286px] ${hasImage ? 'min-h-[318px]' : 'min-h-[176px]'}`}
                 id={id}
                 key={service.name}
               >
@@ -563,7 +563,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                       <CmsImage alt={service.imageAlt || service.name} className="pointer-events-none h-full w-full object-cover" draggable={false} fallbackSrc="/assets/landing/service-general.png" presentation={service.imagePresentation} src={service.imageUrl} />
                     </div>
                   ) : null}
-                  <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'h-[136px] sm:h-[138px]' : 'min-h-[176px]'}`}>
+                  <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'min-h-[136px] sm:min-h-[138px]' : 'min-h-[176px]'}`}>
                     <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{service.name}</h3>
                     <p className="mt-2 line-clamp-2 text-[13px] font-medium leading-[19px] text-[#607486]">
                       {service.description}
@@ -654,7 +654,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
           {doctors.map((doctor) => {
             const hasImage = Boolean(doctor.imageUrl);
             return <Card
-              className={`w-[268px] shrink-0 overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:w-[286px] ${hasImage ? 'h-[326px] sm:h-[342px]' : 'min-h-[176px]'}`}
+              className={`w-[268px] shrink-0 overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:w-[286px] ${hasImage ? 'min-h-[326px] sm:min-h-[342px]' : 'min-h-[176px]'}`}
               key={doctor.name}
             >
               <Link
@@ -672,7 +672,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
                     <CmsImage alt={doctor.imageAlt || doctor.name} className="pointer-events-none h-full w-full object-cover" draggable={false} fallbackSrc="/assets/landing/doctor-chea-kimly.png" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} />
                   </div>
                 ) : null}
-                <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'h-[100px]' : 'min-h-[176px]'}`}>
+                <div className={`flex flex-col justify-center px-4 py-4 sm:px-5 ${hasImage ? 'min-h-[100px]' : 'min-h-[176px]'}`}>
                   <h3 className="text-[16px] font-bold leading-5 text-[#005687]">{doctor.name}</h3>
                   <p className="mt-1.5 text-[13px] font-semibold leading-4 text-[#168aad]">{doctor.specialty}</p>
                 </div>
@@ -696,7 +696,7 @@ export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch
 
           return (
             <Card
-              className={`group relative grid min-h-[212px] overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] md:min-h-[232px] ${hasImage ? 'grid-cols-[1.15fr_0.85fr] md:grid-cols-[1.08fr_0.92fr]' : 'grid-cols-1'}`}
+              className={`group relative grid min-h-[212px] overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.06)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] md:min-h-[232px] ${hasImage ? 'grid-cols-1 sm:grid-cols-[1.15fr_0.85fr] md:grid-cols-[1.08fr_0.92fr]' : 'grid-cols-1'}`}
               key={branch.name}
             >
               <div className="p-4 sm:p-5 md:p-6">
@@ -742,7 +742,7 @@ export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch
                 </p>
               </div>
               {hasImage ? (
-                <div className="h-full min-h-[212px] w-full overflow-hidden bg-[#e5e7eb] md:min-h-0">
+                <div className="h-[188px] w-full overflow-hidden bg-[#e5e7eb] sm:h-full sm:min-h-[212px] md:min-h-0">
                   <CmsImage alt={branch.imageAlt || branch.name} className="h-full w-full object-cover" fallbackSrc="/assets/landing/branch-card-clinic.png" presentation={branch.imagePresentation} src={branch.imageUrl} />
                 </div>
               ) : null}

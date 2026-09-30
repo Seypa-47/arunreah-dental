@@ -142,7 +142,7 @@ function AppointmentDetailDialog({
       className="fixed inset-0 z-50 grid place-items-center bg-[#0f172a]/35 p-5"
       role="dialog"
     >
-      <Card className="w-full max-w-[480px] rounded-[26px] border-[#dce5ef] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.20)]">
+      <Card className="max-h-[calc(100dvh-2.5rem)] w-full max-w-[480px] overflow-y-auto rounded-[26px] border-[#dce5ef] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.20)] sm:p-6">
         <div className="flex items-center justify-between gap-4 border-b border-[#e5edf5] pb-4">
           <div>
             <span className={`inline-block rounded-md px-2.5 py-1 text-xs font-bold ${statusInfo.bg} ${statusInfo.text}`}>
@@ -164,48 +164,48 @@ function AppointmentDetailDialog({
 
         <div className="mt-5 space-y-3.5 text-[14px]">
           {appointment.reference ? (
-            <div className="flex justify-between border-b border-[#f1f5f9] pb-2">
-              <span className="font-medium text-[#71839e]">Reference</span>
-              <span className="font-mono font-semibold text-[#182238]">{appointment.reference}</span>
+            <div className="flex justify-between gap-3 border-b border-[#f1f5f9] pb-2">
+              <span className="shrink-0 font-medium text-[#71839e]">Reference</span>
+              <span className="min-w-0 break-words text-right font-mono font-semibold text-[#182238]">{appointment.reference}</span>
             </div>
           ) : null}
-          <div className="flex justify-between border-b border-[#f1f5f9] pb-2">
-            <span className="font-medium text-[#71839e]">Service</span>
-            <span className="font-semibold text-[#182238]">{appointment.serviceName || appointment.label}</span>
+          <div className="flex justify-between gap-3 border-b border-[#f1f5f9] pb-2">
+            <span className="shrink-0 font-medium text-[#71839e]">Service</span>
+            <span className="min-w-0 break-words text-right font-semibold text-[#182238]">{appointment.serviceName || appointment.label}</span>
           </div>
-          <div className="flex justify-between border-b border-[#f1f5f9] pb-2">
-            <span className="font-medium text-[#71839e]">Doctor</span>
-            <span className="font-semibold text-[#182238]">{appointment.doctor}</span>
+          <div className="flex justify-between gap-3 border-b border-[#f1f5f9] pb-2">
+            <span className="shrink-0 font-medium text-[#71839e]">Doctor</span>
+            <span className="min-w-0 break-words text-right font-semibold text-[#182238]">{appointment.doctor}</span>
           </div>
-          <div className="flex justify-between border-b border-[#f1f5f9] pb-2">
-            <span className="font-medium text-[#71839e]">Scheduled Time</span>
-            <span className="font-semibold text-[#182238]">{appointment.time}</span>
+          <div className="flex justify-between gap-3 border-b border-[#f1f5f9] pb-2">
+            <span className="shrink-0 font-medium text-[#71839e]">Scheduled Time</span>
+            <span className="min-w-0 break-words text-right font-semibold text-[#182238]">{appointment.time}</span>
           </div>
           {appointment.phone ? (
-            <div className="flex justify-between border-b border-[#f1f5f9] pb-2">
-              <span className="font-medium text-[#71839e]">Patient Phone</span>
-              <a className="font-semibold text-[#2187a8] hover:underline" href={`tel:${appointment.phone}`}>
+            <div className="flex justify-between gap-3 border-b border-[#f1f5f9] pb-2">
+              <span className="shrink-0 font-medium text-[#71839e]">Patient Phone</span>
+              <a className="min-w-0 break-words text-right font-semibold text-[#2187a8] hover:underline" href={`tel:${appointment.phone}`}>
                 {appointment.phone}
               </a>
             </div>
           ) : null}
           {appointment.email ? (
-            <div className="flex justify-between border-b border-[#f1f5f9] pb-2">
-              <span className="font-medium text-[#71839e]">Patient Email</span>
-              <a className="font-semibold text-[#2187a8] hover:underline" href={`mailto:${appointment.email}`}>
+            <div className="flex justify-between gap-3 border-b border-[#f1f5f9] pb-2">
+              <span className="shrink-0 font-medium text-[#71839e]">Patient Email</span>
+              <a className="min-w-0 break-all text-right font-semibold text-[#2187a8] hover:underline" href={`mailto:${appointment.email}`}>
                 {appointment.email}
               </a>
             </div>
           ) : null}
           {appointment.branchName ? (
-            <div className="flex justify-between border-b border-[#f1f5f9] pb-2">
-              <span className="font-medium text-[#71839e]">Branch</span>
-              <span className="font-semibold text-[#182238]">{appointment.branchName}</span>
+            <div className="flex justify-between gap-3 border-b border-[#f1f5f9] pb-2">
+              <span className="shrink-0 font-medium text-[#71839e]">Branch</span>
+              <span className="min-w-0 break-words text-right font-semibold text-[#182238]">{appointment.branchName}</span>
             </div>
           ) : null}
         </div>
 
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
           <Link
             className="inline-flex h-10 items-center justify-center rounded-xl bg-[#edf8fd] px-4 text-xs font-bold text-[#197da2] transition hover:bg-[#dceef7]"
             to="/admin/appointments"
@@ -255,7 +255,7 @@ export function NewAppointmentDialog({
       className="fixed inset-0 z-50 grid place-items-center bg-[#0f172a]/35 p-5"
       role="dialog"
     >
-      <Card className="w-full max-w-[480px] rounded-[26px] border-[#dce5ef] p-6 shadow-[0_20px_50px_rgba(15,23,42,0.20)]">
+      <Card className="max-h-[calc(100dvh-2.5rem)] w-full max-w-[480px] overflow-y-auto rounded-[26px] border-[#dce5ef] p-5 shadow-[0_20px_50px_rgba(15,23,42,0.20)] sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-[22px] font-bold text-[#182238]" id="new-appointment-title">
             {content.newAppointment.title}
@@ -328,7 +328,7 @@ export function NewAppointmentDialog({
               </select>
             </label>
           </div>
-          <div className="mt-2 flex justify-end gap-3">
+          <div className="mt-2 flex flex-wrap justify-end gap-3">
             <Button onClick={onClose} type="button" variant="secondary">
               {content.newAppointment.cancelLabel}
             </Button>
@@ -890,7 +890,7 @@ function CalendarContent({
                 {isDatePickerOpen ? (
                   <div
                     aria-label="Month and year picker"
-                    className="absolute right-0 top-[52px] z-50 w-[290px] rounded-2xl border border-[#dce5ef] bg-white p-4 shadow-xl"
+                    className="absolute left-0 top-[52px] z-50 w-[min(290px,calc(100vw-2.5rem))] rounded-2xl border border-[#dce5ef] bg-white p-4 shadow-xl sm:left-auto sm:right-0"
                     role="dialog"
                   >
                     <div className="flex items-center justify-between border-b border-[#eef2f6] pb-3">
@@ -971,14 +971,14 @@ function CalendarContent({
           </header>
 
           <Card className="mt-9 overflow-hidden rounded-[32px] border-[#dce5ef] shadow-[0_2px_4px_rgba(15,23,42,0.03)]">
-            <div className="flex flex-wrap items-center justify-between gap-5 border-b border-[#e1e8f0] px-7 py-5">
-              <div className="flex flex-wrap items-center gap-5">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e1e8f0] px-4 py-4 sm:gap-5 sm:px-7 sm:py-5">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-5">
                 {/* Working Month / Week / Day View Tabs */}
                 <div className="inline-flex overflow-hidden rounded-xl border border-[#dce5ef] bg-white">
                   {content.controls.views.map((item) => (
                     <button
                       aria-pressed={view === item}
-                      className={`min-h-[42px] border-r border-[#dce5ef] px-5 text-[14px] font-semibold last:border-r-0 transition ${
+                      className={`min-h-[42px] border-r border-[#dce5ef] px-3.5 text-[14px] font-semibold last:border-r-0 transition sm:px-5 ${
                         view === item ? 'bg-[#eef5f9] text-[#2187a8]' : 'text-[#71839e] hover:bg-[#f8fafc]'
                       }`}
                       key={item}
@@ -1017,9 +1017,9 @@ function CalendarContent({
                 </button>
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex w-full flex-wrap gap-3 sm:w-auto">
                 {/* Search Bar with Clear Button */}
-                <label className="relative flex h-[42px] min-w-[230px] items-center gap-2 rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3.5 text-[#9badc5] transition focus-within:border-[#2187a8] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#2187a8]/20">
+                <label className="relative flex h-[42px] w-full flex-1 items-center gap-2 rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3.5 text-[#9badc5] transition focus-within:border-[#2187a8] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#2187a8]/20 sm:w-auto sm:min-w-[230px]">
                   <AdminIcon className="size-4 shrink-0 text-[#71839e]" name="search" />
                   <span className="sr-only">Search appointments</span>
                   <input
@@ -1042,11 +1042,11 @@ function CalendarContent({
                 </label>
 
                 {/* Doctor Filter Dropdown with All Real Doctors */}
-                <label className="flex h-[42px] items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-3 text-[#71839e] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
-                  <AdminIcon className="size-4" name="filter" />
+                <label className="flex h-[42px] w-full items-center gap-2 rounded-xl border border-[#dce5ef] bg-white px-3 text-[#71839e] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20 sm:w-auto">
+                  <AdminIcon className="size-4 shrink-0" name="filter" />
                   <span className="sr-only">Filter by doctor</span>
                   <select
-                    className="cursor-pointer bg-transparent pr-1 text-[14px] font-medium outline-none"
+                    className="min-w-0 flex-1 cursor-pointer bg-transparent pr-1 text-[14px] font-medium outline-none sm:flex-initial"
                     onChange={(event) => setDoctor(event.target.value)}
                     value={doctor}
                   >

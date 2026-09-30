@@ -443,7 +443,7 @@ function ProblemToCare({ service }: { service: ServiceDetail }) {
   if (service.detailSections.length === 0) return null;
   return (
     <section className="bg-[#f8fbfc] py-12 sm:py-16"><div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8"><SectionHeading service={service} />
-      <div className="mt-9 space-y-5">{service.detailSections.map((section, index) => <article className="grid gap-5 rounded-2xl border border-[#dcebf0] bg-white p-5 shadow-[0_4px_15px_rgba(15,61,84,0.04)] sm:p-7 lg:grid-cols-[160px_minmax(0,1fr)_280px] lg:items-center" key={`${section.heading}-${index}`}><p className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#1682a4]">{String(index + 1).padStart(2, '0')}</p><div>{section.heading ? <h3 className="text-[21px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div>{section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} imageClassName="h-44" src={section.imageUrl} /> : null}</article>)}</div>
+      <div className="mt-9 space-y-5">{service.detailSections.map((section, index) => <article className={`grid gap-5 rounded-2xl border border-[#dcebf0] bg-white p-5 shadow-[0_4px_15px_rgba(15,61,84,0.04)] sm:p-7 ${section.imageUrl ? 'lg:grid-cols-[80px_minmax(0,1fr)_280px] lg:items-center' : 'lg:grid-cols-[80px_minmax(0,1fr)]'}`} key={`${section.heading}-${index}`}><p className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#1682a4]">{String(index + 1).padStart(2, '0')}</p><div>{section.heading ? <h3 className="text-[21px] font-extrabold leading-7 text-[#005687]">{section.heading}</h3> : null}<ContentBlocks className="mt-2 text-[15px] leading-7" value={section.body} /></div>{section.imageUrl ? <EditorialImage alt={section.imageAlt} caption={section.imageAlt} presentation={section.imagePresentation} imageClassName="h-44" src={section.imageUrl} /> : null}</article>)}</div>
     </div></section>
   );
 }
@@ -465,10 +465,10 @@ function OtherServiceCard({ service }: { service: LandingService }) {
   const hasImage = Boolean(service.imageUrl);
 
   return (
-    <Card className="overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.05)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:h-[326px]">
+    <Card className="overflow-hidden rounded-xl border-[#e4edf2] bg-white shadow-[0_2px_10px_rgba(15,61,84,0.05)] transition duration-200 hover:border-[#b9dce8] hover:shadow-[0_7px_18px_rgba(15,61,84,0.09)] sm:min-h-[326px]">
       <div className={`flex min-h-[192px] h-full flex-row ${hasImage ? 'sm:flex-col' : ''}`}>
         {hasImage ? (
-          <div className="h-[192px] w-[42%] shrink-0 overflow-hidden bg-[#eaf2f6] sm:h-[188px] sm:w-full">
+          <div className="min-h-[192px] w-[42%] shrink-0 self-stretch overflow-hidden bg-[#eaf2f6] sm:h-[188px] sm:min-h-0 sm:w-full">
             <CmsImage alt={service.imageAlt || service.name} className="h-full w-full object-cover" fallbackSrc="/assets/landing/service-general.png" presentation={service.imagePresentation} src={service.imageUrl} />
           </div>
         ) : null}

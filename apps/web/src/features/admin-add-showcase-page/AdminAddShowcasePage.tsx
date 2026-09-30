@@ -812,7 +812,7 @@ export function AdminAddShowcasePage() {
                     Related Showcase (select up to 3)
                   </label>
 
-                  <div className="mt-2 grid grid-cols-3 gap-2.5">
+                  <div className="mt-2 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
                     {data.defaultRelatedShowcase.map((item) => {
                       const isSelected = selectedRelatedIds.includes(item.id);
                       return (
@@ -907,7 +907,7 @@ export function AdminAddShowcasePage() {
             <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
               <h2 className="text-[18px] font-bold text-[#182238]">Publish</h2>
 
-              <div className="mt-5 flex gap-3">
+              <div className="mt-5 flex flex-wrap gap-3">
                 <Button
                   className="flex-1 rounded-xl border border-[#dce5ef] bg-white text-[14px] font-bold text-[#2187a8] shadow-xs hover:bg-[#f4f9fb]"
                   disabled={createMutation.isPending}
@@ -1060,7 +1060,7 @@ export function AdminAddShowcasePage() {
         {/* Footer */}
         <footer className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-[#e2e8f0] pt-6 text-[12.5px] text-[#9badc5]">
           <p>{data.footer.copyright}</p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <span className="inline-flex items-center gap-1.5 text-[#71839e]">
               <AdminIcon className="size-3.5 text-[#2187a8]" name="shield" />
               {data.footer.sslLabel}

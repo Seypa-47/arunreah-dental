@@ -109,10 +109,10 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
       </div>
 
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <Card className="relative z-10 -mt-5 grid w-full gap-4 rounded-xl border-[#dfecef] bg-white px-5 py-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)] sm:px-6 lg:grid-cols-[1fr_1fr_220px] lg:items-center">
+        <Card className="relative z-10 -mt-5 grid w-full gap-4 rounded-xl border-[#dfecef] bg-white px-5 py-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)] sm:grid-cols-2 sm:px-6 lg:grid-cols-[1fr_1fr_220px] lg:items-center">
           {hero.metrics.map((metric, index) => (
             <div
-              className="flex items-center gap-3 border-[#e7eff3] lg:border-r lg:last:border-r-0"
+              className="flex items-center gap-3 border-[#e7eff3] sm:odd:border-r lg:border-r lg:last:border-r-0"
               key={metric.label}
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#eef8fb]">
@@ -130,7 +130,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
             </div>
           ))}
           <Button
-            className="min-h-11 rounded-full bg-[#3695B9] px-6 text-[14px] font-bold shadow-none hover:bg-[#2c84a5]"
+            className="min-h-11 rounded-full bg-[#3695B9] px-6 text-[14px] font-bold shadow-none hover:bg-[#2c84a5] sm:col-span-2 lg:col-span-1"
             icon={<CalendarIcon />}
             onClick={() => navigate('/book-appointment')}
           >
@@ -181,7 +181,7 @@ function BranchCard({
   });
 
   return (
-    <Card className="grid overflow-hidden rounded-xl border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)] lg:h-[360px] lg:grid-cols-2">
+    <Card className="grid overflow-hidden rounded-xl border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)] lg:min-h-[360px] lg:grid-cols-2">
       <div className={`${flipped ? 'lg:order-2' : ''} flex flex-col justify-between p-5 sm:p-6`}>
         <div>
           <Badge className="gap-1.5 !bg-[#3695B9] px-3 py-1 text-[10px] !text-white">
@@ -279,9 +279,9 @@ function BranchCard({
         )}
 
         {/* View Mode Toggle: Clinic Photo / Google Satellite */}
-        <div className="absolute right-3 top-3 z-10 flex items-center rounded-full border border-[#e3edf1] bg-white/95 p-1 shadow-[0_2px_8px_rgba(15,23,42,0.08)] backdrop-blur">
+        <div className="absolute right-3 top-3 z-10 flex max-w-[calc(100%-1.5rem)] items-center rounded-full border border-[#e3edf1] bg-white/95 p-1 shadow-[0_2px_8px_rgba(15,23,42,0.08)] backdrop-blur">
           <button
-            className={`min-h-11 rounded-full px-3 py-1 text-[11px] font-bold transition ${
+            className={`min-h-10 rounded-full px-2.5 py-1 text-[11px] font-bold transition sm:min-h-11 sm:px-3 ${
               viewMode === 'photo' ? 'bg-[#3695B9] text-white shadow-sm' : 'text-[#6b7280] hover:text-[#005687]'
             }`}
             onClick={() => setViewMode('photo')}
@@ -290,7 +290,7 @@ function BranchCard({
             {branchCopy.photoView}
           </button>
           <button
-            className={`min-h-11 rounded-full px-3 py-1 text-[11px] font-bold transition ${
+            className={`min-h-10 rounded-full px-2.5 py-1 text-[11px] font-bold transition sm:min-h-11 sm:px-3 ${
               viewMode === 'satellite' ? 'bg-[#3695B9] text-white shadow-sm' : 'text-[#6b7280] hover:text-[#005687]'
             }`}
             onClick={() => setViewMode('satellite')}
@@ -302,15 +302,15 @@ function BranchCard({
 
         {/* Floating Google Maps Link Button */}
         <a
-          className="group/map absolute bottom-4 left-4 z-10 inline-flex h-11 items-center overflow-hidden rounded-full bg-white shadow-[0_3px_10px_rgba(15,23,42,0.10)] backdrop-blur transition duration-200 hover:bg-[#f8fcfd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
+          className="group/map absolute bottom-4 left-4 z-10 inline-flex h-11 max-w-[calc(100%-2rem)] items-center overflow-hidden rounded-full bg-white shadow-[0_3px_10px_rgba(15,23,42,0.10)] backdrop-blur transition duration-200 hover:bg-[#f8fcfd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
           href={branch.mapUrl}
           rel="noopener noreferrer"
           target="_blank"
         >
-          <span className="grid size-11 place-items-center bg-[#edf7fb] transition-colors group-hover/map:bg-[#3695B9]">
+          <span className="grid size-11 shrink-0 place-items-center bg-[#edf7fb] transition-colors group-hover/map:bg-[#3695B9]">
             <AssetIcon className="size-[16px] transition group-hover/map:brightness-0 group-hover/map:invert" name="branch-card-pin-alt.svg" />
           </span>
-          <span className="px-4 text-[12.5px] font-bold text-[#005687] transition-colors group-hover/map:text-[#3695B9]">
+          <span className="truncate px-3.5 text-[12.5px] font-bold text-[#005687] transition-colors group-hover/map:text-[#3695B9] sm:px-4">
             {branch.mapLabel}
           </span>
         </a>

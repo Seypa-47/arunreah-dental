@@ -130,8 +130,8 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
       </a>
       <header className="sticky top-0 z-40 border-b border-[#d9e9ee] bg-white/95 shadow-[0_2px_12px_rgba(10,63,90,0.05)] backdrop-blur-xl">
         <div className="ui-page-container flex h-[64px] items-center justify-between gap-2 sm:h-[74px] sm:gap-4">
-          <Link aria-label={layoutCopy.homeLink} className="shrink-0 leading-none" to="/">
-            {logoUrl ? <img alt={clinicName ?? 'Arunreah Dental Clinic'} className="h-11 sm:h-[48px] md:h-[52px] w-auto max-w-[210px] sm:max-w-[240px] md:max-w-[270px] object-contain object-left" src={logoUrl} /> : <span className="block text-[20px] font-extrabold uppercase leading-5 tracking-[-0.25px] text-[#3695B9]">{clinicName ?? 'Arunreah Dental Clinic'}</span>}
+          <Link aria-label={layoutCopy.homeLink} className="min-w-0 shrink-0 leading-none" to="/">
+            {logoUrl ? <img alt={clinicName ?? 'Arunreah Dental Clinic'} className="h-10 w-auto max-w-[140px] object-contain object-left min-[375px]:h-11 min-[375px]:max-w-[175px] sm:h-[48px] sm:max-w-[220px] lg:max-w-[200px] xl:h-[52px] xl:max-w-[260px]" src={logoUrl} /> : <span className="block truncate text-[15px] font-extrabold uppercase leading-5 tracking-[-0.25px] text-[#3695B9] sm:text-[20px]">{clinicName ?? 'Arunreah Dental Clinic'}</span>}
           </Link>
 
           <nav aria-label={layoutCopy.primaryNavigation} className="hidden items-center gap-4 lg:flex xl:gap-6">
@@ -142,7 +142,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
                 return (
                   <Link
                     aria-current={isActive ? 'page' : undefined}
-                    className={`relative inline-flex min-h-10 items-center py-2 text-[14px] transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#168aad] ${
+                    className={`relative inline-flex min-h-10 items-center whitespace-nowrap py-2 text-[14px] transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#168aad] ${
                       isActive ? 'font-extrabold text-[#087b9f]' : 'font-semibold text-[#526879] hover:text-[#087b9f]'
                     }`}
                     key={item.label}
@@ -160,7 +160,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
                 <div className="group relative" key={item.label}>
                   <Link
                     aria-current={isActive ? 'page' : undefined}
-                    className={`relative inline-flex min-h-10 items-center gap-1.5 py-2 text-[14px] transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#168aad] ${
+                    className={`relative inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap py-2 text-[14px] transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#168aad] ${
                       isActive ? 'font-extrabold text-[#087b9f]' : 'font-semibold text-[#526879] hover:text-[#087b9f]'
                     }`}
                     to={item.href}
@@ -208,7 +208,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
             </button>
             <span aria-hidden="true" className="hidden h-5 w-[1.5px] bg-[#3695B9]/40 xl:inline-block" />
             <button
-              className="min-h-11 max-w-[112px] rounded-full bg-[#168aad] px-3 text-[12px] font-extrabold leading-4 text-white shadow-[0_6px_16px_rgba(22,138,173,0.2)] transition-all duration-150 hover:bg-[#0d7596] active:scale-95 sm:max-w-none sm:min-h-[44px] sm:px-5 sm:text-[14px] xl:px-6 xl:text-[15px]"
+              className="min-h-10 shrink-0 whitespace-nowrap rounded-full bg-[#168aad] px-3 py-1.5 text-[11.5px] font-extrabold leading-4 text-white shadow-[0_6px_16px_rgba(22,138,173,0.2)] transition-all duration-150 hover:bg-[#0d7596] active:scale-95 min-[375px]:px-3.5 min-[375px]:text-[12px] sm:min-h-[44px] sm:px-5 sm:text-[14px] xl:px-6 xl:text-[15px]"
               onClick={() => navigate('/book-appointment')}
               type="button"
             >

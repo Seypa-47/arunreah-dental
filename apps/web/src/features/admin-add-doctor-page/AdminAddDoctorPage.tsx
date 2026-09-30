@@ -809,7 +809,7 @@ export function AdminAddDoctorPage() {
           </div>
 
           {/* Bottom Actions Bar */}
-          <div className="flex items-center justify-center gap-4 pt-4 pb-10">
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-4 pb-10">
             <Button
               className="h-11 rounded-xl border border-[#dce5ef] bg-white px-7 text-[14px] font-semibold text-[#71839e] shadow-sm hover:bg-[#f8fafc]"
               onClick={() => navigate('/admin/doctors')}

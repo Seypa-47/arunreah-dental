@@ -218,7 +218,7 @@ function DoctorDetailPanel({
       </div>
 
       {/* Tabs */}
-      <div className="mt-6 flex border-b border-[#e5edf5] text-[14px] font-semibold text-[#71839e]">
+      <div className="mt-6 flex overflow-x-auto whitespace-nowrap border-b border-[#e5edf5] text-[14px] font-semibold text-[#71839e]">
         {(
           [
             ['overview', 'Overview'],
@@ -374,7 +374,7 @@ function DoctorDetailPanel({
             </div>
 
             {/* Stats: Years Exp, Procedures, Satisfaction */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <label className="block">
                 <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
                   Years Exp
@@ -560,7 +560,7 @@ function DoctorDetailPanel({
         ) : null}
 
         {/* Action Buttons */}
-        <div className="mt-8 flex items-center justify-between gap-4 border-t border-[#e5edf5] pt-6">
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#e5edf5] pt-6">
           <Button
             className="h-11 rounded-xl border border-[#dce5ef] bg-white px-5 text-[14px] font-bold text-[#71839e] shadow-none hover:bg-[#f4f8fb]"
             disabled={isSaving}
@@ -806,7 +806,7 @@ function AddDoctorModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
       role="dialog"
     >
-      <div className="w-full max-w-xl rounded-3xl border border-[#e1e8f0] bg-white p-7 shadow-2xl">
+      <div className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-3xl border border-[#e1e8f0] bg-white p-5 shadow-2xl sm:p-7">
         <div className="flex items-center justify-between border-b border-[#e5edf5] pb-4">
           <h3 className="text-xl font-bold text-[#182238]">Add New Specialist</h3>
           <button
@@ -878,7 +878,7 @@ function AddDoctorModal({
             </label>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <label className="block">
               <span className="text-[12px] font-bold uppercase text-[#61738d]">Years Exp</span>
               <input
@@ -956,7 +956,7 @@ function AddDoctorModal({
             />
           </label>
 
-          <div className="flex items-center justify-end gap-3 pt-3">
+          <div className="flex flex-wrap items-center justify-end gap-3 pt-3">
             <Button
               className="border border-[#dce5ef] bg-white text-[#71839e]"
               onClick={onClose}

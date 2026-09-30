@@ -858,7 +858,7 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
         {/* Footer */}
         <footer className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-[#e2e8f0] pt-6 text-[12.5px] text-[#9badc5]">
           <p>© {new Date().getFullYear()} Arunreah Dental Clinic. All rights reserved.</p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <span className="inline-flex items-center gap-1.5 text-[#71839e]">
               <AdminIcon className="size-3.5 text-[#2187a8]" name="shield" />
               SSL Secured

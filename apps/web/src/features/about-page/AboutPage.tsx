@@ -77,14 +77,14 @@ function FounderProfile({ doctor, index, viewProfileLabel }: { doctor: AboutDoct
       <div className="flex items-center gap-3">
         <span className="text-[11px] font-extrabold tabular-nums tracking-[0.2em] text-[#3695B9]">{String(index + 1).padStart(2, '0')}</span>
         <span aria-hidden="true" className="h-px flex-1 bg-[#dde9ef]" />
-        {doctor.specialty ? <span className="ui-eyebrow shrink-0 text-[10.5px] font-bold uppercase leading-4 tracking-[0.06em] text-[#5b8ca6]">{doctor.specialty}</span> : null}
+        {doctor.specialty ? <span className="ui-eyebrow min-w-0 truncate text-right text-[10.5px] font-bold uppercase leading-4 tracking-[0.06em] text-[#5b8ca6]">{doctor.specialty}</span> : null}
       </div>
 
-      <div className="mt-5 flex flex-1 gap-5 sm:gap-6">
-        <div className="shrink-0 overflow-hidden rounded-lg bg-[#eef5f8]">
+      <div className="mt-5 flex flex-1 flex-col gap-4 min-[480px]:flex-row sm:gap-6">
+        <div className="shrink-0 self-start overflow-hidden rounded-lg bg-[#eef5f8]">
           <ResilientImage
             alt={doctor.imageAlt || doctor.name}
-            className="aspect-[4/5] w-[124px] object-cover sm:w-[152px] lg:w-[196px]"
+            className="aspect-[4/5] w-full max-w-[200px] object-cover min-[480px]:w-[136px] sm:w-[152px] lg:w-[180px] xl:w-[196px]"
             fallbackSrc="/assets/landing/doctor-chea-kimly.png"
             presentation={doctor.presentation}
             src={doctor.imageUrl}
@@ -168,9 +168,9 @@ function StorySection({ editorial, featuredDoctor, secondFeaturedDoctor, stats, 
 
         {leadership.length > 0 ? (
           <div className="border-t border-[#d6e5eb] pt-9 sm:pt-11">
-            <div className="grid gap-10 sm:grid-cols-2 sm:gap-0 sm:divide-x sm:divide-[#e4eef3]">
+            <div className="grid gap-10 lg:grid-cols-2 lg:gap-0 lg:divide-x lg:divide-[#e4eef3]">
               {leadership.map((doctor, index) => (
-                <div className="sm:px-9 sm:first:pl-0 sm:last:pr-0" key={doctor.profileHref}>
+                <div className="lg:px-9 lg:first:pl-0 lg:last:pr-0" key={doctor.profileHref}>
                   <FounderProfile doctor={doctor} index={index} viewProfileLabel={aboutCopy.viewProfile} />
                 </div>
               ))}
@@ -243,9 +243,9 @@ function ClinicGallery({
 
           {/* Simple Branch Filter Tabs */}
           {branches.length > 1 && (
-            <div className="inline-flex self-start rounded-full border border-[#d6e5eb] bg-white p-1 shadow-xs sm:self-end">
+            <div className="flex flex-wrap gap-1 self-start rounded-2xl border border-[#d6e5eb] bg-white p-1 shadow-xs sm:inline-flex sm:flex-nowrap sm:self-end sm:rounded-full">
               <button
-                className={`rounded-full px-4 py-1.5 text-[12.5px] font-bold transition ${
+                className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition sm:px-4 ${
                   selectedBranchSlug === 'all'
                     ? 'bg-[#005687] text-white shadow-xs'
                     : 'text-[#62778a] hover:text-[#005687]'
@@ -257,7 +257,7 @@ function ClinicGallery({
               </button>
               {branches.map((b) => (
                 <button
-                  className={`rounded-full px-4 py-1.5 text-[12.5px] font-bold transition ${
+                  className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition sm:px-4 ${
                     selectedBranchSlug === b.branchSlug
                       ? 'bg-[#005687] text-white shadow-xs'
                       : 'text-[#62778a] hover:text-[#005687]'
@@ -385,8 +385,8 @@ function VisionMissionSection({
   if (!mission.title && !vision.title) return null;
   return (
     <section className="grid lg:grid-cols-2">
-      <article className="bg-[#3695B9] px-5 py-10 text-white sm:px-10 sm:py-12 lg:pl-[calc((100vw-1280px)/2)]">
-        <div className="ml-auto max-w-[500px] lg:mr-14">
+      <article className="bg-[#3695B9] px-5 py-10 text-white sm:px-10 sm:py-12 lg:pl-[max(2rem,calc((100vw-1280px)/2+2rem))]">
+        <div className="max-w-[500px] lg:ml-auto lg:mr-14">
           <div className="mb-4 flex items-center gap-4">
             <span className="grid size-12 place-items-center rounded-xl bg-white/16">
               <img alt="" aria-hidden="true" className="size-5 brightness-0 invert" src={vision.iconUrl} />
@@ -396,7 +396,7 @@ function VisionMissionSection({
           <p className="text-[14px] font-normal leading-6 text-white/85">{vision.description}</p>
         </div>
       </article>
-      <article className="relative bg-[#f1f7fa] px-5 py-10 sm:px-10 sm:py-12 lg:pr-[calc((100vw-1280px)/2)]">
+      <article className="relative bg-[#f1f7fa] px-5 py-10 sm:px-10 sm:py-12 lg:pr-[max(2rem,calc((100vw-1280px)/2+2rem))]">
         <span
           aria-hidden="true"
           className="absolute left-0 top-1/2 hidden size-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-[22px] font-bold text-[#3695B9] shadow-[0_8px_20px_rgba(15,23,42,0.12)] lg:grid"

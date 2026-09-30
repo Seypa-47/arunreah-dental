@@ -112,7 +112,7 @@ function ContactHero({
         </p>
         <div
           aria-label={isKm ? 'ជ្រើសរើសសាខាទំនាក់ទំនង' : 'Switch branch contact details'}
-          className="grid grid-cols-2 gap-1.5 rounded-xl bg-[#f0f7fa] p-1"
+          className="grid grid-cols-1 gap-1.5 rounded-xl bg-[#f0f7fa] p-1 min-[360px]:grid-cols-2"
           role="tablist"
         >
           {branchContacts.map((branch) => {

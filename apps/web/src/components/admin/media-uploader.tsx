@@ -231,10 +231,10 @@ export function MediaUploader({
     onClear?.();
   };
 
-  return <fieldset className="relative rounded-xl border border-[#dce5ef] bg-[#fbfdff] p-4 sm:p-5">
+  return <fieldset className="@container relative rounded-xl border border-[#dce5ef] bg-[#fbfdff] p-4 sm:p-5">
     <legend className="px-1 text-sm font-semibold text-[#182238]">{label} {required ? <span className="text-[#c92727]">*</span> : null}</legend>
     <p className="mt-1 text-xs leading-5 text-[#71839e]">{help}</p>
-    <div className={framing ? 'mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,15rem)] sm:items-start' : 'mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_9.5rem] sm:items-start'}>
+    <div className={framing ? 'mt-4 grid gap-4 @md:grid-cols-[minmax(0,1fr)_minmax(0,14rem)] @md:items-start' : 'mt-4 grid gap-4 @md:grid-cols-[minmax(0,1fr)_9.5rem] @md:items-start'}>
       <div className="min-w-0">
         <label className="relative inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-[#9bc9da] bg-white px-4 text-sm font-semibold text-[#167ea7] transition hover:border-[#2187a8] hover:bg-[#edf7fb] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#2187a8] focus-within:ring-offset-2">
           <span>{value ? 'Replace image' : 'Choose image'}</span>

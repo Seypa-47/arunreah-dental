@@ -74,7 +74,7 @@ function CreateBranchModal({
 
   return (
     <div aria-modal="true" className="fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-4" role="dialog">
-      <form className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl" onSubmit={submit}>
+      <form className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:p-6" onSubmit={submit}>
         <div className="flex items-center justify-between border-b border-[#edf2f7] pb-4">
           <div>
             <h2 className="text-xl font-bold text-[#182238]">Create Branch</h2>
@@ -103,7 +103,7 @@ function CreateBranchModal({
             <textarea className="mt-1.5 min-h-20 w-full rounded-xl border border-[#dce5ef] p-3 text-sm outline-none focus:border-[#2187a8]" onChange={(event) => update('addressKm', event.target.value)} required value={form.addressKm} />
           </label>
         </div>
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
           <Button disabled={isPending} onClick={onClose} type="button" variant="secondary">Cancel</Button>
           <Button className="bg-[#2187a8] text-white" disabled={isPending} type="submit">{isPending ? 'Creating…' : 'Create draft branch'}</Button>
         </div>
@@ -440,7 +440,7 @@ export function AdminClinicInfoPage({
         {toast && (
           <div
             role="status"
-            className={`fixed top-6 right-6 z-50 flex items-center gap-2.5 rounded-2xl border p-4 text-[14px] font-semibold shadow-lg transition-all ${
+            className={`fixed top-4 left-4 right-4 z-50 flex max-w-md items-center gap-2.5 rounded-2xl border p-4 text-[14px] font-semibold shadow-lg transition-all sm:top-6 sm:left-auto sm:right-6 ${
               toast.tone === 'error'
                 ? 'border-[#fecaca] bg-[#fef2f2] text-[#991b1b]'
                 : 'border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]'
@@ -477,7 +477,7 @@ export function AdminClinicInfoPage({
           {/* Tab Navigation */}
           <nav
             aria-label="Clinic Settings Tabs"
-            className="mt-6 flex gap-8 border-b border-[#e2e8f0] text-[14.5px] font-semibold"
+            className="mt-6 flex gap-5 overflow-x-auto whitespace-nowrap border-b border-[#e2e8f0] text-[14.5px] font-semibold sm:gap-8"
           >
             <button
               aria-current={activeTab === 'clinic' ? 'page' : undefined}
@@ -809,7 +809,7 @@ export function AdminClinicInfoPage({
                 </div>
 
                 {/* Pagination */}
-                <div className="mt-6 flex items-center justify-between border-t border-[#f0f4f8] pt-4 text-[13px] text-[#71839e]">
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-[#f0f4f8] pt-4 text-[13px] text-[#71839e]">
                   <span>Showing 1 to {branches.length} of {branches.length} branches</span>
                   <div className="flex items-center gap-1.5">
                     <button className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#8a9bb2]" type="button">
@@ -1166,9 +1166,9 @@ export function AdminClinicInfoPage({
               <div>
                 <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
                   {/* Card Header with Status Toggle */}
-                  <div className="flex items-center justify-between border-b border-[#f0f4f8] pb-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0f4f8] pb-4">
                     <h2 className="text-[18px] font-bold text-[#182238]">Edit Branch</h2>
-                    <div className="flex items-center gap-4 text-[13px] font-bold text-[#182238]">
+                    <div className="flex flex-wrap items-center gap-3 text-[13px] font-bold text-[#182238] sm:gap-4">
                       <Button
                         className="border border-[#fecaca] bg-white px-3 text-xs text-[#b91c1c] hover:bg-[#fff1f2]"
                         disabled={deleteBranchMutation.isPending}
@@ -1459,7 +1459,7 @@ export function AdminClinicInfoPage({
                                     </div>
                                   )}
 
-                                  <div className="grid gap-3 sm:grid-cols-4">
+                                  <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
                                     <div>
                                       <label className="block text-[12px] font-bold text-[#182238]">Opening Days</label>
                                       <select
@@ -1846,7 +1846,7 @@ export function AdminClinicInfoPage({
 
                     {/* Section 6: Inside Our Clinic Gallery (About Page) */}
                     <div className="space-y-4 border-t border-[#f0f4f8] pt-5">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
                           <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">6</span>
                           Inside Our Clinic Gallery (About Page)
@@ -1888,7 +1888,7 @@ export function AdminClinicInfoPage({
                         </div>
 
                         {/* Thumbnail Previews */}
-                        <div className="mt-4 grid grid-cols-4 gap-2.5">
+                        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                           {(selectedBranch.slug === 'psa-chas'
                             ? [
                                 { label: 'Exterior', url: '/assets/landing/psa-chas-exterior.jpg' },
@@ -2241,7 +2241,7 @@ export function AdminClinicInfoPage({
                                       </button>
                                     </div>
                                   )}
-                                  <div className="grid gap-2.5 sm:grid-cols-4">
+                                  <div className="grid gap-2.5 sm:grid-cols-2 2xl:grid-cols-4">
                                     <div>
                                       <label className="block text-[11.5px] font-bold text-[#182238]">Opening Days</label>
                                       <select
@@ -2399,7 +2399,7 @@ export function AdminClinicInfoPage({
         )}
 
         {/* Bottom Actions Bar */}
-        <div className="mt-8 flex items-center justify-end gap-3 border-t border-[#e2e8f0] bg-[#f6f8fb] py-5">
+        <div className="mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-[#e2e8f0] bg-[#f6f8fb] py-5">
           <Button
             className="h-11 rounded-xl border border-[#dce5ef] bg-white px-6 text-[14px] font-semibold text-[#71839e] shadow-xs hover:bg-[#f8fafc]"
             onClick={() => navigate('/admin/dashboard')}

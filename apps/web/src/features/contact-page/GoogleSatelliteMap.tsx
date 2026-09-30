@@ -102,14 +102,14 @@ export function GoogleSatelliteMap({
       <div className="flex flex-1 flex-col justify-between p-5">
         <div>
           {/* Top Row: Badge & Direction Button */}
-          <div className="flex items-center justify-between gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#edf7fb] px-3 py-1 text-[11.5px] font-extrabold text-[#3695B9]">
-              <span className="size-1.5 rounded-full bg-[#3695B9]" />
-              {badge || name}
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-[#edf7fb] px-3 py-1 text-[11.5px] font-extrabold text-[#3695B9]">
+              <span className="size-1.5 shrink-0 rounded-full bg-[#3695B9]" />
+              <span className="truncate">{badge || name}</span>
             </span>
 
             <a
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#3695B9] px-4 py-1.5 text-[12px] font-bold text-white shadow-none transition hover:bg-[#2c84a5]"
+              className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-[#3695B9] px-4 py-1.5 text-[12px] font-bold text-white shadow-none transition hover:bg-[#2c84a5]"
               href={directionsUrl}
               rel="noopener noreferrer"
               target="_blank"
