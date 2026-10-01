@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Suspense, type ReactNode } from 'react';
 import '@/styles/admin.css';
 import { LandingPage } from '@/features/landing-page/LandingPage';
@@ -147,7 +147,7 @@ const routes = [
   },
   {
     path: '/admin/clinic-info/contact',
-    element: protectedAdminRoute(<AdminClinicInfoPage initialTab="contact" />),
+    element: protectedAdminRoute(<Navigate replace to="/admin/clinic-info" />),
   },
   {
     path: '/admin/admins',

@@ -207,7 +207,7 @@ export function DashboardContent({
           <div>
             {[
               { label: 'Clinic information', to: '/admin/clinic-info' },
-              { label: 'Contact settings', to: '/admin/clinic-info/contact' },
+              { label: 'Branches and locations', to: '/admin/clinic-info/branches' },
               { label: 'Hero sections', to: '/admin/page-heroes' },
               { label: 'Page media', to: '/admin/page-media' },
               { label: 'About timeline', to: '/admin/about-timeline' },

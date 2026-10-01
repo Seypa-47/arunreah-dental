@@ -17,16 +17,16 @@ describe('admin navigation presentation', () => {
   });
   it('retains all CMS destinations without duplicate create links', () => {
     const links = getAdminNavigationGroups('CMS_ADMIN').flatMap((group) => group.items.map((item) => item.to));
-    expect(links).toEqual(['/admin/dashboard', '/admin/services', '/admin/doctors', '/admin/showcase', '/admin/page-heroes', '/admin/page-media', '/admin/about-timeline', '/admin/clinic-info', '/admin/clinic-info/branches', '/admin/clinic-info/contact']);
+    expect(links).toEqual(['/admin/dashboard', '/admin/services', '/admin/doctors', '/admin/showcase', '/admin/page-heroes', '/admin/page-media', '/admin/about-timeline', '/admin/clinic-info', '/admin/clinic-info/branches']);
   });
   it('distinguishes nested service pages from neighboring list routes', () => {
     expect(isAdminNavigationActive('/admin/services/123/edit', '/admin/services')).toBe(true);
     expect(isAdminNavigationActive('/admin/appointments/inbox', '/admin/appointments')).toBe(false);
-    expect(isAdminNavigationActive('/admin/clinic-info/contact', '/admin/clinic-info')).toBe(false);
+    expect(isAdminNavigationActive('/admin/clinic-info/branches', '/admin/clinic-info')).toBe(false);
   });
   it('provides a real parent link for create and edit screens', () => {
     expect(getAdminPageInfo('/admin/doctors/new').parent?.to).toBe('/admin/doctors');
     expect(getAdminPageInfo('/admin/services/123/edit').parent?.to).toBe('/admin/services');
-    expect(getAdminPageInfo('/admin/clinic-info/contact').title).toBe('Contact settings');
+    expect(getAdminPageInfo('/admin/clinic-info/contact').title).toBe('Clinic information');
   });
 });

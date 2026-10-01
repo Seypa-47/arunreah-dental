@@ -25,7 +25,6 @@ const cmsNavigation: AdminNavigationItem[] = [
   { icon: 'clinicInfo', label: 'Clinic Info' },
   { icon: 'clinicInfo', label: 'Clinic Settings', section: 'clinic' },
   { icon: 'clinicInfo', label: 'Branches / Locations', section: 'clinic' },
-  { icon: 'clinicInfo', label: 'Contact Settings', section: 'clinic' },
   { icon: 'clinicInfo', label: 'Hero Sections', section: 'clinic' },
   { icon: 'clinicInfo', label: 'Page Media', section: 'clinic' },
   { icon: 'clinicInfo', label: 'About Timeline', section: 'clinic' },

@@ -131,14 +131,11 @@ describe('resolveClinicInfoTab', () => {
     expect(resolveClinicInfoTab('/admin/clinic-info/branches/')).toBe('branches');
   });
 
-  it('resolves contact route to contact tab', () => {
-    expect(resolveClinicInfoTab('/admin/clinic-info/contact')).toBe('contact');
-    expect(resolveClinicInfoTab('/admin/clinic-info/contact/')).toBe('contact');
-  });
-
-  it('resolves clinic root route to clinic tab', () => {
+  it('resolves clinic root route and former contact route to clinic tab', () => {
     expect(resolveClinicInfoTab('/admin/clinic-info')).toBe('clinic');
     expect(resolveClinicInfoTab('/admin/clinic-info/')).toBe('clinic');
+    expect(resolveClinicInfoTab('/admin/clinic-info/contact')).toBe('clinic');
+    expect(resolveClinicInfoTab('/admin/clinic-info/contact/')).toBe('clinic');
   });
 
   it('falls back to provided fallback when route is outside clinic-info', () => {
@@ -169,11 +166,11 @@ describe('AdminClinicInfoPage tab synchronisation with router', () => {
     // Tab content
     expect(html).toContain('Clinic Name (English)');
     expect(html).toContain('Clinic Name (Khmer)');
-    expect(html).toContain('Primary Contact &amp; Location');
-    expect(html).toContain('Location / Address (English)');
+    expect(html).toContain('Clinic Contact &amp; Socials');
+    expect(html).toContain('General Inquiries Email');
+    expect(html).toContain('Clinic Hotline / Primary Phone');
     // Other tabs content should not be rendered
     expect(html).not.toContain('Branch Directory');
-    expect(html).not.toContain('Website Contact Details');
   });
 
   it('renders Branches tab content when at /admin/clinic-info/branches', () => {
@@ -185,22 +182,19 @@ describe('AdminClinicInfoPage tab synchronisation with router', () => {
     expect(html).toContain('Add New Branch');
     expect(html).toContain('Add Open Day &amp; Hours');
     // Other tabs content should not be rendered
-    expect(html).not.toContain('Clinic identity');
-    expect(html).not.toContain('Website Contact Details');
+    expect(html).not.toContain('Clinic Contact &amp; Socials');
   });
 
-  it('renders Contact Settings tab content with two branches switcher when at /admin/clinic-info/contact', () => {
+  it('renders Clinic Information tab content with merged contact settings when at /admin/clinic-info/contact', () => {
     const html = renderAt('/admin/clinic-info/contact');
     // Tab active indicator
-    expect(html).toMatch(/aria-current="page"[^>]*>Contact Settings<\/button>/);
-    // Tab content & branch switcher
-    expect(html).toContain('Select Branch to Edit Contact &amp; Hours');
-    expect(html).toContain('Toul Tompoung Branch');
-    expect(html).toContain('Psa Chas Branch');
-    expect(html).toContain('Website Contact Details');
-    expect(html).toContain('Main Phone Number');
+    expect(html).toMatch(/aria-current="page"[^>]*>Clinic Information<\/button>/);
+    // Merged contact fields are present on clinic info tab
+    expect(html).toContain('Clinic Contact &amp; Socials');
+    expect(html).toContain('General Inquiries Email');
+    expect(html).toContain('Clinic Hotline / Primary Phone');
+    expect(html).toContain('Facebook Page URL');
     // Other tabs content should not be rendered
-    expect(html).not.toContain('Clinic identity');
     expect(html).not.toContain('Branch Directory');
   });
 });

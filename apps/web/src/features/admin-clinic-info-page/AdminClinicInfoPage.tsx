@@ -112,15 +112,14 @@ function CreateBranchModal({
   );
 }
 
+export type ClinicInfoTab = 'clinic' | 'branches';
+
 export function resolveClinicInfoTab(
   pathname: string,
-  fallback: 'clinic' | 'branches' | 'contact' = 'clinic',
-): 'clinic' | 'branches' | 'contact' {
+  fallback: ClinicInfoTab = 'clinic',
+): ClinicInfoTab {
   if (pathname === '/admin/clinic-info/branches' || pathname.startsWith('/admin/clinic-info/branches/')) {
     return 'branches';
-  }
-  if (pathname === '/admin/clinic-info/contact' || pathname.startsWith('/admin/clinic-info/contact/')) {
-    return 'contact';
   }
   if (pathname === '/admin/clinic-info' || pathname.startsWith('/admin/clinic-info/')) {
     return 'clinic';
@@ -135,14 +134,14 @@ export function selectedBranchIdFromSearch(search: string): string | undefined {
 export function AdminClinicInfoPage({
   initialTab = 'clinic',
 }: {
-  initialTab?: 'clinic' | 'branches' | 'contact';
+  initialTab?: ClinicInfoTab;
 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
   const resolvedTab = resolveClinicInfoTab(location.pathname, initialTab);
   const requestedBranchId = useMemo(() => selectedBranchIdFromSearch(location.search), [location.search]);
-  const [activeTab, setActiveTab] = useState<'clinic' | 'branches' | 'contact'>(resolvedTab);
+  const [activeTab, setActiveTab] = useState<ClinicInfoTab>(resolvedTab);
 
   useEffect(() => {
     const nextTab = resolveClinicInfoTab(location.pathname, initialTab);
@@ -277,8 +276,6 @@ export function AdminClinicInfoPage({
     return branches.find((b) => b.id === selectedBranchId) || branches[0] || null;
   }, [branches, selectedBranchId]);
 
-  const isPrimaryBranchSelected = !selectedBranch || selectedBranch.id === branches[0]?.id;
-
   const updateBranch = (id: string, patch: Partial<ClinicBranch>) => {
     setBranches((previous) => previous.map((branch) => branch.id === id ? { ...branch, ...patch } : branch));
   };
@@ -332,9 +329,6 @@ export function AdminClinicInfoPage({
       if (isContactDirty && nextContactSettings.primaryPhone) {
         updateContactMutation.mutate(nextContactSettings);
       }
-      dirtyBranches.forEach((branch) => {
-        updateBranchMutation.mutate(branch);
-      });
       updateInfoMutation.mutate(generalInfo, {
         onSuccess: () => showToast('Clinic Information saved successfully!', 'success'),
         onError: (error: unknown) => {
@@ -348,9 +342,6 @@ export function AdminClinicInfoPage({
       if (isGeneralDirty && generalInfo.clinicNameEn.trim() && generalInfo.clinicNameKm.trim()) {
         updateInfoMutation.mutate(generalInfo);
       }
-      if (isContactDirty && nextContactSettings.primaryPhone) {
-        updateContactMutation.mutate(nextContactSettings);
-      }
       const branchesToSave = dirtyBranches.length > 0 ? dirtyBranches : [selectedBranch];
       branchesToSave.forEach((branch, index) => {
         const isLast = index === branchesToSave.length - 1;
@@ -358,7 +349,21 @@ export function AdminClinicInfoPage({
           branch,
           isLast
             ? {
-                onSuccess: () => showToast('Branch details saved successfully!', 'success'),
+                onSuccess: () => {
+                  if (branch.id === branches[0]?.id || branch.badge === 'Main Branch' || branch.featured) {
+                    updateContactMutation.mutate({
+                      ...nextContactSettings,
+                      addressEn: branch.address || nextContactSettings.addressEn,
+                      addressKm: branch.addressKm || nextContactSettings.addressKm,
+                      businessHoursEn: branch.openingHours || nextContactSettings.businessHoursEn,
+                      businessHoursKm: branch.openingHoursKm || nextContactSettings.businessHoursKm,
+                      mainGoogleMapsUrl: branch.googleMapsLink || nextContactSettings.mainGoogleMapsUrl,
+                      primaryPhone: nextContactSettings.primaryPhone || branch.phone1,
+                      secondaryPhone: nextContactSettings.secondaryPhone || branch.phone2,
+                    });
+                  }
+                  showToast('Branch details saved successfully!', 'success');
+                },
                 onError: (error: unknown) => {
                   const message = error instanceof ApiClientError && error.status === 409
                     ? 'That branch slug is already in use. Choose a different URL slug.'
@@ -369,40 +374,13 @@ export function AdminClinicInfoPage({
             : undefined,
         );
       });
-    } else if (activeTab === 'contact') {
-      if (selectedBranch && !selectedBranch.phone1.trim() && !nextContactSettings.primaryPhone) {
-        showToast('Primary phone number is required.', 'error');
-        return;
-      }
-      if (!selectedBranch && !nextContactSettings.primaryPhone) {
-        showToast('Primary phone number is required.', 'error');
-        return;
-      }
-      if (isGeneralDirty && generalInfo.clinicNameEn.trim() && generalInfo.clinicNameKm.trim()) {
-        updateInfoMutation.mutate(generalInfo);
-      }
-      dirtyBranches.forEach((branch) => {
-        updateBranchMutation.mutate(branch);
-      });
-      updateContactMutation.mutate(nextContactSettings, {
-        onSuccess: () => showToast('Contact settings saved successfully!', 'success'),
-        onError: (error: unknown) => {
-          const message = error instanceof ApiClientError && error.status === 403
-            ? 'You do not have permission to update contact settings.'
-            : error instanceof ApiClientError && error.message
-              ? error.message
-              : 'Unable to save contact settings. Please review the phone, email, and URL values.';
-          showToast(message, 'error');
-        },
-      });
     }
   };
 
-  const handleTabChange = (tab: 'clinic' | 'branches' | 'contact') => {
+  const handleTabChange = (tab: ClinicInfoTab) => {
     setActiveTab(tab);
     if (tab === 'clinic') navigate('/admin/clinic-info');
     else if (tab === 'branches') navigate('/admin/clinic-info/branches');
-    else if (tab === 'contact') navigate('/admin/clinic-info/contact');
   };
 
   // Upload refs
@@ -504,18 +482,6 @@ export function AdminClinicInfoPage({
               type="button"
             >
               Branches / Locations
-            </button>
-            <button
-              aria-current={activeTab === 'contact' ? 'page' : undefined}
-              className={`pb-3 transition-colors ${
-                activeTab === 'contact'
-                  ? 'border-b-2 border-[#2187a8] font-bold text-[#2187a8]'
-                  : 'text-[#71839e] hover:text-[#182238]'
-              }`}
-              onClick={() => handleTabChange('contact')}
-              type="button"
-            >
-              Contact Settings
             </button>
           </nav>
         </div>
@@ -784,284 +750,188 @@ export function AdminClinicInfoPage({
               </Card>
             </div>
 
-            {/* Right Column: Our Branches Summary List & Primary Contact & Location */}
+            {/* Right Column: Clinic Contact & Social Channels + Branch Network Overview */}
             <div className="space-y-7">
+              {/* Card 3: Clinic Contact & Communication Channels */}
+              <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
+                <div>
+                  <h2 className="text-[18px] font-bold text-[#182238]">Clinic Contact &amp; Socials</h2>
+                  <p className="mt-1 text-[13px] text-[#71839e]">
+                    Clinic-wide communication channels, general inquiries email, and official social media profiles.
+                  </p>
+                </div>
+
+                <div className="mt-6 space-y-6">
+                  {/* Section 1: Inquiries & Hotlines */}
+                  <div className="space-y-4">
+                    <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
+                      <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">1</span>
+                      General Inquiries &amp; Hotlines
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[12.5px] font-bold text-[#182238]">
+                          General Inquiries Email <span className="text-[#ef4444]">*</span>
+                        </label>
+                        <input
+                          className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                          onChange={(e) => setContactSettings((p) => ({ ...p, primaryEmail: e.target.value }))}
+                          placeholder="e.g. contact@arunreah.com"
+                          type="email"
+                          value={contactSettings.primaryEmail}
+                        />
+                        <p className="mt-1 text-[11.5px] text-[#71839e]">
+                          Displayed on the booking help card and public website footer.
+                        </p>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-[12.5px] font-bold text-[#182238]">
+                            Clinic Hotline / Primary Phone <span className="text-[#ef4444]">*</span>
+                          </label>
+                          <input
+                            className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                            onChange={(e) => setContactSettings((p) => ({ ...p, primaryPhone: e.target.value }))}
+                            placeholder="e.g. 023 123 456"
+                            type="text"
+                            value={contactSettings.primaryPhone}
+                          />
+                          <p className="mt-1 text-[11.5px] text-[#71839e]">
+                            Main phone number for the entire clinic.
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-[12.5px] font-bold text-[#182238]">
+                            Secondary Phone (Optional)
+                          </label>
+                          <input
+                            className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                            onChange={(e) => setContactSettings((p) => ({ ...p, secondaryPhone: e.target.value }))}
+                            placeholder="e.g. 069 978 997"
+                            type="text"
+                            value={contactSettings.secondaryPhone}
+                          />
+                          <p className="mt-1 text-[11.5px] text-[#71839e]">
+                            Alternative phone line or emergency contact.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 2: Social Media Profiles */}
+                  <div className="space-y-4 border-t border-[#f0f4f8] pt-5">
+                    <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
+                      <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">2</span>
+                      Official Social Media Channels
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[12.5px] font-bold text-[#182238]">
+                          Facebook Page URL
+                        </label>
+                        <input
+                          className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                          onChange={(e) => setContactSettings((p) => ({ ...p, facebookUrl: e.target.value }))}
+                          placeholder="https://facebook.com/arunreah"
+                          type="url"
+                          value={contactSettings.facebookUrl}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[12.5px] font-bold text-[#182238]">
+                          Telegram Channel / Contact Link
+                        </label>
+                        <input
+                          className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                          onChange={(e) => setContactSettings((p) => ({ ...p, telegramUrl: e.target.value }))}
+                          placeholder="https://t.me/arunreah"
+                          type="url"
+                          value={contactSettings.telegramUrl}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[12.5px] font-bold text-[#182238]">
+                          Instagram Profile URL (Optional)
+                        </label>
+                        <input
+                          className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                          onChange={(e) => setContactSettings((p) => ({ ...p, instagramUrl: e.target.value }))}
+                          placeholder="https://instagram.com/arunreah"
+                          type="url"
+                          value={contactSettings.instagramUrl}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Card 4: Physical Branch Locations Overview */}
               <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0f4f8] pb-5">
                   <div>
-                    <h2 className="text-[18px] font-bold text-[#182238]">Our Branches</h2>
-                    <p className="text-[13px] text-[#71839e]">
-                      Manage all clinic branch locations.
+                    <h2 className="text-[18px] font-bold text-[#182238]">Physical Clinic Locations</h2>
+                    <p className="mt-1 text-[13px] text-[#71839e]">
+                      Physical street addresses, branch reception phone lines, weekly hours, and Google Maps are managed per branch.
                     </p>
                   </div>
-                  <Button
-                    className="h-10 rounded-xl bg-[#2187a8] px-4 text-[13.5px] font-bold text-white shadow-xs hover:bg-[#1a718c]"
-                    icon={<span className="text-base font-bold">+</span>}
-                    onClick={() => {
-                      setIsCreateBranchOpen(true);
-                      handleTabChange('branches');
-                    }}
-                  >
-                    Add New Branch
-                  </Button>
+                  <span className="rounded-full bg-[#eef7fb] px-3 py-1 text-[11.5px] font-extrabold text-[#087b9f]">
+                    {branches.length} {branches.length === 1 ? 'Location' : 'Locations'}
+                  </span>
                 </div>
 
-                {/* Branches Table */}
                 <div className="mt-4 divide-y divide-[#f0f4f8]">
                   {branches.map((b) => (
                     <div
-                      className="flex flex-wrap items-center justify-between gap-4 py-4 text-[13.5px]"
+                      className="flex flex-wrap items-center justify-between gap-3 py-3.5 text-[13.5px]"
                       key={b.id}
                     >
-                      <button
-                        className="flex items-start gap-3 text-left transition hover:opacity-85"
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl bg-[#edf7fb] text-[#2187a8]">
+                          <AdminIcon className="size-4" name="shield" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-[#182238]">{b.name}</span>
+                            {b.badge && (
+                              <span className="rounded-md bg-[#edf7fb] px-2 py-0.5 text-[10.5px] font-bold text-[#087b9f]">
+                                {b.badge}
+                              </span>
+                            )}
+                          </div>
+                          <span className="mt-0.5 block max-w-sm text-[12px] leading-relaxed text-[#71839e]">
+                            📍 {b.address}
+                          </span>
+                          <span className="mt-0.5 block text-[11.5px] font-medium text-[#2187a8]">
+                            📞 {b.phone1 || 'No phone set'}{b.phone2 ? ` • ${b.phone2}` : ''}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        className="h-8 rounded-lg border border-[#dce5ef] bg-white px-3 text-xs font-bold text-[#2187a8] hover:bg-[#edf7fb]"
                         onClick={() => {
                           setSelectedBranchId(b.id);
                           handleTabChange('branches');
                         }}
                         type="button"
+                        variant="secondary"
                       >
-                        <div className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl bg-[#edf7fb] text-[#2187a8]">
-                          <AdminIcon className="size-4" name="shield" />
-                        </div>
-                        <div>
-                          <span className="block font-bold text-[#182238] hover:text-[#2187a8]">{b.name}</span>
-                          <span className="mt-0.5 block max-w-xs text-[12px] leading-relaxed text-[#71839e]">
-                            {b.address}
-                          </span>
-                        </div>
-                      </button>
-
-                      <div className="text-[12.5px] text-[#71839e]">
-                        <span className="block font-medium text-[#182238]">{b.phone1}</span>
-                        <span className="block text-[#8a9bb2]">{b.phone2}</span>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <AdminPublicationStatus status={b.status} />
-                        <button
-                          className="grid size-8 place-items-center rounded-lg text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]"
-                          onClick={() => {
-                            setSelectedBranchId(b.id);
-                            handleTabChange('branches');
-                          }}
-                          title="Edit branch"
-                          type="button"
-                        >
-                          ✎
-                        </button>
-                        <button
-                          className="grid size-8 place-items-center rounded-lg text-[#71839e] hover:bg-[#f4f8fb] hover:text-[#2187a8]"
-                          onClick={() => {
-                            setSelectedBranchId(b.id);
-                            handleTabChange('branches');
-                          }}
-                          title="Open branch settings"
-                          type="button"
-                        >
-                          ⁝
-                        </button>
-                      </div>
+                        Edit Details →
+                      </Button>
                     </div>
                   ))}
                 </div>
 
-                {/* Pagination */}
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-[#f0f4f8] pt-4 text-[13px] text-[#71839e]">
-                  <span>Showing 1 to {branches.length} of {branches.length} branches</span>
-                  <div className="flex items-center gap-1.5">
-                    <button className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#8a9bb2]" type="button">
-                      ‹
-                    </button>
-                    <span className="grid size-8 place-items-center rounded-lg border border-[#2187a8] bg-[#edf7fb] font-bold text-[#2187a8]">
-                      1
-                    </span>
-                    <button className="grid size-8 place-items-center rounded-lg border border-[#dce5ef] bg-white text-[#8a9bb2]" type="button">
-                      ›
-                    </button>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Card 3: Primary Contact & Location (Directly editable on Clinic Settings tab) */}
-              <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0f4f8] pb-5">
-                  <div>
-                    <h2 className="text-[18px] font-bold text-[#182238]">Primary Contact &amp; Location</h2>
-                    <p className="text-[13px] text-[#71839e]">
-                      Updates the Contact page, Booking help card, and clinic footer.
-                    </p>
-                  </div>
+                <div className="mt-5 border-t border-[#f0f4f8] pt-4">
                   <Button
-                    className="h-9 rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[12.5px] font-bold text-[#2187a8] hover:bg-[#f0f8fb]"
-                    onClick={() => handleTabChange('contact')}
+                    className="w-full h-11 rounded-xl bg-[#2187a8] text-white font-bold hover:bg-[#1a718c] shadow-xs"
+                    onClick={() => handleTabChange('branches')}
                     type="button"
-                    variant="secondary"
                   >
-                    Social &amp; Map Links →
+                    Go to Branches &amp; Locations →
                   </Button>
-                </div>
-
-                {branches.length > 0 && (
-                  <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl border border-[#e2ebf3] bg-[#f8fbfe] p-2">
-                    {branches.map((branch) => {
-                      const isSelected = branch.id === selectedBranch?.id;
-                      return (
-                        <button
-                          aria-pressed={isSelected}
-                          className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-[12.5px] font-bold transition ${
-                            isSelected
-                              ? 'bg-[#2187a8] text-white shadow-xs'
-                              : 'bg-white text-[#526879] hover:bg-[#edf7fb] hover:text-[#2187a8]'
-                          }`}
-                          key={branch.id}
-                          onClick={() => setSelectedBranchId(branch.id)}
-                          type="button"
-                        >
-                          <span>{branch.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                <div className="mt-5 space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">
-                        Primary Phone <span className="text-[#ef4444]">*</span>
-                      </label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (selectedBranch) {
-                            updateBranch(selectedBranch.id, { phone1: value });
-                          }
-                          if (isPrimaryBranchSelected) {
-                            setContactSettings((p) => ({ ...p, primaryPhone: value }));
-                          }
-                        }}
-                        type="text"
-                        value={
-                          selectedBranch
-                            ? selectedBranch.phone1 || (isPrimaryBranchSelected ? contactSettings.primaryPhone : '')
-                            : contactSettings.primaryPhone
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">
-                        Secondary Phone
-                      </label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (selectedBranch) {
-                            updateBranch(selectedBranch.id, { phone2: value });
-                          }
-                          if (isPrimaryBranchSelected) {
-                            setContactSettings((p) => ({ ...p, secondaryPhone: value }));
-                          }
-                        }}
-                        type="text"
-                        value={
-                          selectedBranch
-                            ? selectedBranch.phone2 || (isPrimaryBranchSelected ? contactSettings.secondaryPhone : '')
-                            : contactSettings.secondaryPhone
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">
-                        Email Address
-                      </label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => setContactSettings((p) => ({ ...p, primaryEmail: e.target.value }))}
-                        type="email"
-                        value={contactSettings.primaryEmail}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">
-                        Opening Hours (English)
-                      </label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (selectedBranch) {
-                            updateBranch(selectedBranch.id, { openingHours: value });
-                          }
-                          if (isPrimaryBranchSelected) {
-                            setContactSettings((p) => ({ ...p, businessHoursEn: value }));
-                          }
-                        }}
-                        type="text"
-                        value={
-                          selectedBranch
-                            ? selectedBranch.openingHours ||
-                              serializeBranchScheduleRows(parseBranchScheduleRows(selectedBranch)).openingHours ||
-                              (isPrimaryBranchSelected ? contactSettings.businessHoursEn : '')
-                            : contactSettings.businessHoursEn
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">
-                        Location / Address (English)
-                      </label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (selectedBranch) {
-                            updateBranch(selectedBranch.id, { address: value });
-                          }
-                          if (isPrimaryBranchSelected) {
-                            setContactSettings((p) => ({ ...p, addressEn: value }));
-                          }
-                        }}
-                        type="text"
-                        value={
-                          selectedBranch
-                            ? selectedBranch.address || (isPrimaryBranchSelected ? contactSettings.addressEn : '')
-                            : contactSettings.addressEn
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[12.5px] font-bold text-[#182238]">
-                        Location / Address (Khmer)
-                      </label>
-                      <input
-                        className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (selectedBranch) {
-                            updateBranch(selectedBranch.id, { addressKm: value });
-                          }
-                          if (isPrimaryBranchSelected) {
-                            setContactSettings((p) => ({ ...p, addressKm: value }));
-                          }
-                        }}
-                        type="text"
-                        value={
-                          selectedBranch
-                            ? selectedBranch.addressKm || (isPrimaryBranchSelected ? contactSettings.addressKm : '')
-                            : contactSettings.addressKm
-                        }
-                      />
-                    </div>
-                  </div>
                 </div>
               </Card>
             </div>
@@ -1973,486 +1843,6 @@ export function AdminClinicInfoPage({
                 </Card>
               </div>
             )}
-          </div>
-        )}
-
-        {/* TAB 3: CONTACT SETTINGS */}
-        {activeTab === 'contact' && (
-          <div className="mt-8 space-y-7">
-            {/* Branch Switcher for Contact Settings */}
-            {branches.length > 0 && (
-              <Card className="rounded-[24px] border-[#e1e8f0] bg-white p-5 sm:p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center rounded-full bg-[#edf7fb] px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-[#087b9f]">
-                        Branch Contact Switcher
-                      </span>
-                      <span className="text-[12px] font-semibold text-[#71839e]">
-                        {branches.length} {branches.length === 1 ? 'Branch' : 'Branches'}
-                      </span>
-                    </div>
-                    <h2 className="mt-1.5 text-[17px] font-bold text-[#182238]">
-                      Select Branch to Edit Contact &amp; Hours
-                    </h2>
-                    <p className="mt-0.5 text-[12.5px] text-[#71839e]">
-                      Switch between branches to manage each location&apos;s phone numbers, address, opening hours, and map link displayed on the Contact Us page.
-                    </p>
-                  </div>
-
-                  <div
-                    aria-label="Select branch for contact settings"
-                    className="grid gap-2.5 sm:grid-cols-2 lg:min-w-[440px]"
-                    role="tablist"
-                  >
-                    {branches.map((branch) => {
-                      const isSelected = branch.id === selectedBranch?.id;
-                      return (
-                        <button
-                          aria-selected={isSelected}
-                          className={`flex flex-col items-start rounded-2xl border p-3.5 text-left transition ${
-                            isSelected
-                              ? 'border-[#2187a8] bg-[#f0f7fa] shadow-xs ring-1 ring-[#2187a8]'
-                              : 'border-[#dce5ef] bg-white hover:border-[#b8d6e7] hover:bg-[#f8fbfe]'
-                          }`}
-                          key={branch.id}
-                          onClick={() => setSelectedBranchId(branch.id)}
-                          role="tab"
-                          type="button"
-                        >
-                          <div className="flex w-full items-center justify-between gap-2">
-                            <span className="text-[13.5px] font-extrabold text-[#182238]">
-                              {branch.name}
-                            </span>
-                            {branch.badge ? (
-                              <span
-                                className={`rounded-md px-2 py-0.5 text-[10.5px] font-bold ${
-                                  branch.badge === 'Main Branch'
-                                    ? 'bg-[#fffbeb] text-[#d97706]'
-                                    : 'bg-[#eff6ff] text-[#2563eb]'
-                                }`}
-                              >
-                                {branch.badge}
-                              </span>
-                            ) : null}
-                          </div>
-                          <span className="mt-1 text-[11.5px] font-semibold text-[#2187a8]">
-                            📞 {branch.phone1 || 'No phone set'}{branch.phone2 ? ` • ${branch.phone2}` : ''}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            <div className="grid gap-7 xl:grid-cols-2">
-              {/* Left Card: Website Contact Details */}
-              <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-[18px] font-bold text-[#182238]">Website Contact Details</h2>
-                  {selectedBranch && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#edf7fb] px-3 py-1 text-[12px] font-bold text-[#087b9f]">
-                      <span className="size-1.5 rounded-full bg-[#2187a8]" />
-                      {selectedBranch.name}
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-6 space-y-6">
-                  {/* 1 Primary Contact */}
-                  <div className="space-y-4">
-                    <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
-                      <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">1</span>
-                      Primary Contact {selectedBranch ? `(${selectedBranch.name})` : ''}
-                    </h3>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <label className="block text-[12.5px] font-bold text-[#182238]">Main Phone Number</label>
-                        <input
-                          className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (selectedBranch) {
-                              updateBranch(selectedBranch.id, { phone1: value });
-                            }
-                            if (isPrimaryBranchSelected) {
-                              setContactSettings((p) => ({ ...p, primaryPhone: value }));
-                            }
-                          }}
-                          type="text"
-                          value={
-                            selectedBranch
-                              ? selectedBranch.phone1 || (isPrimaryBranchSelected ? contactSettings.primaryPhone : '')
-                              : contactSettings.primaryPhone
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[12.5px] font-bold text-[#182238]">Secondary Phone Number</label>
-                        <input
-                          className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (selectedBranch) {
-                              updateBranch(selectedBranch.id, { phone2: value });
-                            }
-                            if (isPrimaryBranchSelected) {
-                              setContactSettings((p) => ({ ...p, secondaryPhone: value }));
-                            }
-                          }}
-                          type="text"
-                          value={
-                            selectedBranch
-                              ? selectedBranch.phone2 || (isPrimaryBranchSelected ? contactSettings.secondaryPhone : '')
-                              : contactSettings.secondaryPhone
-                          }
-                        />
-                      </div>
-                      <div className="sm:col-span-2">
-                        <label className="block text-[12.5px] font-bold text-[#182238]">Main Email Address</label>
-                        <input
-                          className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                          onChange={(e) => setContactSettings((p) => ({ ...p, primaryEmail: e.target.value }))}
-                          type="email"
-                          value={contactSettings.primaryEmail}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 2 Social Channels */}
-                  <div className="space-y-4 border-t border-[#f0f4f8] pt-5">
-                    <h3 className="flex items-center gap-2 text-[14px] font-bold text-[#2187a8]">
-                      <span className="grid size-5 place-items-center rounded-full bg-[#edf7fb] text-xs">2</span>
-                      Social Channels
-                    </h3>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <label className="block text-[12.5px] font-bold text-[#182238]">Facebook Page URL</label>
-                        <input
-                          className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                          onChange={(e) => setContactSettings((p) => ({ ...p, facebookUrl: e.target.value }))}
-                          type="url"
-                          value={contactSettings.facebookUrl}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[12.5px] font-bold text-[#182238]">Telegram Link</label>
-                        <input
-                          className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                          onChange={(e) => setContactSettings((p) => ({ ...p, telegramUrl: e.target.value }))}
-                          type="url"
-                          value={contactSettings.telegramUrl}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[12.5px] font-bold text-[#182238]">Instagram URL (optional)</label>
-                        <input
-                          className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                          onChange={(e) => setContactSettings((p) => ({ ...p, instagramUrl: e.target.value }))}
-                          type="url"
-                          value={contactSettings.instagramUrl}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 sm:p-7 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-[18px] font-bold text-[#182238]">Business Hours &amp; Location</h2>
-                  {selectedBranch && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#edf7fb] px-3 py-1 text-[12px] font-bold text-[#087b9f]">
-                      <span className="size-1.5 rounded-full bg-[#2187a8]" />
-                      {selectedBranch.name}
-                    </span>
-                  )}
-                </div>
-                <div className="mt-6 space-y-5">
-                  <div>
-                    <label className="block text-[12.5px] font-bold text-[#182238]">Address (English)</label>
-                    <textarea
-                      className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]"
-                      maxLength={1000}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (selectedBranch) {
-                          updateBranch(selectedBranch.id, { address: value });
-                        }
-                        if (isPrimaryBranchSelected) {
-                          setContactSettings((p) => ({ ...p, addressEn: value }));
-                        }
-                      }}
-                      value={
-                        selectedBranch
-                          ? selectedBranch.address || (isPrimaryBranchSelected ? contactSettings.addressEn : '')
-                          : contactSettings.addressEn
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[12.5px] font-bold text-[#182238]">Address (Khmer)</label>
-                    <textarea
-                      className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]"
-                      maxLength={1000}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (selectedBranch) {
-                          updateBranch(selectedBranch.id, { addressKm: value });
-                        }
-                        if (isPrimaryBranchSelected) {
-                          setContactSettings((p) => ({ ...p, addressKm: value }));
-                        }
-                      }}
-                      value={
-                        selectedBranch
-                          ? selectedBranch.addressKm || (isPrimaryBranchSelected ? contactSettings.addressKm : '')
-                          : contactSettings.addressKm
-                      }
-                    />
-                  </div>
-
-                  {selectedBranch && (
-                    <div className="space-y-3 border-t border-[#f0f4f8] pt-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-[12.5px] font-bold text-[#182238]">
-                          Branch Open Days &amp; Hours Schedule
-                        </span>
-                        <button
-                          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#b8d6e7] bg-[#f4fafe] px-3 text-[12px] font-bold text-[#087b9f] transition hover:bg-[#e3f3fa]"
-                          onClick={() => {
-                            const currentRows = parseBranchScheduleRows(selectedBranch);
-                            const firstDays = currentRows[0]?.daysEn ?? '';
-                            const nextDaysEn =
-                              firstDays === 'Mon - Fri'
-                                ? 'Sat - Sun'
-                                : firstDays === 'Mon - Sat'
-                                  ? 'Sun'
-                                  : 'Sun';
-                            const nextPreset = getPresetForDaysEn(nextDaysEn);
-                            const nextRows = [
-                              ...currentRows,
-                              {
-                                daysEn: nextDaysEn,
-                                daysKm: nextPreset?.km ?? 'អាទិត្យ',
-                                openTime: '08:00',
-                                closeTime: '17:00',
-                              },
-                            ];
-                            const serialized = serializeBranchScheduleRows(nextRows);
-                            updateBranch(selectedBranch.id, serialized);
-                            if (isPrimaryBranchSelected) {
-                              setContactSettings((p) => ({
-                                ...p,
-                                businessHoursEn: serialized.openingHours,
-                                businessHoursKm: serialized.openingHoursKm,
-                              }));
-                            }
-                          }}
-                          type="button"
-                        >
-                          <span aria-hidden="true" className="text-sm font-black leading-none">+</span>
-                          Add Open Day &amp; Hours
-                        </button>
-                      </div>
-
-                      {(() => {
-                        const scheduleRows = parseBranchScheduleRows(selectedBranch);
-                        const applyScheduleRows = (nextRows: typeof scheduleRows) => {
-                          const serialized = serializeBranchScheduleRows(nextRows);
-                          updateBranch(selectedBranch.id, serialized);
-                          if (isPrimaryBranchSelected) {
-                            setContactSettings((p) => ({
-                              ...p,
-                              businessHoursEn: serialized.openingHours,
-                              businessHoursKm: serialized.openingHoursKm,
-                            }));
-                          }
-                        };
-
-                        return (
-                          <div className="space-y-2.5">
-                            {scheduleRows.map((row, rowIndex) => {
-                              const hasPreset = BRANCH_DAY_PRESETS.some((preset) => preset.value === row.daysEn);
-                              return (
-                                <div
-                                  className="rounded-2xl border border-[#e2ebf3] bg-[#fafcfe] p-3"
-                                  key={`contact-schedule-${rowIndex}`}
-                                >
-                                  {scheduleRows.length > 1 && (
-                                    <div className="mb-2 flex items-center justify-between border-b border-[#edf2f7] pb-1.5">
-                                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#2187a8]">
-                                        Schedule {rowIndex + 1}
-                                      </span>
-                                      <button
-                                        className="inline-flex items-center gap-1 rounded-md border border-[#fecaca] bg-white px-2 py-0.5 text-[11px] font-bold text-[#b91c1c] transition hover:bg-[#fff1f2]"
-                                        onClick={() => {
-                                          const nextRows = scheduleRows.filter((_, idx) => idx !== rowIndex);
-                                          applyScheduleRows(nextRows);
-                                        }}
-                                        type="button"
-                                      >
-                                        Remove
-                                      </button>
-                                    </div>
-                                  )}
-                                  <div className="grid gap-2.5 sm:grid-cols-2 2xl:grid-cols-4">
-                                    <div>
-                                      <label className="block text-[11.5px] font-bold text-[#182238]">Opening Days</label>
-                                      <select
-                                        className="mt-1 h-9 w-full rounded-xl border border-[#dce5ef] bg-white px-2 text-[12.5px] outline-none focus:border-[#2187a8]"
-                                        onChange={(e) => {
-                                          const nextDaysEn = e.target.value;
-                                          const preset = getPresetForDaysEn(nextDaysEn);
-                                          const nextRows = scheduleRows.map((item, idx) =>
-                                            idx === rowIndex
-                                              ? {
-                                                  ...item,
-                                                  daysEn: nextDaysEn,
-                                                  daysKm: preset?.km ?? item.daysKm,
-                                                }
-                                              : item,
-                                          );
-                                          applyScheduleRows(nextRows);
-                                        }}
-                                        value={row.daysEn}
-                                      >
-                                        {!hasPreset && row.daysEn ? (
-                                          <option value={row.daysEn}>{row.daysEn}</option>
-                                        ) : null}
-                                        {BRANCH_DAY_PRESETS.map((preset) => (
-                                          <option key={preset.value} value={preset.value}>
-                                            {preset.labelEn}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </div>
-                                    <div>
-                                      <label className="block text-[11.5px] font-bold text-[#182238]">Days (Khmer)</label>
-                                      <input
-                                        className="mt-1 h-9 w-full rounded-xl border border-[#dce5ef] bg-white px-2.5 text-[12.5px] outline-none focus:border-[#2187a8]"
-                                        onChange={(e) => {
-                                          const nextRows = scheduleRows.map((item, idx) =>
-                                            idx === rowIndex ? { ...item, daysKm: e.target.value } : item,
-                                          );
-                                          applyScheduleRows(nextRows);
-                                        }}
-                                        type="text"
-                                        value={row.daysKm}
-                                      />
-                                    </div>
-                                    <div>
-                                      <label className="block text-[11.5px] font-bold text-[#182238]">Open Time</label>
-                                      <input
-                                        className="mt-1 h-9 w-full rounded-xl border border-[#dce5ef] bg-white px-2.5 text-[12.5px] outline-none focus:border-[#2187a8]"
-                                        onChange={(e) => {
-                                          const nextRows = scheduleRows.map((item, idx) =>
-                                            idx === rowIndex ? { ...item, openTime: e.target.value } : item,
-                                          );
-                                          applyScheduleRows(nextRows);
-                                        }}
-                                        type="text"
-                                        value={row.openTime}
-                                      />
-                                    </div>
-                                    <div>
-                                      <label className="block text-[11.5px] font-bold text-[#182238]">Close Time</label>
-                                      <input
-                                        className="mt-1 h-9 w-full rounded-xl border border-[#dce5ef] bg-white px-2.5 text-[12.5px] outline-none focus:border-[#2187a8]"
-                                        onChange={(e) => {
-                                          const nextRows = scheduleRows.map((item, idx) =>
-                                            idx === rowIndex ? { ...item, closeTime: e.target.value } : item,
-                                          );
-                                          applyScheduleRows(nextRows);
-                                        }}
-                                        type="text"
-                                        value={row.closeTime}
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-[12.5px] font-bold text-[#182238]">Business Hours (English)</label>
-                    <textarea
-                      className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]"
-                      maxLength={1000}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (selectedBranch) {
-                          updateBranch(selectedBranch.id, { openingHours: value });
-                        }
-                        if (isPrimaryBranchSelected) {
-                          setContactSettings((p) => ({ ...p, businessHoursEn: value }));
-                        }
-                      }}
-                      value={
-                        selectedBranch
-                          ? selectedBranch.openingHours ||
-                            serializeBranchScheduleRows(parseBranchScheduleRows(selectedBranch)).openingHours ||
-                            (isPrimaryBranchSelected ? contactSettings.businessHoursEn : '')
-                          : contactSettings.businessHoursEn
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[12.5px] font-bold text-[#182238]">Business Hours (Khmer)</label>
-                    <textarea
-                      className="mt-1 h-20 w-full resize-none rounded-xl border border-[#dce5ef] p-3 text-[13px] leading-relaxed outline-none focus:border-[#2187a8]"
-                      maxLength={1000}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (selectedBranch) {
-                          updateBranch(selectedBranch.id, { openingHoursKm: value });
-                        }
-                        if (isPrimaryBranchSelected) {
-                          setContactSettings((p) => ({ ...p, businessHoursKm: value }));
-                        }
-                      }}
-                      value={
-                        selectedBranch
-                          ? selectedBranch.openingHoursKm ||
-                            serializeBranchScheduleRows(parseBranchScheduleRows(selectedBranch)).openingHoursKm ||
-                            (isPrimaryBranchSelected ? contactSettings.businessHoursKm : '')
-                          : contactSettings.businessHoursKm
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[12.5px] font-bold text-[#182238]">Main Google Maps URL</label>
-                    <input
-                      className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] px-3 text-[13.5px] outline-none focus:border-[#2187a8]"
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (selectedBranch) {
-                          updateBranch(selectedBranch.id, { googleMapsLink: value });
-                        }
-                        if (isPrimaryBranchSelected) {
-                          setContactSettings((p) => ({ ...p, mainGoogleMapsUrl: value }));
-                        }
-                      }}
-                      type="url"
-                      value={
-                        selectedBranch
-                          ? selectedBranch.googleMapsLink ||
-                            (isPrimaryBranchSelected ? contactSettings.mainGoogleMapsUrl : '')
-                          : contactSettings.mainGoogleMapsUrl
-                      }
-                    />
-                  </div>
-                </div>
-              </Card>
-            </div>
           </div>
         )}
 

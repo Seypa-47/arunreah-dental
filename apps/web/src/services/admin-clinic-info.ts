@@ -222,7 +222,6 @@ const adminClinicInfoContent: AdminClinicInfoContent = {
     { icon: 'clinicInfo', label: 'Clinic Info' },
     { icon: 'clinicInfo', label: 'Clinic Settings', section: 'clinic' },
     { icon: 'clinicInfo', label: 'Branches / Locations', section: 'clinic' },
-    { icon: 'clinicInfo', label: 'Contact Settings', section: 'clinic' },
   ],
 };
 
