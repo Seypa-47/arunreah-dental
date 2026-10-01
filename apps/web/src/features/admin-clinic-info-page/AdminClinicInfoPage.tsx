@@ -560,6 +560,46 @@ export function AdminClinicInfoPage({
                     </div>
                   </div>
 
+                  {/* Short About (English) */}
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-[13px] font-bold text-[#182238]">
+                        Short About (English)
+                      </label>
+                      <span className="text-[11px] text-[#8a9bb2]">
+                        {generalInfo.shortAboutEn.length}/5000
+                      </span>
+                    </div>
+                    <textarea
+                      className="mt-1.5 h-28 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-3.5 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      maxLength={5000}
+                      onChange={(e) =>
+                        setGeneralInfo((prev) => ({ ...prev, shortAboutEn: e.target.value }))
+                      }
+                      value={generalInfo.shortAboutEn}
+                    />
+                  </div>
+
+                  {/* Short About (Khmer) - Big textarea same as English */}
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-[13px] font-bold text-[#182238]">
+                        Short About (Khmer)
+                      </label>
+                      <span className="text-[11px] text-[#8a9bb2]">
+                        {generalInfo.shortAboutKm.length}/5000
+                      </span>
+                    </div>
+                    <textarea
+                      className="mt-1.5 h-28 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-3.5 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                      maxLength={5000}
+                      onChange={(e) =>
+                        setGeneralInfo((prev) => ({ ...prev, shortAboutKm: e.target.value }))
+                      }
+                      value={generalInfo.shortAboutKm}
+                    />
+                  </div>
+
                   {/* Tagline fields */}
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
@@ -628,53 +668,6 @@ export function AdminClinicInfoPage({
                         }
                         placeholder="ឧ. គ្លីនិកធ្មេញ អរុណរះ ផ្តល់សេវាថែទាំធ្មេញដោយផ្តោតលើអ្នកជំងឺនៅរាជធានីភ្នំពេញ..."
                         value={generalInfo.footerDescriptionKm}
-                      />
-                    </div>
-                  </div>
-
-                  {/* About Page Story Section */}
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <label className="block text-[13px] font-bold text-[#182238]">
-                          About Us Story (English)
-                        </label>
-                        <span className="text-[11px] text-[#8a9bb2]">
-                          {generalInfo.shortAboutEn.length}/5000
-                        </span>
-                      </div>
-                      <p className="mt-0.5 text-[11px] text-[#71839e]">
-                        Detailed clinic history and paragraphs displayed in the Story section on /about.
-                      </p>
-                      <textarea
-                        className="mt-1.5 h-28 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-3.5 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-                        maxLength={5000}
-                        onChange={(e) =>
-                          setGeneralInfo((prev) => ({ ...prev, shortAboutEn: e.target.value }))
-                        }
-                        value={generalInfo.shortAboutEn}
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <label className="block text-[13px] font-bold text-[#182238]">
-                          About Us Story (Khmer)
-                        </label>
-                        <span className="text-[11px] text-[#8a9bb2]">
-                          {generalInfo.shortAboutKm.length}/5000
-                        </span>
-                      </div>
-                      <p className="mt-0.5 text-[11px] text-[#71839e]">
-                        ប្រវត្តិ និងដំណើររឿងរបស់គ្លីនិកសម្រាប់ផ្នែក Story លើទំព័រ /about។
-                      </p>
-                      <textarea
-                        className="mt-1.5 h-28 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-3.5 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-                        maxLength={5000}
-                        onChange={(e) =>
-                          setGeneralInfo((prev) => ({ ...prev, shortAboutKm: e.target.value }))
-                        }
-                        value={generalInfo.shortAboutKm}
                       />
                     </div>
                   </div>
