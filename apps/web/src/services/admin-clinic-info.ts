@@ -51,6 +51,8 @@ export type ClinicGeneralInfo = {
   taglineKm: string;
   shortAboutEn: string;
   shortAboutKm: string;
+  footerDescriptionEn: string;
+  footerDescriptionKm: string;
   logoKey: string;
   yearsExperience: string;
   successfulCases: string;
@@ -198,6 +200,7 @@ const adminClinicInfoContent: AdminClinicInfoContent = {
   },
   generalInfo: {
     clinicNameEn: '', clinicNameKm: '', taglineEn: '', taglineKm: '', shortAboutEn: '', shortAboutKm: '',
+    footerDescriptionEn: '', footerDescriptionKm: '',
     logoKey: '', yearsExperience: '', successfulCases: '', patientSatisfaction: '',
   },
   header: {
@@ -289,6 +292,8 @@ function toClinicGeneralInfo(clinic: ClinicSettingsAdminRead): ClinicGeneralInfo
     taglineKm: clinic.taglineKm ?? '',
     shortAboutEn: clinic.shortAboutEn ?? '',
     shortAboutKm: clinic.shortAboutKm ?? '',
+    footerDescriptionEn: clinic.footerDescriptionEn ?? '',
+    footerDescriptionKm: clinic.footerDescriptionKm ?? '',
     logoKey: clinic.logoKey ?? '',
     yearsExperience: numberForForm(clinic.yearsExperience),
     successfulCases: numberForForm(clinic.successfulCases),
@@ -332,6 +337,8 @@ export async function saveClinicInfo(info: ClinicGeneralInfo): Promise<ClinicGen
     taglineKm: nullableText(info.taglineKm),
     shortAboutEn: nullableText(info.shortAboutEn),
     shortAboutKm: nullableText(info.shortAboutKm),
+    footerDescriptionEn: nullableText(info.footerDescriptionEn),
+    footerDescriptionKm: nullableText(info.footerDescriptionKm),
     logoKey: nullableText(info.logoKey),
     yearsExperience: nullableInteger(info.yearsExperience),
     successfulCases: null,

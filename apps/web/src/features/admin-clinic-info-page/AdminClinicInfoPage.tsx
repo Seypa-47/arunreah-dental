@@ -215,6 +215,8 @@ export function AdminClinicInfoPage({
     taglineKm: '',
     shortAboutEn: '',
     shortAboutKm: '',
+    footerDescriptionEn: '',
+    footerDescriptionKm: '',
     logoKey: '',
     yearsExperience: '',
     successfulCases: '',
@@ -558,39 +560,8 @@ export function AdminClinicInfoPage({
                     </div>
                   </div>
 
-                  {/* Short Description */}
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="block text-[13px] font-bold text-[#182238]">
-                        Short About (English)
-                      </label>
-                      <span className="text-[11px] text-[#8a9bb2]">
-                        {generalInfo.shortAboutEn.length}/5000
-                      </span>
-                    </div>
-                    <textarea
-                      className="mt-1.5 h-24 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-3.5 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-                      maxLength={5000}
-                      onChange={(e) =>
-                        setGeneralInfo((prev) => ({ ...prev, shortAboutEn: e.target.value }))
-                      }
-                      value={generalInfo.shortAboutEn}
-                    />
-                  </div>
-
-                  {/* Khmer and bilingual tagline fields supported by the clinic settings contract. */}
+                  {/* Tagline fields */}
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-[13px] font-bold text-[#182238]">Short About (Khmer)</label>
-                      <input
-                        className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-                        onChange={(e) =>
-                          setGeneralInfo((prev) => ({ ...prev, shortAboutKm: e.target.value }))
-                        }
-                        type="text"
-                        value={generalInfo.shortAboutKm}
-                      />
-                    </div>
                     <div>
                       <label className="block text-[13px] font-bold text-[#182238]">Tagline (English)</label>
                       <input
@@ -602,16 +573,110 @@ export function AdminClinicInfoPage({
                         value={generalInfo.taglineEn}
                       />
                     </div>
+                    <div>
+                      <label className="block text-[13px] font-bold text-[#182238]">Tagline (Khmer)</label>
+                      <input
+                        className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                        onChange={(e) => setGeneralInfo((prev) => ({ ...prev, taglineKm: e.target.value }))}
+                        type="text"
+                        value={generalInfo.taglineKm}
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-[13px] font-bold text-[#182238]">Tagline (Khmer)</label>
-                    <input
-                      className="mt-1.5 h-11 w-full rounded-xl border border-[#dce5ef] bg-white px-3.5 text-[14px] text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
-                      onChange={(e) => setGeneralInfo((prev) => ({ ...prev, taglineKm: e.target.value }))}
-                      type="text"
-                      value={generalInfo.taglineKm}
-                    />
+                  {/* Footer Description (Bilingual) */}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[13px] font-bold text-[#182238]">
+                          Footer Description (English)
+                        </label>
+                        <span className="text-[11px] text-[#8a9bb2]">
+                          {generalInfo.footerDescriptionEn.length}/1000
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-[11px] text-[#71839e]">
+                        Short clinic summary displayed in the website footer across all pages.
+                      </p>
+                      <textarea
+                        className="mt-1.5 h-20 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-3 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                        maxLength={1000}
+                        onChange={(e) =>
+                          setGeneralInfo((prev) => ({ ...prev, footerDescriptionEn: e.target.value }))
+                        }
+                        placeholder="e.g. Arunreah Dental Clinic provides patient-focused dental care in Phnom Penh with a focus on comfort, precision, and clinical excellence."
+                        value={generalInfo.footerDescriptionEn}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[13px] font-bold text-[#182238]">
+                          Footer Description (Khmer)
+                        </label>
+                        <span className="text-[11px] text-[#8a9bb2]">
+                          {generalInfo.footerDescriptionKm.length}/1000
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-[11px] text-[#71839e]">
+                        ការពិពណ៌នាសង្ខេបអំពីគ្លីនិកសម្រាប់ផ្នែក Footer លើគ្រប់ទំព័រ។
+                      </p>
+                      <textarea
+                        className="mt-1.5 h-20 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-3 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                        maxLength={1000}
+                        onChange={(e) =>
+                          setGeneralInfo((prev) => ({ ...prev, footerDescriptionKm: e.target.value }))
+                        }
+                        placeholder="ឧ. គ្លីនិកធ្មេញ អរុណរះ ផ្តល់សេវាថែទាំធ្មេញដោយផ្តោតលើអ្នកជំងឺនៅរាជធានីភ្នំពេញ..."
+                        value={generalInfo.footerDescriptionKm}
+                      />
+                    </div>
+                  </div>
+
+                  {/* About Page Story Section */}
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[13px] font-bold text-[#182238]">
+                          About Us Story (English)
+                        </label>
+                        <span className="text-[11px] text-[#8a9bb2]">
+                          {generalInfo.shortAboutEn.length}/5000
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-[11px] text-[#71839e]">
+                        Detailed clinic history and paragraphs displayed in the Story section on /about.
+                      </p>
+                      <textarea
+                        className="mt-1.5 h-28 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-3.5 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                        maxLength={5000}
+                        onChange={(e) =>
+                          setGeneralInfo((prev) => ({ ...prev, shortAboutEn: e.target.value }))
+                        }
+                        value={generalInfo.shortAboutEn}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[13px] font-bold text-[#182238]">
+                          About Us Story (Khmer)
+                        </label>
+                        <span className="text-[11px] text-[#8a9bb2]">
+                          {generalInfo.shortAboutKm.length}/5000
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-[11px] text-[#71839e]">
+                        ប្រវត្តិ និងដំណើររឿងរបស់គ្លីនិកសម្រាប់ផ្នែក Story លើទំព័រ /about។
+                      </p>
+                      <textarea
+                        className="mt-1.5 h-28 w-full resize-none rounded-xl border border-[#dce5ef] bg-white p-3.5 text-[13.5px] leading-relaxed text-[#182238] outline-none focus:border-[#2187a8] focus:ring-2 focus:ring-[#d9f0f7]"
+                        maxLength={5000}
+                        onChange={(e) =>
+                          setGeneralInfo((prev) => ({ ...prev, shortAboutKm: e.target.value }))
+                        }
+                        value={generalInfo.shortAboutKm}
+                      />
+                    </div>
                   </div>
 
                   <div>

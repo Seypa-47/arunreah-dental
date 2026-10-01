@@ -11,6 +11,8 @@ const mockClinicData = {
     taglineKm: 'ការថែទាំដែលគួរឱ្យទុកចិត្ត',
     shortAboutEn: 'Modern dental clinic',
     shortAboutKm: 'គ្លីនិកធ្មេញទំនើប',
+    footerDescriptionEn: 'Trusted care in Phnom Penh',
+    footerDescriptionKm: 'ការថែទាំដែលទុកចិត្តបាននៅភ្នំពេញ',
     logoKey: '',
     yearsExperience: '15',
     successfulCases: '10000',

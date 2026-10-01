@@ -47,7 +47,9 @@ export function useLandingPageQuery() {
         footer: {
           ...publicLandingChrome(language).footer,
           branchLinks: publicBranches.map((branch) => ({ href: '/branches', label: branch.name })),
-          description: isKm ? clinic.shortAboutKm ?? '' : clinic.shortAboutEn ?? '',
+          description: isKm
+            ? (clinic.footerDescriptionKm || clinic.shortAboutKm?.split(/\n\s*\n/)[0] || '')
+            : (clinic.footerDescriptionEn || clinic.shortAboutEn?.split(/\n\s*\n/)[0] || ''),
           tagline: localizedTagline ?? localizedName,
         },
         heroes: branchHeroes,

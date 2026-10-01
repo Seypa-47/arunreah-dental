@@ -80,8 +80,19 @@ export function SiteFooter({ branchLinks, description, linkGroups, tagline }: La
   const logoUrl = getPublicMediaUrl(clinic?.logoKey);
   const clinicName = language === 'km' ? clinic?.clinicNameKm : clinic?.clinicNameEn;
   const clinicTagline = language === 'km' ? clinic?.taglineKm : clinic?.taglineEn;
+  const cmsFooterDescription = language === 'km' ? clinic?.footerDescriptionKm : clinic?.footerDescriptionEn;
   const clinicDescription = language === 'km' ? clinic?.shortAboutKm : clinic?.shortAboutEn;
-  const clinicFooterDescription = clinicDescription?.replace(/\\n/g, '\n').split(/\n\s*\n/)[0];
+  const fallbackSummary = clinicDescription
+    ? (() => {
+        const firstPara = (clinicDescription.replace(/\\n/g, '\n').split(/\n\s*\n/)[0] ?? '').trim();
+        if (firstPara.length > 280) {
+          const match = firstPara.match(/^([^.!?]+[.!?])/);
+          if (match?.[1]) return match[1].trim();
+        }
+        return firstPara || undefined;
+      })()
+    : undefined;
+  const clinicFooterDescription = cmsFooterDescription?.trim() || fallbackSummary;
   const socialLinks = [
     { href: contact?.facebookUrl, platform: 'facebook' as const, label: 'Visit the clinic on Facebook', title: 'Facebook' },
     { href: contact?.telegramUrl, platform: 'telegram' as const, label: 'Contact the clinic on Telegram', title: 'Telegram' },

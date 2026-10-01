@@ -10,6 +10,8 @@ type ClinicRecord = {
   taglineKm: string | null;
   shortAboutEn: string | null;
   shortAboutKm: string | null;
+  footerDescriptionEn?: string | null;
+  footerDescriptionKm?: string | null;
   logoKey: string | null;
   yearsExperience: number | null;
   successfulCases: number | null;
@@ -99,6 +101,8 @@ function clinicFixture(): ClinicRecord {
     taglineKm: 'ស្នាមញញឹមមានសុខភាពល្អ',
     shortAboutEn: 'Clinic introduction.',
     shortAboutKm: 'ការណែនាំអំពីគ្លីនិក។',
+    footerDescriptionEn: 'Thoughtful dental care.',
+    footerDescriptionKm: 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់។',
     logoKey: 'clinic/logo.png',
     yearsExperience: 12,
     successfulCases: 5000,
@@ -131,6 +135,8 @@ describe('clinic information API routes', () => {
           taglineKm: 'ស្នាមញញឹមមានសុខភាពល្អ',
           shortAboutEn: 'Clinic introduction.',
           shortAboutKm: 'ការណែនាំអំពីគ្លីនិក។',
+          footerDescriptionEn: 'Thoughtful dental care.',
+          footerDescriptionKm: 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់។',
           logoKey: 'clinic/logo.png',
           yearsExperience: 12,
           successfulCases: 5000,
