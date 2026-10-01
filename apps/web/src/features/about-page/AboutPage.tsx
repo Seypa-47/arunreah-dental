@@ -92,7 +92,7 @@ function FounderProfile({ doctor, index, viewProfileLabel }: { doctor: AboutDoct
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <h3 className="text-[21px] font-extrabold leading-[1.12] tracking-[-0.025em] text-[#073f60] sm:text-[25px]">{doctor.name}</h3>
+          <h3 className="text-[18px] font-extrabold leading-[1.15] tracking-[-0.025em] text-[#073f60] sm:text-[22px] md:text-[25px]">{doctor.name}</h3>
           {doctor.title ? <p className="mt-1.5 text-[13.5px] font-semibold leading-5 text-[#46697d]">{doctor.title}</p> : null}
           <span aria-hidden="true" className="mt-4 block h-px w-10 bg-[#9fcfe2]" />
           {doctor.summary ? <p className="mt-4 text-[13.5px] leading-6 text-[#5f7789]">{doctor.summary}</p> : null}
@@ -124,20 +124,24 @@ function StorySection({ editorial, featuredDoctor, secondFeaturedDoctor, stats, 
           <span className="mt-1 block sm:mt-0">{editorial.editionLabel}</span>
         </div>
 
-        <div className="border-b border-[#d6e5eb] py-8 sm:py-10">
-          <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{editorial.profileLabel}</p>
-          <h2 className="mt-3 max-w-[820px] text-[32px] font-extrabold leading-[1.08] tracking-[-0.045em] text-[#073f60] sm:text-[46px]">{editorial.profileTitle}</h2>
-          <div className="mt-5 h-1 w-16 rounded-full bg-[#3695B9]" />
+        <div className="border-b border-[#d6e5eb] py-6 sm:py-10">
+          <p className="ui-eyebrow text-[11px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9] sm:text-[12px]">{editorial.profileLabel}</p>
+          <h2 className="mt-2.5 max-w-[820px] text-[22px] font-extrabold leading-[1.15] tracking-[-0.03em] text-[#073f60] sm:mt-3 sm:text-[36px] md:text-[44px]">{editorial.profileTitle}</h2>
+          <div className="mt-3.5 h-1 w-12 rounded-full bg-[#3695B9] sm:mt-5 sm:w-16" />
         </div>
 
-        <div className="grid gap-10 py-9 sm:py-11 lg:grid-cols-[minmax(0,640px)_280px] lg:items-start lg:justify-between lg:gap-12">
+        <div className="grid gap-8 py-7 sm:gap-10 sm:py-11 lg:grid-cols-[minmax(0,640px)_280px] lg:items-start lg:justify-between lg:gap-12">
           <div>
-            <h3 className="text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#073f60] sm:text-[26px]">{story.title}</h3>
-            <div className="mt-5 max-w-[62ch] space-y-4">
+            <h3 className="text-[18px] font-extrabold leading-snug tracking-[-0.025em] text-[#073f60] sm:text-[22px] md:text-[26px]">{story.title}</h3>
+            <div className="mt-4 max-w-[62ch] space-y-3.5 sm:mt-5 sm:space-y-4">
               {/* The opening paragraph reads as a lede, the rest as body copy. */}
               {story.paragraphs.map((paragraph, index) => (
                 <ContentBlocks
-                  className={index === 0 ? 'text-[16.5px] leading-[30px] text-[#3c5a6e]' : 'text-[15px] leading-7 text-[#61798a]'}
+                  className={
+                    index === 0
+                      ? 'text-[14.5px] leading-relaxed text-[#3c5a6e] sm:text-[16.5px] sm:leading-[30px]'
+                      : 'text-[13.5px] leading-relaxed text-[#61798a] sm:text-[15px] sm:leading-7'
+                  }
                   key={paragraph}
                   value={paragraph}
                 />
@@ -231,7 +235,7 @@ function ClinicGallery({
             <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">
               {editorial.galleryEyebrow}
             </p>
-            <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">
+            <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">
               {editorial.galleryTitle}
             </h2>
             <p className="mt-2 text-[14.5px] font-normal leading-relaxed text-[#597184]">
@@ -348,7 +352,7 @@ function ClinicGallery({
 
 function ProfessionalDevelopment({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['professionalMedia']> }) {
   if (items.length === 0) return null;
-  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <div className="h-[240px] w-full overflow-hidden sm:h-[280px]"><CmsImage alt={item.title || editorial.professionalTitle} className="h-full w-full" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /></div> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
+  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#073f60] sm:text-[28px] md:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <div className="h-[240px] w-full overflow-hidden sm:h-[280px]"><CmsImage alt={item.title || editorial.professionalTitle} className="h-full w-full" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /></div> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
 }
 
 function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['timeline']> }) {
@@ -359,7 +363,7 @@ function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['edi
       <div className="mx-auto max-w-[1040px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[620px]">
           <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">{editorial.timelineEyebrow}</p>
-          <h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.timelineTitle}</h2>
+          <h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#073f60] sm:text-[28px] md:text-[34px]">{editorial.timelineTitle}</h2>
         </div>
         <ol className="relative mt-8 border-l border-[#b9dbe6] pl-7 sm:mt-10 sm:border-l-0 sm:pl-0 sm:before:absolute sm:before:inset-y-0 sm:before:left-1/2 sm:before:w-px sm:before:-translate-x-1/2 sm:before:bg-[#b9dbe6]">
           {items.map((item, index) => (
@@ -391,7 +395,7 @@ function VisionMissionSection({
             <span className="grid size-12 place-items-center rounded-xl bg-white/16">
               <img alt="" aria-hidden="true" className="size-5 brightness-0 invert" src={vision.iconUrl} />
             </span>
-            <h2 className="text-[24px] font-extrabold leading-7 sm:text-[26px]">{vision.title}</h2>
+            <h2 className="text-[20px] font-extrabold leading-snug sm:text-[24px] md:text-[26px]">{vision.title}</h2>
           </div>
           <p className="text-[14px] font-normal leading-6 text-white/85">{vision.description}</p>
         </div>
@@ -408,7 +412,7 @@ function VisionMissionSection({
             <span className="grid size-12 place-items-center rounded-xl bg-[#dff2f7]">
               <img alt="" aria-hidden="true" className="size-5" src={mission.iconUrl} />
             </span>
-            <h2 className="text-[24px] font-extrabold leading-7 text-[#005687] sm:text-[26px]">{mission.title}</h2>
+            <h2 className="text-[20px] font-extrabold leading-snug text-[#005687] sm:text-[24px] md:text-[26px]">{mission.title}</h2>
           </div>
           <p className="text-[14px] font-normal leading-6 text-[#6b7280]">{mission.description}</p>
         </div>
@@ -425,7 +429,7 @@ function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences
     <section className="bg-white py-14 text-center sm:py-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{copy.whyTitle}</p>
-        <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{copy.differenceTitle}</h2>
+        <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">{copy.differenceTitle}</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {differences.map((item) => (
             <Card className="rounded-xl border border-[#e4edf2] bg-[#fbfdfe] px-5 py-6 text-center shadow-none" key={item.title}>
@@ -449,7 +453,7 @@ function FacilitiesSection({ editorial, facilities }: Pick<AboutPageContent, 'ed
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[720px]">
           <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{editorial.facilitiesEyebrow}</p>
-          <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{editorial.facilitiesTitle}</h2>
+          <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">{editorial.facilitiesTitle}</h2>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {facilities.map((facility, index) => (

@@ -465,11 +465,11 @@ export function PublicPageHero({
                   {eyebrow}
                 </p>
               ) : null}
-              <h1 className="mt-2.5 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[38px]">
+              <h1 className="mt-2 text-[23px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[32px] md:text-[38px]">
                 {title}
               </h1>
               {subtitle ? (
-                <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)]">
+                <p className="mt-2 max-w-[560px] text-[13.5px] font-medium leading-relaxed text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[15px] sm:leading-7 md:text-[16px]">
                   {subtitle}
                 </p>
               ) : null}
