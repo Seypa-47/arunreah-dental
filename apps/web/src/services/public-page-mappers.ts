@@ -240,7 +240,20 @@ export function mapBookingOptions(
   base: BookAppointmentPageContent,
   services: PublicServiceSummary[],
   doctors: PublicDoctorSummary[],
-  branches: { id: string; slug: string; name: string; address: string; branchImageKey: string | null; branchImagePresentation?: import('@arunreah/shared').ImagePresentation; googleMapsUrl: string | null; acceptsAppointments: boolean }[],
+  branches: {
+    id: string;
+    slug: string;
+    name: string;
+    address: string;
+    branchImageKey: string | null;
+    branchImagePresentation?: import('@arunreah/shared').ImagePresentation;
+    googleMapsUrl: string | null;
+    acceptsAppointments: boolean;
+    openingHours?: string | null;
+    openingDays?: string | null;
+    openingTime?: string | null;
+    closingTime?: string | null;
+  }[],
   contact?: { primaryPhone: string | null; primaryEmail: string | null },
   language: 'en' | 'km' = 'en',
 ): BookAppointmentPageContent {
@@ -259,6 +272,10 @@ export function mapBookingOptions(
       mapUrl: branch.googleMapsUrl ?? (branch.slug === 'psa-chas' ? 'https://maps.app.goo.gl/sxiKakoGPZEMzciB9' : 'https://maps.app.goo.gl/6HenBVpmvf4PiWwv6'),
       name: branch.name,
       slug: branch.slug,
+      openingHours: branch.openingHours,
+      openingDays: branch.openingDays,
+      openingTime: branch.openingTime,
+      closingTime: branch.closingTime,
     })) as BookAppointmentPageContent['branches'],
     help: {
       ...base.help,

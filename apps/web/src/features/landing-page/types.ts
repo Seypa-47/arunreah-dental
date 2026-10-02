@@ -494,6 +494,10 @@ export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'f
     mapLabel: string;
     mapUrl: string;
     name: string;
+    openingHours?: string | null;
+    openingDays?: string | null;
+    openingTime?: string | null;
+    closingTime?: string | null;
   }[];
   calendar: {
     dates: {

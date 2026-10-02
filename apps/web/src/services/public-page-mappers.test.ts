@@ -46,7 +46,19 @@ describe('public page mappers', () => {
       publicBookingChrome('en'),
       [{ id: 'service-uuid', slug: 'cleaning', name: 'Cleaning', shortDescription: null, listingThumbnailKey: null, category: null, featured: false }],
       [{ id: 'doctor-uuid', slug: 'dara', name: 'Dr. Dara', title: null, specialty: null, shortBio: null, photoKey: null, featured: false }],
-      [{ id: 'branch-uuid', slug: 'ttp', name: 'TTP', address: 'Street 1', branchImageKey: null, googleMapsUrl: null, acceptsAppointments: true }],
+      [{
+        id: 'branch-uuid',
+        slug: 'ttp',
+        name: 'TTP',
+        address: 'Street 1',
+        branchImageKey: null,
+        googleMapsUrl: null,
+        acceptsAppointments: true,
+        openingDays: 'Mon - Sat',
+        openingTime: '08:00',
+        closingTime: '18:00',
+        openingHours: 'Mon - Sat: 8:00 AM - 6:00 PM',
+      }],
       { primaryPhone: '012 345 678', primaryEmail: 'clinic@example.com' },
     );
 
@@ -54,6 +66,9 @@ describe('public page mappers', () => {
     expect(content.doctors).toEqual([{ name: 'No Preference', value: '' }, { name: 'Dr. Dara', slug: 'dara', value: 'doctor-uuid' }]);
     expect(content.branches[0]?.id).toBe('branch-uuid');
     expect(content.branches[0]?.slug).toBe('ttp');
+    expect(content.branches[0]?.openingDays).toBe('Mon - Sat');
+    expect(content.branches[0]?.openingTime).toBe('08:00');
+    expect(content.branches[0]?.closingTime).toBe('18:00');
     expect(content.help.phone).toBe('012 345 678');
   });
 

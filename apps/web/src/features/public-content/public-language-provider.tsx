@@ -25,9 +25,12 @@ function readStoredLanguage(): PublicLanguage | undefined {
   }
 }
 
-export function PublicLanguageProvider({ children }: PropsWithChildren) {
+export function PublicLanguageProvider({
+  children,
+  initialLanguage: explicitInitial,
+}: PropsWithChildren<{ initialLanguage?: PublicLanguage }>) {
   const [language, setLanguage] = useState<PublicLanguage>(
-    () => initialPublicLanguage(readStoredLanguage(), typeof document !== 'undefined' ? document.documentElement.lang : 'en'),
+    () => explicitInitial ?? initialPublicLanguage(readStoredLanguage(), typeof document !== 'undefined' ? document.documentElement.lang : 'en'),
   );
 
   useEffect(() => {

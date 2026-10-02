@@ -35,22 +35,78 @@ export const BRANCH_DAY_PRESETS = [
   { value: 'Fri', labelEn: 'Friday', fullEn: 'Friday', km: 'សុក្រ' },
 ] as const;
 
-const KHMER_DIGITS = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'] as const;
+export const PRESET_DAYS_MAP: Record<string, number[]> = {
+  'Mon - Sun': [0, 1, 2, 3, 4, 5, 6],
+  'Mon - Sat': [1, 2, 3, 4, 5, 6],
+  'Mon - Fri': [1, 2, 3, 4, 5],
+  'Sat - Sun': [0, 6],
+  'Sun': [0],
+  'Sat': [6],
+  'Mon - Thu': [1, 2, 3, 4],
+  'Fri - Sun': [0, 5, 6],
+  'Tue - Sun': [0, 2, 3, 4, 5, 6],
+  'Tue - Sat': [2, 3, 4, 5, 6],
+  'Mon': [1],
+  'Tue': [2],
+  'Wed': [3],
+  'Thu': [4],
+  'Fri': [5],
+};
 
-function toKhmerDigits(value: string): string {
-  return value.replace(/[0-9]/g, (digit) => KHMER_DIGITS[Number(digit)] ?? digit);
-}
+const DAY_TOKEN_TO_INDEX: Record<string, number> = {
+  sun: 0,
+  sunday: 0,
+  អាទិត្យ: 0,
+  mon: 1,
+  monday: 1,
+  ច័ន្ទ: 1,
+  tue: 2,
+  tues: 2,
+  tuesday: 2,
+  អង្គារ: 2,
+  wed: 3,
+  wednesday: 3,
+  ពុធ: 3,
+  thu: 4,
+  thur: 4,
+  thurs: 4,
+  thursday: 4,
+  ព្រហស្បតិ៍: 4,
+  fri: 5,
+  friday: 5,
+  សុក្រ: 5,
+  sat: 6,
+  saturday: 6,
+  សៅរ៍: 6,
+};
 
-export function getPresetForDaysEn(daysEn: string) {
-  const normalized = daysEn.trim().toLowerCase();
+export const DAY_NAMES_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+export const DAY_NAMES_KM = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'] as const;
+
+export function getPresetForDays(daysString: string) {
+  const trimmed = daysString.trim();
+  const normalized = trimmed.toLowerCase();
   return BRANCH_DAY_PRESETS.find(
     (preset) =>
       preset.value.toLowerCase() === normalized ||
-      preset.fullEn.toLowerCase() === normalized,
+      preset.fullEn.toLowerCase() === normalized ||
+      preset.labelEn.toLowerCase() === normalized ||
+      preset.km === trimmed ||
+      preset.km.replace(/\s+/g, '') === trimmed.replace(/\s+/g, ''),
   );
 }
 
-function formatTime12hEn(hhmm: string): string {
+export function getPresetForDaysEn(daysEn: string) {
+  return getPresetForDays(daysEn);
+}
+
+const KHMER_DIGITS = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'] as const;
+
+export function toKhmerDigits(value: string): string {
+  return value.replace(/[0-9]/g, (digit) => KHMER_DIGITS[Number(digit)] ?? digit);
+}
+
+export function formatTime12hEn(hhmm: string): string {
   const match = hhmm.trim().match(/^([01]\d|2[0-3]):([0-5]\d)$/);
   if (!match) return hhmm.trim();
   const hour24 = Number(match[1]);
@@ -60,7 +116,7 @@ function formatTime12hEn(hhmm: string): string {
   return `${hour12}:${minutes} ${period}`;
 }
 
-function formatTime12hKm(hhmm: string): string {
+export function formatTime12hKm(hhmm: string): string {
   const match = hhmm.trim().match(/^([01]\d|2[0-3]):([0-5]\d)$/);
   if (!match) return toKhmerDigits(hhmm.trim());
   const hour24 = Number(match[1]);
@@ -243,4 +299,184 @@ export function formatPublicBranchHours({
   }
 
   return { days, time: formatted };
+}
+
+export function getDaysOfWeekForSchedule(daysString: string): number[] {
+  const cleanStr = clean(daysString);
+  if (!cleanStr) {
+    return [0, 1, 2, 3, 4, 5, 6];
+  }
+  const preset = getPresetForDays(cleanStr);
+  if (preset) {
+    const days = PRESET_DAYS_MAP[preset.value];
+    if (days) return days;
+  }
+
+  const rangeMatch = cleanStr.match(/^([^\s–-]+)\s*(?:[-–—]|ទៅ|ដល់)\s*([^\s–-]+)$/i);
+  if (rangeMatch && rangeMatch[1] && rangeMatch[2]) {
+    const startIdx = DAY_TOKEN_TO_INDEX[rangeMatch[1].toLowerCase().trim()];
+    const endIdx = DAY_TOKEN_TO_INDEX[rangeMatch[2].toLowerCase().trim()];
+    if (startIdx !== undefined && endIdx !== undefined) {
+      const days: number[] = [];
+      let curr = startIdx;
+      while (true) {
+        days.push(curr);
+        if (curr === endIdx) break;
+        curr = (curr + 1) % 7;
+      }
+      return days;
+    }
+  }
+
+  const singleIdx = DAY_TOKEN_TO_INDEX[cleanStr.toLowerCase()];
+  if (singleIdx !== undefined) {
+    return [singleIdx];
+  }
+
+  return [0, 1, 2, 3, 4, 5, 6];
+}
+
+export function getDayOfWeekForDateKey(dateKey: string): number {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  if (!year || !month || !day) return 0;
+  const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  return date.getUTCDay();
+}
+
+export type BranchDailySchedule = {
+  isOpen: boolean;
+  openTime: string;
+  closeTime: string;
+  dayIndex: number;
+  dayName: string;
+  formattedHours: string;
+};
+
+export function getBranchScheduleForDate(
+  branch: BranchHoursInput | undefined,
+  dateKey?: string,
+  language: 'en' | 'km' = 'en',
+): BranchDailySchedule {
+  const isKm = language === 'km';
+  const effectiveDateKey = dateKey || '2026-10-02';
+  const dayIndex = getDayOfWeekForDateKey(effectiveDateKey);
+  const dayName = isKm ? (DAY_NAMES_KM[dayIndex] ?? '') : (DAY_NAMES_EN[dayIndex] ?? '');
+
+  if (!branch) {
+    return {
+      isOpen: true,
+      openTime: '08:00',
+      closeTime: '18:00',
+      dayIndex,
+      dayName,
+      formattedHours: isKm ? '៨:០០ ព្រឹក - ៦:០០ ល្ងាច' : '8:00 AM – 6:00 PM',
+    };
+  }
+
+  const rows = parseBranchScheduleRows(branch);
+  const hasConfiguredSchedule = Boolean(
+    clean(branch.openingDays) || clean(branch.openingTime) || clean(branch.closingTime) || clean(branch.openingHours),
+  );
+
+  if (!hasConfiguredSchedule) {
+    return {
+      isOpen: true,
+      openTime: '08:00',
+      closeTime: '18:00',
+      dayIndex,
+      dayName,
+      formattedHours: isKm ? '៨:០០ ព្រឹក - ៦:០០ ល្ងាច' : '8:00 AM – 6:00 PM',
+    };
+  }
+
+  const matchingRow = rows.find((row) => {
+    const daysEn = getDaysOfWeekForSchedule(row.daysEn);
+    const daysKm = row.daysKm ? getDaysOfWeekForSchedule(row.daysKm) : [];
+    return daysEn.includes(dayIndex) || daysKm.includes(dayIndex);
+  });
+
+  if (!matchingRow) {
+    return {
+      isOpen: false,
+      openTime: '',
+      closeTime: '',
+      dayIndex,
+      dayName,
+      formattedHours: '',
+    };
+  }
+
+  const openTime = matchingRow.openTime || '08:00';
+  const closeTime = matchingRow.closeTime || '18:00';
+  const formattedHours = isKm
+    ? `${formatTime12hKm(openTime)} - ${formatTime12hKm(closeTime)}`
+    : `${formatTime12hEn(openTime)} – ${formatTime12hEn(closeTime)}`;
+
+  return {
+    isOpen: true,
+    openTime,
+    closeTime,
+    dayIndex,
+    dayName,
+    formattedHours,
+  };
+}
+
+export function getNextOpenDateKey(branch: BranchHoursInput | undefined, fromDateKey: string): string {
+  const [year, month, day] = fromDateKey.split('-').map(Number);
+  if (!year || !month || !day) return fromDateKey;
+  const current = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+
+  for (let offset = 1; offset <= 14; offset++) {
+    const nextDate = new Date(current);
+    nextDate.setUTCDate(current.getUTCDate() + offset);
+    const y = nextDate.getUTCFullYear();
+    const m = String(nextDate.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(nextDate.getUTCDate()).padStart(2, '0');
+    const candidateKey = `${y}-${m}-${d}`;
+    const schedule = getBranchScheduleForDate(branch, candidateKey);
+    if (schedule.isOpen) {
+      return candidateKey;
+    }
+  }
+  return fromDateKey;
+}
+
+export function generateDynamicHoursAndSlots(openTime: string, closeTime: string): {
+  baseHours: string[];
+  isValidSlot: (slotTime: string) => boolean;
+} {
+  const parseMins = (hhmm: string): number | null => {
+    const parts = hhmm.split(':');
+    const h = Number(parts[0]);
+    const m = Number(parts[1] ?? '0');
+    if (Number.isNaN(h) || Number.isNaN(m)) return null;
+    return h * 60 + m;
+  };
+
+  const openMins = parseMins(openTime) ?? 8 * 60;
+  const closeMins = parseMins(closeTime) ?? 18 * 60;
+
+  const isValidSlot = (slotTime: string): boolean => {
+    const slotMins = parseMins(slotTime);
+    if (slotMins === null) return false;
+    return slotMins >= openMins && slotMins <= closeMins;
+  };
+
+  const startHour = Math.floor(openMins / 60);
+  const endHour = Math.floor(closeMins / 60);
+  const baseHours: string[] = [];
+
+  for (let h = startHour; h <= endHour; h++) {
+    const hourStr = String(h).padStart(2, '0');
+    const hasAnySlot = ['00', '15', '30', '45'].some((min) => isValidSlot(`${hourStr}:${min}`));
+    if (hasAnySlot) {
+      baseHours.push(hourStr);
+    }
+  }
+
+  return {
+    baseHours: baseHours.length > 0 ? baseHours : ['08', '09', '10', '11', '13', '14', '15', '16'],
+    isValidSlot,
+  };
 }

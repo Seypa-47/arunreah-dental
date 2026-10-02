@@ -211,6 +211,124 @@ describe('BookAppointmentPage Date & Time features', () => {
       expect(html).toMatch(/aria-label="10:15 AM"[^>]*disabled=""/);
       expect(html).toContain('aria-label="10:30 AM" aria-pressed="true"');
     });
+
+    it('dynamically adapts hours based on branch schedule for Mon-Sat (8am-6pm) vs Sunday (8am-4pm)', () => {
+      const dynamicBranch = {
+        address: '123 Norodom Blvd',
+        id: 'branch-dynamic',
+        imageAlt: 'Dynamic Branch',
+        imageUrl: '',
+        mapLabel: 'View on map',
+        mapUrl: 'https://maps.app.goo.gl/test',
+        name: 'Dynamic Branch',
+        slug: 'dynamic',
+        openingDays: 'Mon - Sat | Sun',
+        openingDaysKm: 'ច័ន្ទ - សៅរ៍ | អាទិត្យ',
+        openingTime: '08:00 | 08:00',
+        closingTime: '18:00 | 16:00',
+      };
+
+      // 1. Monday 2026-10-05: open until 6:00 PM (18:00)
+      const mondayHtml = renderToStaticMarkup(
+        <PublicLanguageProvider>
+          <AvailableTimes
+            branch={dynamicBranch}
+            onSelectTime={vi.fn()}
+            selectedDate="2026-10-05"
+            selectedTime="10:00"
+          />
+        </PublicLanguageProvider>,
+      );
+
+      expect(mondayHtml).toContain('08:00 AM');
+      expect(mondayHtml).toContain('05:00 PM');
+      expect(mondayHtml).toContain('06:00 PM');
+      expect(mondayHtml).toContain('8:00 AM – 6:00 PM');
+
+      // 2. Sunday 2026-10-04: open until 4:00 PM (16:00)
+      const sundayHtml = renderToStaticMarkup(
+        <PublicLanguageProvider>
+          <AvailableTimes
+            branch={dynamicBranch}
+            onSelectTime={vi.fn()}
+            selectedDate="2026-10-04"
+            selectedTime="10:00"
+          />
+        </PublicLanguageProvider>,
+      );
+
+      expect(sundayHtml).toContain('08:00 AM');
+      expect(sundayHtml).toContain('04:00 PM');
+      expect(sundayHtml).toContain('8:00 AM – 4:00 PM');
+      // Must NOT contain 5pm or 6pm on Sunday
+      expect(sundayHtml).not.toContain('05:00 PM');
+      expect(sundayHtml).not.toContain('06:00 PM');
+    });
+
+    it('renders a friendly closed state with next open date button when branch is closed on that day', () => {
+      const weekdayOnlyBranch = {
+        address: '456 Monivong Blvd',
+        id: 'branch-weekday',
+        imageAlt: 'Weekday Branch',
+        imageUrl: '',
+        mapLabel: 'View on map',
+        mapUrl: 'https://maps.app.goo.gl/test',
+        name: 'Weekday Branch',
+        slug: 'weekday',
+        openingDays: 'Mon - Fri',
+        openingTime: '08:00',
+        closingTime: '17:00',
+      };
+
+      // Sunday 2026-10-04: Closed
+      const closedHtml = renderToStaticMarkup(
+        <PublicLanguageProvider>
+          <AvailableTimes
+            branch={weekdayOnlyBranch}
+            onSelectDate={vi.fn()}
+            onSelectTime={vi.fn()}
+            selectedDate="2026-10-04"
+            selectedTime=""
+          />
+        </PublicLanguageProvider>,
+      );
+
+      expect(closedHtml).toContain('Branch is closed on this date');
+      expect(closedHtml).toContain('This branch is closed on Sunday');
+      expect(closedHtml).toContain('Select next open date');
+    });
+
+    it('renders bilingual Khmer closed notice when branch is closed on that day', () => {
+      const weekdayOnlyBranch = {
+        address: '456 Monivong Blvd',
+        id: 'branch-weekday',
+        imageAlt: 'Weekday Branch',
+        imageUrl: '',
+        mapLabel: 'View on map',
+        mapUrl: 'https://maps.app.goo.gl/test',
+        name: 'Weekday Branch',
+        slug: 'weekday',
+        openingDays: 'Mon - Fri',
+        openingTime: '08:00',
+        closingTime: '17:00',
+      };
+
+      const closedKmHtml = renderToStaticMarkup(
+        <PublicLanguageProvider initialLanguage="km">
+          <AvailableTimes
+            branch={weekdayOnlyBranch}
+            onSelectDate={vi.fn()}
+            onSelectTime={vi.fn()}
+            selectedDate="2026-10-04"
+            selectedTime=""
+          />
+        </PublicLanguageProvider>,
+      );
+
+      expect(closedKmHtml).toContain('សាខាបិទនៅថ្ងៃនេះ');
+      expect(closedKmHtml).toContain('សាខានេះមិនបើកដំណើរការនៅអាទិត្យទេ');
+      expect(closedKmHtml).toContain('ជ្រើសរើសថ្ងៃបើកបន្ទាប់');
+    });
   });
 
   describe('AppointmentSuccessModal', () => {
