@@ -206,6 +206,7 @@ describe('HTTP notification providers', () => {
       'Appointment Request Received — AR-20990101-ABC123 | Arunreah Dental Clinic',
     );
     expect(patientCall?.html).toContain('Dear Sok Dara &lt;script&gt;,');
+    expect(patientCall?.reply_to).toBe('clinic@example.com');
   });
 
   it('sends only clinic email when patient email is omitted or empty', async () => {

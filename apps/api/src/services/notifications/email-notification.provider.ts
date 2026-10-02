@@ -50,20 +50,26 @@ export class EmailNotificationProvider implements NotificationProvider {
     subject: string,
     text: string,
     html: string,
+    replyTo?: string,
   ) {
+    const payload: Record<string, unknown> = {
+      from,
+      to: [recipient],
+      subject,
+      text,
+      html,
+    };
+    if (replyTo) {
+      payload.reply_to = replyTo;
+    }
+
     const response = await fetch(RESEND_EMAILS_URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from,
-        to: [recipient],
-        subject,
-        text,
-        html,
-      }),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(NOTIFICATION_TIMEOUT_MS),
     });
 
@@ -83,9 +89,10 @@ export class EmailNotificationProvider implements NotificationProvider {
     text: string,
     html: string,
     targetType: 'clinic' | 'patient',
+    replyTo?: string,
   ): Promise<DeliveryResult> {
     try {
-      let result = await this.postResend(fromAddress, recipient, apiKey, subject, text, html);
+      let result = await this.postResend(fromAddress, recipient, apiKey, subject, text, html, replyTo);
 
       if (!result.ok) {
         console.error(`Resend ${targetType} email delivery failed`, {
@@ -100,7 +107,7 @@ export class EmailNotificationProvider implements NotificationProvider {
         const isDomainError = result.status === 403 || result.errorBody?.toLowerCase().includes('domain');
         if (isDomainError && fromAddress !== RESEND_FALLBACK_FROM) {
           console.warn(`Attempting Resend ${targetType} email delivery fallback with onboarding@resend.dev`);
-          result = await this.postResend(RESEND_FALLBACK_FROM, recipient, apiKey, subject, text, html);
+          result = await this.postResend(RESEND_FALLBACK_FROM, recipient, apiKey, subject, text, html, replyTo);
           if (result.ok) {
             return { success: true };
           }
@@ -146,6 +153,7 @@ export class EmailNotificationProvider implements NotificationProvider {
         appointmentEmailText(payload),
         appointmentEmailHtml(payload),
         'clinic',
+        patientEmail || undefined,
       ),
     ];
 
@@ -159,6 +167,7 @@ export class EmailNotificationProvider implements NotificationProvider {
           patientAppointmentEmailText(payload),
           patientAppointmentEmailHtml(payload),
           'patient',
+          recipient,
         ),
       );
     }
@@ -197,6 +206,7 @@ export class EmailNotificationProvider implements NotificationProvider {
       patientAppointmentConfirmedEmailText(payload),
       patientAppointmentConfirmedEmailHtml(payload),
       'patient',
+      this.config.recipient,
     );
 
     if (!result.success) {
@@ -231,6 +241,7 @@ export class EmailNotificationProvider implements NotificationProvider {
       patientAppointmentCancelledEmailText(payload),
       patientAppointmentCancelledEmailHtml(payload),
       'patient',
+      this.config.recipient,
     );
 
     if (!result.success) {
