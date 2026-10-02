@@ -238,6 +238,7 @@ vi.mock('../src/services/appointment-notification.service', () => ({
   notifyClinicOfAppointment: async ({ reference }: { reference: string }) => {
     state.notificationReferences.push(reference);
   },
+  notifyPatientOfAppointmentStatus: async () => undefined,
 }));
 
 const { app } = await import('../src/app');

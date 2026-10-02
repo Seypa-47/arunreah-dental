@@ -2,6 +2,12 @@ import {
   appointmentEmailHtml,
   appointmentEmailSubject,
   appointmentEmailText,
+  patientAppointmentCancelledEmailHtml,
+  patientAppointmentCancelledEmailSubject,
+  patientAppointmentCancelledEmailText,
+  patientAppointmentConfirmedEmailHtml,
+  patientAppointmentConfirmedEmailSubject,
+  patientAppointmentConfirmedEmailText,
   patientAppointmentEmailHtml,
   patientAppointmentEmailSubject,
   patientAppointmentEmailText,
@@ -169,5 +175,74 @@ export class EmailNotificationProvider implements NotificationProvider {
 
     return { provider: this.name, success: true };
   }
+
+  public async sendAppointmentConfirmation(
+    payload: AppointmentNotificationPayload,
+  ): Promise<NotificationResult> {
+    const { fromAddress, apiKey } = this.config;
+    if (!fromAddress || !apiKey) {
+      return { provider: this.name, success: false, errorCode: 'NOT_CONFIGURED' };
+    }
+
+    const patientEmail = payload.email?.trim();
+    if (!patientEmail) {
+      return { provider: this.name, success: true };
+    }
+
+    const result = await this.deliverEmailWithFallback(
+      fromAddress,
+      patientEmail,
+      apiKey,
+      patientAppointmentConfirmedEmailSubject(payload),
+      patientAppointmentConfirmedEmailText(payload),
+      patientAppointmentConfirmedEmailHtml(payload),
+      'patient',
+    );
+
+    if (!result.success) {
+      return {
+        provider: this.name,
+        success: false,
+        errorCode: result.errorCode ?? 'PROVIDER_REQUEST_FAILED',
+      };
+    }
+
+    return { provider: this.name, success: true };
+  }
+
+  public async sendAppointmentCancellation(
+    payload: AppointmentNotificationPayload,
+  ): Promise<NotificationResult> {
+    const { fromAddress, apiKey } = this.config;
+    if (!fromAddress || !apiKey) {
+      return { provider: this.name, success: false, errorCode: 'NOT_CONFIGURED' };
+    }
+
+    const patientEmail = payload.email?.trim();
+    if (!patientEmail) {
+      return { provider: this.name, success: true };
+    }
+
+    const result = await this.deliverEmailWithFallback(
+      fromAddress,
+      patientEmail,
+      apiKey,
+      patientAppointmentCancelledEmailSubject(payload),
+      patientAppointmentCancelledEmailText(payload),
+      patientAppointmentCancelledEmailHtml(payload),
+      'patient',
+    );
+
+    if (!result.success) {
+      return {
+        provider: this.name,
+        success: false,
+        errorCode: result.errorCode ?? 'PROVIDER_REQUEST_FAILED',
+      };
+    }
+
+    return { provider: this.name, success: true };
+  }
 }
+
 

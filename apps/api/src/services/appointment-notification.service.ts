@@ -31,3 +31,31 @@ export async function notifyClinicOfAppointment(
 
   return notificationService.notifyAppointmentRequest(appointment);
 }
+
+export async function notifyPatientOfAppointmentStatus(
+  appointment: AppointmentNotification,
+  status: 'CONFIRMED' | 'CANCELLED',
+  environment: Bindings,
+): Promise<NotificationResult | undefined> {
+  const emailProvider = new EmailNotificationProvider({
+    enabled: environment.EMAIL_NOTIFICATIONS_ENABLED === 'true',
+    recipient: environment.EMAIL_NOTIFICATION_RECIPIENT,
+    fromAddress: environment.EMAIL_FROM_ADDRESS,
+    apiKey: environment.RESEND_API_KEY,
+  });
+
+  if (!emailProvider.isEnabled()) {
+    return undefined;
+  }
+
+  if (status === 'CONFIRMED') {
+    return emailProvider.sendAppointmentConfirmation(appointment);
+  }
+
+  if (status === 'CANCELLED') {
+    return emailProvider.sendAppointmentCancellation(appointment);
+  }
+
+  return undefined;
+}
+

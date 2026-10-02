@@ -128,7 +128,7 @@ function AppointmentDetailPanel({
 
     <section aria-labelledby="staff-actions" className="mt-6 border-t border-[#edf1f5] pt-5">
       <h3 className="text-sm font-bold text-[#182238]" id="staff-actions">Staff actions</h3>
-      <p className="mt-1 text-sm leading-6 text-[#71839e]">This is a request. Contact the patient and confirm availability before confirming it.</p>
+      <p className="mt-1 text-sm leading-6 text-[#71839e]">This is a request. Confirming or cancelling will automatically send an email notification to the patient.</p>
       {validNextStatuses.length ? <div className="mt-4 flex flex-wrap gap-2">{validNextStatuses.map((status) => <Button disabled={isUpdating} key={status} onClick={() => onChangeStatus(status)} type="button" variant={status === 'CONFIRMED' || status === 'COMPLETED' ? 'primary' : 'secondary'}>{isUpdating ? 'Updating…' : actionLabel(status)}</Button>)}</div> : <AdminFeedback title="No further status actions" tone="empty"><p>{appointment.status === 'COMPLETED' ? 'This appointment is marked completed.' : 'This appointment has been cancelled.'}</p></AdminFeedback>}
       {updateError ? <p className="mt-3 text-sm text-[#c92727]" role="alert">{safeMessage(updateError)}</p> : null}
     </section>
@@ -154,7 +154,8 @@ export function AppointmentList({ inbox }: { inbox: boolean }) {
   const mutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: AppointmentStatus }) => updateAdminAppointmentStatus(id, { status }),
     onSuccess: async (_result, variables) => {
-      setActionNotice(`Request marked ${statusLabel(variables.status).toLowerCase()}.`);
+      const emailNotice = variables.status === 'CONFIRMED' || variables.status === 'CANCELLED' ? ' (email sent to patient)' : '';
+      setActionNotice(`Request marked ${statusLabel(variables.status).toLowerCase()}${emailNotice}.`);
       if (inbox) setSelectedId(undefined);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['admin', 'appointments'] }),

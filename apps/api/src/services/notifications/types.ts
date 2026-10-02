@@ -24,4 +24,6 @@ export interface NotificationProvider {
   readonly name: NotificationProviderName;
   isEnabled(): boolean;
   sendAppointmentRequest(payload: AppointmentNotificationPayload): Promise<NotificationResult>;
+  sendAppointmentConfirmation?(payload: AppointmentNotificationPayload): Promise<NotificationResult>;
+  sendAppointmentCancellation?(payload: AppointmentNotificationPayload): Promise<NotificationResult>;
 }
