@@ -829,14 +829,7 @@ function LandingPageView({ content }: { content: LandingPageContent }) {
 function LandingPageSkeleton() {
   const copy = publicUiCopy(usePublicLanguage().language).landing;
   return (
-    <SiteLayout
-      actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }}
-      navigation={[
-        { href: '/', label: 'Home' },
-        { href: '/services', label: 'Services' },
-        { href: '/doctors', label: 'Doctors' },
-      ]}
-    >
+    <SiteLayout>
       <main aria-busy="true" aria-label={copy.loading} className="bg-white">
         <span className="sr-only">{copy.loadingLabel}</span>
 
