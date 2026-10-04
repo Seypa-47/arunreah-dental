@@ -2,6 +2,7 @@ import { and, asc, count, desc, eq, inArray, like, or, type SQL } from 'drizzle-
 import type { AdminDoctorListQuery, CreateDoctorInput, UpdateDoctorInput } from '@arunreah/shared';
 import {
   appointments,
+  doctorBranches,
   doctorEducation,
   doctorExpertise,
   doctorRelatedDoctors,
@@ -17,6 +18,7 @@ function toDoctorRow(input: UpdateDoctorInput) {
     expertise: _expertise,
     education: _education,
     relatedDoctorIds: _relatedDoctorIds,
+    branchIds: _branchIds,
     titleEn,
     titleKm,
     aboutEn,
@@ -27,6 +29,7 @@ function toDoctorRow(input: UpdateDoctorInput) {
   void _expertise;
   void _education;
   void _relatedDoctorIds;
+  void _branchIds;
   void _photoImagePresentation;
   return {
     ...row,
@@ -42,6 +45,7 @@ function toCreatedDoctorRow(input: CreateDoctorInput) {
     expertise: _expertise,
     education: _education,
     relatedDoctorIds: _relatedDoctorIds,
+    branchIds: _branchIds,
     titleEn,
     titleKm,
     aboutEn,
@@ -52,6 +56,7 @@ function toCreatedDoctorRow(input: CreateDoctorInput) {
   void _expertise;
   void _education;
   void _relatedDoctorIds;
+  void _branchIds;
   void _photoImagePresentation;
   return {
     ...row,
@@ -91,6 +96,7 @@ export async function createDoctor(database: DatabaseClient, input: CreateDoctor
     await replaceExpertise(transaction, id, input.expertise);
     await replaceEducation(transaction, id, input.education);
     await replaceRelatedDoctors(transaction, id, input.relatedDoctorIds);
+    await replaceDoctorBranches(transaction, id, input.branchIds);
     if (input.photoImagePresentation) await upsert(transaction, { ownerType: 'DOCTOR', ownerId: id, slot: 'PRIMARY' }, input.photoImagePresentation);
   });
   return findDoctorById(database, id);
@@ -109,6 +115,9 @@ export async function updateDoctor(database: DatabaseClient, id: string, input: 
     if (input.education !== undefined) await replaceEducation(transaction, id, input.education);
     if (input.relatedDoctorIds !== undefined) {
       await replaceRelatedDoctors(transaction, id, input.relatedDoctorIds);
+    }
+    if (input.branchIds !== undefined) {
+      await replaceDoctorBranches(transaction, id, input.branchIds);
     }
     if (input.photoImagePresentation) await upsert(transaction, { ownerType: 'DOCTOR', ownerId: id, slot: 'PRIMARY' }, input.photoImagePresentation);
   });
@@ -183,6 +192,58 @@ async function replaceRelatedDoctors(
   }
 }
 
+async function replaceDoctorBranches(
+  database: WriteDatabase,
+  doctorId: string,
+  branchIds: string[],
+) {
+  await database.delete(doctorBranches).where(eq(doctorBranches.doctorId, doctorId));
+  if (branchIds.length > 0) {
+    const now = new Date().toISOString();
+    await database.insert(doctorBranches).values(
+      branchIds.map((branchId, displayOrder) => ({
+        id: crypto.randomUUID(),
+        doctorId,
+        branchId,
+        displayOrder,
+        createdAt: now,
+        updatedAt: now,
+      })),
+    );
+  }
+}
+
+export async function getDoctorBranchIds(database: DatabaseClient, doctorId: string): Promise<string[]> {
+  const rows = await database
+    .select({ branchId: doctorBranches.branchId })
+    .from(doctorBranches)
+    .where(eq(doctorBranches.doctorId, doctorId))
+    .orderBy(asc(doctorBranches.displayOrder));
+  return rows.map((r) => r.branchId);
+}
+
+export async function getDoctorBranchIdsForDoctors(
+  database: DatabaseClient,
+  doctorIds: string[],
+): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>();
+  if (doctorIds.length === 0) return map;
+  const rows = await database
+    .select({
+      doctorId: doctorBranches.doctorId,
+      branchId: doctorBranches.branchId,
+    })
+    .from(doctorBranches)
+    .where(inArray(doctorBranches.doctorId, doctorIds))
+    .orderBy(asc(doctorBranches.displayOrder));
+  for (const row of rows) {
+    const current = map.get(row.doctorId) ?? [];
+    current.push(row.branchId);
+    map.set(row.doctorId, current);
+  }
+  return map;
+}
+
 export async function getExpertise(database: DatabaseClient, doctorId: string) {
   return database
     .select()
@@ -228,6 +289,7 @@ export async function deleteDoctor(database: DatabaseClient, id: string) {
     );
     await transaction.delete(doctorExpertise).where(eq(doctorExpertise.doctorId, id));
     await transaction.delete(doctorEducation).where(eq(doctorEducation.doctorId, id));
+    await transaction.delete(doctorBranches).where(eq(doctorBranches.doctorId, id));
     await transaction.delete(doctors).where(eq(doctors.id, id));
   });
 }

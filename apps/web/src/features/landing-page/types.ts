@@ -515,6 +515,7 @@ export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'f
     name: string;
     slug?: string;
     value: string;
+    branchIds?: string[];
   }[];
   form: {
     fields: {

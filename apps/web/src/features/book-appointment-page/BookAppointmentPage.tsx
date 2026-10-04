@@ -741,7 +741,9 @@ function AppointmentForm({
   isSubmitting,
   submissionError,
   turnstileResetSignal,
+  availableDoctors,
 }: {
+  availableDoctors?: BookAppointmentPageContent['doctors'];
   content: BookAppointmentPageContent;
   onSelectBranch: (value: string) => void;
   onSelectDate: (value: string) => void;
@@ -762,6 +764,7 @@ function AppointmentForm({
   const { language } = usePublicLanguage();
   const isKm = language === 'km';
   const bookingCopy = publicUiCopy(language).booking;
+  const doctorOptions = availableDoctors ?? content.doctors;
   const [patientName, setPatientName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -827,7 +830,7 @@ function AppointmentForm({
               id="doctor"
               label={bookingCopy.selectDoctor}
               onChange={onSelectDoctor}
-              options={content.doctors}
+              options={doctorOptions}
               value={selectedDoctor}
             />
           </div>
@@ -1191,10 +1194,14 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
   const initialDoctor = useMemo<string>(() => {
     if (requestedDoctor) {
       const match = content.doctors.find((d) => matchesBookingOption(d, requestedDoctor));
-      if (match?.value) return match.value;
+      if (match?.value) {
+        const isAvailableAtInitialBranch =
+          !match.branchIds || match.branchIds.length === 0 || (initialBranch ? match.branchIds.includes(initialBranch) : true);
+        if (isAvailableAtInitialBranch) return match.value;
+      }
     }
     return content.doctors[0]?.value ?? '';
-  }, [content.doctors, requestedDoctor]);
+  }, [content.doctors, initialBranch, requestedDoctor]);
 
   const [selectedBranch, setSelectedBranch] = useState<string>(initialBranch);
   const [selectedService, setSelectedService] = useState<string>(initialService);
@@ -1204,6 +1211,23 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
     doctor: requestedDoctor,
     service: requestedService,
   });
+
+  const availableDoctors = useMemo(() => {
+    return content.doctors.filter((d) => {
+      if (!d.value) return true; // "No Preference" is always available
+      if (!d.branchIds || d.branchIds.length === 0) return true; // unconstrained doctor practices at all branches
+      return selectedBranch ? d.branchIds.includes(selectedBranch) : true;
+    });
+  }, [content.doctors, selectedBranch]);
+
+  useEffect(() => {
+    if (selectedDoctor) {
+      const isAvailable = availableDoctors.some((d) => d.value === selectedDoctor);
+      if (!isAvailable) {
+        setSelectedDoctor(availableDoctors[0]?.value ?? '');
+      }
+    }
+  }, [availableDoctors, selectedDoctor]);
 
   useEffect(() => {
     const queryChanged = requestedBranch !== appliedQueryRef.current.branch;
@@ -1243,21 +1267,21 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 
   useEffect(() => {
     const queryChanged = requestedDoctor !== appliedQueryRef.current.doctor;
-    const hasValidSelection = content.doctors.some((d) => d.value === selectedDoctor);
+    const hasValidSelection = availableDoctors.some((d) => d.value === selectedDoctor);
     if (queryChanged || !hasValidSelection) {
       appliedQueryRef.current.doctor = requestedDoctor;
       if (requestedDoctor) {
-        const match = content.doctors.find((d) => matchesBookingOption(d, requestedDoctor));
+        const match = availableDoctors.find((d) => matchesBookingOption(d, requestedDoctor));
         if (match?.value) {
           setSelectedDoctor(match.value);
           return;
         }
       }
       if (!hasValidSelection) {
-        setSelectedDoctor(content.doctors[0]?.value ?? '');
+        setSelectedDoctor(availableDoctors[0]?.value ?? '');
       }
     }
-  }, [content.doctors, requestedDoctor, selectedDoctor]);
+  }, [availableDoctors, requestedDoctor, selectedDoctor]);
 
   const branch = useMemo(
     () => content.branches.find((item) => item.id === selectedBranch) ?? content.branches[0],
@@ -1421,6 +1445,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
         <AppointmentHero hero={content.hero} />
         <section className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:px-8">
           <AppointmentForm
+            availableDoctors={availableDoctors}
             content={content}
             isSubmitting={submitMutation.isPending}
             key={formKey}

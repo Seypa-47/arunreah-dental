@@ -113,6 +113,8 @@ vi.mock('../src/repositories/doctor.repository', () => ({
   getExpertise: async () => [],
   getEducation: async () => [],
   getRelatedDoctors: async () => [],
+  getDoctorBranchIds: async () => [],
+  getDoctorBranchIdsForDoctors: async () => new Map(),
 }));
 
 vi.mock('../src/repositories/branch.repository', () => ({
@@ -136,6 +138,8 @@ vi.mock('../src/repositories/branch.repository', () => ({
   deleteBranch: async (_database: unknown, id: string) => {
     state.branches = state.branches.filter((branch) => branch.id !== id);
   },
+  branchesExist: async (_database: unknown, branchIds: string[]) =>
+    state.branches.filter((branch) => branchIds.includes(branch.id)),
 }));
 
 vi.mock('../src/repositories/appointment.repository', () => ({

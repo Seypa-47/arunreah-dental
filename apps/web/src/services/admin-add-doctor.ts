@@ -20,6 +20,7 @@ export type NewDoctorFormState = {
   specialty: string;
   status: DoctorStatus;
   yearsExp: string;
+  branchIds?: string[];
 };
 
 export type AdminAddDoctorContent = {
@@ -130,6 +131,7 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
       })),
     education: [],
     relatedDoctorIds: [],
+    branchIds: formData.branchIds ?? [],
   });
   const doctor = response.doctor;
   const createdDoctor: AdminDoctor = {
@@ -138,6 +140,7 @@ export async function saveNewDoctor(formData: NewDoctorFormState): Promise<Admin
     ctaButtonText: 'Book Now',
     education: ['Doctor of Dental Surgery (DDS)'],
     expertise: formData.expertise,
+    branchIds: formData.branchIds ?? [],
     featuredDoctor: false,
     id: doctor.id,
     imageAlt: formData.name,

@@ -1,7 +1,7 @@
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { focusFirstInvalid } from '@/components/admin/admin-form';
-import { useState, useRef, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useState, useRef, useMemo, type ChangeEvent, type FormEvent, type KeyboardEvent } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -11,6 +11,8 @@ import {
 } from './use-admin-add-doctor-page';
 import type { NewDoctorFormState } from '@/services/admin-add-doctor';
 import { getPublicMediaUrl, uploadMedia } from '@/services/media';
+import { cmsApi } from '@/services/cms';
+import { queryKeys } from '@/lib/query-keys';
 
 export function AdminAddDoctorPage() {
   const navigate = useNavigate();
@@ -36,6 +38,23 @@ export function AdminAddDoctorPage() {
 
   // Photo state
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+  // Branch assignment state
+  const branchesQuery = useQuery({
+    queryKey: queryKeys.admin.branches({ limit: 100 }),
+    queryFn: () => cmsApi.branches.list({ limit: 100 }),
+  });
+  const availableBranches = useMemo(
+    () => (branchesQuery.data?.items ?? []).filter((b) => b.status !== 'ARCHIVED'),
+    [branchesQuery.data?.items],
+  );
+  const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
+
+  const handleToggleBranch = (branchId: string) => {
+    setSelectedBranchIds((prev) =>
+      prev.includes(branchId) ? prev.filter((id) => id !== branchId) : [...prev, branchId],
+    );
+  };
 
   // Expertise tags
   const [expertiseList, setExpertiseList] = useState<string[]>([]);
@@ -114,6 +133,7 @@ export function AdminAddDoctorPage() {
       specialty,
       status,
       yearsExp,
+      branchIds: selectedBranchIds,
     };
 
     createMutation.mutate(payload, {
@@ -742,6 +762,87 @@ export function AdminAddDoctorPage() {
                         value={contactEmail}
                       />
                     </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Branch Assignment Card */}
+              <Card className="rounded-[26px] border-[#e1e8f0] bg-white p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h2 className="text-[18px] font-bold text-[#182238]">Branch Assignment</h2>
+                    <p className="mt-1 text-[13px] text-[#8a9bb2]">
+                      Select which branch(es) this doctor practices at.
+                    </p>
+                  </div>
+                  {availableBranches.length > 0 ? (
+                    <div className="flex items-center gap-2.5 text-[12px]">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBranchIds(availableBranches.map((b) => b.id))}
+                        className="font-bold text-[#2187a8] hover:underline"
+                      >
+                        Both Branches
+                      </button>
+                      <span className="text-[#cbd5e1]">•</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBranchIds([])}
+                        className="font-medium text-[#71839e] hover:text-[#182238]"
+                      >
+                        All (Unrestricted)
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  {availableBranches.map((branch) => {
+                    const isChecked = selectedBranchIds.includes(branch.id);
+                    return (
+                      <label
+                        key={branch.id}
+                        className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition ${
+                          isChecked
+                            ? 'border-[#2187a8] bg-[#f0f9fc] shadow-sm'
+                            : 'border-[#e1e8f0] bg-white hover:border-[#ccd7e4]'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleToggleBranch(branch.id)}
+                          className="mt-0.5 size-4 rounded border-[#ccd7e4] text-[#2187a8] accent-[#2187a8]"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[14px] font-bold text-[#182238]">{branch.nameEn}</span>
+                            {branch.nameKm ? (
+                              <span className="text-[12px] text-[#71839e]">({branch.nameKm})</span>
+                            ) : null}
+                          </div>
+                          <p className="mt-0.5 text-[12px] text-[#71839e]">{branch.addressEn}</p>
+                        </div>
+                      </label>
+                    );
+                  })}
+
+                  <div className="mt-3 rounded-xl border border-[#e1e8f0] bg-[#f8fafc] p-3 text-[12px] leading-relaxed text-[#64748b]">
+                    {selectedBranchIds.length === 0 || selectedBranchIds.length === availableBranches.length ? (
+                      <span className="font-semibold text-[#0284c7]">
+                        ✓ Doctor will be available for booking at all branches.
+                      </span>
+                    ) : (
+                      <span>
+                        Doctor will appear in booking only when patients select:{' '}
+                        <strong className="text-[#182238]">
+                          {availableBranches
+                            .filter((b) => selectedBranchIds.includes(b.id))
+                            .map((b) => b.nameEn)
+                            .join(', ')}
+                        </strong>
+                      </span>
+                    )}
                   </div>
                 </div>
               </Card>

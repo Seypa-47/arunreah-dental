@@ -43,6 +43,7 @@ export type PublicDoctorSummary = {
   photoKey: string | null;
   photoImagePresentation?: ImagePresentation;
   featured: boolean;
+  branchIds?: string[];
 };
 
 export type PublicDoctorDetail = PublicDoctorSummary & {

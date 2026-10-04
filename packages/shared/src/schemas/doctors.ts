@@ -75,6 +75,7 @@ export const createDoctorSchema = z
     expertise: z.array(expertise).max(10).default([]),
     education: z.array(education).max(10).default([]),
     relatedDoctorIds: z.array(z.string().min(1)).max(3).default([]),
+    branchIds: z.array(z.string().min(1)).default([]),
   })
   .strict();
 
@@ -103,6 +104,7 @@ export const updateDoctorSchema = z
     expertise: z.array(expertise).max(10).optional(),
     education: z.array(education).max(10).optional(),
     relatedDoctorIds: z.array(z.string().min(1)).max(3).optional(),
+    branchIds: z.array(z.string().min(1)).optional(),
   })
   .strict()
   .refine((value) => Object.values(value).some((field) => field !== undefined), {

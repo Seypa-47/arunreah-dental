@@ -63,13 +63,48 @@ describe('public page mappers', () => {
     );
 
     expect(content.servicesList).toEqual([{ name: 'Cleaning', slug: 'cleaning', value: 'service-uuid' }]);
-    expect(content.doctors).toEqual([{ name: 'No Preference', value: '' }, { name: 'Dr. Dara', slug: 'dara', value: 'doctor-uuid' }]);
+    expect(content.doctors).toEqual([
+      { branchIds: [], name: 'No Preference', value: '' },
+      { branchIds: [], name: 'Dr. Dara', slug: 'dara', value: 'doctor-uuid' },
+    ]);
     expect(content.branches[0]?.id).toBe('branch-uuid');
     expect(content.branches[0]?.slug).toBe('ttp');
     expect(content.branches[0]?.openingDays).toBe('Mon - Sat');
     expect(content.branches[0]?.openingTime).toBe('08:00');
     expect(content.branches[0]?.closingTime).toBe('18:00');
     expect(content.help.phone).toBe('012 345 678');
+  });
+
+  it('maps doctor branchIds into booking options doctors list', () => {
+    const content = mapBookingOptions(
+      publicBookingChrome('en'),
+      [],
+      [
+        {
+          id: 'doc-1',
+          slug: 'dr-sophea',
+          name: 'Dr. Sophea',
+          title: 'Orthodontist',
+          specialty: 'Orthodontics',
+          shortBio: null,
+          photoKey: null,
+          featured: true,
+          branchIds: ['branch-1', 'branch-2'],
+        },
+      ],
+      [],
+      { primaryPhone: null, primaryEmail: null },
+    );
+
+    expect(content.doctors).toEqual([
+      { branchIds: [], name: 'No Preference', value: '' },
+      {
+        branchIds: ['branch-1', 'branch-2'],
+        name: 'Dr. Sophea',
+        slug: 'dr-sophea',
+        value: 'doc-1',
+      },
+    ]);
   });
 
   it('excludes branches that do not accept appointment requests', () => {

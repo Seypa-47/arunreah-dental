@@ -283,8 +283,13 @@ export function mapBookingOptions(
       phone: contact?.primaryPhone ?? '',
     },
     doctors: [
-      { name: isKm ? 'គ្មានចំណូលចិត្ត' : 'No Preference', value: '' },
-      ...doctors.map((doctor) => ({ name: doctor.name, slug: doctor.slug, value: doctor.id })),
+      { name: isKm ? 'គ្មានចំណូលចិត្ត' : 'No Preference', value: '', branchIds: [] },
+      ...doctors.map((doctor) => ({
+        name: doctor.name,
+        slug: doctor.slug,
+        value: doctor.id,
+        branchIds: doctor.branchIds ?? [],
+      })),
     ],
     services: services.map(toLandingService),
     servicesList: services.map((service) => ({ name: service.name, slug: service.slug, value: service.id })),

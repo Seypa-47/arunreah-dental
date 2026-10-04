@@ -134,6 +134,7 @@ export function sanitizeDoctorUpdatePayload(doctor: AdminDoctor): UpdateDoctorIn
     expertise,
     education,
     relatedDoctorIds,
+    branchIds: doctor.branchIds,
   };
 
   if (payload.photoKey && doctor.photoImagePresentation) {

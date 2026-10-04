@@ -2,7 +2,7 @@ import { AdminListDate, AdminListEmpty, AdminListPagination, AdminPublicationSta
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AdminDoctorListQuery } from '@arunreah/shared';
+import type { AdminBranchRead, AdminDoctorListQuery } from '@arunreah/shared';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
@@ -77,6 +77,7 @@ type TabType = 'overview' | 'content' | 'expertise' | 'education' | 'seo';
 
 function DoctorDetailPanel({
   doctor,
+  branches,
   isSaving = false,
   saveError = null,
   saveSuccess = false,
@@ -85,6 +86,7 @@ function DoctorDetailPanel({
   onSave,
 }: {
   doctor: AdminDoctor;
+  branches?: AdminBranchRead[];
   isSaving?: boolean;
   saveError?: string | null;
   saveSuccess?: boolean;
@@ -114,6 +116,14 @@ function DoctorDetailPanel({
   const handleFieldChange = (field: keyof AdminDoctor, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setIsDirty(true);
+  };
+
+  const handleToggleBranch = (branchId: string) => {
+    const currentBranches = formData.branchIds ?? [];
+    const nextBranches = currentBranches.includes(branchId)
+      ? currentBranches.filter((id) => id !== branchId)
+      : [...currentBranches, branchId];
+    handleFieldChange('branchIds', nextBranches);
   };
 
   const handlePhotoChange = (photoKey: string | null) => {
@@ -443,6 +453,89 @@ function DoctorDetailPanel({
                   value={formData.ctaButtonText}
                 />
               </label>
+            </div>
+
+            {/* Branch Assignment */}
+            <div className="rounded-2xl border border-[#e1e8f0] bg-[#fcfdfe] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
+                    Branch Assignment
+                  </span>
+                  <p className="mt-0.5 text-[12px] text-[#71839e]">
+                    Select which clinic branch(es) this doctor practices at.
+                  </p>
+                </div>
+                {branches && branches.length > 0 ? (
+                  <div className="flex items-center gap-2 text-[12px]">
+                    <button
+                      className="font-bold text-[#2187a8] hover:underline"
+                      onClick={() => handleFieldChange('branchIds', branches.map((b) => b.id))}
+                      type="button"
+                    >
+                      Both Branches
+                    </button>
+                    <span className="text-[#cbd5e1]">•</span>
+                    <button
+                      className="font-medium text-[#71839e] hover:text-[#182238]"
+                      onClick={() => handleFieldChange('branchIds', [])}
+                      type="button"
+                    >
+                      All (Unrestricted)
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="mt-3 space-y-2.5">
+                {(branches ?? []).map((branch) => {
+                  const isChecked = (formData.branchIds ?? []).includes(branch.id);
+                  return (
+                    <label
+                      className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
+                        isChecked
+                          ? 'border-[#2187a8] bg-[#f0f9fc]'
+                          : 'border-[#e1e8f0] bg-white hover:border-[#ccd7e4]'
+                      }`}
+                      key={branch.id}
+                    >
+                      <input
+                        checked={isChecked}
+                        className="mt-0.5 size-4 rounded border-[#ccd7e4] text-[#2187a8] accent-[#2187a8]"
+                        onChange={() => handleToggleBranch(branch.id)}
+                        type="checkbox"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-bold text-[#182238]">{branch.nameEn}</span>
+                          {branch.nameKm ? (
+                            <span className="text-[11px] text-[#71839e]">({branch.nameKm})</span>
+                          ) : null}
+                        </div>
+                        <p className="mt-0.5 text-[11px] text-[#71839e]">{branch.addressEn}</p>
+                      </div>
+                    </label>
+                  );
+                })}
+
+                <div className="rounded-xl border border-[#e1e8f0] bg-white p-2.5 text-[11px] leading-relaxed text-[#64748b]">
+                  {!(formData.branchIds?.length) || (branches && formData.branchIds.length === branches.length) ? (
+                    <span className="font-semibold text-[#0284c7]">
+                      ✓ Available for booking across all branches.
+                    </span>
+                  ) : (
+                    <span>
+                      Available only at:{' '}
+                      <strong className="text-[#182238]">
+                        {(branches ?? [])
+                          .filter((b) => formData.branchIds?.includes(b.id))
+                          .map((b) => b.nameEn)
+                          .join(', ')}
+                      </strong>
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Switches: Show on Website & Featured Doctor */}
@@ -794,6 +887,7 @@ function AddDoctorModal({
       ctaButtonText,
       showOnWebsite,
       featuredDoctor,
+      branchIds: [],
     };
 
     onCreate(newDoctor);
@@ -994,6 +1088,15 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
     queryKey: queryKeys.admin.doctor(selectedId ?? ''),
   });
 
+  const branchesQuery = useQuery({
+    queryKey: queryKeys.admin.branches({ limit: 100 }),
+    queryFn: () => cmsApi.branches.list({ limit: 100 }),
+  });
+  const activeBranches = useMemo(
+    () => (branchesQuery.data?.items ?? []).filter((b) => b.status !== 'ARCHIVED'),
+    [branchesQuery.data?.items],
+  );
+
   // Extract unique specialties
   const specialties = useMemo(() => {
     return [
@@ -1062,6 +1165,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
             <Card className="min-h-[32rem] animate-pulse rounded-[28px] bg-white" />
           ) : selectedDoctor ? (
             <DoctorDetailPanel
+              branches={activeBranches}
               doctor={selectedDoctor}
               isSaving={updateMutation.isPending}
               onClose={() => navigate('/admin/doctors')}
@@ -1167,6 +1271,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
                 <tr className="border-b border-[#f0f4f8] text-[11px] font-bold uppercase tracking-[0.5px] text-[#8699b0]">
                   <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.doctor}</th>
                   <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.specialty}</th>
+                  <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.branch}</th>
                   <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.status}</th>
                   <th scope="col" className="pb-3.5 pt-1 text-right font-bold">{content.table.updated}</th>
                   <th scope="col" className="pb-3.5 pt-1 pr-2 text-right font-bold">Actions</th>
@@ -1194,6 +1299,29 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
                       {/* Specialty */}
                       <td className="py-4 pr-4 text-[14px] text-[#71839e]">
                         {doc.specialty}
+                      </td>
+
+                      {/* Branch assignment */}
+                      <td className="py-4 pr-4 text-[13px]">
+                        {!doc.branchIds || doc.branchIds.length === 0 || (activeBranches.length > 0 && doc.branchIds.length === activeBranches.length) ? (
+                          <span className="inline-flex items-center rounded-md border border-[#bae6fd] bg-[#f0f9ff] px-2 py-0.5 text-[11px] font-medium text-[#0369a1]">
+                            All Branches
+                          </span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {doc.branchIds.map((branchId) => {
+                              const b = activeBranches.find((br) => br.id === branchId);
+                              return (
+                                <span
+                                  className="inline-flex items-center rounded-md border border-[#e2e8f0] bg-[#f8fafc] px-2 py-0.5 text-[11px] font-medium text-[#475569]"
+                                  key={branchId}
+                                >
+                                  {b?.nameEn ?? 'Branch'}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
                       </td>
 
                       {/* Status badge */}

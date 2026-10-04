@@ -7,6 +7,7 @@ import type {
 import { defaultImagePresentation, type ImagePresentation } from '@arunreah/shared';
 import type { DatabaseClient } from '../db/client';
 import * as repository from '../repositories/doctor.repository';
+import * as branchRepository from '../repositories/branch.repository';
 import { HttpError } from '../shared/http-error';
 import { localize as localizeText } from '../shared/localize';
 import { listForOwners } from '../repositories/image-presentation.repository';
@@ -26,7 +27,12 @@ function presentationFor(rows: Awaited<ReturnType<typeof listForOwners>>, ownerI
   return row ? { positionX: row.positionX, positionY: row.positionY, zoom: row.zoom } : defaultDoctorPhotoPresentation;
 }
 
-function localize(doctor: DoctorRecord, language: DoctorLanguage, presentations: Awaited<ReturnType<typeof listForOwners>> = []) {
+function localize(
+  doctor: DoctorRecord,
+  language: DoctorLanguage,
+  presentations: Awaited<ReturnType<typeof listForOwners>> = [],
+  branchIds: string[] = [],
+) {
   return {
     id: doctor.id,
     slug: doctor.slug,
@@ -37,10 +43,11 @@ function localize(doctor: DoctorRecord, language: DoctorLanguage, presentations:
     photoKey: doctor.photoKey,
     photoImagePresentation: presentationFor(presentations, doctor.id),
     featured: doctor.featured,
+    branchIds,
   };
 }
 
-function toAdminDoctor(doctor: DoctorRecord) {
+function toAdminDoctor(doctor: DoctorRecord, branchIds: string[] = []) {
   return {
     id: doctor.id,
     slug: doctor.slug,
@@ -62,6 +69,7 @@ function toAdminDoctor(doctor: DoctorRecord) {
     successfulProcedures: doctor.successfulProcedures,
     patientSatisfaction: doctor.patientSatisfaction,
     phone: doctor.phone,
+    branchIds,
     createdAt: doctor.createdAt,
     updatedAt: doctor.updatedAt,
   };
@@ -71,17 +79,28 @@ async function validateNested(
   database: DatabaseClient,
   doctorId: string | undefined,
   relatedDoctorIds: string[] | undefined,
+  branchIds: string[] | undefined,
 ) {
-  if (relatedDoctorIds === undefined) return;
-  if (new Set(relatedDoctorIds).size !== relatedDoctorIds.length) {
-    throw new HttpError(400, 'VALIDATION_ERROR', 'Related doctors must be unique.');
+  if (relatedDoctorIds !== undefined) {
+    if (new Set(relatedDoctorIds).size !== relatedDoctorIds.length) {
+      throw new HttpError(400, 'VALIDATION_ERROR', 'Related doctors must be unique.');
+    }
+    if (doctorId && relatedDoctorIds.includes(doctorId)) {
+      throw new HttpError(400, 'VALIDATION_ERROR', 'A doctor cannot relate to themselves.');
+    }
+    const found = await repository.doctorsExist(database, relatedDoctorIds);
+    if (found.length !== relatedDoctorIds.length) {
+      throw new HttpError(400, 'VALIDATION_ERROR', 'A related doctor does not exist.');
+    }
   }
-  if (doctorId && relatedDoctorIds.includes(doctorId)) {
-    throw new HttpError(400, 'VALIDATION_ERROR', 'A doctor cannot relate to themselves.');
-  }
-  const found = await repository.doctorsExist(database, relatedDoctorIds);
-  if (found.length !== relatedDoctorIds.length) {
-    throw new HttpError(400, 'VALIDATION_ERROR', 'A related doctor does not exist.');
+  if (branchIds !== undefined && branchIds.length > 0) {
+    if (new Set(branchIds).size !== branchIds.length) {
+      throw new HttpError(400, 'VALIDATION_ERROR', 'Branch assignments must be unique.');
+    }
+    const foundBranches = await branchRepository.branchesExist(database, branchIds);
+    if (foundBranches.length !== branchIds.length) {
+      throw new HttpError(400, 'VALIDATION_ERROR', 'One or more assigned branches do not exist.');
+    }
   }
 }
 
@@ -89,10 +108,10 @@ export async function createManagedDoctor(database: DatabaseClient, input: Creat
   if (await repository.findDoctorBySlug(database, input.slug)) {
     throw new HttpError(409, 'CONFLICT', 'A doctor with this slug already exists.');
   }
-  await validateNested(database, undefined, input.relatedDoctorIds);
+  await validateNested(database, undefined, input.relatedDoctorIds, input.branchIds);
   const doctor = await repository.createDoctor(database, input);
   if (!doctor) throw new Error('Created doctor could not be loaded.');
-  return toAdminDoctor(doctor);
+  return toAdminDoctor(doctor, input.branchIds);
 }
 
 export async function updateManagedDoctor(
@@ -108,23 +127,25 @@ export async function updateManagedDoctor(
       throw new HttpError(409, 'CONFLICT', 'A doctor with this slug already exists.');
     }
   }
-  await validateNested(database, id, input.relatedDoctorIds);
+  await validateNested(database, id, input.relatedDoctorIds, input.branchIds);
   const doctor = await repository.updateDoctor(database, id, input);
   if (!doctor) throw new Error('Updated doctor could not be loaded.');
-  return toAdminDoctor(doctor);
+  const branchIds = input.branchIds !== undefined ? input.branchIds : await repository.getDoctorBranchIds(database, id);
+  return toAdminDoctor(doctor, branchIds);
 }
 
 export async function getAdminDoctor(database: DatabaseClient, id: string) {
   const doctor = await repository.findDoctorById(database, id);
   if (!doctor) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
-  const [expertise, education, relatedDoctors, presentations] = await Promise.all([
+  const [expertise, education, relatedDoctors, branchIds, presentations] = await Promise.all([
     repository.getExpertise(database, id),
     repository.getEducation(database, id),
     repository.getRelatedDoctors(database, id),
+    repository.getDoctorBranchIds(database, id),
     listForOwners(database, [{ ownerType: 'DOCTOR', ownerId: id, slot: 'PRIMARY' }]),
   ]);
   return {
-    ...toAdminDoctor(doctor),
+    ...toAdminDoctor(doctor, branchIds),
     photoImagePresentation: presentationFor(presentations, id),
     expertise: expertise.map((item) => ({
       id: item.id,
@@ -147,9 +168,15 @@ export async function getAdminDoctor(database: DatabaseClient, id: string) {
 
 export async function getAdminDoctorList(database: DatabaseClient, query: AdminDoctorListQuery) {
   const { items, total } = await repository.listAdminDoctors(database, query);
-  const presentations = await listForOwners(database, items.map((doctor) => ({ ownerType: 'DOCTOR' as const, ownerId: doctor.id, slot: 'PRIMARY' })));
+  const [presentations, branchMap] = await Promise.all([
+    listForOwners(database, items.map((doctor) => ({ ownerType: 'DOCTOR' as const, ownerId: doctor.id, slot: 'PRIMARY' }))),
+    repository.getDoctorBranchIdsForDoctors(database, items.map((d) => d.id)),
+  ]);
   return {
-    doctors: items.map((doctor) => ({ ...toAdminDoctor(doctor), photoImagePresentation: presentationFor(presentations, doctor.id) })),
+    doctors: items.map((doctor) => ({
+      ...toAdminDoctor(doctor, branchMap.get(doctor.id) ?? []),
+      photoImagePresentation: presentationFor(presentations, doctor.id),
+    })),
     meta: {
       page: query.page,
       limit: query.limit,
@@ -161,8 +188,11 @@ export async function getAdminDoctorList(database: DatabaseClient, query: AdminD
 
 export async function getPublicDoctorList(database: DatabaseClient, language: DoctorLanguage) {
   const doctors = await repository.listPublicDoctors(database);
-  const presentations = await listForOwners(database, doctors.map((doctor) => ({ ownerType: 'DOCTOR' as const, ownerId: doctor.id, slot: 'PRIMARY' })));
-  return doctors.map((doctor) => localize(doctor, language, presentations));
+  const [presentations, branchMap] = await Promise.all([
+    listForOwners(database, doctors.map((doctor) => ({ ownerType: 'DOCTOR' as const, ownerId: doctor.id, slot: 'PRIMARY' }))),
+    repository.getDoctorBranchIdsForDoctors(database, doctors.map((d) => d.id)),
+  ]);
+  return doctors.map((doctor) => localize(doctor, language, presentations, branchMap.get(doctor.id) ?? []));
 }
 
 export async function getPublicDoctor(
@@ -178,16 +208,13 @@ export async function getPublicDoctor(
     repository.getRelatedDoctors(database, doctor.id),
   ]);
   const publishedRelatedDoctors = relatedDoctors.filter((item) => item.doctor.status === 'PUBLISHED');
-  const presentations = await listForOwners(database, [
-    { ownerType: 'DOCTOR', ownerId: doctor.id, slot: 'PRIMARY' },
-    ...publishedRelatedDoctors.map((item) => ({
-      ownerType: 'DOCTOR' as const,
-      ownerId: item.doctor.id,
-      slot: 'PRIMARY',
-    })),
+  const allDoctorIds = [doctor.id, ...publishedRelatedDoctors.map((item) => item.doctor.id)];
+  const [presentations, branchMap] = await Promise.all([
+    listForOwners(database, allDoctorIds.map((ownerId) => ({ ownerType: 'DOCTOR' as const, ownerId, slot: 'PRIMARY' }))),
+    repository.getDoctorBranchIdsForDoctors(database, allDoctorIds),
   ]);
   return {
-    ...localize(doctor, language, presentations),
+    ...localize(doctor, language, presentations, branchMap.get(doctor.id) ?? []),
     about: localizeText(doctor.biographyEn, doctor.biographyKm, language),
     statistics: {
       yearsExperience: doctor.yearsExperience,
@@ -204,7 +231,7 @@ export async function getPublicDoctor(
       yearLabel: item.yearLabel,
       displayOrder: item.displayOrder,
     })),
-    relatedDoctors: publishedRelatedDoctors.map((item) => localize(item.doctor, language, presentations)),
+    relatedDoctors: publishedRelatedDoctors.map((item) => localize(item.doctor, language, presentations, branchMap.get(item.doctor.id) ?? [])),
   };
 }
 
