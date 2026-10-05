@@ -1092,9 +1092,11 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
 
   const [notification, setNotification] = useState<{ message: string; tone: 'success' | 'error' } | undefined>();
   const saveMutation = useMutation({
-    mutationFn: (status: 'DRAFT' | 'PUBLISHED') => cmsApi.services.update(content.service.id, {
-      status,
-      slug: service.slug,
+    mutationFn: (targetStatus?: 'DRAFT' | 'PUBLISHED') => {
+      const activeStatus = targetStatus ?? (service.status === 'published' ? 'PUBLISHED' : 'DRAFT');
+      return cmsApi.services.update(content.service.id, {
+        status: activeStatus,
+        slug: service.slug,
       nameEn: service.name,
       nameKm: service.nameKm,
       category: service.category || null,
@@ -1166,10 +1168,19 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
       metaTitleKm: service.metaTitleKm || null,
       metaDescriptionEn: service.metaDescription || null,
       metaDescriptionKm: service.metaDescriptionKm || null,
-    }),
-    onSuccess: async () => {
+      });
+    },
+    onSuccess: async (_data, targetStatus) => {
       setIsDirty(false);
+      const nextStatus = targetStatus ?? (service.status === 'published' ? 'PUBLISHED' : 'DRAFT');
+      setServiceState((current) => ({
+        ...current,
+        status: nextStatus === 'PUBLISHED' ? 'published' : 'draft',
+      }));
       await invalidateCmsDomain(queryClient, 'services');
+      await queryClient.invalidateQueries({
+        queryKey: ['admin-service-detail-page', content.service.id],
+      });
     },
     onError: (error: unknown) => {
       const message = error instanceof Error ? error.message : 'Unable to save this service. Please check the fields and try again.';
@@ -1205,13 +1216,23 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
   };
 
   const handleSaveDraft = () => {
-    setService((current) => ({ ...current, status: 'draft' }));
-    saveMutation.mutate('DRAFT', { onSuccess: () => showNotification('Service draft saved successfully.', 'success') });
+    setServiceState((current) => ({ ...current, status: 'draft' }));
+    saveMutation.mutate('DRAFT', {
+      onSuccess: () => showNotification('Service draft saved successfully.', 'success'),
+    });
   };
 
   const handleUpdateService = () => {
-    setService((current) => ({ ...current, status: 'published' }));
-    saveMutation.mutate('PUBLISHED', { onSuccess: () => showNotification('Service updated and published successfully.', 'success') });
+    const targetStatus: 'DRAFT' | 'PUBLISHED' = service.status === 'published' ? 'PUBLISHED' : 'DRAFT';
+    saveMutation.mutate(targetStatus, {
+      onSuccess: () =>
+        showNotification(
+          targetStatus === 'PUBLISHED'
+            ? 'Service updated and published successfully.'
+            : 'Service draft updated successfully.',
+          'success',
+        ),
+    });
   };
 
   return (

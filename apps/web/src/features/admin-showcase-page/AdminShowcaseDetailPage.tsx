@@ -200,8 +200,9 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
 
       return cmsApi.showcases.update(showcase.id, payload);
     },
-    onSuccess: async () => {
+    onSuccess: async (_data, targetStatus) => {
       setIsDirty(false);
+      if (targetStatus) setStatus(targetStatus);
       await invalidateCmsDomain(queryClient, 'showcases');
     },
     onError: (error: unknown) => {
@@ -236,9 +237,15 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
   };
 
   const handleUpdate = () => {
-    setStatus('PUBLISHED');
-    saveMutation.mutate('PUBLISHED', {
-      onSuccess: () => showNotification('Showcase updated and published successfully.', 'success'),
+    const targetStatus = status === 'PUBLISHED' ? 'PUBLISHED' : 'DRAFT';
+    saveMutation.mutate(targetStatus, {
+      onSuccess: () =>
+        showNotification(
+          targetStatus === 'PUBLISHED'
+            ? 'Showcase updated and published successfully.'
+            : 'Showcase draft updated successfully.',
+          'success',
+        ),
     });
   };
 
