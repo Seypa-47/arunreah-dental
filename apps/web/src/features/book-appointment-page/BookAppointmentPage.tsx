@@ -822,7 +822,7 @@ function AppointmentForm({
               id="service"
               label={bookingCopy.selectService}
               onChange={onSelectService}
-              options={content.servicesList}
+              options={withOptionalServiceOption(content.servicesList, bookingCopy.serviceNoPreference)}
               value={selectedService}
             />
             <SelectField
@@ -1168,8 +1168,16 @@ export function matchesBookingOption(
   return option.name.trim().toLowerCase() === normalized;
 }
 
+export function withOptionalServiceOption(
+  services: BookAppointmentPageContent['servicesList'],
+  noPreferenceLabel: string,
+): BookAppointmentPageContent['servicesList'] {
+  return [{ name: noPreferenceLabel, value: '' }, ...services];
+}
+
 function BookAppointmentView({ content }: { content: BookAppointmentPageContent }) {
   const { language } = usePublicLanguage();
+  const bookingCopy = publicUiCopy(language).booking;
   const [searchParams] = useSearchParams();
   const requestedBranch = searchParams.get('branch');
   const requestedDoctor = searchParams.get('doctor');
@@ -1188,7 +1196,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
       const match = content.servicesList.find((s) => matchesBookingOption(s, requestedService));
       if (match?.value) return match.value;
     }
-    return content.servicesList[0]?.value ?? '';
+    return '';
   }, [content.servicesList, requestedService]);
 
   const initialDoctor = useMemo<string>(() => {
@@ -1249,7 +1257,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 
   useEffect(() => {
     const queryChanged = requestedService !== appliedQueryRef.current.service;
-    const hasValidSelection = Boolean(selectedService && content.servicesList.some((s) => s.value === selectedService));
+    const hasValidSelection = selectedService === '' || content.servicesList.some((s) => s.value === selectedService);
     if (queryChanged || !hasValidSelection) {
       appliedQueryRef.current.service = requestedService;
       if (requestedService) {
@@ -1259,8 +1267,8 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
           return;
         }
       }
-      if (!hasValidSelection && content.servicesList[0]?.value) {
-        setSelectedService(content.servicesList[0].value);
+      if (!hasValidSelection) {
+        setSelectedService('');
       }
     }
   }, [content.servicesList, requestedService, selectedService]);
@@ -1287,7 +1295,10 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
     () => content.branches.find((item) => item.id === selectedBranch) ?? content.branches[0],
     [content.branches, selectedBranch],
   );
-  const service = content.servicesList.find((item) => item.value === selectedService);
+  const service = content.servicesList.find((item) => item.value === selectedService) ?? {
+    name: bookingCopy.serviceNoPreference,
+    value: '',
+  };
   const doctor = content.doctors.find((item) => item.value === selectedDoctor);
 
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -1379,7 +1390,6 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
   }
 
   const isKm = language === 'km';
-  const bookingCopy = publicUiCopy(language).booking;
   const submit = (values: { email: string; notes: string; patientName: string; phone: string }) => {
     const branchSchedule = getBranchScheduleForDate(branch, selectedDate, language);
     if (!branchSchedule.isOpen) {
@@ -1408,7 +1418,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
       notes: values.notes.trim() || null,
       preferredDate: selectedDate,
       preferredTime: selectedTime,
-      serviceId: selectedService,
+      serviceId: selectedService || null,
       turnstileToken: turnstileToken ?? undefined,
     }).then((response) => {
       setSubmittedDetails({

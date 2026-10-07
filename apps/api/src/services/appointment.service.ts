@@ -51,6 +51,8 @@ function isUniqueConstraintError(error: unknown) {
   return error instanceof Error && /unique constraint|sqlite_constraint/i.test(error.message);
 }
 
+const UNSPECIFIED_SERVICE_SNAPSHOT = 'Not sure / No preference';
+
 export async function createPublicAppointmentRequest(
   database: DatabaseClient,
   input: CreatePublicAppointmentInput,
@@ -70,12 +72,12 @@ export async function createPublicAppointmentRequest(
   assertPreferredDate(input.preferredDate);
 
   const [service, branch, doctor] = await Promise.all([
-    findServiceById(database, input.serviceId),
+    input.serviceId ? findServiceById(database, input.serviceId) : undefined,
     findBranchById(database, input.branchId),
     input.doctorId ? findDoctorById(database, input.doctorId) : undefined,
   ]);
 
-  if (!service || service.status !== 'PUBLISHED') {
+  if (input.serviceId && (!service || service.status !== 'PUBLISHED')) {
     throw new HttpError(404, 'SERVICE_NOT_AVAILABLE', 'The selected service is not available.');
   }
   if (!branch || branch.status !== 'PUBLISHED' || !branch.acceptsAppointments) {
@@ -94,10 +96,10 @@ export async function createPublicAppointmentRequest(
         reference: createReference(),
         idempotencyKey,
         status: 'PENDING',
-        serviceId: service.id,
+        serviceId: service?.id ?? null,
         doctorId: doctor?.id ?? null,
         branchId: branch.id,
-        serviceNameSnapshot: service.nameEn,
+        serviceNameSnapshot: service?.nameEn ?? UNSPECIFIED_SERVICE_SNAPSHOT,
         doctorNameSnapshot: doctor?.nameEn ?? null,
         branchNameSnapshot: branch.nameEn,
         patientName: input.patientName,

@@ -19,7 +19,7 @@ export type AppointmentListItem = {
   id: string;
   reference: string;
   patient: { email: string; name: string; phone: string };
-  service: { id: string; nameSnapshot: string };
+  service: { id: string | null; nameSnapshot: string };
   doctor: { id: string; nameSnapshot: string | null } | null;
   branch: { id: string; nameSnapshot: string };
   preferredDate: string;

@@ -10,6 +10,7 @@ import {
   isTimeSlotPastForPhnomPenh,
   matchesBookingOption,
   toDateKey,
+  withOptionalServiceOption,
 } from './BookAppointmentPage';
 import { PublicLanguageProvider } from '@/features/public-content/public-language-provider';
 
@@ -49,6 +50,20 @@ describe('BookAppointmentPage Date & Time features', () => {
       expect(matchesBookingOption(doctor, 'doc-uuid')).toBe(true);
       expect(matchesBookingOption(doctor, 'dara')).toBe(true);
       expect(matchesBookingOption(doctor, 'dr. dara')).toBe(true);
+    });
+  });
+
+  describe('optional service selection', () => {
+    it('places a no-preference choice before the published services', () => {
+      expect(
+        withOptionalServiceOption(
+          [{ name: 'Dental Implants', slug: 'dental-implants', value: 'service-1' }],
+          'Not sure / No preference',
+        ),
+      ).toEqual([
+        { name: 'Not sure / No preference', value: '' },
+        { name: 'Dental Implants', slug: 'dental-implants', value: 'service-1' },
+      ]);
     });
   });
 
