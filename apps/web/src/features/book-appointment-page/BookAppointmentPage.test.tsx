@@ -6,7 +6,11 @@ import {
   AvailableTimes,
   dateLabel,
   formatDisplayTime,
+  getPhnomPenhDateTime,
+  isTimeSlotPastForPhnomPenh,
+  matchesBookingOption,
   toDateKey,
+  withOptionalServiceOption,
 } from './BookAppointmentPage';
 import { PublicLanguageProvider } from '@/features/public-content/public-language-provider';
 
@@ -30,6 +34,61 @@ describe('BookAppointmentPage Date & Time features', () => {
     it('formats dates as YYYY-MM-DD strings', () => {
       expect(toDateKey(new Date(2026, 9, 9))).toBe('2026-10-09');
       expect(toDateKey(new Date(2026, 8, 20))).toBe('2026-09-20');
+    });
+  });
+
+  describe('matchesBookingOption', () => {
+    it('matches booking options by id/value, slug, or case-insensitive name', () => {
+      const branch = { id: 'branch-1', name: 'Psa Chas Branch', slug: 'psa-chas' };
+      expect(matchesBookingOption(branch, 'branch-1')).toBe(true);
+      expect(matchesBookingOption(branch, 'psa-chas')).toBe(true);
+      expect(matchesBookingOption(branch, 'PSA-CHAS')).toBe(true);
+      expect(matchesBookingOption(branch, 'psa chas branch')).toBe(true);
+      expect(matchesBookingOption(branch, 'toul-tompoung')).toBe(false);
+
+      const doctor = { name: 'Dr. Dara', slug: 'dara', value: 'doc-uuid' };
+      expect(matchesBookingOption(doctor, 'doc-uuid')).toBe(true);
+      expect(matchesBookingOption(doctor, 'dara')).toBe(true);
+      expect(matchesBookingOption(doctor, 'dr. dara')).toBe(true);
+    });
+  });
+
+  describe('optional service selection', () => {
+    it('places a no-preference choice before the published services', () => {
+      expect(
+        withOptionalServiceOption(
+          [{ name: 'Dental Implants', slug: 'dental-implants', value: 'service-1' }],
+          'Not sure / No preference',
+        ),
+      ).toEqual([
+        { name: 'Not sure / No preference', value: '' },
+        { name: 'Dental Implants', slug: 'dental-implants', value: 'service-1' },
+      ]);
+    });
+  });
+
+  describe('Asia/Phnom_Penh date & time helpers', () => {
+    it('computes Asia/Phnom_Penh (UTC+7) date and time parts regardless of host timezone', () => {
+      // 2026-09-28T03:20:00Z is 2026-09-28 10:20 in Asia/Phnom_Penh (UTC+7)
+      const instant = new Date('2026-09-28T03:20:00.000Z');
+      const pp = getPhnomPenhDateTime(instant);
+      expect(pp).toEqual({
+        dateKey: '2026-09-28',
+        day: 28,
+        hour: 10,
+        minute: 20,
+        month: 9,
+        year: 2026,
+      });
+    });
+
+    it('identifies past time slots for today in Asia/Phnom_Penh time', () => {
+      // 10:20 AM Phnom Penh time on 2026-09-28
+      const instant = new Date('2026-09-28T03:20:00.000Z');
+      expect(isTimeSlotPastForPhnomPenh('09:45', '2026-09-28', instant)).toBe(true);
+      expect(isTimeSlotPastForPhnomPenh('10:15', '2026-09-28', instant)).toBe(true);
+      expect(isTimeSlotPastForPhnomPenh('10:30', '2026-09-28', instant)).toBe(false);
+      expect(isTimeSlotPastForPhnomPenh('08:00', '2026-09-29', instant)).toBe(false);
     });
   });
 
@@ -142,6 +201,148 @@ describe('BookAppointmentPage Date & Time features', () => {
       expect(html).toContain(':45');
       // The selected minute :30 has aria-pressed="true"
       expect(html).toContain('aria-label="10:30 AM" aria-pressed="true"');
+    });
+
+    it('disables already-passed hours and minutes for today in Asia/Phnom_Penh time', () => {
+      // 10:20 AM Phnom Penh time on 2026-09-28
+      const instant = new Date('2026-09-28T03:20:00.000Z');
+      const html = renderToStaticMarkup(
+        <PublicLanguageProvider>
+          <AvailableTimes
+            now={instant}
+            onSelectTime={vi.fn()}
+            selectedDate="2026-09-28"
+            selectedTime="10:30"
+            times={times}
+          />
+        </PublicLanguageProvider>,
+      );
+
+      // 08:00 AM and 09:00 AM hours are completely in the past -> disabled
+      expect(html).toMatch(/aria-label="Select 08:00 AM"[^>]*disabled=""/);
+      expect(html).toMatch(/aria-label="Select 09:00 AM"[^>]*disabled=""/);
+      // Within active 10:xx hour, 10:00 AM and 10:15 AM are disabled while 10:30 AM is active
+      expect(html).toMatch(/aria-label="10:00 AM"[^>]*disabled=""/);
+      expect(html).toMatch(/aria-label="10:15 AM"[^>]*disabled=""/);
+      expect(html).toContain('aria-label="10:30 AM" aria-pressed="true"');
+    });
+
+    it('dynamically adapts hours based on branch schedule for Mon-Sat (8am-6pm) vs Sunday (8am-4pm)', () => {
+      const dynamicBranch = {
+        address: '123 Norodom Blvd',
+        id: 'branch-dynamic',
+        imageAlt: 'Dynamic Branch',
+        imageUrl: '',
+        mapLabel: 'View on map',
+        mapUrl: 'https://maps.app.goo.gl/test',
+        name: 'Dynamic Branch',
+        slug: 'dynamic',
+        openingDays: 'Mon - Sat | Sun',
+        openingDaysKm: 'ច័ន្ទ - សៅរ៍ | អាទិត្យ',
+        openingTime: '08:00 | 08:00',
+        closingTime: '18:00 | 16:00',
+      };
+
+      // 1. Monday 2026-10-05: open until 6:00 PM (18:00)
+      const mondayHtml = renderToStaticMarkup(
+        <PublicLanguageProvider>
+          <AvailableTimes
+            branch={dynamicBranch}
+            onSelectTime={vi.fn()}
+            selectedDate="2026-10-05"
+            selectedTime="10:00"
+          />
+        </PublicLanguageProvider>,
+      );
+
+      expect(mondayHtml).toContain('08:00 AM');
+      expect(mondayHtml).toContain('05:00 PM');
+      expect(mondayHtml).toContain('06:00 PM');
+      expect(mondayHtml).toContain('8:00 AM – 6:00 PM');
+
+      // 2. Sunday 2026-10-04: open until 4:00 PM (16:00)
+      const sundayHtml = renderToStaticMarkup(
+        <PublicLanguageProvider>
+          <AvailableTimes
+            branch={dynamicBranch}
+            onSelectTime={vi.fn()}
+            selectedDate="2026-10-04"
+            selectedTime="10:00"
+          />
+        </PublicLanguageProvider>,
+      );
+
+      expect(sundayHtml).toContain('08:00 AM');
+      expect(sundayHtml).toContain('04:00 PM');
+      expect(sundayHtml).toContain('8:00 AM – 4:00 PM');
+      // Must NOT contain 5pm or 6pm on Sunday
+      expect(sundayHtml).not.toContain('05:00 PM');
+      expect(sundayHtml).not.toContain('06:00 PM');
+    });
+
+    it('renders a friendly closed state with next open date button when branch is closed on that day', () => {
+      const weekdayOnlyBranch = {
+        address: '456 Monivong Blvd',
+        id: 'branch-weekday',
+        imageAlt: 'Weekday Branch',
+        imageUrl: '',
+        mapLabel: 'View on map',
+        mapUrl: 'https://maps.app.goo.gl/test',
+        name: 'Weekday Branch',
+        slug: 'weekday',
+        openingDays: 'Mon - Fri',
+        openingTime: '08:00',
+        closingTime: '17:00',
+      };
+
+      // Sunday 2026-10-04: Closed
+      const closedHtml = renderToStaticMarkup(
+        <PublicLanguageProvider>
+          <AvailableTimes
+            branch={weekdayOnlyBranch}
+            onSelectDate={vi.fn()}
+            onSelectTime={vi.fn()}
+            selectedDate="2026-10-04"
+            selectedTime=""
+          />
+        </PublicLanguageProvider>,
+      );
+
+      expect(closedHtml).toContain('Branch is closed on this date');
+      expect(closedHtml).toContain('This branch is closed on Sunday');
+      expect(closedHtml).toContain('Select next open date');
+    });
+
+    it('renders bilingual Khmer closed notice when branch is closed on that day', () => {
+      const weekdayOnlyBranch = {
+        address: '456 Monivong Blvd',
+        id: 'branch-weekday',
+        imageAlt: 'Weekday Branch',
+        imageUrl: '',
+        mapLabel: 'View on map',
+        mapUrl: 'https://maps.app.goo.gl/test',
+        name: 'Weekday Branch',
+        slug: 'weekday',
+        openingDays: 'Mon - Fri',
+        openingTime: '08:00',
+        closingTime: '17:00',
+      };
+
+      const closedKmHtml = renderToStaticMarkup(
+        <PublicLanguageProvider initialLanguage="km">
+          <AvailableTimes
+            branch={weekdayOnlyBranch}
+            onSelectDate={vi.fn()}
+            onSelectTime={vi.fn()}
+            selectedDate="2026-10-04"
+            selectedTime=""
+          />
+        </PublicLanguageProvider>,
+      );
+
+      expect(closedKmHtml).toContain('សាខាបិទនៅថ្ងៃនេះ');
+      expect(closedKmHtml).toContain('សាខានេះមិនបើកដំណើរការនៅអាទិត្យទេ');
+      expect(closedKmHtml).toContain('ជ្រើសរើសថ្ងៃបើកបន្ទាប់');
     });
   });
 

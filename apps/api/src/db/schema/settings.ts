@@ -9,6 +9,8 @@ export const clinicSettings = sqliteTable('clinic_settings', {
   taglineKm: text('tagline_km'),
   shortAboutEn: text('short_about_en'),
   shortAboutKm: text('short_about_km'),
+  footerDescriptionEn: text('footer_description_en'),
+  footerDescriptionKm: text('footer_description_km'),
   logoKey: text('logo_key'),
   yearsExperience: integer('years_experience'),
   successfulCases: integer('successful_cases'),

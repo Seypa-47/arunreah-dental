@@ -6,6 +6,7 @@ export type LandingNavigationItem = {
 export type LandingHero = {
   address: string;
   appointmentLabel: string;
+  branchSlug?: string;
   callLabel: string;
   imageAlt: string;
   imageUrl: string;
@@ -65,7 +66,12 @@ export type LandingDoctor = {
 };
 
 export type LandingBranch = {
-  hours: string;
+  hoursDays: string;
+  hoursTime: string;
+  hoursSchedules?: {
+    days: string;
+    time: string;
+  }[];
   imageAlt: string;
   imageUrl: string;
   imagePresentation?: import('@arunreah/shared').ImagePresentation;
@@ -172,6 +178,18 @@ export type ClinicBranchGallery = {
   }[];
 };
 
+export type AboutDoctorProfile = {
+  imageAlt: string;
+  imageUrl: string;
+  name: string;
+  /** Focal point and zoom saved in the CMS, so portraits keep the face in frame. */
+  presentation?: import('@arunreah/shared').ImagePresentation;
+  profileHref: string;
+  specialty: string;
+  summary: string;
+  title: string;
+};
+
 export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
   branchGalleries?: ClinicBranchGallery[];
   clinicGallery?: {
@@ -192,15 +210,9 @@ export type AboutPageContent = Pick<LandingPageContent, 'actions' | 'footer' | '
     profileLabel: string;
     profileTitle: string;
   };
-  featuredDoctor?: {
-    imageAlt: string;
-    imageUrl: string;
-    name: string;
-    profileHref: string;
-    specialty: string;
-    summary: string;
-    title: string;
-  };
+  featuredDoctor?: AboutDoctorProfile;
+  /** The next featured doctor in CMS order, shown beside the clinic leadership paragraph. */
+  secondFeaturedDoctor?: AboutDoctorProfile;
   professionalMedia?: { id: string; imageKey: string; imagePresentation: import('@arunreah/shared').ImagePresentation; title: string | null; body: string | null; displayOrder: number }[];
   timeline?: { id: string; year: number; title: string; body: string; displayOrder: number }[];
   differences: {
@@ -262,6 +274,10 @@ export type BranchesPageContent = Pick<LandingPageContent, 'actions' | 'footer' 
     directionsUrl: string;
     hoursDays: string;
     hoursTime: string;
+    hoursSchedules?: {
+      days: string;
+      time: string;
+    }[];
     imageAlt: string;
     imagePresentation?: import('@arunreah/shared').ImagePresentation;
     imageUrl: string;
@@ -383,7 +399,25 @@ export type ServiceDetailContent = Pick<LandingPageContent, 'actions' | 'footer'
     | undefined;
 };
 
+export type ContactBranchInfo = {
+  address: string;
+  badge?: string;
+  directionsUrl?: string;
+  hours: string;
+  id: string;
+  info: {
+    description: string;
+    icon: 'clock' | 'email' | 'location' | 'phone';
+    label: string;
+    value: string;
+  }[];
+  name: string;
+  phones: string[];
+  slug: string;
+};
+
 export type ContactPageContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
+  branchContacts?: ContactBranchInfo[];
   contactCards: {
     description: string;
     icon: 'clock' | 'email' | 'location' | 'phone';
@@ -453,12 +487,17 @@ export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'f
   branches: {
     address: string;
     id?: string;
+    slug?: string;
     imageAlt: string;
     imagePresentation?: import('@arunreah/shared').ImagePresentation;
     imageUrl: string;
     mapLabel: string;
     mapUrl: string;
     name: string;
+    openingHours?: string | null;
+    openingDays?: string | null;
+    openingTime?: string | null;
+    closingTime?: string | null;
   }[];
   calendar: {
     dates: {
@@ -474,7 +513,9 @@ export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'f
   };
   doctors: {
     name: string;
+    slug?: string;
     value: string;
+    branchIds?: string[];
   }[];
   form: {
     fields: {
@@ -508,6 +549,7 @@ export type BookAppointmentPageContent = Pick<LandingPageContent, 'actions' | 'f
   information: string[];
   servicesList: {
     name: string;
+    slug?: string;
     value: string;
   }[];
   summary: {

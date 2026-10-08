@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { getBranchSatelliteEmbedUrl } from '@/features/branches-page/branch-coordinates';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 
@@ -68,11 +69,14 @@ export function GoogleSatelliteMap({
   const copy = publicUiCopy(language).contact;
   const apiKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined)?.trim();
 
-  // If a Google Maps API Key is provided, call the official Google Maps Embed v1 API in satellite mode.
-  // Otherwise, call the direct Google Maps satellite embed API (t=k for satellite imagery).
-  const embedUrl = apiKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${lat},${lng}&maptype=satellite&zoom=${zoom}`
-    : `https://maps.google.com/maps?q=${lat},${lng}&t=k&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
+  const embedUrl = getBranchSatelliteEmbedUrl({
+    apiKey,
+    googleMapsUrl: directionsUrl,
+    lat,
+    lng,
+    nameOrSlug: name,
+    zoom,
+  });
 
   return (
     <Card className="flex w-full flex-col overflow-hidden rounded-xl border border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
@@ -98,14 +102,14 @@ export function GoogleSatelliteMap({
       <div className="flex flex-1 flex-col justify-between p-5">
         <div>
           {/* Top Row: Badge & Direction Button */}
-          <div className="flex items-center justify-between gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#edf7fb] px-3 py-1 text-[11.5px] font-extrabold text-[#3695B9]">
-              <span className="size-1.5 rounded-full bg-[#3695B9]" />
-              {badge || name}
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-[#edf7fb] px-3 py-1 text-[11.5px] font-extrabold text-[#3695B9]">
+              <span className="size-1.5 shrink-0 rounded-full bg-[#3695B9]" />
+              <span className="truncate">{badge || name}</span>
             </span>
 
             <a
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#3695B9] px-4 py-1.5 text-[12px] font-bold text-white shadow-none transition hover:bg-[#2c84a5]"
+              className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-[#3695B9] px-4 py-1.5 text-[12px] font-bold text-white shadow-none transition hover:bg-[#2c84a5]"
               href={directionsUrl}
               rel="noopener noreferrer"
               target="_blank"

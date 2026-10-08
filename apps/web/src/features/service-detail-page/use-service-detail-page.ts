@@ -9,7 +9,7 @@ export function useServiceDetailPageQuery(serviceSlug: string | undefined) {
   const { language } = usePublicLanguage();
   return useQuery({
     enabled: Boolean(serviceSlug),
-    queryFn: async () => mapServiceDetail(publicServiceDetailChrome(language), (await getPublicService(serviceSlug!, language)).service),
+    queryFn: async () => mapServiceDetail(publicServiceDetailChrome(language), (await getPublicService(serviceSlug!, language)).service, language),
     queryKey: queryKeys.public.service(serviceSlug ?? '', language),
   });
 }

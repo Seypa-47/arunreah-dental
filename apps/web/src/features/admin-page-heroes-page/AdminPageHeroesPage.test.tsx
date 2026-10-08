@@ -114,10 +114,27 @@ describe('AdminPageHeroesPage', () => {
     expect(heroPreviewShowsImage(doctors!, '')).toBe(true);
   });
 
-  it('marks the doctors hero as image-only so unused copy fields are not offered', () => {
+  it('marks the doctors hero as a soft directional overlay with editable copy', () => {
     const doctors = HERO_PAGES.find((page) => page.id === 'doctors');
 
-    expect(doctors?.supportsCopy).toBe(false);
-    expect(doctors?.previewLayout).toBe('image-only');
+    expect(doctors?.supportsCopy).not.toBe(false);
+    expect(doctors?.previewLayout).toBe('doctors-overlay');
+  });
+
+  it('syncs default eyebrows and subtitles for booking, services, and showcases with public pages', () => {
+    const booking = HERO_PAGES.find((page) => page.id === 'booking');
+    const services = HERO_PAGES.find((page) => page.id === 'services');
+    const showcases = HERO_PAGES.find((page) => page.id === 'showcases');
+
+    expect(booking?.defaultEyebrowEn).toBe('Appointment request');
+    expect(booking?.defaultEyebrowKm).toBe('ស្នើសុំការណាត់ជួប');
+    expect(services?.defaultEyebrowEn).toBe('Our Treatments');
+    expect(services?.defaultEyebrowKm).toBe('ការព្យាបាលរបស់យើង');
+    expect(showcases?.defaultSubtitleEn).toBe(
+      'Real stories, treatment journeys, and patient transformations.',
+    );
+    expect(showcases?.defaultSubtitleKm).toBe(
+      'រឿងរ៉ាវពិត ដំណើរនៃការព្យាបាល និងការផ្លាស់ប្តូរស្នាមញញឹមរបស់អ្នកជំងឺ។',
+    );
   });
 });

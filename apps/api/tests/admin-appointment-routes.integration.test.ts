@@ -423,4 +423,96 @@ describe('admin appointment inbox API', () => {
     });
     expect(state.appointments[0]?.status).toBe('PENDING');
   });
+
+  it('sends confirmation and cancellation emails to the patient when email notifications are enabled', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const emailBindings = {
+      ...bindings,
+      EMAIL_NOTIFICATIONS_ENABLED: 'true',
+      EMAIL_NOTIFICATION_RECIPIENT: 'reception@example.com',
+      EMAIL_FROM_ADDRESS: 'Arunreah Dental <appointments@send.mekhla.digital>',
+      RESEND_API_KEY: 'resend-test-key',
+    };
+
+    state.appointments = [
+      appointmentFixture({
+        id: '550e8400-e29b-41d4-a716-446655440001',
+        patientEmail: 'patient@example.com',
+        status: 'PENDING',
+      }),
+    ];
+
+    // Confirm request
+    const confirmResponse = await app.request(
+      'http://localhost/api/admin/appointments/550e8400-e29b-41d4-a716-446655440001/status',
+      {
+        method: 'PATCH',
+        headers: { ...(await headersFor('RECEPTIONIST')), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CONFIRMED' }),
+      },
+      emailBindings,
+    );
+    expect(confirmResponse.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const confirmBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(confirmBody.to).toEqual(['patient@example.com']);
+    expect(confirmBody.subject).toContain('Appointment Confirmed');
+    expect(confirmBody.html).toContain('Confirmed');
+
+    // Cancel request
+    const cancelResponse = await app.request(
+      'http://localhost/api/admin/appointments/550e8400-e29b-41d4-a716-446655440001/status',
+      {
+        method: 'PATCH',
+        headers: { ...(await headersFor('RECEPTIONIST')), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CANCELLED' }),
+      },
+      emailBindings,
+    );
+    expect(cancelResponse.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const cancelBody = JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body));
+    expect(cancelBody.to).toEqual(['patient@example.com']);
+    expect(cancelBody.subject).toContain('Appointment Cancelled');
+    expect(cancelBody.html).toContain('Cancelled');
+  });
+
+  it('tolerates email delivery failures gracefully without blocking the appointment status change', async () => {
+    const logSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new Error('Resend network down'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const emailBindings = {
+      ...bindings,
+      EMAIL_NOTIFICATIONS_ENABLED: 'true',
+      EMAIL_NOTIFICATION_RECIPIENT: 'reception@example.com',
+      EMAIL_FROM_ADDRESS: 'Arunreah Dental <appointments@send.mekhla.digital>',
+      RESEND_API_KEY: 'resend-test-key',
+    };
+
+    state.appointments = [
+      appointmentFixture({
+        id: '550e8400-e29b-41d4-a716-446655440001',
+        patientEmail: 'patient@example.com',
+        status: 'PENDING',
+      }),
+    ];
+
+    const response = await app.request(
+      'http://localhost/api/admin/appointments/550e8400-e29b-41d4-a716-446655440001/status',
+      {
+        method: 'PATCH',
+        headers: { ...(await headersFor('RECEPTIONIST')), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CONFIRMED' }),
+      },
+      emailBindings,
+    );
+
+    // Status change still succeeds in the database despite email delivery issue!
+    expect(response.status).toBe(200);
+    expect(state.appointments[0]?.status).toBe('CONFIRMED');
+    expect(logSpy).toHaveBeenCalled();
+  });
 });

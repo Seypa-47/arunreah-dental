@@ -1,18 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { publicLandingChrome } from '@/features/public-content/public-page-chrome';
-import { getPublicBranches, getPublicClinic, getPublicContact, getPublicDoctors, getPublicPageMedia, getPublicServices, getPublicShowcases } from '@/services/public-content';
+import { getPublicBranches, getPublicClinic, getPublicDoctors, getPublicPageMedia, getPublicServices, getPublicShowcases } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
-import { toLandingDoctor, toLandingService } from '@/services/public-page-mappers';
+import { mapLandingBranchHero, toLandingDoctor, toLandingService } from '@/services/public-page-mappers';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { queryKeys } from '@/lib/query-keys';
+import { formatPublicBranchHours, formatPublicBranchSchedules } from '@/features/public-content/public-branch';
 
 export function useLandingPageQuery() {
   const { language } = usePublicLanguage();
   return useQuery({
     queryFn: async () => {
-      const [clinic, contact, services, doctors, branches, showcases, promotions] = await Promise.all([
+      const [clinic, services, doctors, branches, showcases, promotions] = await Promise.all([
         getPublicClinic(),
-        getPublicContact(),
         getPublicServices(language),
         getPublicDoctors(language),
         getPublicBranches(language, 'landing'),
@@ -25,34 +25,31 @@ export function useLandingPageQuery() {
       const homepageBranches = publicBranches.filter((branch) => branch.showOnHomepage);
       const heroBranches = publicBranches.filter((branch) => branch.includeInHomepageHero);
       const isKm = language === 'km';
-      const branchHeroes = heroBranches.map((branch) => ({
-        address: branch.address,
-        appointmentLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
-        callLabel: isKm ? 'ទូរស័ព្ទមកយើង' : 'Call Us',
-        imageAlt: branch.name,
-        imagePresentation: branch.heroImagePresentation,
-        imageUrl: getPublicMediaUrl(branch.heroImageKey) ?? getPublicMediaUrl(branch.branchImageKey) ?? '',
-        locationLabel: isKm ? 'ទីតាំង' : 'Location',
-        phones: [contact.primaryPhone, contact.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
-        qrImageUrl: '/assets/landing/qr-code.png',
-        qrLabel: isKm ? 'ព័ត៌មានគ្លីនិក' : 'Clinic information',
-      }));
+      const branchHeroes = heroBranches.map((branch) => mapLandingBranchHero(branch, language));
 
       return {
         ...publicLandingChrome(language),
-        branches: homepageBranches.map((branch) => ({
-          hours: branch.openingHours ?? '',
-          imageAlt: branch.name,
-          imagePresentation: branch.branchImagePresentation,
-          imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
-          name: branch.name,
-          phones: [branch.phone, branch.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
-        })),
-        doctors: doctors.doctors.map(toLandingDoctor),
+        branches: homepageBranches.map((branch) => {
+          const hours = formatPublicBranchHours(branch);
+          const hoursSchedules = formatPublicBranchSchedules(branch);
+          return {
+            hoursDays: hours.days,
+            hoursTime: hours.time,
+            hoursSchedules,
+            imageAlt: branch.name,
+            imagePresentation: branch.branchImagePresentation,
+            imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
+            name: branch.name,
+            phones: [branch.phone, branch.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
+          };
+        }),
+        doctors: doctors.doctors.map((doctor) => toLandingDoctor(doctor, language)),
         footer: {
           ...publicLandingChrome(language).footer,
           branchLinks: publicBranches.map((branch) => ({ href: '/branches', label: branch.name })),
-          description: isKm ? clinic.shortAboutKm ?? '' : clinic.shortAboutEn ?? '',
+          description: isKm
+            ? (clinic.footerDescriptionKm || clinic.shortAboutKm?.split(/\n\s*\n/)[0] || '')
+            : (clinic.footerDescriptionEn || clinic.shortAboutEn?.split(/\n\s*\n/)[0] || ''),
           tagline: localizedTagline ?? localizedName,
         },
         heroes: branchHeroes,

@@ -8,7 +8,24 @@ import type {
   ServicesPageContent,
 } from '@/features/landing-page/types';
 import { getPublicMediaUrl } from '@/services/media';
-import type { PublicDoctorDetail, PublicDoctorSummary, PublicServiceDetail, PublicServiceSummary } from './public-content';
+import type { PublicBranch, PublicDoctorDetail, PublicDoctorSummary, PublicLanguage, PublicServiceDetail, PublicServiceSummary } from './public-content';
+
+export function mapLandingBranchHero(branch: PublicBranch, language: PublicLanguage) {
+  const isKm = language === 'km';
+  return {
+    address: branch.address,
+    appointmentLabel: isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment',
+    branchSlug: branch.slug,
+    callLabel: isKm ? 'ទូរស័ព្ទមកយើង' : 'Call Us',
+    imageAlt: branch.name,
+    imagePresentation: branch.heroImagePresentation,
+    imageUrl: getPublicMediaUrl(branch.heroImageKey) ?? getPublicMediaUrl(branch.branchImageKey) ?? '',
+    locationLabel: isKm ? 'ទីតាំង' : 'Location',
+    phones: [branch.phone, branch.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
+    qrImageUrl: '/assets/landing/qr-code.png',
+    qrLabel: isKm ? 'ព័ត៌មានគ្លីនិក' : 'Clinic information',
+  };
+}
 
 function dateKey(date: Date) {
   const year = date.getFullYear();
@@ -17,8 +34,21 @@ function dateKey(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+function getPhnomPenhTodayDate(now: Date = new Date()): Date {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    day: '2-digit',
+    month: '2-digit',
+    timeZone: 'Asia/Phnom_Penh',
+    year: 'numeric',
+  }).formatToParts(now);
+  const year = Number(parts.find((part) => part.type === 'year')?.value ?? now.getFullYear());
+  const month = Number(parts.find((part) => part.type === 'month')?.value ?? now.getMonth() + 1);
+  const day = Number(parts.find((part) => part.type === 'day')?.value ?? now.getDate());
+  return new Date(year, month - 1, day);
+}
+
 function bookingCalendar() {
-  const today = new Date();
+  const today = getPhnomPenhTodayDate();
   const selected = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
   const monthStart = new Date(selected.getFullYear(), selected.getMonth(), 1);
   const gridStart = new Date(monthStart);
@@ -27,7 +57,7 @@ function bookingCalendar() {
     const date = new Date(gridStart);
     date.setDate(gridStart.getDate() + index);
     const key = dateKey(date);
-    return { day: date.getDate(), disabled: date < new Date(today.getFullYear(), today.getMonth(), today.getDate()), key, muted: date.getMonth() !== selected.getMonth() };
+    return { day: date.getDate(), disabled: date < today, key, muted: date.getMonth() !== selected.getMonth() };
   });
   return {
     dates,
@@ -52,10 +82,11 @@ export function toLandingService(service: PublicServiceSummary): LandingService 
   } as LandingService;
 }
 
-export function toLandingDoctor(doctor: PublicDoctorSummary): LandingDoctor {
+export function toLandingDoctor(doctor: PublicDoctorSummary, language: 'en' | 'km' = 'en'): LandingDoctor {
+  const isKm = language === 'km';
   const profileHref = `/doctors/${doctor.slug}`;
   return {
-    bookingLabel: `Book with ${doctor.name}`,
+    bookingLabel: isKm ? `កក់ជាមួយ ${doctor.name}` : `Book with ${doctor.name}`,
     credential: doctor.title ?? doctor.specialty ?? undefined,
     id: doctor.id,
     detail: {
@@ -86,17 +117,28 @@ export function mapServicesPage(base: ServicesPageContent, services: PublicServi
   return { ...base, services: services.map(toLandingService) };
 }
 
-export function mapDoctorsPage(base: DoctorsPageContent, doctors: PublicDoctorSummary[]): DoctorsPageContent {
-  return { ...base, doctors: doctors.map(toLandingDoctor) };
+export function mapDoctorsPage(
+  base: DoctorsPageContent,
+  doctors: PublicDoctorSummary[],
+  language: 'en' | 'km' = 'en',
+): DoctorsPageContent {
+  return { ...base, doctors: doctors.map((doctor) => toLandingDoctor(doctor, language)) };
 }
 
-export function mapServiceDetail(base: ServiceDetailContent, detail: PublicServiceDetail): ServiceDetailContent {
+export function mapServiceDetail(
+  base: ServiceDetailContent,
+  detail: PublicServiceDetail,
+  language: 'en' | 'km' = 'en',
+): ServiceDetailContent {
+  const isKm = language === 'km';
+  const defaultBookLabel = isKm ? 'កក់ការណាត់ជួប' : 'Book Appointment';
+  const defaultContactLabel = isKm ? 'ទាក់ទងយើង' : 'Contact Us';
   const related = detail.relatedServices.map(toLandingService);
   const items = [
-    ['Duration', detail.treatmentAtAGlance.duration, 'clock'],
-    ['Recovery', detail.treatmentAtAGlance.recovery, 'recovery'],
-    ['Visits', detail.treatmentAtAGlance.visits, 'calendar'],
-    ['Consultation', detail.treatmentAtAGlance.consultation, 'consultation'],
+    [isKm ? 'រយៈពេល' : 'Duration', detail.treatmentAtAGlance.duration, 'clock'],
+    [isKm ? 'ការជាសះស្បើយ' : 'Recovery', detail.treatmentAtAGlance.recovery, 'recovery'],
+    [isKm ? 'ចំនួនដងមកពិនិត្យ' : 'Visits', detail.treatmentAtAGlance.visits, 'calendar'],
+    [isKm ? 'ការពិគ្រោះយោបល់' : 'Consultation', detail.treatmentAtAGlance.consultation, 'consultation'],
   ].filter((item): item is [string, string, 'clock' | 'recovery' | 'calendar' | 'consultation'] => typeof item[1] === 'string' && item[1].length > 0);
   const service = {
     ...toLandingService(detail),
@@ -127,32 +169,37 @@ export function mapServiceDetail(base: ServiceDetailContent, detail: PublicServi
       title: detail.editorial.title ?? '',
     },
     cta: {
-      appointmentLabel: detail.cta.primaryLabel ?? 'Book Appointment',
-      contactLabel: detail.cta.secondaryLabel ?? 'Contact Us',
+      appointmentLabel: detail.cta.primaryLabel ?? defaultBookLabel,
+      contactLabel: detail.cta.secondaryLabel ?? defaultContactLabel,
       description: detail.cta.description ?? '',
       title: detail.cta.title ?? '',
     },
     glance: {
-      actionLabel: detail.cta.primaryLabel ?? 'Book Appointment',
+      actionLabel: detail.cta.primaryLabel ?? defaultBookLabel,
       items: items.map(([label, description, icon]) => ({ label, description, icon })),
-      title: 'Treatment at a Glance',
+      title: isKm ? 'ព័ត៌មានសង្ខេបនៃការព្យាបាល' : 'Treatment at a Glance',
     },
     hero: {
-      appointmentLabel: detail.cta.primaryLabel ?? 'Book Appointment',
-      consultationLabel: detail.cta.secondaryLabel ?? 'Contact Us',
+      appointmentLabel: detail.cta.primaryLabel ?? defaultBookLabel,
+      consultationLabel: detail.cta.secondaryLabel ?? defaultContactLabel,
       eyebrow: detail.hero.eyebrow ?? '',
       imageAlt: detail.name,
       imageUrl: getPublicMediaUrl(detail.hero.imageKey) ?? '',
       imagePresentation: detail.hero.imagePresentation,
-      subtitle: detail.hero.summary ?? detail.shortDescription ?? '',
+      subtitle: detail.shortDescription ?? detail.hero.summary ?? '',
       title: detail.hero.title ?? detail.name,
     },
   };
   return { ...base, otherServices: related, service, services: [toLandingService(detail), ...related] };
 }
 
-export function mapDoctorDetail(base: DoctorDetailContent, detail: PublicDoctorDetail): DoctorDetailContent {
-  const doctor = toLandingDoctor(detail);
+export function mapDoctorDetail(
+  base: DoctorDetailContent,
+  detail: PublicDoctorDetail,
+  language: 'en' | 'km' = 'en',
+): DoctorDetailContent {
+  const isKm = language === 'km';
+  const doctor = toLandingDoctor(detail, language);
   doctor.detail = {
     about: detail.about ? detail.about.split(/\n{2,}/).filter(Boolean) : [],
     biography: detail.about ?? '',
@@ -162,7 +209,12 @@ export function mapDoctorDetail(base: DoctorDetailContent, detail: PublicDoctorD
       yearLabel: item.yearLabel,
     })),
     education: detail.education.map((item) => item.qualification),
-    experience: detail.statistics.yearsExperience === null ? '' : `${detail.statistics.yearsExperience}+ years of experience`,
+    experience:
+      detail.statistics.yearsExperience === null
+        ? ''
+        : isKm
+          ? `បទពិសោធន៍ ${detail.statistics.yearsExperience}+ ឆ្នាំ`
+          : `${detail.statistics.yearsExperience}+ years of experience`,
     heroSummary: detail.shortBio ?? '',
     languages: [],
     pageDescription: detail.shortBio ?? '',
@@ -170,19 +222,38 @@ export function mapDoctorDetail(base: DoctorDetailContent, detail: PublicDoctorD
     roleTitle: detail.title ?? detail.specialty ?? '',
     services: detail.expertise.map((item) => item.title),
     stats: [
-      detail.statistics.yearsExperience === null ? null : { label: 'Years Experience', value: String(detail.statistics.yearsExperience) },
-      detail.statistics.successfulProcedures === null ? null : { label: 'Successful Procedures', value: String(detail.statistics.successfulProcedures) },
-      detail.statistics.patientSatisfaction === null ? null : { label: 'Patient Satisfaction', value: `${detail.statistics.patientSatisfaction}%` },
+      detail.statistics.yearsExperience === null
+        ? null
+        : { label: isKm ? 'ឆ្នាំនៃបទពិសោធន៍' : 'Years Experience', value: String(detail.statistics.yearsExperience) },
+      detail.statistics.successfulProcedures === null
+        ? null
+        : { label: isKm ? 'ការព្យាបាលជោគជ័យ' : 'Successful Procedures', value: String(detail.statistics.successfulProcedures) },
+      detail.statistics.patientSatisfaction === null
+        ? null
+        : { label: isKm ? 'ការពេញចិត្តរបស់អ្នកជំងឺ' : 'Patient Satisfaction', value: `${detail.statistics.patientSatisfaction}%` },
     ].filter((item): item is { label: string; value: string } => item !== null),
   };
-  return { ...base, doctor, otherDoctors: detail.relatedDoctors.map(toLandingDoctor) };
+  return { ...base, doctor, otherDoctors: detail.relatedDoctors.map((item) => toLandingDoctor(item, language)) };
 }
 
 export function mapBookingOptions(
   base: BookAppointmentPageContent,
   services: PublicServiceSummary[],
   doctors: PublicDoctorSummary[],
-  branches: { id: string; slug: string; name: string; address: string; branchImageKey: string | null; branchImagePresentation?: import('@arunreah/shared').ImagePresentation; googleMapsUrl: string | null; acceptsAppointments: boolean }[],
+  branches: {
+    id: string;
+    slug: string;
+    name: string;
+    address: string;
+    branchImageKey: string | null;
+    branchImagePresentation?: import('@arunreah/shared').ImagePresentation;
+    googleMapsUrl: string | null;
+    acceptsAppointments: boolean;
+    openingHours?: string | null;
+    openingDays?: string | null;
+    openingTime?: string | null;
+    closingTime?: string | null;
+  }[],
   contact?: { primaryPhone: string | null; primaryEmail: string | null },
   language: 'en' | 'km' = 'en',
 ): BookAppointmentPageContent {
@@ -198,17 +269,30 @@ export function mapBookingOptions(
       imagePresentation: branch.branchImagePresentation,
       imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
       mapLabel: isKm ? 'មើលលើផែនទី' : 'View on Map',
-      mapUrl: branch.googleMapsUrl ?? '#',
+      mapUrl: branch.googleMapsUrl ?? (branch.slug === 'psa-chas' ? 'https://maps.app.goo.gl/sxiKakoGPZEMzciB9' : 'https://maps.app.goo.gl/6HenBVpmvf4PiWwv6'),
       name: branch.name,
+      slug: branch.slug,
+      openingHours: branch.openingHours,
+      openingDays: branch.openingDays,
+      openingTime: branch.openingTime,
+      closingTime: branch.closingTime,
     })) as BookAppointmentPageContent['branches'],
     help: {
       ...base.help,
       email: contact?.primaryEmail ?? '',
       phone: contact?.primaryPhone ?? '',
     },
-    doctors: [{ name: isKm ? 'គ្មានចំណូលចិត្ត' : 'No Preference', value: '' }, ...doctors.map((doctor) => ({ name: doctor.name, value: doctor.id }))],
+    doctors: [
+      { name: isKm ? 'គ្មានចំណូលចិត្ត' : 'No Preference', value: '', branchIds: [] },
+      ...doctors.map((doctor) => ({
+        name: doctor.name,
+        slug: doctor.slug,
+        value: doctor.id,
+        branchIds: doctor.branchIds ?? [],
+      })),
+    ],
     services: services.map(toLandingService),
-    servicesList: services.map((service) => ({ name: service.name, value: service.id })),
+    servicesList: services.map((service) => ({ name: service.name, slug: service.slug, value: service.id })),
     // The appointment API accepts a machine-readable HH:mm value. UI labels may
     // format these values later, but the submitted value must remain unambiguous.
     times: ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'],

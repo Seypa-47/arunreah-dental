@@ -96,6 +96,7 @@ function ShowcaseListContent({
     content.controls.allCategoryLabel,
     ...Array.from(
       new Set([
+        ...content.controls.categories,
         ...(listState.category ? [listState.category] : []),
         ...content.articles.map((art) => art.category),
       ]),

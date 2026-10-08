@@ -209,7 +209,7 @@ export function TurnstileWidget({ onToken, resetSignal }: TurnstileWidgetProps) 
   }
 
   return (
-    <div className="min-h-[65px] py-1">
+    <div className="max-w-full min-h-[65px] overflow-x-auto py-1">
       {isLoading ? (
         <div className="flex h-[65px] w-full max-w-[300px] items-center gap-2.5 rounded-lg border border-[#e1ebef] bg-[#f7fafc] px-3.5 text-xs text-[#64748b]">
           <svg className="size-4 animate-spin text-[#005687]" fill="none" viewBox="0 0 24 24">
@@ -221,7 +221,7 @@ export function TurnstileWidget({ onToken, resetSignal }: TurnstileWidgetProps) 
       ) : null}
       <div
         aria-label={copy.spamProtection}
-        className={isLoading ? 'hidden' : 'block'}
+        className={isLoading ? 'hidden' : 'block max-w-full overflow-x-auto'}
         ref={containerRef}
       />
     </div>

@@ -28,7 +28,7 @@ export function SectionIntro({
 }: SectionIntroProps) {
   return (
     <div className={cn(align === 'center' ? 'mx-auto max-w-[680px] text-center' : 'max-w-[680px]', className)}>
-      {eyebrow ? <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-5 tracking-[0.16em] text-[#168aad] sm:tracking-[0.22em]">{eyebrow}</p> : null}
+      {eyebrow ? <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-5 tracking-[0.06em] text-[#168aad]">{eyebrow}</p> : null}
       <Heading className="ui-copy-safe mt-2 text-[26px] font-extrabold leading-[1.18] tracking-[-0.03em] text-[#005687] sm:text-[34px] sm:tracking-[-0.035em]">{title}</Heading>
       {description ? <p className="ui-prose mt-3 text-[#607486]">{description}</p> : null}
     </div>
@@ -426,6 +426,7 @@ export type PublicPageHeroProps = {
   fallbackSrc?: string;
   imagePresentation?: ImagePresentation;
   info?: HeroInfoItem[];
+  infoHeader?: ReactNode;
   subtitle?: string;
   title: string;
 };
@@ -437,45 +438,53 @@ export function PublicPageHero({
   fallbackSrc = '/assets/landing/figma-branches/image2_183_4173.png',
   imagePresentation,
   info,
+  infoHeader,
   subtitle,
   title,
 }: PublicPageHeroProps) {
   const imageUrl = backgroundImageUrl || fallbackSrc;
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
-      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
-        <ResilientImage
-          alt={backgroundImageAlt || title}
-          className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
-          fallbackSrc={fallbackSrc}
-          presentation={imagePresentation}
-          src={imageUrl}
-        />
-        <div className={`relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 ${info && info.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8' : ''}`}>
-          <div className="max-w-[620px]">
-            {eyebrow ? (
-              <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
-                {eyebrow}
-              </p>
-            ) : null}
-            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
-              {title}
-            </h1>
-            {subtitle ? (
-              <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e]">
-                {subtitle}
-              </p>
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
+          <ResilientImage
+            alt={backgroundImageAlt || title}
+            className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
+            fallbackSrc={fallbackSrc}
+            presentation={imagePresentation}
+            src={imageUrl}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
+          />
+          <div className={`relative z-10 grid items-center gap-6 py-8 sm:min-h-[360px] sm:py-10 ${info && info.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8' : ''}`}>
+            <div className="max-w-[620px]">
+              {eyebrow ? (
+                <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
+                  {eyebrow}
+                </p>
+              ) : null}
+              <h1 className="mt-2 text-[23px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[32px] md:text-[38px]">
+                {title}
+              </h1>
+              {subtitle ? (
+                <p className="mt-2 max-w-[560px] text-[13.5px] font-medium leading-relaxed text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[15px] sm:leading-7 md:text-[16px]">
+                  {subtitle}
+                </p>
+              ) : null}
+            </div>
+            {info && info.length > 0 ? (
+              <Card className="rounded-2xl border-[#d9e9ee] bg-white/95 p-4 shadow-[0_4px_20px_rgba(0,86,135,0.08)] backdrop-blur-md sm:p-6">
+                {infoHeader ? <div className="mb-4">{infoHeader}</div> : null}
+                <div className="space-y-4">
+                  {info.map((item) => (
+                    <InfoBlock compact item={item} key={item.label} />
+                  ))}
+                </div>
+              </Card>
             ) : null}
           </div>
-          {info && info.length > 0 ? (
-            <Card className="rounded-2xl border-[#d9e9ee] bg-white/95 p-5 shadow-[0_4px_20px_rgba(0,86,135,0.08)] backdrop-blur-md sm:p-6">
-              <div className="space-y-4">
-                {info.map((item) => (
-                  <InfoBlock compact item={item} key={item.label} />
-                ))}
-              </div>
-            </Card>
-          ) : null}
         </div>
       </div>
     </section>

@@ -43,6 +43,7 @@ type DoctorInput = Partial<DoctorRecord> & {
   expertise?: Array<Record<string, unknown>>;
   education?: Array<Record<string, unknown>>;
   relatedDoctorIds?: string[];
+  branchIds?: string[];
 };
 
 const state = vi.hoisted(() => ({
@@ -50,11 +51,15 @@ const state = vi.hoisted(() => ({
   expertise: new Map<string, Array<Record<string, unknown>>>(),
   education: new Map<string, Array<Record<string, unknown>>>(),
   related: new Map<string, string[]>(),
+  branches: new Map<string, string[]>(),
   sessions: new Map<string, SessionRecord>(),
   appointmentDoctorIds: new Set<string>(),
 }));
 
 vi.mock('../src/db/client', () => ({ createDbClient: () => ({}) }));
+vi.mock('../src/repositories/branch.repository', () => ({
+  branchesExist: async (_database: unknown, ids: string[]) => ids.map((id) => ({ id })),
+}));
 vi.mock('../src/repositories/session.repository', () => ({
   findAuthenticatedSession: async (_database: unknown, tokenHash: string) =>
     state.sessions.get(tokenHash),
@@ -84,6 +89,7 @@ vi.mock('../src/repositories/doctor.repository', () => ({
     state.expertise.set(doctor.id, input.expertise ?? []);
     state.education.set(doctor.id, input.education ?? []);
     state.related.set(doctor.id, input.relatedDoctorIds ?? []);
+    state.branches.set(doctor.id, input.branchIds ?? []);
     return doctor;
   },
   updateDoctor: async (_database: unknown, id: string, input: DoctorInput) => {
@@ -93,6 +99,7 @@ vi.mock('../src/repositories/doctor.repository', () => ({
       expertise,
       education,
       relatedDoctorIds,
+      branchIds,
       titleEn,
       titleKm,
       aboutEn,
@@ -107,6 +114,7 @@ vi.mock('../src/repositories/doctor.repository', () => ({
     if (expertise !== undefined) state.expertise.set(id, expertise);
     if (education !== undefined) state.education.set(id, education);
     if (relatedDoctorIds !== undefined) state.related.set(id, relatedDoctorIds);
+    if (branchIds !== undefined) state.branches.set(id, branchIds);
     return doctor;
   },
   getExpertise: async (_database: unknown, id: string) => state.expertise.get(id) ?? [],
@@ -119,6 +127,14 @@ vi.mock('../src/repositories/doctor.repository', () => ({
         relation: { relatedDoctorId: doctor.id, displayOrder: index },
         doctor,
       })),
+  getDoctorBranchIds: async (_database: unknown, id: string) => state.branches.get(id) ?? [],
+  getDoctorBranchIdsForDoctors: async (_database: unknown, ids: string[]) => {
+    const map = new Map<string, string[]>();
+    for (const id of ids) {
+      map.set(id, state.branches.get(id) ?? []);
+    }
+    return map;
+  },
   doctorsExist: async (_database: unknown, ids: string[]) =>
     state.doctors.filter((doctor) => ids.includes(doctor.id)).map((doctor) => ({ id: doctor.id })),
   countAppointmentsForDoctor: async (_database: unknown, id: string) =>
@@ -392,5 +408,82 @@ describe('doctor API routes', () => {
         )
       ).status,
     ).toBe(200);
+  });
+
+  it('supports managing branch assignments and exposes them in public and admin responses', async () => {
+    state.doctors = [];
+    state.branches.clear();
+    const headers = await authenticatedHeaders('SUPER_ADMIN');
+
+    const created = await app.request(
+      'http://localhost/api/admin/doctors',
+      {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...createPayload(),
+          slug: 'dr-multi-branch',
+          status: 'PUBLISHED',
+          branchIds: ['branch-toul-tompoung', 'branch-psa-chas'],
+        }),
+      },
+      testBindings,
+    );
+    expect(created.status).toBe(201);
+    const createdJson = (await created.json()) as {
+      data: {
+        doctor: {
+          id: string;
+          slug: string;
+          branchIds: string[];
+        };
+      };
+      success: boolean;
+    };
+    expect(createdJson).toMatchObject({
+      success: true,
+      data: {
+        doctor: {
+          slug: 'dr-multi-branch',
+          branchIds: ['branch-toul-tompoung', 'branch-psa-chas'],
+        },
+      },
+    });
+
+    const publicList = await app.request('http://localhost/api/public/doctors', {}, testBindings);
+    expect(publicList.status).toBe(200);
+    const publicJson = await publicList.json();
+    expect(publicJson).toMatchObject({
+      success: true,
+      data: {
+        doctors: [
+          {
+            slug: 'dr-multi-branch',
+            branchIds: ['branch-toul-tompoung', 'branch-psa-chas'],
+          },
+        ],
+      },
+    });
+
+    const updated = await app.request(
+      `http://localhost/api/admin/doctors/${createdJson.data.doctor.id}`,
+      {
+        method: 'PATCH',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          branchIds: ['branch-toul-tompoung'],
+        }),
+      },
+      testBindings,
+    );
+    expect(updated.status).toBe(200);
+    await expect(updated.json()).resolves.toMatchObject({
+      success: true,
+      data: {
+        doctor: {
+          branchIds: ['branch-toul-tompoung'],
+        },
+      },
+    });
   });
 });

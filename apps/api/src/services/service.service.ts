@@ -10,7 +10,18 @@ import * as repo from '../repositories/service.repository';
 import { HttpError } from '../shared/http-error';
 import { localize } from '../shared/localize';
 import { listForOwners } from '../repositories/image-presentation.repository';
-const admin = (s: NonNullable<Awaited<ReturnType<typeof repo.findServiceById>>>) => s;
+function normalizeServiceSlug(id: string, slug: string, nameEn: string) {
+  if (slug && slug !== id) return slug;
+  const fallback = nameEn
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return fallback || slug || id;
+}
+const admin = (s: NonNullable<Awaited<ReturnType<typeof repo.findServiceById>>>) => ({
+  ...s,
+  slug: normalizeServiceSlug(s.id, s.slug, s.nameEn),
+});
 function presentationFor(rows: Awaited<ReturnType<typeof listForOwners>>, ownerId: string, slot = 'PRIMARY'): ImagePresentation {
   const row = rows.find((item) => item.ownerId === ownerId && item.slot === slot);
   return row ? { positionX: row.positionX, positionY: row.positionY, zoom: row.zoom } : defaultImagePresentation;
@@ -26,9 +37,12 @@ const local = (
   presentations: Awaited<ReturnType<typeof listForOwners>> = [],
 ) => ({
   id: s.id,
-  slug: s.slug,
+  slug: normalizeServiceSlug(s.id, s.slug, s.nameEn),
   name: localize(s.nameEn, s.nameKm, lang) ?? s.nameEn,
-  shortDescription: localize(s.summaryEn, s.summaryKm, lang),
+  shortDescription:
+    localize(s.summaryEn, s.summaryKm, lang) ??
+    localize(s.heroSummaryEn, s.heroSummaryKm, lang) ??
+    localize(s.descriptionEn, s.descriptionKm, lang),
   listingThumbnailKey: s.imageKey,
   imagePresentation: presentationFor(presentations, s.id),
   category: s.category,
@@ -79,19 +93,24 @@ export async function updateManagedService(
 export async function getAdminService(db: DatabaseClient, id: string) {
   const s = await repo.findServiceById(db, id);
   if (!s) throw new HttpError(404, 'NOT_FOUND', 'Service not found.');
-  const presentations = await listForOwners(db, [
-    { ownerType: 'SERVICE', ownerId: id, slot: 'PRIMARY' },
-    { ownerType: 'SERVICE', ownerId: id, slot: 'HERO' },
-    { ownerType: 'SERVICE', ownerId: id, slot: 'ABOUT' },
+  const [presentations, benefits, detailSections, related] = await Promise.all([
+    listForOwners(db, [
+      { ownerType: 'SERVICE', ownerId: id, slot: 'PRIMARY' },
+      { ownerType: 'SERVICE', ownerId: id, slot: 'HERO' },
+      { ownerType: 'SERVICE', ownerId: id, slot: 'ABOUT' },
+    ]),
+    repo.getBenefits(db, id),
+    detailSectionsWithPresentation(db, id),
+    repo.getRelated(db, id),
   ]);
   return {
     ...admin(s),
     imagePresentation: presentationFor(presentations, id),
     heroImagePresentation: presentationFor(presentations, id, 'HERO'),
     aboutImagePresentation: presentationFor(presentations, id, 'ABOUT'),
-    benefits: await repo.getBenefits(db, id),
-    detailSections: await detailSectionsWithPresentation(db, id),
-    relatedServiceIds: (await repo.getRelated(db, id)).map((x) => x.relation.relatedServiceId),
+    benefits,
+    detailSections,
+    relatedServiceIds: related.map((x) => x.relation.relatedServiceId),
   };
 }
 export async function getAdminServiceList(db: DatabaseClient, q: ServiceListQuery) {
@@ -114,31 +133,38 @@ export async function getPublicServiceList(db: DatabaseClient, l: ServiceLanguag
 export async function getPublicService(db: DatabaseClient, slug: string, l: ServiceLanguage) {
   const s = await repo.findPublicServiceBySlug(db, slug);
   if (!s) throw new HttpError(404, 'NOT_FOUND', 'Service not found.');
-  const [benefits, detailSections, related, presentations] = await Promise.all([
+  const [benefits, detailSections, related] = await Promise.all([
     repo.getBenefits(db, s.id),
     detailSectionsWithPresentation(db, s.id),
     repo.getRelated(db, s.id),
-    listForOwners(db, [
-      { ownerType: 'SERVICE', ownerId: s.id, slot: 'PRIMARY' },
-      { ownerType: 'SERVICE', ownerId: s.id, slot: 'HERO' },
-      { ownerType: 'SERVICE', ownerId: s.id, slot: 'ABOUT' },
-    ]),
+  ]);
+  const publishedRelated = related.filter((x) => x.service.status === 'PUBLISHED');
+  const presentations = await listForOwners(db, [
+    { ownerType: 'SERVICE', ownerId: s.id, slot: 'PRIMARY' },
+    { ownerType: 'SERVICE', ownerId: s.id, slot: 'HERO' },
+    { ownerType: 'SERVICE', ownerId: s.id, slot: 'ABOUT' },
+    ...publishedRelated.map((x) => ({
+      ownerType: 'SERVICE' as const,
+      ownerId: x.service.id,
+      slot: 'PRIMARY',
+    })),
   ]);
   const localizedBenefits = benefits.map((x) => ({
     title: localize(x.titleEn, x.titleKm, l) ?? x.titleEn,
     description: localize(x.descriptionEn, x.descriptionKm, l),
     icon: x.icon,
   }));
-  const localizedRelated = related
-    .filter((x) => x.service.status === 'PUBLISHED')
-    .map((x) => local(x.service, l));
+  const localizedRelated = publishedRelated.map((x) => local(x.service, l, presentations));
   return {
     ...local(s, l, presentations),
     detailPresentation: s.detailPresentation,
     hero: {
       eyebrow: localize(s.heroEyebrowEn, s.heroEyebrowKm, l),
       title: localize(s.heroTitleEn, s.heroTitleKm, l),
-      summary: localize(s.heroSummaryEn, s.heroSummaryKm, l),
+      summary:
+        localize(s.summaryEn, s.summaryKm, l) ??
+        localize(s.heroSummaryEn, s.heroSummaryKm, l) ??
+        localize(s.descriptionEn, s.descriptionKm, l),
       imageKey: s.heroImageKey,
       imagePresentation: presentationFor(presentations, s.id, 'HERO'),
     },

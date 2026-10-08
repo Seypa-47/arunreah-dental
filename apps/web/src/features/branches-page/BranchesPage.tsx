@@ -10,7 +10,8 @@ import type { BranchesPageContent } from '@/features/landing-page/types';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
-import { getBranchCoordinates } from './branch-coordinates';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
+import { getBranchSatelliteEmbedUrl } from './branch-coordinates';
 import { useBranchesPageQuery } from './use-branches-page';
 
 const asset = (name: string) => `/assets/landing/${name}`;
@@ -62,47 +63,57 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
 
   return (
     <section className="relative bg-[#f7fafc] pb-0 pt-5 sm:pt-7">
-      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-white sm:min-h-[340px]">
-        <ResilientImage
-          alt={hero.backgroundImageAlt}
-          className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
-          fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
-          presentation={hero.imagePresentation}
-          src={imageUrl}
-        />
-        <div className="relative z-10 mx-auto flex w-full max-w-[1280px] items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
-          <div className="max-w-[560px] py-7">
-            <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
-              {hero.eyebrow}
-            </p>
-            <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
-              {hero.title}
-            </h1>
-            <p className="mt-3 max-w-[500px] text-[16px] font-medium leading-7 text-[#0e3b5e]">{hero.subtitle}</p>
-            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3">
-              {hero.highlights.map((item) => (
-                <div className="flex items-center gap-3" key={item.label}>
-                  <span className="grid size-8 place-items-center rounded-full bg-[#eef8fb]">
-                    {item.label === '2 Modern Clinics' ? (
-                      <HighlightLocationIcon />
-                    ) : (
-                      <img alt="" aria-hidden="true" className="size-3.5" src={item.iconUrl} />
-                    )}
-                  </span>
-                  <span className="text-[14px] font-bold leading-5 text-[#005687]">{item.label}</span>
-                </div>
-              ))}
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-2xl border border-[#d9e9ee] bg-white sm:min-h-[340px]">
+          <ResilientImage
+            alt={hero.backgroundImageAlt}
+            className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
+            fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
+            presentation={hero.imagePresentation}
+            src={imageUrl}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
+          />
+          <div className="relative z-10 flex items-center px-4 sm:min-h-[340px] sm:px-6 lg:px-8">
+            <div className="max-w-[560px] py-7">
+              {hero.eyebrow ? (
+                <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
+                  {hero.eyebrow}
+                </p>
+              ) : null}
+              <h1 className="mt-2.5 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[38px]">
+                {hero.title}
+              </h1>
+              <p className="mt-3 max-w-[500px] text-[16px] font-medium leading-7 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)]">
+                {hero.subtitle}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3">
+                {hero.highlights.map((item) => (
+                  <div className="flex items-center gap-3" key={item.label}>
+                    <span className="grid size-8 place-items-center rounded-full bg-[#eef8fb]">
+                      {item.label === '2 Modern Clinics' ? (
+                        <HighlightLocationIcon />
+                      ) : (
+                        <img alt="" aria-hidden="true" className="size-3.5" src={item.iconUrl} />
+                      )}
+                    </span>
+                    <span className="text-[14px] font-bold leading-5 text-[#005687]">{item.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <Card className="relative z-10 -mt-5 grid w-full gap-4 rounded-xl border-[#dfecef] bg-white px-5 py-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)] sm:px-6 lg:grid-cols-[1fr_1fr_1fr_220px] lg:items-center">
+        <Card className="relative z-10 -mt-5 grid w-full gap-4 rounded-xl border-[#dfecef] bg-white px-5 py-4 shadow-[0_4px_14px_rgba(15,23,42,0.05)] sm:grid-cols-2 sm:px-6 lg:grid-cols-[1fr_1fr_220px] lg:items-center">
           {hero.metrics.map((metric, index) => (
             <div
-              className="flex items-center gap-3 border-[#e7eff3] lg:border-r lg:last:border-r-0"
-              key={metric.title}
+              className="flex items-center gap-3 border-[#e7eff3] sm:odd:border-r lg:border-r lg:last:border-r-0"
+              key={metric.label}
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#eef8fb]">
                 {index === 0 ? (
@@ -119,7 +130,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
             </div>
           ))}
           <Button
-            className="min-h-11 rounded-full bg-[#3695B9] px-6 text-[14px] font-bold shadow-none hover:bg-[#2c84a5]"
+            className="min-h-11 rounded-full bg-[#3695B9] px-6 text-[14px] font-bold shadow-none hover:bg-[#2c84a5] sm:col-span-2 lg:col-span-1"
             icon={<CalendarIcon />}
             onClick={() => navigate('/book-appointment')}
           >
@@ -142,7 +153,7 @@ function SectionIntro({
 }) {
   return (
     <div className="mx-auto max-w-[720px] px-4 text-center sm:px-6">
-      <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p>
+      <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9] sm:text-[12px]">{eyebrow}</p>
       <h2 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[32px]">
         {title}
       </h2>
@@ -162,14 +173,15 @@ function BranchCard({
   const branchCopy = publicUiCopy(language).branches;
   const [viewMode, setViewMode] = useState<'photo' | 'satellite'>('photo');
   const phoneHref = `tel:${branch.phones[0]?.replaceAll(' ', '') ?? ''}`;
-  const coords = getBranchCoordinates(branch.name);
   const apiKey = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined)?.trim();
-  const embedUrl = apiKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(apiKey)}&q=${coords.lat},${coords.lng}&maptype=satellite&zoom=17`
-    : `https://maps.google.com/maps?q=${coords.lat},${coords.lng}&t=k&z=17&ie=UTF8&iwloc=&output=embed`;
+  const embedUrl = getBranchSatelliteEmbedUrl({
+    apiKey,
+    googleMapsUrl: branch.mapUrl,
+    nameOrSlug: branch.name,
+  });
 
   return (
-    <Card className="grid overflow-hidden rounded-xl border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)] lg:h-[360px] lg:grid-cols-2">
+    <Card className="grid overflow-hidden rounded-xl border-[#e1ebef] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)] lg:min-h-[360px] lg:grid-cols-2">
       <div className={`${flipped ? 'lg:order-2' : ''} flex flex-col justify-between p-5 sm:p-6`}>
         <div>
           <Badge className="gap-1.5 !bg-[#3695B9] px-3 py-1 text-[10px] !text-white">
@@ -195,20 +207,31 @@ function BranchCard({
               </dt>
               <dd className="flex flex-wrap gap-x-6 gap-y-1 font-extrabold text-[#005687]">
                 {branch.phones.map((phone) => (
-                  <a className="hover:text-[#3695B9] hover:underline" href={`tel:${phone.replaceAll(' ', '')}`} key={phone}>
+                  <a className="inline-flex min-h-11 items-center hover:text-[#3695B9] hover:underline sm:min-h-0" href={`tel:${phone.replaceAll(' ', '')}`} key={phone}>
                     {phone}
                   </a>
                 ))}
               </dd>
             </div>
-            <div className="flex items-center gap-3.5">
-              <dt className="shrink-0">
+            <div className="flex items-start gap-3.5">
+              <dt className="shrink-0 pt-1">
                 <span className="sr-only">{branchCopy.openingHours}</span>
                 <AssetIcon className="size-4" name="branch-card-clock.svg" />
               </dt>
-              <dd>
-                <span className="mr-4 text-[#64748b]">{branch.hoursDays}</span>
-                <span className="font-extrabold text-[#005687]">{branch.hoursTime}</span>
+              <dd className="space-y-1">
+                {branch.hoursSchedules && branch.hoursSchedules.length > 1 ? (
+                  branch.hoursSchedules.map((schedule, idx) => (
+                    <div className="flex flex-wrap items-baseline gap-x-3" key={`${schedule.days}-${idx}`}>
+                      {schedule.days ? <span className="text-[#64748b]">{schedule.days}</span> : null}
+                      <span className="font-extrabold text-[#005687]">{schedule.time}</span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <span className="mr-4 text-[#64748b]">{branch.hoursDays}</span>
+                    <span className="font-extrabold text-[#005687]">{branch.hoursTime}</span>
+                  </>
+                )}
               </dd>
             </div>
           </dl>
@@ -216,7 +239,7 @@ function BranchCard({
 
         <div className="mt-5 flex flex-wrap items-center gap-2.5 sm:gap-3">
           <a
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#3695B9] px-5 text-[13px] font-bold text-white shadow-none transition hover:bg-[#2c84a5]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#3695B9] px-5 text-[13px] font-bold text-white shadow-none transition hover:bg-[#2c84a5]"
             href={branch.directionsUrl}
             rel="noopener noreferrer"
             target="_blank"
@@ -225,14 +248,14 @@ function BranchCard({
             {branch.directionsLabel}
           </a>
           <a
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#f1f6fa] px-5 text-[13px] font-bold text-[#3695B9] transition hover:bg-[#e4eff5]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#f1f6fa] px-5 text-[13px] font-bold text-[#3695B9] transition hover:bg-[#e4eff5]"
             href={phoneHref}
           >
             <AssetIcon className="size-3.5" name="branch-card-phone.svg" />
             {branch.phoneLabel}
           </a>
           <Link
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#d8e6ee] bg-white px-5 text-[13px] font-bold text-[#3695B9] transition hover:border-[#3695B9] hover:bg-[#f9fcfd]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#d8e6ee] bg-white px-5 text-[13px] font-bold text-[#3695B9] transition hover:border-[#3695B9] hover:bg-[#f9fcfd]"
             to={branch.id ? `/book-appointment?branch=${encodeURIComponent(branch.id)}` : '/book-appointment'}
           >
             <AssetIcon className="size-3.5" name="hero-calendar.svg" />
@@ -256,9 +279,9 @@ function BranchCard({
         )}
 
         {/* View Mode Toggle: Clinic Photo / Google Satellite */}
-        <div className="absolute right-3 top-3 z-10 flex items-center rounded-full border border-[#e3edf1] bg-white/95 p-1 shadow-[0_2px_8px_rgba(15,23,42,0.08)] backdrop-blur">
+        <div className="absolute right-3 top-3 z-10 flex max-w-[calc(100%-1.5rem)] items-center rounded-full border border-[#e3edf1] bg-white/95 p-1 shadow-[0_2px_8px_rgba(15,23,42,0.08)] backdrop-blur">
           <button
-            className={`min-h-11 rounded-full px-3 py-1 text-[11px] font-bold transition ${
+            className={`min-h-10 rounded-full px-2.5 py-1 text-[11px] font-bold transition sm:min-h-11 sm:px-3 ${
               viewMode === 'photo' ? 'bg-[#3695B9] text-white shadow-sm' : 'text-[#6b7280] hover:text-[#005687]'
             }`}
             onClick={() => setViewMode('photo')}
@@ -267,7 +290,7 @@ function BranchCard({
             {branchCopy.photoView}
           </button>
           <button
-            className={`min-h-11 rounded-full px-3 py-1 text-[11px] font-bold transition ${
+            className={`min-h-10 rounded-full px-2.5 py-1 text-[11px] font-bold transition sm:min-h-11 sm:px-3 ${
               viewMode === 'satellite' ? 'bg-[#3695B9] text-white shadow-sm' : 'text-[#6b7280] hover:text-[#005687]'
             }`}
             onClick={() => setViewMode('satellite')}
@@ -279,15 +302,15 @@ function BranchCard({
 
         {/* Floating Google Maps Link Button */}
         <a
-          className="group/map absolute bottom-4 left-4 z-10 inline-flex h-10 items-center overflow-hidden rounded-full bg-white shadow-[0_3px_10px_rgba(15,23,42,0.10)] backdrop-blur transition duration-200 hover:bg-[#f8fcfd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
+          className="group/map absolute bottom-4 left-4 z-10 inline-flex h-11 max-w-[calc(100%-2rem)] items-center overflow-hidden rounded-full bg-white shadow-[0_3px_10px_rgba(15,23,42,0.10)] backdrop-blur transition duration-200 hover:bg-[#f8fcfd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
           href={branch.mapUrl}
           rel="noopener noreferrer"
           target="_blank"
         >
-          <span className="grid size-10 place-items-center bg-[#edf7fb] transition-colors group-hover/map:bg-[#3695B9]">
+          <span className="grid size-11 shrink-0 place-items-center bg-[#edf7fb] transition-colors group-hover/map:bg-[#3695B9]">
             <AssetIcon className="size-[16px] transition group-hover/map:brightness-0 group-hover/map:invert" name="branch-card-pin-alt.svg" />
           </span>
-          <span className="px-4 text-[12.5px] font-bold text-[#005687] transition-colors group-hover/map:text-[#3695B9]">
+          <span className="truncate px-3.5 text-[12.5px] font-bold text-[#005687] transition-colors group-hover/map:text-[#3695B9] sm:px-4">
             {branch.mapLabel}
           </span>
         </a>
@@ -508,6 +531,8 @@ function hasBranchesContent(content: BranchesPageContent | undefined): content i
 
 export function BranchesPage() {
   const { data, isError, isLoading, refetch } = useBranchesPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'សាខា' : 'Branches'));
 
   if (isLoading) {
     return <BranchesPageSkeleton />;

@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
-import { ImageFrame, PageContainer, PageFeedback, ResilientImage, SectionIntro } from '@/components/layout/public-ui';
+import { ImageFrame, PageContainer, PageFeedback, ResilientImage } from '@/components/layout/public-ui';
 import { getPublicMediaUrl } from '@/services/media';
 import type { PublicShowcaseSummary } from '@/services/public-content';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useShowcasesPageQuery } from './use-showcases-page';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 
 
 function ShowcaseCard({ showcase }: { showcase: PublicShowcaseSummary }) {
@@ -39,7 +40,7 @@ function ShowcasesHero({ heroMedia }: { heroMedia?: { badge: string | null; body
   const imageUrl = heroMedia?.imageKey ? getPublicMediaUrl(heroMedia.imageKey) : null;
   const eyebrow = heroMedia?.badge || copy.heroEyebrow;
   const title = heroMedia?.title || copy.heroTitle;
-  const description = heroMedia?.body;
+  const description = heroMedia?.body || copy.heroSubtitle;
 
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
@@ -54,19 +55,26 @@ function ShowcasesHero({ heroMedia }: { heroMedia?: { badge: string | null; body
             <div className="relative z-10 flex min-h-[320px] max-w-[720px] flex-col justify-end p-6 sm:min-h-[380px] sm:p-10 lg:min-h-[420px] lg:p-12">
               <div>
                 {eyebrow ? (
-                  <div className="ui-eyebrow inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-[11px] font-bold uppercase tracking-[1.8px] text-[#7ee1f8] backdrop-blur-md sm:text-[12px]">
-                    <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
-                    <span>{eyebrow}</span>
-                  </div>
+                  <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
+                    {eyebrow}
+                  </p>
                 ) : null}
-                <h1 className={`${eyebrow ? 'mt-3.5' : ''} text-[28px] font-extrabold leading-[1.18] tracking-[-0.03em] text-white sm:text-[38px] lg:text-[44px]`}>{title}</h1>
+                <h1 className={`${eyebrow ? 'mt-3' : ''} text-[28px] font-extrabold leading-[1.18] tracking-[-0.03em] text-white sm:text-[38px] lg:text-[44px]`}>{title}</h1>
                 {description ? <p className="mt-3.5 max-w-[600px] text-[15px] font-normal leading-relaxed text-[#e1f0f5] sm:text-[16px] sm:leading-7">{description}</p> : null}
               </div>
             </div>
           </div>
         ) : (
           <div className="rounded-2xl border border-[#d9e9ee] bg-[linear-gradient(120deg,#fafdfe_0%,#edf7fa_100%)] px-5 py-11 text-center shadow-[0_5px_20px_rgba(15,61,84,0.04)] sm:px-8 sm:py-14">
-            <SectionIntro align="center" as="h1" description={description ?? undefined} eyebrow={eyebrow} title={title} />
+            <div className="mx-auto max-w-[680px] text-center">
+              {eyebrow ? (
+                <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
+                  {eyebrow}
+                </p>
+              ) : null}
+              <h1 className="ui-copy-safe mt-2.5 text-[26px] font-extrabold leading-[1.18] tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[34px] sm:tracking-[-0.035em]">{title}</h1>
+              {description ? <p className="ui-prose mt-3 text-[#607486]">{description}</p> : null}
+            </div>
           </div>
         )}
       </PageContainer>
@@ -78,6 +86,7 @@ export function ShowcasesPage() {
   const { data, isError, isLoading, refetch } = useShowcasesPageQuery();
   const { language } = usePublicLanguage();
   const copy = publicUiCopy(language);
+  usePublicDocumentTitle(data?.heroMedia?.title ?? copy.showcases.heroTitle);
 
   if (isLoading) return <ShowcasesPageSkeleton />;
   if (isError || !data) return <PageFeedback action={<Button onClick={() => void refetch()}>{copy.common.retry}</Button>} body={copy.showcases.errorBody} title={copy.showcases.errorTitle} />;

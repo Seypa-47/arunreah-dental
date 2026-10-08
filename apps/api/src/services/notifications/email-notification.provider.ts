@@ -2,6 +2,12 @@ import {
   appointmentEmailHtml,
   appointmentEmailSubject,
   appointmentEmailText,
+  patientAppointmentCancelledEmailHtml,
+  patientAppointmentCancelledEmailSubject,
+  patientAppointmentCancelledEmailText,
+  patientAppointmentConfirmedEmailHtml,
+  patientAppointmentConfirmedEmailSubject,
+  patientAppointmentConfirmedEmailText,
   patientAppointmentEmailHtml,
   patientAppointmentEmailSubject,
   patientAppointmentEmailText,
@@ -44,20 +50,26 @@ export class EmailNotificationProvider implements NotificationProvider {
     subject: string,
     text: string,
     html: string,
+    replyTo?: string,
   ) {
+    const payload: Record<string, unknown> = {
+      from,
+      to: [recipient],
+      subject,
+      text,
+      html,
+    };
+    if (replyTo) {
+      payload.reply_to = replyTo;
+    }
+
     const response = await fetch(RESEND_EMAILS_URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from,
-        to: [recipient],
-        subject,
-        text,
-        html,
-      }),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(NOTIFICATION_TIMEOUT_MS),
     });
 
@@ -77,9 +89,10 @@ export class EmailNotificationProvider implements NotificationProvider {
     text: string,
     html: string,
     targetType: 'clinic' | 'patient',
+    replyTo?: string,
   ): Promise<DeliveryResult> {
     try {
-      let result = await this.postResend(fromAddress, recipient, apiKey, subject, text, html);
+      let result = await this.postResend(fromAddress, recipient, apiKey, subject, text, html, replyTo);
 
       if (!result.ok) {
         console.error(`Resend ${targetType} email delivery failed`, {
@@ -94,7 +107,7 @@ export class EmailNotificationProvider implements NotificationProvider {
         const isDomainError = result.status === 403 || result.errorBody?.toLowerCase().includes('domain');
         if (isDomainError && fromAddress !== RESEND_FALLBACK_FROM) {
           console.warn(`Attempting Resend ${targetType} email delivery fallback with onboarding@resend.dev`);
-          result = await this.postResend(RESEND_FALLBACK_FROM, recipient, apiKey, subject, text, html);
+          result = await this.postResend(RESEND_FALLBACK_FROM, recipient, apiKey, subject, text, html, replyTo);
           if (result.ok) {
             return { success: true };
           }
@@ -140,6 +153,7 @@ export class EmailNotificationProvider implements NotificationProvider {
         appointmentEmailText(payload),
         appointmentEmailHtml(payload),
         'clinic',
+        patientEmail || undefined,
       ),
     ];
 
@@ -153,6 +167,7 @@ export class EmailNotificationProvider implements NotificationProvider {
           patientAppointmentEmailText(payload),
           patientAppointmentEmailHtml(payload),
           'patient',
+          recipient,
         ),
       );
     }
@@ -169,5 +184,76 @@ export class EmailNotificationProvider implements NotificationProvider {
 
     return { provider: this.name, success: true };
   }
+
+  public async sendAppointmentConfirmation(
+    payload: AppointmentNotificationPayload,
+  ): Promise<NotificationResult> {
+    const { fromAddress, apiKey } = this.config;
+    if (!fromAddress || !apiKey) {
+      return { provider: this.name, success: false, errorCode: 'NOT_CONFIGURED' };
+    }
+
+    const patientEmail = payload.email?.trim();
+    if (!patientEmail) {
+      return { provider: this.name, success: true };
+    }
+
+    const result = await this.deliverEmailWithFallback(
+      fromAddress,
+      patientEmail,
+      apiKey,
+      patientAppointmentConfirmedEmailSubject(payload),
+      patientAppointmentConfirmedEmailText(payload),
+      patientAppointmentConfirmedEmailHtml(payload),
+      'patient',
+      this.config.recipient,
+    );
+
+    if (!result.success) {
+      return {
+        provider: this.name,
+        success: false,
+        errorCode: result.errorCode ?? 'PROVIDER_REQUEST_FAILED',
+      };
+    }
+
+    return { provider: this.name, success: true };
+  }
+
+  public async sendAppointmentCancellation(
+    payload: AppointmentNotificationPayload,
+  ): Promise<NotificationResult> {
+    const { fromAddress, apiKey } = this.config;
+    if (!fromAddress || !apiKey) {
+      return { provider: this.name, success: false, errorCode: 'NOT_CONFIGURED' };
+    }
+
+    const patientEmail = payload.email?.trim();
+    if (!patientEmail) {
+      return { provider: this.name, success: true };
+    }
+
+    const result = await this.deliverEmailWithFallback(
+      fromAddress,
+      patientEmail,
+      apiKey,
+      patientAppointmentCancelledEmailSubject(payload),
+      patientAppointmentCancelledEmailText(payload),
+      patientAppointmentCancelledEmailHtml(payload),
+      'patient',
+      this.config.recipient,
+    );
+
+    if (!result.success) {
+      return {
+        provider: this.name,
+        success: false,
+        errorCode: result.errorCode ?? 'PROVIDER_REQUEST_FAILED',
+      };
+    }
+
+    return { provider: this.name, success: true };
+  }
 }
+
 

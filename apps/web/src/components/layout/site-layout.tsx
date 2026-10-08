@@ -12,13 +12,43 @@ const asset = (name: string) => `/assets/landing/${name}`;
 const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
 
 type SiteLayoutProps = PropsWithChildren<{
-  actions: {
-    appointmentLabel: string;
-    contactLabel: string;
+  actions?: {
+    appointmentLabel?: string;
+    contactLabel?: string;
   };
-  navigation: LandingNavigationItem[];
+  navigation?: LandingNavigationItem[];
   services?: Pick<LandingService, 'name'>[];
 }>;
+
+export const STATIC_NAV_ITEMS: Record<PublicLanguage, LandingNavigationItem[]> = {
+  en: [
+    { href: '/', label: 'Home' },
+    { href: '/about', label: 'About' },
+    { href: '/services', label: 'Services' },
+    { href: '/doctors', label: 'Doctors' },
+    { href: '/branches', label: 'Branches' },
+    { href: '/showcases', label: 'Showcases' },
+  ],
+  km: [
+    { href: '/', label: 'ទំព័រដើម' },
+    { href: '/about', label: 'អំពីយើង' },
+    { href: '/services', label: 'សេវាកម្ម' },
+    { href: '/doctors', label: 'វេជ្ជបណ្ឌិត' },
+    { href: '/branches', label: 'សាខា' },
+    { href: '/showcases', label: 'ស្នាដៃ' },
+  ],
+};
+
+export const STATIC_NAV_ACTIONS: Record<PublicLanguage, { appointmentLabel: string; contactLabel: string }> = {
+  en: {
+    appointmentLabel: 'Book Appointment',
+    contactLabel: 'Contact Us',
+  },
+  km: {
+    appointmentLabel: 'កក់ការណាត់ជួប',
+    contactLabel: 'ទាក់ទងយើង',
+  },
+};
 
 type LanguageFlagSelectorProps = {
   activeLanguage: PublicLanguage;
@@ -52,7 +82,11 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
   const layoutCopy = publicUiCopy(activeLanguage).layout;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
-  const servicesQuery = useQuery({ queryKey: queryKeys.public.serviceNavigation(activeLanguage), queryFn: () => getPublicServices(activeLanguage) });
+  const servicesQuery = useQuery({
+    queryKey: queryKeys.public.serviceNavigation(activeLanguage),
+    queryFn: () => getPublicServices(activeLanguage),
+    staleTime: 5 * 60 * 1000,
+  });
   const services = servicesQuery.data?.services ?? [];
   const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic() });
   const { hash, pathname } = useLocation();
@@ -97,6 +131,10 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
       return pathname.startsWith('/services');
     }
 
+    if (item.href.startsWith('/showcases')) {
+      return pathname.startsWith('/showcases');
+    }
+
     if (!item.href.includes('#') && item.href !== '/') {
       return pathname === item.href;
     }
@@ -113,7 +151,12 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
   };
   const clinic = clinicQuery.data;
   const clinicName = activeLanguage === 'km' ? clinic?.clinicNameKm : clinic?.clinicNameEn;
-  const logoUrl = getPublicMediaUrl(clinic?.logoKey);
+  const logoUrl = getPublicMediaUrl(clinic?.logoKey) || asset('footer-logo-cropped.png');
+  const effectiveNavigation = navigation && navigation.length > 0 ? navigation : STATIC_NAV_ITEMS[activeLanguage];
+  const effectiveActions = {
+    appointmentLabel: actions?.appointmentLabel || STATIC_NAV_ACTIONS[activeLanguage].appointmentLabel,
+    contactLabel: actions?.contactLabel || STATIC_NAV_ACTIONS[activeLanguage].contactLabel,
+  };
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#f7fafc] text-[#005687]">
@@ -126,19 +169,19 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
       </a>
       <header className="sticky top-0 z-40 border-b border-[#d9e9ee] bg-white/95 shadow-[0_2px_12px_rgba(10,63,90,0.05)] backdrop-blur-xl">
         <div className="ui-page-container flex h-[64px] items-center justify-between gap-2 sm:h-[74px] sm:gap-4">
-          <Link aria-label={layoutCopy.homeLink} className="shrink-0 leading-none" to="/">
-            {logoUrl ? <img alt={clinicName ?? 'Arunreah Dental Clinic'} className="h-11 sm:h-[48px] md:h-[52px] w-auto max-w-[210px] sm:max-w-[240px] md:max-w-[270px] object-contain object-left" src={logoUrl} /> : <span className="block text-[20px] font-extrabold uppercase leading-5 tracking-[-0.25px] text-[#3695B9]">{clinicName ?? 'Arunreah Dental Clinic'}</span>}
+          <Link aria-label={layoutCopy.homeLink} className="min-w-0 shrink-0 leading-none" to="/">
+            {logoUrl ? <img alt={clinicName ?? 'Arunreah Dental Clinic'} className="h-10 w-auto max-w-[140px] object-contain object-left min-[375px]:h-11 min-[375px]:max-w-[175px] sm:h-[48px] sm:max-w-[220px] lg:max-w-[200px] xl:h-[52px] xl:max-w-[260px]" src={logoUrl} /> : <span className="block truncate text-[15px] font-extrabold uppercase leading-5 tracking-[-0.25px] text-[#3695B9] sm:text-[20px]">{clinicName ?? 'Arunreah Dental Clinic'}</span>}
           </Link>
 
-          <nav aria-label={layoutCopy.primaryNavigation} className="hidden items-center gap-4 lg:flex xl:gap-6">
-            {navigation.map((item) => {
+          <nav aria-label={layoutCopy.primaryNavigation} className="hidden items-center gap-3.5 lg:flex xl:gap-6">
+            {effectiveNavigation.map((item) => {
               const isActive = isActiveNavigationItem(item);
 
               if (item.href !== '/services') {
                 return (
                   <Link
                     aria-current={isActive ? 'page' : undefined}
-                    className={`relative inline-flex min-h-10 items-center py-2 text-[14px] transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#168aad] ${
+                    className={`relative inline-flex min-h-10 items-center whitespace-nowrap py-2 text-[14px] transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#168aad] ${
                       isActive ? 'font-extrabold text-[#087b9f]' : 'font-semibold text-[#526879] hover:text-[#087b9f]'
                     }`}
                     key={item.label}
@@ -156,7 +199,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
                 <div className="group relative" key={item.label}>
                   <Link
                     aria-current={isActive ? 'page' : undefined}
-                    className={`relative inline-flex min-h-10 items-center gap-1.5 py-2 text-[14px] transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#168aad] ${
+                    className={`relative inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap py-2 text-[14px] transition-colors duration-200 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#168aad] ${
                       isActive ? 'font-extrabold text-[#087b9f]' : 'font-semibold text-[#526879] hover:text-[#087b9f]'
                     }`}
                     to={item.href}
@@ -174,39 +217,56 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
                   </Link>
                   <div className="invisible absolute left-1/2 top-full z-50 mt-2 w-[296px] -translate-x-1/2 translate-y-2 rounded-2xl border border-[#d9e9ee] bg-white p-2 opacity-0 shadow-[0_18px_40px_rgba(15,61,84,0.14)] transition-all duration-200 ease-out group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
                     <div className="absolute -top-2 left-0 h-2 w-full" />
-                    {services.map((service) => (
+                    {servicesQuery.isLoading ? (
+                      <div className="space-y-1.5 p-2">
+                        <div className="h-8 animate-pulse rounded-lg bg-[#eef8fb]" />
+                        <div className="h-8 animate-pulse rounded-lg bg-[#eef8fb]" />
+                        <div className="h-8 animate-pulse rounded-lg bg-[#eef8fb]" />
+                      </div>
+                    ) : services.length > 0 ? (
+                      services.map((service) => (
+                        <Link
+                          className="block rounded-xl px-4 py-3 text-[14px] font-semibold leading-5 text-[#526879] transition-colors duration-150 hover:bg-[#eef8fb] hover:text-[#087b9f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad]"
+                          key={service.slug ?? service.name}
+                          to={serviceHref(service)}
+                        >
+                          {service.name}
+                        </Link>
+                      ))
+                    ) : (
                       <Link
-                        className="block rounded-xl px-4 py-3 text-[14px] font-semibold leading-5 text-[#526879] transition-colors duration-150 hover:bg-[#eef8fb] hover:text-[#087b9f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad]"
-                        key={service.name}
-                        to={serviceHref(service)}
+                        className="block rounded-xl px-4 py-3 text-[14px] font-semibold leading-5 text-[#526879] transition-colors duration-150 hover:bg-[#eef8fb] hover:text-[#087b9f]"
+                        to="/services"
                       >
-                        {service.name}
+                        {item.label}
                       </Link>
-                    ))}
+                    )}
                   </div>
                 </div>
               );
             })}
           </nav>
 
-          <div className="flex min-w-0 items-center gap-1.5 sm:gap-3 xl:gap-5">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3 xl:gap-5">
             <button
-              className="hidden min-h-11 items-center gap-2.5 rounded-full px-2 text-[14px] font-extrabold text-[#087b9f] transition hover:bg-[#eef8fb] xl:inline-flex"
+              aria-label={effectiveActions.contactLabel}
+              className="hidden min-h-11 items-center gap-2.5 rounded-full px-2 text-[14px] font-extrabold text-[#087b9f] transition hover:bg-[#eef8fb] lg:inline-flex"
               onClick={() => navigate('/contact')}
+              title={effectiveActions.contactLabel}
               type="button"
             >
               <span className="grid size-[38px] place-items-center rounded-full border border-[#3695B9]">
                 <img alt="" aria-hidden="true" className="size-3.5" src={asset('header-phone.svg')} />
               </span>
-              <span>{actions.contactLabel}</span>
+              <span className="inline">{effectiveActions.contactLabel}</span>
             </button>
-            <span aria-hidden="true" className="hidden h-5 w-[1.5px] bg-[#3695B9]/40 sm:inline-block" />
+            <span aria-hidden="true" className="hidden h-5 w-[1.5px] bg-[#3695B9]/40 lg:inline-block xl:inline-block" />
             <button
-              className="min-h-11 max-w-[112px] rounded-full bg-[#168aad] px-3 text-[12px] font-extrabold leading-4 text-white shadow-[0_6px_16px_rgba(22,138,173,0.2)] transition-all duration-150 hover:bg-[#0d7596] active:scale-95 sm:max-w-none sm:min-h-[44px] sm:px-5 sm:text-[14px] xl:px-6 xl:text-[15px]"
+              className="min-h-10 shrink-0 whitespace-nowrap rounded-full bg-[#168aad] px-3 py-1.5 text-[11.5px] font-extrabold leading-4 text-white shadow-[0_6px_16px_rgba(22,138,173,0.2)] transition-all duration-150 hover:bg-[#0d7596] active:scale-95 min-[375px]:px-3.5 min-[375px]:text-[12px] sm:min-h-[44px] sm:px-5 sm:text-[14px] xl:px-6 xl:text-[15px]"
               onClick={() => navigate('/book-appointment')}
               type="button"
             >
-              <span>{actions.appointmentLabel}</span>
+              <span>{effectiveActions.appointmentLabel}</span>
             </button>
             <LanguageFlagSelector activeLanguage={activeLanguage} className="hidden lg:inline-flex" onLanguageChange={setLanguage} />
             <button
@@ -228,7 +288,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
         {isMobileMenuOpen ? (
           <div className="h-[calc(100dvh-64px)] overflow-y-auto overscroll-contain border-t border-[#e7f0f4] bg-white px-4 pt-3 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-[0_16px_30px_rgba(15,61,84,0.10)] sm:h-[calc(100dvh-74px)] lg:hidden" id="mobile-primary-navigation">
             <nav aria-label={layoutCopy.mobileNavigation} className="ui-page-container grid gap-1 px-0 sm:px-2">
-              {navigation.map((item) => (
+              {effectiveNavigation.map((item) => (
                 <div key={item.label}>
                   <div className="flex items-center gap-2">
                   <Link
@@ -239,14 +299,53 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
                   >
                     {item.label}
                   </Link>
-                  {item.href === '/services' && services.length > 0 ? <button aria-label={activeLanguage === 'km' ? 'បង្ហាញសេវាកម្ម' : 'Show service links'} aria-expanded={isServicesOpen} aria-controls="mobile-service-links" className="size-11 shrink-0 rounded-lg text-xl text-[#087b9f]" onClick={() => setIsServicesOpen((open) => !open)} type="button"><span aria-hidden="true">{isServicesOpen ? '−' : '+'}</span></button> : null}
+                  {item.href === '/services' ? (
+                    <button
+                      aria-label={activeLanguage === 'km' ? 'បង្ហាញសេវាកម្ម' : 'Show service links'}
+                      aria-expanded={isServicesOpen}
+                      aria-controls="mobile-service-links"
+                      className="size-11 shrink-0 rounded-lg text-xl text-[#087b9f]"
+                      onClick={() => setIsServicesOpen((open) => !open)}
+                      type="button"
+                    >
+                      <span aria-hidden="true">{isServicesOpen ? '−' : '+'}</span>
+                    </button>
+                  ) : null}
                   </div>
-                  {item.href === '/services' && services.length > 0 && isServicesOpen ? <div id="mobile-service-links" className="ml-4 mt-1 grid gap-1 border-l border-[#d9e9ee] pl-3">{services.map((service) => <Link className="ui-copy-safe rounded-lg px-3 py-3 text-[14px] font-semibold leading-5 text-[#607486] hover:bg-[#f5fafc] hover:text-[#087b9f]" key={service.slug} onClick={() => setIsMobileMenuOpen(false)} to={serviceHref(service)}>{service.name}</Link>)}</div> : null}
+                  {item.href === '/services' && isServicesOpen ? (
+                    <div id="mobile-service-links" className="ml-4 mt-1 grid gap-1 border-l border-[#d9e9ee] pl-3">
+                      {servicesQuery.isLoading ? (
+                        <div className="space-y-1.5 py-2 pl-2">
+                          <div className="h-6 w-3/4 animate-pulse rounded bg-[#eef8fb]" />
+                          <div className="h-6 w-2/3 animate-pulse rounded bg-[#eef8fb]" />
+                        </div>
+                      ) : services.length > 0 ? (
+                        services.map((service) => (
+                          <Link
+                            className="ui-copy-safe rounded-lg px-3 py-3 text-[14px] font-semibold leading-5 text-[#607486] hover:bg-[#f5fafc] hover:text-[#087b9f]"
+                            key={service.slug ?? service.name}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            to={serviceHref(service)}
+                          >
+                            {service.name}
+                          </Link>
+                        ))
+                      ) : (
+                        <Link
+                          className="ui-copy-safe rounded-lg px-3 py-3 text-[14px] font-semibold leading-5 text-[#607486] hover:bg-[#f5fafc] hover:text-[#087b9f]"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          to="/services"
+                        >
+                          {item.label}
+                        </Link>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
               ))}
               <div className="mt-3 grid gap-2 border-t border-[#e7f0f4] pt-4 sm:grid-cols-2">
-                <Link className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#b9dce8] px-5 text-[15px] font-extrabold text-[#075d83] hover:bg-[#eef8fb]" onClick={() => setIsMobileMenuOpen(false)} to="/contact">{actions.contactLabel}</Link>
-                <button className="min-h-12 rounded-full bg-[#168aad] px-5 text-[15px] font-extrabold text-white shadow-[0_6px_16px_rgba(22,138,173,0.2)] hover:bg-[#0d7596]" onClick={() => { setIsMobileMenuOpen(false); navigate('/book-appointment'); }} type="button">{actions.appointmentLabel}</button>
+                <Link className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#b9dce8] px-5 text-[15px] font-extrabold text-[#075d83] hover:bg-[#eef8fb]" onClick={() => setIsMobileMenuOpen(false)} to="/contact">{effectiveActions.contactLabel}</Link>
+                <button className="min-h-12 rounded-full bg-[#168aad] px-5 text-[15px] font-extrabold text-white shadow-[0_6px_16px_rgba(22,138,173,0.2)] hover:bg-[#0d7596]" onClick={() => { setIsMobileMenuOpen(false); navigate('/book-appointment'); }} type="button">{effectiveActions.appointmentLabel}</button>
               </div>
               <div className="mt-3 border-t border-[#e7f0f4] px-1 pt-4">
                 <LanguageFlagSelector activeLanguage={activeLanguage} className="inline-flex" onLanguageChange={setLanguage} />

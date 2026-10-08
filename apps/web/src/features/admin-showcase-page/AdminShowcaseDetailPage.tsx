@@ -200,8 +200,9 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
 
       return cmsApi.showcases.update(showcase.id, payload);
     },
-    onSuccess: async () => {
+    onSuccess: async (_data, targetStatus) => {
       setIsDirty(false);
+      if (targetStatus) setStatus(targetStatus);
       await invalidateCmsDomain(queryClient, 'showcases');
     },
     onError: (error: unknown) => {
@@ -236,9 +237,15 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
   };
 
   const handleUpdate = () => {
-    setStatus('PUBLISHED');
-    saveMutation.mutate('PUBLISHED', {
-      onSuccess: () => showNotification('Showcase updated and published successfully.', 'success'),
+    const targetStatus = status === 'PUBLISHED' ? 'PUBLISHED' : 'DRAFT';
+    saveMutation.mutate(targetStatus, {
+      onSuccess: () =>
+        showNotification(
+          targetStatus === 'PUBLISHED'
+            ? 'Showcase updated and published successfully.'
+            : 'Showcase draft updated successfully.',
+          'success',
+        ),
     });
   };
 
@@ -858,7 +865,7 @@ function ShowcaseDetailEditor({ showcase }: { showcase: AdminShowcaseDetail }) {
         {/* Footer */}
         <footer className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-[#e2e8f0] pt-6 text-[12.5px] text-[#9badc5]">
           <p>© {new Date().getFullYear()} Arunreah Dental Clinic. All rights reserved.</p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <span className="inline-flex items-center gap-1.5 text-[#71839e]">
               <AdminIcon className="size-3.5 text-[#2187a8]" name="shield" />
               SSL Secured

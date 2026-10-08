@@ -9,6 +9,7 @@ import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { BookAppointmentPageContent } from '@/features/landing-page/types';
 import { useBookAppointmentPageQuery } from './use-book-appointment-page';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 import { ApiClientError } from '@/lib/api';
 import { env } from '@/config/env';
 import { createPublicAppointment } from '@/services/public-content';
@@ -17,6 +18,11 @@ import { usePublicLanguage } from '@/features/public-content/public-language-pro
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { formatFullDate, formatMonthYear, formatWeekdayShort } from '@/features/public-content/public-dates';
 import { publicShell } from '@/features/public-content/public-page-chrome';
+import {
+  generateDynamicHoursAndSlots,
+  getBranchScheduleForDate,
+  getNextOpenDateKey,
+} from '@/features/public-content/public-branch';
 
 type IconName = 'calendar' | 'check' | 'clock' | 'doctor' | 'email' | 'hourglass' | 'location' | 'notes' | 'phone' | 'service' | 'user';
 
@@ -34,28 +40,31 @@ function createIdempotencyKey() {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-function validatePatientName(value: string): string | undefined {
+function validatePatientName(value: string, language: 'en' | 'km' = 'en'): string | undefined {
+  const isKm = language === 'km';
   const trimmed = value.trim();
-  if (!trimmed) return 'Enter your full name.';
-  if (trimmed.length < 2) return 'Full name must be at least 2 characters.';
-  if (trimmed.length > 160) return 'Full name is too long.';
+  if (!trimmed) return isKm ? 'សូមបញ្ចូលឈ្មោះពេញរបស់អ្នក។' : 'Enter your full name.';
+  if (trimmed.length < 2) return isKm ? 'ឈ្មោះពេញត្រូវមានយ៉ាងតិច ២ តួអក្សរ។' : 'Full name must be at least 2 characters.';
+  if (trimmed.length > 160) return isKm ? 'ឈ្មោះពេញវែងពេក។' : 'Full name is too long.';
   return undefined;
 }
 
-function validatePhone(value: string): string | undefined {
+function validatePhone(value: string, language: 'en' | 'km' = 'en'): string | undefined {
+  const isKm = language === 'km';
   const trimmed = value.trim();
-  if (!trimmed) return 'Enter your phone number.';
-  if (!/^[0-9+()\- ]+$/.test(trimmed)) return 'Use only digits, spaces, +, -, and parentheses.';
-  if (trimmed.replace(/\D/g, '').length < 8) return 'Enter a valid phone number.';
-  if (trimmed.length > 32) return 'Phone number is too long.';
+  if (!trimmed) return isKm ? 'សូមបញ្ចូលលេខទូរស័ព្ទរបស់អ្នក។' : 'Enter your phone number.';
+  if (!/^[0-9+()\- ]+$/.test(trimmed)) return isKm ? 'សូមប្រើតែលេខ ដកឃ្លា សញ្ញា +, - និងវង់ក្រចក។' : 'Use only digits, spaces, +, -, and parentheses.';
+  if (trimmed.replace(/\D/g, '').length < 8) return isKm ? 'សូមបញ្ចូលលេខទូរស័ព្ទឱ្យបានត្រឹមត្រូវ។' : 'Enter a valid phone number.';
+  if (trimmed.length > 32) return isKm ? 'លេខទូរស័ព្ទវែងពេក។' : 'Phone number is too long.';
   return undefined;
 }
 
-function validateEmail(value: string): string | undefined {
+function validateEmail(value: string, language: 'en' | 'km' = 'en'): string | undefined {
+  const isKm = language === 'km';
   const trimmed = value.trim();
-  if (!trimmed) return 'Enter your email address.';
-  if (trimmed.length > 320) return 'Email address is too long.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return 'Enter a valid email address.';
+  if (!trimmed) return isKm ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែលរបស់អ្នក។' : 'Enter your email address.';
+  if (trimmed.length > 320) return isKm ? 'អាសយដ្ឋានអ៊ីមែលវែងពេក។' : 'Email address is too long.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return isKm ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែលឱ្យបានត្រឹមត្រូវ។' : 'Enter a valid email address.';
   return undefined;
 }
 
@@ -269,21 +278,31 @@ function AppointmentHero({ hero }: { hero: BookAppointmentPageContent['hero'] })
   const eyebrow = hero.eyebrow ?? bookingCopy.heroEyebrow;
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
-      <div className="relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
-      <ResilientImage
-        alt={hero.backgroundImageAlt}
-        className="absolute inset-0 h-full w-full object-cover object-center"
-        fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg"
-        presentation={hero.imagePresentation}
-        src={imageUrl}
-      />
-      <div className="relative z-10 flex items-center py-8 sm:min-h-[250px] sm:py-10">
-        <div className="max-w-[600px]">
-          {eyebrow ? <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{eyebrow}</p> : null}
-          <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">{hero.title}</h1>
-          <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e]">{hero.subtitle}</p>
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] px-4 sm:px-6 lg:px-8">
+          <ResilientImage
+            alt={hero.backgroundImageAlt}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            fallbackSrc="/assets/landing/figma-branches/image5_183_4173.jpg"
+            presentation={hero.imagePresentation}
+            src={imageUrl}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
+          />
+          <div className="relative z-10 flex items-center py-8 sm:min-h-[250px] sm:py-10">
+            <div className="max-w-[600px]">
+              {eyebrow ? (
+                <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
+                  {eyebrow}
+                </p>
+              ) : null}
+              <h1 className="mt-2.5 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-3 sm:text-[38px]">{hero.title}</h1>
+              <p className="mt-3 max-w-[560px] text-[16px] font-medium leading-7 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)]">{hero.subtitle}</p>
+            </div>
+          </div>
         </div>
-      </div>
       </div>
     </section>
   );
@@ -310,16 +329,73 @@ export function toDateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export interface PhnomPenhDateTime {
+  dateKey: string;
+  day: number;
+  hour: number;
+  minute: number;
+  month: number;
+  year: number;
+}
+
+export function getPhnomPenhDateTime(now: Date = new Date()): PhnomPenhDateTime {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    day: '2-digit',
+    hour: '2-digit',
+    hour12: false,
+    minute: '2-digit',
+    month: '2-digit',
+    timeZone: 'Asia/Phnom_Penh',
+    year: 'numeric',
+  }).formatToParts(now);
+
+  const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value ?? '0');
+
+  const year = getPart('year');
+  const month = getPart('month');
+  const day = getPart('day');
+  const rawHour = getPart('hour');
+  const hour = rawHour === 24 ? 0 : rawHour;
+  const minute = getPart('minute');
+  const dateKey = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+  return { dateKey, day, hour, minute, month, year };
+}
+
+export function isTimeSlotPastForPhnomPenh(
+  slotTime: string,
+  selectedDate?: string,
+  now: Date = new Date(),
+): boolean {
+  if (!selectedDate) return false;
+  const ppNow = getPhnomPenhDateTime(now);
+  if (selectedDate !== ppNow.dateKey) {
+    return selectedDate < ppNow.dateKey;
+  }
+  const [hourStr, minuteStr] = slotTime.split(':');
+  const slotHour = Number(hourStr);
+  const slotMinute = Number(minuteStr ?? '0');
+  if (Number.isNaN(slotHour) || Number.isNaN(slotMinute)) return false;
+  return slotHour * 60 + slotMinute <= ppNow.hour * 60 + ppNow.minute;
+}
+
 export function AppointmentCalendar({
+  branch,
   calendar,
+  now,
   onSelectDate,
   selectedDate,
 }: {
+  branch?: BookAppointmentPageContent['branches'][number];
   calendar?: BookAppointmentPageContent['calendar'];
+  now?: Date;
   onSelectDate: (date: string) => void;
   selectedDate: string;
 }) {
   const { language } = usePublicLanguage();
+  const isKm = language === 'km';
+  const ppNow = getPhnomPenhDateTime(now);
 
   const [viewDate, setViewDate] = useState(() => {
     const initialKey = selectedDate || calendar?.selectedDateKey;
@@ -329,13 +405,11 @@ export function AppointmentCalendar({
         return new Date(parts[0], parts[1] - 1, 1);
       }
     }
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
+    return new Date(ppNow.year, ppNow.month - 1, 1);
   });
 
-  const today = new Date();
-  const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const maxMonthStart = new Date(today.getFullYear() + 1, today.getMonth(), 1);
+  const currentMonthStart = new Date(ppNow.year, ppNow.month - 1, 1);
+  const maxMonthStart = new Date(ppNow.year + 1, ppNow.month - 1, 1);
 
   const canGoPrev = viewDate > currentMonthStart;
   const canGoNext = viewDate < maxMonthStart;
@@ -363,8 +437,6 @@ export function AppointmentCalendar({
   }, [language]);
 
   const calendarDates = useMemo(() => {
-    const now = new Date();
-    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
     const monthStart = new Date(year, month, 1);
@@ -374,17 +446,20 @@ export function AppointmentCalendar({
     return Array.from({ length: 42 }, (_, index) => {
       const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + index);
       const key = toDateKey(date);
-      const isPast = date < todayMidnight;
+      const isPast = key < ppNow.dateKey;
       const isCurrentMonth = date.getMonth() === month;
+      const schedule = branch ? getBranchScheduleForDate(branch, key, language) : undefined;
+      const isClosed = schedule ? !schedule.isOpen : false;
       return {
         date,
         day: date.getDate(),
         disabled: isPast,
+        isClosed,
         key,
         muted: !isCurrentMonth,
       };
     });
-  }, [viewDate]);
+  }, [branch, language, ppNow.dateKey, viewDate]);
 
   const dateFormatter = { format: (value: Date) => formatFullDate(value, language) };
 
@@ -429,31 +504,43 @@ export function AppointmentCalendar({
       </div>
       <div className="grid grid-cols-7 gap-y-2 text-center sm:gap-y-3">
         {weekdays.map((day) => (
-          <span className="text-[12px] font-bold leading-4 text-[#6b7280]" key={day}>
+          <span className="truncate px-0.5 text-[11px] font-bold leading-5 text-[#6b7280] sm:text-[12px]" key={day}>
             {day}
           </span>
         ))}
         {calendarDates.map((item) => {
           const isSelected = item.key === selectedDate;
+          const label = item.isClosed
+            ? `${dateFormatter.format(new Date(`${item.key}T12:00:00`))} (${isKm ? 'សាខាបិទ' : 'Branch closed'})`
+            : dateFormatter.format(new Date(`${item.key}T12:00:00`));
           return (
             <button
-              aria-label={dateFormatter.format(new Date(`${item.key}T12:00:00`))}
+              aria-label={label}
               aria-pressed={isSelected}
-              className={`mx-auto grid aspect-square w-full max-w-10 place-items-center rounded-full text-[13px] font-bold transition sm:max-w-8 ${
+              className={`relative mx-auto grid aspect-square w-full max-w-10 place-items-center rounded-full text-[13px] font-bold transition sm:max-w-8 ${
                 isSelected
                   ? 'bg-[#3695b9] text-white shadow-sm'
                   : item.muted
                     ? 'text-[#d5dce3] hover:text-[#94a3b8]'
                     : item.disabled
                       ? 'cursor-not-allowed text-[#cbd5e1] opacity-40'
-                      : 'text-[#6b7280] hover:bg-[#edf7fb] hover:text-[#3695b9]'
+                      : item.isClosed
+                        ? 'text-[#f97316] hover:bg-[#fff7ed]'
+                        : 'text-[#6b7280] hover:bg-[#edf7fb] hover:text-[#3695b9]'
               }`}
               disabled={item.disabled}
               key={item.key}
               onClick={() => handleSelectDate(item)}
+              title={item.isClosed && !item.disabled ? (isKm ? 'សាខាបិទនៅថ្ងៃនេះ' : 'Branch closed on this day') : undefined}
               type="button"
             >
-              {item.day}
+              <span>{item.day}</span>
+              {item.isClosed && !item.disabled ? (
+                <span
+                  aria-hidden="true"
+                  className={`absolute bottom-0.5 size-1 rounded-full ${isSelected ? 'bg-white' : 'bg-[#f97316]'}`}
+                />
+              ) : null}
             </button>
           );
         })}
@@ -463,42 +550,124 @@ export function AppointmentCalendar({
 }
 
 export function AvailableTimes({
+  branch,
+  now,
+  onSelectDate,
   onSelectTime,
+  selectedDate,
   selectedTime,
   times,
 }: {
+  branch?: BookAppointmentPageContent['branches'][number];
+  now?: Date;
+  onSelectDate?: (date: string) => void;
   onSelectTime: (time: string) => void;
+  selectedDate?: string;
   selectedTime: string;
-  times: string[];
+  times?: string[];
 }) {
-  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
-  const baseTimes = times && times.length > 0 ? times : DEFAULT_HOURS;
-  const baseHours = Array.from(new Set(baseTimes.map((t) => t.split(':')[0] ?? t)));
+  const { language } = usePublicLanguage();
+  const bookingCopy = publicUiCopy(language).booking;
+
+  const branchSchedule = useMemo(
+    () => getBranchScheduleForDate(branch, selectedDate, language),
+    [branch, language, selectedDate],
+  );
+
+  const dynamicSlots = useMemo(() => {
+    if (branchSchedule.isOpen && branchSchedule.openTime && branchSchedule.closeTime) {
+      return generateDynamicHoursAndSlots(branchSchedule.openTime, branchSchedule.closeTime);
+    }
+    const baseTimes = times && times.length > 0 ? times : DEFAULT_HOURS;
+    const baseHours = Array.from(new Set(baseTimes.map((t) => t.split(':')[0] ?? t)));
+    return {
+      baseHours,
+      isValidSlot: (slotTime: string) => {
+        const hour = slotTime.split(':')[0];
+        return hour ? baseHours.includes(hour) : true;
+      },
+    };
+  }, [branchSchedule.closeTime, branchSchedule.isOpen, branchSchedule.openTime, times]);
+
+  const nextOpenDate = useMemo(() => {
+    if (!branchSchedule.isOpen && selectedDate) {
+      return getNextOpenDateKey(branch, selectedDate);
+    }
+    return null;
+  }, [branch, branchSchedule.isOpen, selectedDate]);
 
   const selectedParts = selectedTime ? selectedTime.split(':') : [];
-  const selectedHour = selectedParts[0] ?? baseHours[0] ?? '08';
+  const selectedHour = selectedParts[0] ?? dynamicSlots.baseHours[0] ?? '08';
   const selectedMinute = selectedParts[1] ?? '00';
+
+  if (!branchSchedule.isOpen) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-[#fed7aa] bg-[#fffaf5] p-6 text-center">
+        <div className="grid size-12 place-items-center rounded-full bg-[#ffedd5] text-[#c2410c]">
+          <AppointmentIcon className="size-6" name="hourglass" />
+        </div>
+        <h3 className="mt-3 text-[16px] font-extrabold text-[#9a3412]">
+          {bookingCopy.branchClosed}
+        </h3>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-[#7c2d12]">
+          {bookingCopy.branchClosedNotice(branchSchedule.dayName)}
+        </p>
+        {nextOpenDate && nextOpenDate !== selectedDate && onSelectDate ? (
+          <button
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#c2410c] px-4 py-2 text-[13px] font-bold text-white shadow-sm transition hover:bg-[#9a3412] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]"
+            onClick={() => onSelectDate(nextOpenDate)}
+            type="button"
+          >
+            <AppointmentIcon className="size-4" name="calendar" />
+            {bookingCopy.selectNextOpenDate}
+          </button>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div>
-      <h3 className="mb-5 text-center text-[15px] font-extrabold leading-6 text-[#005687]">{bookingCopy.availableTime}</h3>
-      <div className="space-y-2.5">
-        {baseHours.map((hour) => {
-          const isHourActive = selectedHour === hour;
+      <div className="mb-4 text-center">
+        <h3 className="text-[15px] font-extrabold leading-6 text-[#005687]">{bookingCopy.availableTime}</h3>
+        {branchSchedule.formattedHours ? (
+          <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#bce0ed] bg-[#f0f8fb] px-3 py-1 text-[12px] font-bold text-[#087b9f]">
+            <span className="size-2 rounded-full bg-[#10b981]" />
+            <span>{branchSchedule.formattedHours}</span>
+          </div>
+        ) : null}
+      </div>
+      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-1">
+        {dynamicSlots.baseHours.map((hour) => {
+          const availableMinutes = MINUTE_OPTIONS.filter((minute) => {
+            const slotTime = `${hour}:${minute}`;
+            const isWithinHours = dynamicSlots.isValidSlot(slotTime);
+            const isPast = isTimeSlotPastForPhnomPenh(slotTime, selectedDate, now);
+            return isWithinHours && !isPast;
+          });
+          const isHourDisabled = availableMinutes.length === 0;
+          const isHourActive = selectedHour === hour && !isHourDisabled;
           const formattedHourLabel = formatDisplayTime(`${hour}:00`);
 
           return (
-            <div key={hour} className="space-y-2">
+            <div key={hour} className={`space-y-2 ${isHourActive ? 'col-span-2 md:col-span-1' : ''}`}>
               <button
                 aria-label={`Select ${formattedHourLabel}`}
                 aria-pressed={isHourActive}
                 className={`min-h-12 w-full rounded-lg border text-[14px] font-bold transition sm:min-h-[42px] sm:text-[13px] ${
-                  isHourActive
-                    ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-none'
-                    : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
+                  isHourDisabled
+                    ? 'cursor-not-allowed border-[#edf2f7] bg-[#f8fafc] text-[#cbd5e1] opacity-50'
+                    : isHourActive
+                      ? 'border-[#3695b9] bg-[#3695b9] text-white shadow-none'
+                      : 'border-[#edf2f7] bg-white text-[#6b7280] hover:border-[#bcdce8] hover:text-[#3695b9]'
                 }`}
+                disabled={isHourDisabled}
                 onClick={() => {
-                  onSelectTime(`${hour}:${selectedMinute || '00'}`);
+                  if (isHourDisabled) return;
+                  const candidateMinute = availableMinutes.includes(selectedMinute)
+                    ? selectedMinute
+                    : (availableMinutes[0] ?? '00');
+                  onSelectTime(`${hour}:${candidateMinute}`);
                 }}
                 type="button"
               >
@@ -516,21 +685,28 @@ export function AvailableTimes({
                   <div className="grid grid-cols-4 gap-1.5">
                     {MINUTE_OPTIONS.map((minute) => {
                       const slotTime = `${hour}:${minute}`;
-                      const isSlotSelected = selectedTime === slotTime;
+                      const isWithinHours = dynamicSlots.isValidSlot(slotTime);
+                      const isPast = isTimeSlotPastForPhnomPenh(slotTime, selectedDate, now);
+                      const isMinuteDisabled = !isWithinHours || isPast;
+                      const isSlotSelected = selectedTime === slotTime && !isMinuteDisabled;
                       return (
                         <button
                           key={minute}
                           type="button"
                           aria-label={formatDisplayTime(slotTime)}
                           aria-pressed={isSlotSelected}
+                          disabled={isMinuteDisabled}
                           onClick={(e) => {
                             e.stopPropagation();
+                            if (isMinuteDisabled) return;
                             onSelectTime(slotTime);
                           }}
                           className={`h-9 rounded-lg text-[13px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3695b9] ${
-                            isSlotSelected
-                              ? 'bg-[#3695b9] text-white shadow-sm ring-2 ring-[#3695b9]/30'
-                              : 'border border-[#d2e4ec] bg-white text-[#005687] hover:border-[#3695b9] hover:bg-[#eaf4f8] hover:text-[#3695b9]'
+                            isMinuteDisabled
+                              ? 'cursor-not-allowed border border-[#e2e8f0] bg-[#f8fafc] text-[#cbd5e1] opacity-50'
+                              : isSlotSelected
+                                ? 'bg-[#3695b9] text-white shadow-sm ring-2 ring-[#3695b9]/30'
+                                : 'border border-[#d2e4ec] bg-white text-[#005687] hover:border-[#3695b9] hover:bg-[#eaf4f8] hover:text-[#3695b9]'
                           }`}
                         >
                           :{minute}
@@ -565,7 +741,9 @@ function AppointmentForm({
   isSubmitting,
   submissionError,
   turnstileResetSignal,
+  availableDoctors,
 }: {
+  availableDoctors?: BookAppointmentPageContent['doctors'];
   content: BookAppointmentPageContent;
   onSelectBranch: (value: string) => void;
   onSelectDate: (value: string) => void;
@@ -583,7 +761,10 @@ function AppointmentForm({
   submissionError: string | null;
   turnstileResetSignal: number;
 }) {
-  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
+  const { language } = usePublicLanguage();
+  const isKm = language === 'km';
+  const bookingCopy = publicUiCopy(language).booking;
+  const doctorOptions = availableDoctors ?? content.doctors;
   const [patientName, setPatientName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -607,9 +788,9 @@ function AppointmentForm({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextFieldErrors: AppointmentFieldErrors = {
-      email: validateEmail(email),
-      fullName: validatePatientName(patientName),
-      phone: validatePhone(phone),
+      email: validateEmail(email, language),
+      fullName: validatePatientName(patientName, language),
+      phone: validatePhone(phone, language),
     };
 
     if (nextFieldErrors.email || nextFieldErrors.fullName || nextFieldErrors.phone) {
@@ -641,7 +822,7 @@ function AppointmentForm({
               id="service"
               label={bookingCopy.selectService}
               onChange={onSelectService}
-              options={content.servicesList}
+              options={withOptionalServiceOption(content.servicesList, bookingCopy.serviceNoPreference)}
               value={selectedService}
             />
             <SelectField
@@ -649,7 +830,7 @@ function AppointmentForm({
               id="doctor"
               label={bookingCopy.selectDoctor}
               onChange={onSelectDoctor}
-              options={content.doctors}
+              options={doctorOptions}
               value={selectedDoctor}
             />
           </div>
@@ -657,9 +838,28 @@ function AppointmentForm({
 
         <section className="border-t border-[#e7eff3] pt-7 sm:pt-8">
           <SectionTitle number="2" title={bookingCopy.chooseDateTime} />
-          <div className="mt-5 grid gap-7 lg:grid-cols-[1fr_300px]">
-            <AppointmentCalendar calendar={content.calendar} onSelectDate={onSelectDate} selectedDate={selectedDate} />
-            <AvailableTimes onSelectTime={onSelectTime} selectedTime={selectedTime} times={content.times} />
+          <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_230px] lg:grid-cols-[minmax(0,1fr)_220px] xl:grid-cols-[minmax(0,1fr)_260px]">
+            {(() => {
+              const activeBranch = content.branches.find((b) => b.id === selectedBranch) ?? content.branches[0];
+              return (
+                <>
+                  <AppointmentCalendar
+                    branch={activeBranch}
+                    calendar={content.calendar}
+                    onSelectDate={onSelectDate}
+                    selectedDate={selectedDate}
+                  />
+                  <AvailableTimes
+                    branch={activeBranch}
+                    onSelectDate={onSelectDate}
+                    onSelectTime={onSelectTime}
+                    selectedDate={selectedDate}
+                    selectedTime={selectedTime}
+                    times={content.times}
+                  />
+                </>
+              );
+            })()}
           </div>
         </section>
 
@@ -693,9 +893,9 @@ function AppointmentForm({
 
         <TurnstileWidget onToken={onTurnstileToken} resetSignal={turnstileResetSignal} />
         {submissionError ? <p className="text-sm font-medium text-[#9d4d18]" role="alert">{submissionError}</p> : null}
-        <Button className="min-h-12 w-full rounded-full px-7 text-[14px] font-bold shadow-none sm:min-h-11 sm:w-auto" disabled={isSubmitting} type="submit">
+        <Button className="min-h-12 w-full rounded-full px-7 text-[14px] font-bold shadow-none sm:min-h-11 sm:w-auto" disabled={isSubmitting || !selectedTime} type="submit">
           <AppointmentIcon className="size-[16px]" name="calendar" />
-          {isSubmitting ? 'Sending request…' : content.form.submitLabel}
+          {isSubmitting ? (isKm ? 'កំពុងផ្ញើសំណើ…' : 'Sending request…') : content.form.submitLabel}
         </Button>
       </form>
     </Card>
@@ -704,10 +904,10 @@ function AppointmentForm({
 
 function SummaryRow({ icon, label, value }: { icon: IconName; label: string; value: string }) {
   return (
-    <div className="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4">
-      <AppointmentIcon className="size-[15px] text-[#3695b9]" name={icon} />
-      <span className="text-[13px] font-medium leading-5 text-[#64748b]">{label}</span>
-      <span className="ui-copy-safe text-right text-[13px] font-bold leading-5 text-[#005687]">{value}</span>
+    <div className="grid grid-cols-[20px_auto_minmax(0,1fr)] items-start gap-3 sm:gap-4">
+      <AppointmentIcon className="mt-0.5 size-[15px] text-[#3695b9]" name={icon} />
+      <span className="shrink-0 text-[13px] font-medium leading-5 text-[#64748b]">{label}</span>
+      <span className="ui-copy-safe min-w-0 text-right text-[13px] font-bold leading-5 text-[#005687]">{value}</span>
     </div>
   );
 }
@@ -727,21 +927,29 @@ function AppointmentSummary({
   selectedServiceName: string;
   selectedTime: string;
 }) {
-  const bookingCopy = publicUiCopy(usePublicLanguage().language).booking;
+  const { language } = usePublicLanguage();
+  const isKm = language === 'km';
+  const bookingCopy = publicUiCopy(language).booking;
   const hasBranchImage = Boolean(branch.imageUrl);
 
   return (
-    <Card className="sticky top-20 rounded-xl border-[#e1ebef] p-5 shadow-[0_1px_2px_rgba(15,23,42,0.05)] sm:p-6">
+    <Card className="rounded-xl border-[#e1ebef] p-5 shadow-[0_1px_2px_rgba(15,23,42,0.05)] sm:p-6 lg:sticky lg:top-24">
       <h2 className="text-[18px] font-extrabold leading-6 text-[#005687] sm:text-[20px]">{content.summary.title}</h2>
       <div className="mt-5 rounded-xl bg-[#f2f9fb] p-3.5">
         <div className={`grid gap-4 ${hasBranchImage ? 'grid-cols-[80px_1fr]' : 'grid-cols-1'}`}>
-          {hasBranchImage ? <CmsImage alt={branch.imageAlt || branch.name} className="h-[80px] w-[80px] rounded-lg bg-[#e8e8f0] object-cover" presentation={branch.imagePresentation} src={branch.imageUrl} /> : null}
+          {hasBranchImage ? (
+            <div className="h-[80px] w-[80px] overflow-hidden rounded-lg bg-[#e8e8f0]">
+              <CmsImage alt={branch.imageAlt || branch.name} className="h-full w-full object-cover" presentation={branch.imagePresentation} src={branch.imageUrl} />
+            </div>
+          ) : null}
           <div>
             <h3 className="text-[13px] font-bold leading-5 text-[#005687]">{branch.name}</h3>
             <p className="mt-1 text-[12px] font-normal leading-4 text-[#64748b]">{branch.address}</p>
             <a
               className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-[#3695b9] hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9]"
               href={branch.mapUrl}
+              rel="noopener noreferrer"
+              target="_blank"
             >
               <AppointmentIcon className="size-[13px]" name="location" />
               {branch.mapLabel}
@@ -754,14 +962,14 @@ function AppointmentSummary({
         <SummaryRow icon="service" label={bookingCopy.service} value={selectedServiceName} />
         <SummaryRow icon="doctor" label={bookingCopy.doctor} value={selectedDoctorName} />
         <SummaryRow icon="calendar" label={bookingCopy.date} value={selectedDateLabel} />
-        <SummaryRow icon="clock" label={bookingCopy.time} value={formatDisplayTime(selectedTime)} />
+        <SummaryRow icon="clock" label={bookingCopy.time} value={formatDisplayTime(selectedTime) || (isKm ? 'មិនទាន់ជ្រើសរើស' : 'Not selected')} />
         {content.summary.duration ? <SummaryRow icon="hourglass" label={bookingCopy.duration} value={content.summary.duration} /> : null}
       </div>
 
       {content.information.length > 0 ? <div className="mt-5 rounded-xl border border-[#d7e7ef] bg-[#f4fbfd] p-4">
         <h3 className="flex items-center gap-2 text-[13px] font-bold leading-5 text-[#3695b9]">
           <AppointmentIcon className="size-[15px]" name="doctor" />
-          Important Information
+          {isKm ? 'ព័ត៌មានសំខាន់ៗ' : 'Important Information'}
         </h3>
         <ul className="mt-3.5 space-y-3">
           {content.information.map((item) => (
@@ -852,7 +1060,7 @@ export function AppointmentSuccessModal({
       >
         <button
           aria-label={isKhmer ? 'បិទ' : 'Close'}
-          className="absolute right-4 top-4 grid size-9 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-[#3695B9]"
+          className="absolute right-3 top-3 grid size-11 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-[#3695B9]"
           onClick={onClose}
           type="button"
         >
@@ -882,7 +1090,7 @@ export function AppointmentSuccessModal({
           <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#2c84a5]">
             {isKhmer ? 'លេខកូដសម្គាល់ការណាត់ជួប' : 'Booking Reference Code'}
           </p>
-          <div className="mt-1 flex items-center justify-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
             <span className="font-mono text-[22px] font-extrabold tracking-wider text-[#005687] sm:text-[26px]">
               {acknowledgement.reference}
             </span>
@@ -903,25 +1111,25 @@ export function AppointmentSuccessModal({
         </div>
 
         <div className="mt-5 divide-y divide-[#edf3f6] rounded-xl border border-[#e2edf2] bg-[#fafcfd] text-[13px] sm:text-[14px]">
-          <div className="flex justify-between px-4 py-2.5">
-            <span className="font-medium text-[#64748b]">{isKhmer ? 'សាខា' : 'Branch'}</span>
-            <span className="text-right font-bold text-[#073f60]">{details.branchName}</span>
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 font-medium text-[#64748b]">{isKhmer ? 'សាខា' : 'Branch'}</span>
+            <span className="min-w-0 break-words text-right font-bold text-[#073f60]">{details.branchName}</span>
           </div>
-          <div className="flex justify-between px-4 py-2.5">
-            <span className="font-medium text-[#64748b]">{isKhmer ? 'សេវាកម្ម' : 'Service'}</span>
-            <span className="text-right font-bold text-[#073f60]">{details.serviceName}</span>
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 font-medium text-[#64748b]">{isKhmer ? 'សេវាកម្ម' : 'Service'}</span>
+            <span className="min-w-0 break-words text-right font-bold text-[#073f60]">{details.serviceName}</span>
           </div>
-          <div className="flex justify-between px-4 py-2.5">
-            <span className="font-medium text-[#64748b]">{isKhmer ? 'ទន្តបណ្ឌិត' : 'Doctor'}</span>
-            <span className="text-right font-bold text-[#073f60]">{details.doctorName}</span>
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 font-medium text-[#64748b]">{isKhmer ? 'ទន្តបណ្ឌិត' : 'Doctor'}</span>
+            <span className="min-w-0 break-words text-right font-bold text-[#073f60]">{details.doctorName}</span>
           </div>
-          <div className="flex justify-between px-4 py-2.5">
-            <span className="font-medium text-[#64748b]">{isKhmer ? 'កាលបរិច្ឆេទ & ម៉ោង' : 'Date & Time'}</span>
-            <span className="text-right font-bold text-[#073f60]">{details.dateLabel} — {details.time}</span>
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 font-medium text-[#64748b]">{isKhmer ? 'កាលបរិច្ឆេទ & ម៉ោង' : 'Date & Time'}</span>
+            <span className="min-w-0 break-words text-right font-bold text-[#073f60]">{details.dateLabel} — {details.time}</span>
           </div>
-          <div className="flex justify-between px-4 py-2.5">
-            <span className="font-medium text-[#64748b]">{isKhmer ? 'អ្នកជំងឺ' : 'Patient'}</span>
-            <span className="text-right font-bold text-[#073f60]">{details.patientName} ({details.phone})</span>
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 font-medium text-[#64748b]">{isKhmer ? 'អ្នកជំងឺ' : 'Patient'}</span>
+            <span className="min-w-0 break-words text-right font-bold text-[#073f60]">{details.patientName} ({details.phone})</span>
           </div>
         </div>
 
@@ -944,8 +1152,32 @@ export function AppointmentSuccessModal({
   );
 }
 
+export function matchesBookingOption(
+  option: { id?: string; name: string; slug?: string; value?: string },
+  query: string,
+): boolean {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return false;
+  const candidateId = option.id ?? option.value ?? '';
+  if (candidateId && (candidateId === query.trim() || candidateId.toLowerCase() === normalized)) {
+    return true;
+  }
+  if (option.slug && option.slug.toLowerCase() === normalized) {
+    return true;
+  }
+  return option.name.trim().toLowerCase() === normalized;
+}
+
+export function withOptionalServiceOption(
+  services: BookAppointmentPageContent['servicesList'],
+  noPreferenceLabel: string,
+): BookAppointmentPageContent['servicesList'] {
+  return [{ name: noPreferenceLabel, value: '' }, ...services];
+}
+
 function BookAppointmentView({ content }: { content: BookAppointmentPageContent }) {
   const { language } = usePublicLanguage();
+  const bookingCopy = publicUiCopy(language).booking;
   const [searchParams] = useSearchParams();
   const requestedBranch = searchParams.get('branch');
   const requestedDoctor = searchParams.get('doctor');
@@ -953,9 +1185,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 
   const initialBranch = useMemo<string>(() => {
     if (requestedBranch) {
-      const match = content.branches.find(
-        (b) => b.id === requestedBranch || b.name.toLowerCase() === requestedBranch.toLowerCase(),
-      );
+      const match = content.branches.find((b) => matchesBookingOption(b, requestedBranch));
       if (match?.id) return match.id;
     }
     return content.branches[0]?.id ?? '';
@@ -963,57 +1193,176 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
 
   const initialService = useMemo<string>(() => {
     if (requestedService) {
-      const match = content.servicesList.find(
-        (s) => s.value === requestedService || s.name.toLowerCase() === requestedService.toLowerCase(),
-      );
+      const match = content.servicesList.find((s) => matchesBookingOption(s, requestedService));
       if (match?.value) return match.value;
     }
-    return content.servicesList[0]?.value ?? '';
+    return '';
   }, [content.servicesList, requestedService]);
 
   const initialDoctor = useMemo<string>(() => {
     if (requestedDoctor) {
-      const match = content.doctors.find(
-        (d) => d.value === requestedDoctor || d.name.toLowerCase() === requestedDoctor.toLowerCase(),
-      );
-      if (match?.value) return match.value;
+      const match = content.doctors.find((d) => matchesBookingOption(d, requestedDoctor));
+      if (match?.value) {
+        const isAvailableAtInitialBranch =
+          !match.branchIds || match.branchIds.length === 0 || (initialBranch ? match.branchIds.includes(initialBranch) : true);
+        if (isAvailableAtInitialBranch) return match.value;
+      }
     }
     return content.doctors[0]?.value ?? '';
-  }, [content.doctors, requestedDoctor]);
+  }, [content.doctors, initialBranch, requestedDoctor]);
 
   const [selectedBranch, setSelectedBranch] = useState<string>(initialBranch);
   const [selectedService, setSelectedService] = useState<string>(initialService);
   const [selectedDoctor, setSelectedDoctor] = useState<string>(initialDoctor);
+  const appliedQueryRef = useRef({
+    branch: requestedBranch,
+    doctor: requestedDoctor,
+    service: requestedService,
+  });
+
+  const availableDoctors = useMemo(() => {
+    return content.doctors.filter((d) => {
+      if (!d.value) return true; // "No Preference" is always available
+      if (!d.branchIds || d.branchIds.length === 0) return true; // unconstrained doctor practices at all branches
+      return selectedBranch ? d.branchIds.includes(selectedBranch) : true;
+    });
+  }, [content.doctors, selectedBranch]);
 
   useEffect(() => {
-    if (requestedBranch) {
-      const match = content.branches.find(
-        (b) => b.id === requestedBranch || b.name.toLowerCase() === requestedBranch.toLowerCase(),
-      );
-      if (match?.id) setSelectedBranch(match.id);
+    if (selectedDoctor) {
+      const isAvailable = availableDoctors.some((d) => d.value === selectedDoctor);
+      if (!isAvailable) {
+        setSelectedDoctor(availableDoctors[0]?.value ?? '');
+      }
     }
-  }, [content.branches, requestedBranch]);
+  }, [availableDoctors, selectedDoctor]);
 
   useEffect(() => {
-    if (requestedService) {
-      const match = content.servicesList.find(
-        (s) => s.value === requestedService || s.name.toLowerCase() === requestedService.toLowerCase(),
-      );
-      if (match?.value) setSelectedService(match.value);
+    const queryChanged = requestedBranch !== appliedQueryRef.current.branch;
+    const hasValidSelection = Boolean(selectedBranch && content.branches.some((b) => b.id === selectedBranch));
+    if (queryChanged || !hasValidSelection) {
+      appliedQueryRef.current.branch = requestedBranch;
+      if (requestedBranch) {
+        const match = content.branches.find((b) => matchesBookingOption(b, requestedBranch));
+        if (match?.id) {
+          setSelectedBranch(match.id);
+          return;
+        }
+      }
+      if (!hasValidSelection && content.branches[0]?.id) {
+        setSelectedBranch(content.branches[0].id);
+      }
     }
-  }, [content.servicesList, requestedService]);
+  }, [content.branches, requestedBranch, selectedBranch]);
 
   useEffect(() => {
-    if (requestedDoctor) {
-      const match = content.doctors.find(
-        (d) => d.value === requestedDoctor || d.name.toLowerCase() === requestedDoctor.toLowerCase(),
-      );
-      if (match?.value) setSelectedDoctor(match.value);
+    const queryChanged = requestedService !== appliedQueryRef.current.service;
+    const hasValidSelection = selectedService === '' || content.servicesList.some((s) => s.value === selectedService);
+    if (queryChanged || !hasValidSelection) {
+      appliedQueryRef.current.service = requestedService;
+      if (requestedService) {
+        const match = content.servicesList.find((s) => matchesBookingOption(s, requestedService));
+        if (match?.value) {
+          setSelectedService(match.value);
+          return;
+        }
+      }
+      if (!hasValidSelection) {
+        setSelectedService('');
+      }
     }
-  }, [content.doctors, requestedDoctor]);
+  }, [content.servicesList, requestedService, selectedService]);
 
-  const [selectedDate, setSelectedDate] = useState(content.calendar.selectedDateKey);
-  const [selectedTime, setSelectedTime] = useState(content.times[2] ?? content.times[0] ?? '10:00');
+  useEffect(() => {
+    const queryChanged = requestedDoctor !== appliedQueryRef.current.doctor;
+    const hasValidSelection = availableDoctors.some((d) => d.value === selectedDoctor);
+    if (queryChanged || !hasValidSelection) {
+      appliedQueryRef.current.doctor = requestedDoctor;
+      if (requestedDoctor) {
+        const match = availableDoctors.find((d) => matchesBookingOption(d, requestedDoctor));
+        if (match?.value) {
+          setSelectedDoctor(match.value);
+          return;
+        }
+      }
+      if (!hasValidSelection) {
+        setSelectedDoctor(availableDoctors[0]?.value ?? '');
+      }
+    }
+  }, [availableDoctors, requestedDoctor, selectedDoctor]);
+
+  const branch = useMemo(
+    () => content.branches.find((item) => item.id === selectedBranch) ?? content.branches[0],
+    [content.branches, selectedBranch],
+  );
+  const service = content.servicesList.find((item) => item.value === selectedService) ?? {
+    name: bookingCopy.serviceNoPreference,
+    value: '',
+  };
+  const doctor = content.doctors.find((item) => item.value === selectedDoctor);
+
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const initialKey = content.calendar.selectedDateKey;
+    const initialBranchObj = content.branches.find((b) => b.id === initialBranch) ?? content.branches[0];
+    const initialSchedule = getBranchScheduleForDate(initialBranchObj, initialKey);
+    if (!initialSchedule.isOpen) {
+      return getNextOpenDateKey(initialBranchObj, initialKey);
+    }
+    return initialKey;
+  });
+
+  const [selectedTime, setSelectedTime] = useState(() => {
+    const initialBranchObj = content.branches.find((b) => b.id === initialBranch) ?? content.branches[0];
+    const initialKey = content.calendar.selectedDateKey;
+    const initialSchedule = getBranchScheduleForDate(initialBranchObj, initialKey);
+    const targetKey = initialSchedule.isOpen ? initialKey : getNextOpenDateKey(initialBranchObj, initialKey);
+    const targetSchedule = getBranchScheduleForDate(initialBranchObj, targetKey);
+    if (!targetSchedule.isOpen) {
+      return '';
+    }
+    const slots = generateDynamicHoursAndSlots(targetSchedule.openTime, targetSchedule.closeTime);
+    for (const hour of slots.baseHours) {
+      for (const minute of MINUTE_OPTIONS) {
+        const candidate = `${hour}:${minute}`;
+        if (slots.isValidSlot(candidate) && !isTimeSlotPastForPhnomPenh(candidate, targetKey)) {
+          return candidate;
+        }
+      }
+    }
+    return '10:00';
+  });
+
+  useEffect(() => {
+    const schedule = getBranchScheduleForDate(branch, selectedDate, language);
+    if (!schedule.isOpen) {
+      if (selectedTime !== '') {
+        setSelectedTime('');
+      }
+      return;
+    }
+
+    const slots = generateDynamicHoursAndSlots(schedule.openTime, schedule.closeTime);
+    const isCurrentValid =
+      Boolean(selectedTime) &&
+      slots.isValidSlot(selectedTime) &&
+      !isTimeSlotPastForPhnomPenh(selectedTime, selectedDate);
+
+    if (isCurrentValid) {
+      return;
+    }
+
+    for (const hour of slots.baseHours) {
+      for (const minute of MINUTE_OPTIONS) {
+        const candidate = `${hour}:${minute}`;
+        if (slots.isValidSlot(candidate) && !isTimeSlotPastForPhnomPenh(candidate, selectedDate)) {
+          setSelectedTime(candidate);
+          return;
+        }
+      }
+    }
+    setSelectedTime('');
+  }, [branch, language, selectedDate, selectedTime]);
+
   const [formKey, setFormKey] = useState(0);
   const idempotencyKey = useRef(createIdempotencyKey());
   const [acknowledgement, setAcknowledgement] = useState<{ message: string; reference: string; status: string } | null>(null);
@@ -1028,6 +1377,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
   } | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileError, setTurnstileError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
   const submitMutation = useMutation({ mutationFn: (input: Parameters<typeof createPublicAppointment>[0]) => createPublicAppointment(input) });
   const handleTurnstileToken = useCallback((token: string | null) => {
@@ -1035,22 +1385,30 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
     if (token) setTurnstileError(null);
   }, []);
 
-  const branch = useMemo(
-    () => content.branches.find((item) => item.id === selectedBranch) ?? content.branches[0],
-    [content.branches, selectedBranch],
-  );
-  const service = content.servicesList.find((item) => item.value === selectedService);
-  const doctor = content.doctors.find((item) => item.value === selectedDoctor);
-
   if (!branch || !service || !doctor) {
     return <BookAppointmentEmpty />;
   }
 
+  const isKm = language === 'km';
   const submit = (values: { email: string; notes: string; patientName: string; phone: string }) => {
-    if (env.turnstileSiteKey && !turnstileToken) {
-      setTurnstileError('Please complete the verification challenge before sending your request.');
+    const branchSchedule = getBranchScheduleForDate(branch, selectedDate, language);
+    if (!branchSchedule.isOpen) {
+      setFormError(bookingCopy.branchClosedNotice(branchSchedule.dayName));
       return;
     }
+    if (!selectedTime) {
+      setFormError(bookingCopy.timeRequired);
+      return;
+    }
+    if (env.turnstileSiteKey && !turnstileToken) {
+      setTurnstileError(
+        isKm
+          ? 'សូមបំពេញការផ្ទៀងផ្ទាត់សុវត្ថិភាព មុននឹងផ្ញើសំណើរបស់អ្នក។'
+          : 'Please complete the verification challenge before sending your request.',
+      );
+      return;
+    }
+    setFormError(null);
     setTurnstileError(null);
     void submitMutation.mutateAsync({
       ...values,
@@ -1060,7 +1418,7 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
       notes: values.notes.trim() || null,
       preferredDate: selectedDate,
       preferredTime: selectedTime,
-      serviceId: selectedService,
+      serviceId: selectedService || null,
       turnstileToken: turnstileToken ?? undefined,
     }).then((response) => {
       setSubmittedDetails({
@@ -1080,22 +1438,24 @@ function BookAppointmentView({ content }: { content: BookAppointmentPageContent 
   const handleCloseModal = () => {
     setAcknowledgement(null);
     setSubmittedDetails(null);
+    setFormError(null);
     setFormKey((previous) => previous + 1);
   };
 
   const requestError = submitMutation.error instanceof ApiClientError
     ? submitMutation.error.status === 429
-      ? 'Too many requests. Please wait a moment and try again.'
+      ? (isKm ? 'មានសំណើច្រើនពេក។ សូមរង់ចាំបន្តិច រួចព្យាយាមម្ដងទៀត។' : 'Too many requests. Please wait a moment and try again.')
       : submitMutation.error.message
     : null;
-  const submissionError = turnstileError ?? requestError;
+  const submissionError = formError ?? turnstileError ?? requestError;
 
   return (
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main className="bg-white">
         <AppointmentHero hero={content.hero} />
-        <section className="mx-auto grid w-full max-w-[1180px] gap-6 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:px-8">
+        <section className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 lg:px-8">
           <AppointmentForm
+            availableDoctors={availableDoctors}
             content={content}
             isSubmitting={submitMutation.isPending}
             key={formKey}
@@ -1193,7 +1553,7 @@ function BookAppointmentSkeleton() {
             </div>
           </div>
 
-          <aside className="h-fit rounded-xl border border-[#e1ebef] bg-[#f7fafc] p-5 sm:p-6 lg:sticky lg:top-6">
+          <aside className="h-fit rounded-xl border border-[#e1ebef] bg-[#f7fafc] p-5 sm:p-6 lg:sticky lg:top-24">
             <div className="h-6 w-40 animate-pulse rounded-lg bg-[#d5e7ed]" />
             <div className="mt-5 space-y-4">
               {Array.from({ length: 4 }, (_, index) => (
@@ -1262,6 +1622,8 @@ function hasBookAppointmentContent(content: BookAppointmentPageContent | undefin
 
 export function BookAppointmentPage() {
   const { data, isError, isLoading, refetch } = useBookAppointmentPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'ស្នើសុំការណាត់ជួប' : 'Book Appointment'));
 
   if (isLoading) {
     return <BookAppointmentSkeleton />;

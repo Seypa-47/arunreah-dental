@@ -18,7 +18,7 @@ export const mediaCategorySchema = z.enum(mediaCategoryValues);
 export const mediaKeySchema = z
   .string()
   .regex(
-    /^(clinic|branches|services|doctors|showcases)\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*[a-z0-9]+(?:-[a-z0-9]+)*\.(?:jpg|png|webp)$/,
+    /^(clinic|branches|services|doctors|showcases)\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*[a-z0-9]+(?:-[a-z0-9]+)*\.(?:jpg|png|webp|avif)$/,
     'Use a valid CMS media key.',
   );
 

@@ -51,6 +51,8 @@ export type ClinicGeneralInfo = {
   taglineKm: string;
   shortAboutEn: string;
   shortAboutKm: string;
+  footerDescriptionEn: string;
+  footerDescriptionKm: string;
   logoKey: string;
   yearsExperience: string;
   successfulCases: string;
@@ -100,14 +102,14 @@ const adminClinicInfoContent: AdminClinicInfoContent = {
   branches: [
     {
       address:
-        '#123, Street 155, Sangkat Toul Tompoung I, Khan Chamkarmon, Phnom Penh, Cambodia',
-      addressKm: '',
+        '159c, St 113, Sangkat Boeng Keng Kong 3, Khan Boeng Keng Kong, Phnom Penh',
+      addressKm: 'ផ្ទះ159c ផ្លូវ 113 ភូមិ 4 សង្កាត់បឹងកេងកង3 ខណ្ឌបឹងកេងកង',
       badge: 'Main Branch',
       badgeKm: '',
       city: 'Phnom Penh',
       closingTime: '07:00 PM',
       enableBookButton: true,
-      googleMapsLink: 'https://maps.google.com/?q=Toul+Tompoung+Branch',
+      googleMapsLink: 'https://maps.app.goo.gl/6HenBVpmvf4PiWwv6',
       heroHeadline: 'Arunreah Dental Clinic - TTP',
       heroHeadlineKm: '',
       heroCtaLabel: '',
@@ -129,8 +131,8 @@ const adminClinicInfoContent: AdminClinicInfoContent = {
       openingHours: '',
       openingHoursKm: '',
       openingTime: '08:00 AM',
-      phone1: '098 701 302',
-      phone2: '012 964 200',
+      phone1: '061 978 997',
+      phone2: '069 978 997',
       photo: '/assets/landing/branches-clinic.png',
       showOnBranchesPage: true,
       showOnHomepageSection: true,
@@ -142,14 +144,14 @@ const adminClinicInfoContent: AdminClinicInfoContent = {
     },
     {
       address:
-        '#45, Street 13, Sangkat Wat Phnom, Khan Daun Penh, Phnom Penh, Cambodia (Near Old Market)',
-      addressKm: '',
+        '#111Eo, Street 110, SangKat Wat Phnom, Khan Daun Penh, Phnom Penh',
+      addressKm: 'ផ្ទះលេខ 111Eo ផ្លូវលេខ 110 សង្កាត់វត្តភ្នំ ខណ្ឌដូនពេញ រាជធានីភ្នំពេញ (ជិតផ្សារចាស់)',
       badge: 'City Branch',
       badgeKm: '',
       city: 'Phnom Penh',
       closingTime: '07:00 PM',
       enableBookButton: true,
-      googleMapsLink: 'https://maps.google.com/?q=Psa+Chas+Branch',
+      googleMapsLink: 'https://maps.app.goo.gl/sxiKakoGPZEMzciB9',
       heroHeadline: 'Arunreah Dental Clinic - Psa Chas',
       heroHeadlineKm: '',
       heroCtaLabel: '',
@@ -198,6 +200,7 @@ const adminClinicInfoContent: AdminClinicInfoContent = {
   },
   generalInfo: {
     clinicNameEn: '', clinicNameKm: '', taglineEn: '', taglineKm: '', shortAboutEn: '', shortAboutKm: '',
+    footerDescriptionEn: '', footerDescriptionKm: '',
     logoKey: '', yearsExperience: '', successfulCases: '', patientSatisfaction: '',
   },
   header: {
@@ -219,7 +222,6 @@ const adminClinicInfoContent: AdminClinicInfoContent = {
     { icon: 'clinicInfo', label: 'Clinic Info' },
     { icon: 'clinicInfo', label: 'Clinic Settings', section: 'clinic' },
     { icon: 'clinicInfo', label: 'Branches / Locations', section: 'clinic' },
-    { icon: 'clinicInfo', label: 'Contact Settings', section: 'clinic' },
   ],
 };
 
@@ -289,6 +291,8 @@ function toClinicGeneralInfo(clinic: ClinicSettingsAdminRead): ClinicGeneralInfo
     taglineKm: clinic.taglineKm ?? '',
     shortAboutEn: clinic.shortAboutEn ?? '',
     shortAboutKm: clinic.shortAboutKm ?? '',
+    footerDescriptionEn: clinic.footerDescriptionEn ?? '',
+    footerDescriptionKm: clinic.footerDescriptionKm ?? '',
     logoKey: clinic.logoKey ?? '',
     yearsExperience: numberForForm(clinic.yearsExperience),
     successfulCases: numberForForm(clinic.successfulCases),
@@ -332,6 +336,8 @@ export async function saveClinicInfo(info: ClinicGeneralInfo): Promise<ClinicGen
     taglineKm: nullableText(info.taglineKm),
     shortAboutEn: nullableText(info.shortAboutEn),
     shortAboutKm: nullableText(info.shortAboutKm),
+    footerDescriptionEn: nullableText(info.footerDescriptionEn),
+    footerDescriptionKm: nullableText(info.footerDescriptionKm),
     logoKey: nullableText(info.logoKey),
     yearsExperience: nullableInteger(info.yearsExperience),
     successfulCases: null,

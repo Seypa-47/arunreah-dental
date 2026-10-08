@@ -1,6 +1,6 @@
 import { HttpError } from '../shared/http-error';
 
-type TurnstileResponse = { success?: boolean };
+type TurnstileResponse = { action?: string; success?: boolean };
 const turnstileTimeoutMs = 5_000;
 
 export async function verifyTurnstile(
@@ -26,7 +26,7 @@ export async function verifyTurnstile(
       signal: AbortSignal.timeout(turnstileTimeoutMs),
     });
     const result = (await response.json().catch(() => undefined)) as TurnstileResponse | undefined;
-    if (!response.ok || result?.success !== true) {
+    if (!response.ok || result?.success !== true || (result.action && result.action !== 'appointment_request')) {
       throw new HttpError(400, 'TURNSTILE_FAILED', 'Verification failed. Please try again.');
     }
   } catch (error) {

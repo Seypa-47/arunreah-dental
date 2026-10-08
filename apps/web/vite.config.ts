@@ -12,6 +12,26 @@ export default defineConfig(({ mode }) => {
     .filter(Boolean);
 
   return {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+              return 'react-vendor';
+            }
+            if (id.includes('node_modules/react-router')) {
+              return 'router-vendor';
+            }
+            if (id.includes('node_modules/@tanstack/react-query')) {
+              return 'query-vendor';
+            }
+            if (id.includes('node_modules/zod') || id.includes('packages/shared')) {
+              return 'shared-validation';
+            }
+          },
+        },
+      },
+    },
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

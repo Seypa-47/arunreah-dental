@@ -1,7 +1,7 @@
 import type { MediaCategory } from '@arunreah/shared';
 import { getApiClient, type ApiClient } from '@/lib/api';
 
-export type UploadedMedia = { key: string; mimeType: 'image/jpeg' | 'image/png' | 'image/webp'; size: number; url: string | null };
+export type UploadedMedia = { key: string; mimeType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/avif'; size: number; url: string | null };
 
 /**
  * CMS records persist an R2 object key, not a browser URL. A deployment can opt
@@ -45,7 +45,7 @@ export function toMediaKey(value?: string | null): string | null {
   const trimmed = value.trim();
   if (!trimmed || trimmed.startsWith('/') || trimmed.startsWith('.')) return null;
   const match = trimmed.match(
-    /(?:^|https?:\/\/[^/]+\/)(clinic|branches|services|doctors|showcases)\/((?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*[a-z0-9]+(?:-[a-z0-9]+)*\.(?:jpg|png|webp))(?=[?#]|$)/i,
+    /(?:^|https?:\/\/[^/]+\/)(clinic|branches|services|doctors|showcases)\/((?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*[a-z0-9]+(?:-[a-z0-9]+)*\.(?:jpg|png|webp|avif))(?=[?#]|$)/i,
   );
   if (!match) return null;
   const category = match[1];

@@ -46,6 +46,7 @@ export function AdminSessionProvider({ children }: PropsWithChildren) {
   const login = useCallback(
     async (input: AdminLoginInput) => {
       const admin = await loginMutation.mutateAsync(input);
+      queryClient.removeQueries({ queryKey: ['admin'] });
       queryClient.setQueryData(queryKeys.auth.me(), admin);
       setIsSessionChecked(true);
       return admin;
@@ -55,6 +56,7 @@ export function AdminSessionProvider({ children }: PropsWithChildren) {
 
   const logout = useCallback(async () => {
     await logoutMutation.mutateAsync();
+    queryClient.removeQueries({ queryKey: ['admin'] });
     queryClient.setQueryData(queryKeys.auth.me(), null);
     setIsSessionChecked(true);
   }, [logoutMutation, queryClient]);

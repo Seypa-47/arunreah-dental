@@ -11,6 +11,7 @@ import { useDoctorsPageQuery } from './use-doctors-page';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 
 const asset = (name: string) => `/assets/landing/${name}`;
 
@@ -18,56 +19,128 @@ function CalendarIcon() {
   return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
 }
 
-function DoctorsHero({ heroMedia }: { hero?: DoctorsPageContent['hero']; heroMedia?: DoctorsPageContent['heroMedia'] }) {
+const LEGACY_LONG_DOCTORS_SUBTITLES = new Set([
+  "our dental team brings together experience, continuous learning, and a thoughtful approach to every patient's care.",
+  'our dental team brings together experience, continuous learning, and a thoughtful approach to every patient’s care.',
+  'meet our clinic professionals committed to exceptional patient care.',
+  'ក្រុមទន្តបណ្ឌិតរបស់យើង រួមបញ្ចូលបទពិសោធន៍ ការរៀនសូត្រជាបន្តបន្ទាប់ និងការយកចិត្តទុកដាក់ចំពោះអ្នកជំងឺគ្រប់រូប។',
+  'ជួបជាមួយក្រុមទន្តបណ្ឌិតឯកទេសរបស់យើងដែលប្តេជ្ញាផ្តល់ការថែទាំដ៏ល្អបំផុត។',
+]);
+
+function getConciseDoctorsSubtitle(raw: string | null | undefined, language: 'en' | 'km') {
+  const defaultSubtitle =
+    language === 'km'
+      ? 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ពីក្រុមទន្តបណ្ឌិតរបស់យើង។'
+      : 'Thoughtful dental care from our experienced clinic team.';
+  const trimmed = raw?.trim();
+  if (!trimmed) return defaultSubtitle;
+  if (LEGACY_LONG_DOCTORS_SUBTITLES.has(trimmed.toLowerCase())) {
+    return defaultSubtitle;
+  }
+  return trimmed;
+}
+
+function DoctorsHero({
+  hero,
+  heroMedia,
+}: {
+  hero: DoctorsPageContent['hero'];
+  heroMedia?: DoctorsPageContent['heroMedia'];
+}) {
   const { language } = usePublicLanguage();
   const uiCopy = publicUiCopy(language).doctors;
   const imageUrl = heroMedia ? getPublicMediaUrl(heroMedia.imageKey) : null;
   const fallbackImageUrl = '/assets/landing/hero-clinic.png';
+  const title = heroMedia?.title ?? hero.title;
+  const description = getConciseDoctorsSubtitle(heroMedia?.body ?? hero.description, language);
+  const eyebrow =
+    heroMedia?.badge || (language === 'km' ? 'ក្រុមទន្តបណ្ឌិតរបស់យើង' : 'OUR DENTAL TEAM');
 
   return (
-    <section className="border-b border-[#dceaf0] bg-[#f7fafc] py-6 sm:py-8 lg:py-10">
+    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="relative min-h-[320px] sm:min-h-[400px] lg:min-h-[460px] overflow-hidden rounded-2xl sm:rounded-[28px] lg:rounded-[32px] border border-[#dce6ed] bg-[#f8fafc] shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
+        <div className="relative min-h-[260px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] sm:min-h-[360px] md:min-h-[420px] lg:min-h-[460px]">
           <ResilientImage
             alt={uiCopy.teamImageAlt}
-            className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.03] saturate-[1.03]"
+            className="absolute inset-0 h-full w-full object-cover object-top contrast-[1.04] saturate-[1.04] sm:hidden"
             fallbackSrc={fallbackImageUrl}
+            loading="eager"
+            presentation={heroMedia?.imagePresentation ? { ...heroMedia.imagePresentation, zoom: 1 } : undefined}
+            src={imageUrl}
+          />
+          <ResilientImage
+            alt=""
+            className="absolute inset-0 hidden h-full w-full object-cover object-center contrast-[1.04] saturate-[1.04] sm:block"
+            fallbackSrc={fallbackImageUrl}
+            loading="eager"
             presentation={heroMedia?.imagePresentation}
             src={imageUrl}
           />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-white/90 via-white/65 to-transparent sm:right-auto sm:h-[68%] sm:w-[66%] sm:bg-[radial-gradient(100%_100%_at_0%_100%,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.62)_48%,rgba(255,255,255,0.22)_76%,transparent_100%)]"
+          />
+          <div className="relative z-10 flex min-h-[260px] flex-col justify-end p-4 pb-5 sm:min-h-[360px] sm:p-7 sm:pb-7 md:min-h-[420px] lg:min-h-[460px] lg:px-9 lg:pb-8">
+            <div className="max-w-[460px] sm:max-w-[520px]">
+              <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
+                {eyebrow}
+              </p>
+              <h1 className="mt-2 text-[24px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.9)] sm:mt-2.5 sm:text-[32px] lg:text-[36px]">
+                {title}
+              </h1>
+              {description ? (
+                <p className="mt-2 max-w-[460px] text-[14px] font-medium leading-6 text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:mt-2.5 sm:text-[16px] sm:leading-7">
+                  {description}
+                </p>
+              ) : null}
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
+export function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
   const { language } = usePublicLanguage();
   const hasImage = Boolean(doctor.imageUrl);
 
   return (
-    <Card className="overflow-hidden rounded-xl border-[#e6edf1] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-0.5 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
+    <Card className="overflow-hidden rounded-xl border-[#e6edf1] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-[border-color,box-shadow] duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
       <Link
         aria-label={`View profile for ${doctor.name}`}
         className="group flex min-h-[196px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:block"
         to={doctor.detail.profileHref}
       >
         {hasImage ? (
-          <CmsImage alt={doctor.imageAlt || doctor.name} className="h-[196px] w-[42%] shrink-0 bg-[#edf5f8] object-cover sm:h-[236px] sm:w-full" presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }} src={doctor.imageUrl} />
+          <div className="min-h-[196px] w-[42%] max-w-[176px] shrink-0 self-stretch overflow-hidden bg-[#edf5f8] sm:aspect-[11/10] sm:h-auto sm:min-h-0 sm:w-full sm:max-w-none">
+            <CmsImage
+              alt={doctor.imageAlt || doctor.name}
+              className="h-full w-full object-cover"
+              presentation={doctor.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }}
+              src={doctor.imageUrl}
+            />
+          </div>
         ) : (
-          <div aria-hidden="true" className="h-[196px] w-[42%] shrink-0 bg-[#edf5f8] sm:h-[236px] sm:w-full" />
+          <div
+            aria-hidden="true"
+            className="min-h-[196px] w-[42%] max-w-[176px] shrink-0 self-stretch bg-[#edf5f8] sm:aspect-[11/10] sm:h-auto sm:min-h-0 sm:w-full sm:max-w-none"
+          />
         )}
         <div className="flex min-w-0 flex-1 flex-col bg-white p-4 sm:min-h-[156px] sm:p-5">
-          <h3 className="text-[15px] font-bold leading-5 text-[#005687] sm:text-[16px]">{doctor.name}</h3>
+          <h3 className="text-[15px] font-bold leading-5 text-[#005687] sm:text-[16px]">
+            {doctor.name}
+          </h3>
           <p className="mt-1 text-[12px] font-semibold leading-4 text-[#3695B9] sm:text-[13px]">
             {doctor.credential ?? doctor.specialty}
           </p>
           <p className="mt-2 line-clamp-2 text-[13px] font-normal leading-5 text-[#64748b]">
             {doctor.focus ?? doctor.specialty}
           </p>
-          <span className="mt-auto inline-flex min-h-9 items-center justify-center gap-2 pt-3 text-left text-[12px] font-bold leading-4 text-[#167ea7] transition group-hover:text-[#005687] sm:mt-3 sm:min-h-0 sm:justify-start sm:pt-0">
+          <span className="mt-auto inline-flex min-h-9 items-center justify-start gap-2 pt-3 text-left text-[12px] font-bold leading-4 text-[#167ea7] transition group-hover:text-[#005687] sm:mt-3 sm:min-h-0 sm:pt-0">
             <CalendarIcon />
-            {doctor.bookingLabel ?? (language === 'km' ? `កក់ជាមួយ ${doctor.name}` : `Book with ${doctor.name}`)}
+            {doctor.bookingLabel ??
+              (language === 'km' ? `កក់ជាមួយ ${doctor.name}` : `Book with ${doctor.name}`)}
           </span>
         </div>
       </Link>
@@ -77,18 +150,34 @@ function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
 
 function DoctorsGrid({ doctors }: { doctors: LandingDoctor[] }) {
   const { language } = usePublicLanguage();
-  const copy = language === 'km'
-    ? { eyebrow: 'ជួបជាមួយក្រុមរបស់យើង', title: 'ក្រុមទន្តបណ្ឌិតដែលយកចិត្តទុកដាក់ស្តាប់អ្នកជាមុន', body: 'ស្វែងយល់ពីប្រវត្តិ ជំនាញ និងវិធីសាស្ត្រថែទាំអ្នកជំងឺរបស់ទន្តបណ្ឌិតនីមួយៗ។' }
-    : { eyebrow: 'Meet the team', title: 'Professionals who listen first', body: 'Explore each profile to learn about their background, areas of practice, and approach to patient care.' };
+  const copy =
+    language === 'km'
+      ? {
+          eyebrow: 'ជួបជាមួយក្រុមរបស់យើង',
+          title: 'ក្រុមទន្តបណ្ឌិតដែលយកចិត្តទុកដាក់ស្តាប់អ្នកជាមុន',
+          body: 'ស្វែងយល់ពីប្រវត្តិ ជំនាញ និងវិធីសាស្ត្រថែទាំអ្នកជំងឺរបស់ទន្តបណ្ឌិតនីមួយៗ។',
+        }
+      : {
+          eyebrow: 'Meet the team',
+          title: 'Professionals who listen first',
+          body: 'Explore each profile to learn about their background, areas of practice, and approach to patient care.',
+        };
   return (
-    <section aria-label={publicUiCopy(language).doctors.profilesLabel} className="bg-white py-10 sm:py-14">
+    <section
+      aria-label={publicUiCopy(language).doctors.profilesLabel}
+      className="bg-white py-10 sm:py-14"
+    >
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="mb-6 max-w-[650px] sm:mb-8">
-          <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">{copy.eyebrow}</p>
-          <h2 className="mt-2 text-[27px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{copy.title}</h2>
+          <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[0.06em] text-[#3695B9] sm:text-[12px]">
+            {copy.eyebrow}
+          </p>
+          <h2 className="mt-2 text-[27px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">
+            {copy.title}
+          </h2>
           <p className="mt-2 text-[15px] leading-6 text-[#64748b]">{copy.body}</p>
         </div>
-        <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {doctors.map((doctor) => (
             <DoctorCard doctor={doctor} key={doctor.detail.profileHref} />
           ))}
@@ -98,16 +187,74 @@ function DoctorsGrid({ doctors }: { doctors: LandingDoctor[] }) {
   );
 }
 
-function PatientFirstApproach({ items }: { items: NonNullable<DoctorsPageContent['patientEducation']> }) {
+function PatientFirstApproach({
+  items,
+}: {
+  items: NonNullable<DoctorsPageContent['patientEducation']>;
+}) {
   const { language } = usePublicLanguage();
   if (items.length === 0) return null;
-  const copy = language === 'km' ? { eyebrow: 'ការថែទាំដោយផ្តោតលើអ្នកជំងឺ', title: 'ការថែទាំចាប់ផ្តើមពីការណែនាំច្បាស់លាស់' } : { eyebrow: 'Patient-first approach', title: 'Care begins with clear guidance' };
-  return <section className="border-t border-[#e7eff3] bg-[#f7fafc] py-12 sm:py-16"><div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="max-w-[640px]"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{copy.eyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{copy.title}</h2></div><div className={`mt-7 grid gap-5 ${items.length === 1 ? 'max-w-[840px] md:grid-cols-[0.78fr_1.22fr]' : 'sm:grid-cols-2'}`}>{items.map((item) => { const imageUrl = getPublicMediaUrl(item.imageKey); return <article className={`overflow-hidden rounded-xl border border-[#dce9ee] bg-white ${items.length === 1 ? 'md:contents' : ''}`} key={item.id}>{imageUrl ? <CmsImage alt={item.title ?? ''} className="h-[280px] w-full rounded-t-xl md:rounded-xl" presentation={item.imagePresentation} src={imageUrl} /> : null}<div className={`p-5 sm:p-6 ${items.length === 1 ? 'rounded-b-xl border border-t-0 border-[#dce9ee] bg-white md:rounded-xl md:border' : ''}`}>{item.title ? <h3 className="text-[19px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[15px] leading-6 text-[#607486]">{item.body}</p> : null}</div></article>; })}</div></div></section>;
+  const copy =
+    language === 'km'
+      ? { eyebrow: 'ការថែទាំដោយផ្តោតលើអ្នកជំងឺ', title: 'ការថែទាំចាប់ផ្តើមពីការណែនាំច្បាស់លាស់' }
+      : { eyebrow: 'Patient-first approach', title: 'Care begins with clear guidance' };
+  return (
+    <section className="border-t border-[#e7eff3] bg-[#f7fafc] py-12 sm:py-16">
+      <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[640px]">
+          <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">
+            {copy.eyebrow}
+          </p>
+          <h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">
+            {copy.title}
+          </h2>
+        </div>
+        <div
+          className={`mt-7 grid gap-5 ${items.length === 1 ? 'max-w-[840px] md:grid-cols-[0.78fr_1.22fr]' : 'sm:grid-cols-2'}`}
+        >
+          {items.map((item) => {
+            const imageUrl = getPublicMediaUrl(item.imageKey);
+            return (
+              <article
+                className={`overflow-hidden rounded-xl border border-[#dce9ee] bg-white ${items.length === 1 ? 'md:contents' : ''}`}
+                key={item.id}
+              >
+                {imageUrl ? (
+                  <div className="h-[280px] w-full overflow-hidden rounded-t-xl md:rounded-xl">
+                    <CmsImage
+                      alt={item.title ?? ''}
+                      className="h-full w-full"
+                      presentation={item.imagePresentation}
+                      src={imageUrl}
+                    />
+                  </div>
+                ) : null}
+                <div
+                  className={`p-5 sm:p-6 ${items.length === 1 ? 'rounded-b-xl border border-t-0 border-[#dce9ee] bg-white md:rounded-xl md:border' : ''}`}
+                >
+                  {item.title ? (
+                    <h3 className="text-[19px] font-bold text-[#073f60]">{item.title}</h3>
+                  ) : null}
+                  {item.body ? (
+                    <p className="mt-2 text-[15px] leading-6 text-[#607486]">{item.body}</p>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function DoctorsPageView({ content }: { content: DoctorsPageContent }) {
   return (
-    <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
+    <SiteLayout
+      actions={content.actions}
+      navigation={content.navigation}
+      services={content.services}
+    >
       <main>
         <DoctorsHero hero={content.hero} heroMedia={content.heroMedia} />
         <DoctorsGrid doctors={content.doctors} />
@@ -127,7 +274,10 @@ function DoctorsPageSkeleton() {
       <main aria-busy="true" aria-label={copy.loading} className="bg-white">
         <span className="sr-only">{copy.loadingLabel}</span>
 
-        <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] pb-10 pt-12 text-center sm:pb-12 sm:pt-14">
+        <section
+          aria-hidden="true"
+          className="border-b border-[#e7eff3] bg-[#f7fafc] pb-10 pt-12 text-center sm:pb-12 sm:pt-14"
+        >
           <div className="mx-auto max-w-[650px] px-4 sm:px-6">
             <div className="mx-auto h-3 w-28 animate-pulse rounded-full bg-[#dcebf0]" />
             <div className="mx-auto mt-3 h-9 w-56 max-w-full animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
@@ -136,10 +286,13 @@ function DoctorsPageSkeleton() {
         </section>
 
         <section aria-hidden="true" className="bg-white py-10 sm:py-14">
-          <div className="mx-auto grid w-full max-w-[1280px] gap-4 px-4 sm:gap-5 sm:px-6 md:grid-cols-2 lg:grid-cols-3 lg:px-8 xl:grid-cols-4">
-          {Array.from({ length: 8 }, (_, index) => (
-              <div className="flex min-h-[196px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white sm:block sm:h-[392px]" key={index}>
-                <div className="h-[196px] w-[42%] shrink-0 animate-pulse bg-[#e3eef2] sm:h-[236px] sm:w-full" />
+          <div className="mx-auto grid w-full max-w-[1280px] gap-4 px-4 sm:grid-cols-2 sm:gap-5 sm:px-6 lg:grid-cols-3 lg:px-8 xl:grid-cols-4">
+            {Array.from({ length: 8 }, (_, index) => (
+              <div
+                className="flex min-h-[196px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white sm:block"
+                key={index}
+              >
+                <div className="h-[196px] w-[42%] max-w-[176px] shrink-0 animate-pulse bg-[#e3eef2] sm:aspect-[11/10] sm:h-auto sm:w-full sm:max-w-none" />
                 <div className="flex flex-1 flex-col justify-center space-y-3 p-4 sm:h-[156px] sm:justify-start sm:p-5">
                   <div className="h-4 w-3/4 animate-pulse rounded-full bg-[#dcebf0]" />
                   <div className="h-3 w-1/2 animate-pulse rounded-full bg-[#d1e6ee]" />
@@ -148,7 +301,7 @@ function DoctorsPageSkeleton() {
                   <div className="h-3 w-28 animate-pulse rounded-full bg-[#dcebf0]" />
                 </div>
               </div>
-          ))}
+            ))}
           </div>
         </section>
       </main>
@@ -188,11 +341,15 @@ function DoctorsPageError({ onRetry }: { onRetry: () => void }) {
 }
 
 function hasDoctorsContent(content: DoctorsPageContent | undefined): content is DoctorsPageContent {
-  return Boolean(content && content.navigation.length > 0 && content.hero.title && content.doctors.length > 0);
+  return Boolean(
+    content && content.navigation.length > 0 && content.hero.title && content.doctors.length > 0,
+  );
 }
 
 export function DoctorsPage() {
   const { data, isError, isLoading, refetch } = useDoctorsPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'ទន្តបណ្ឌិត' : 'Doctors'));
 
   if (isLoading) {
     return <DoctorsPageSkeleton />;

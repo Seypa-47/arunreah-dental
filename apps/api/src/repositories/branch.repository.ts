@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, like, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, like, or } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import type { AdminBranchListQuery, CreateBranchInput, UpdateBranchInput } from '@arunreah/shared';
 import { appointments, branches } from '../db/schema';
@@ -42,6 +42,11 @@ export async function updateBranch(database: DatabaseClient, id: string, input: 
 
 export async function deleteBranch(database: DatabaseClient, id: string) {
   await database.delete(branches).where(eq(branches.id, id));
+}
+
+export async function branchesExist(database: DatabaseClient, ids: string[]) {
+  if (ids.length === 0) return [];
+  return database.select({ id: branches.id }).from(branches).where(inArray(branches.id, ids));
 }
 
 export async function countAppointmentsForBranch(database: DatabaseClient, branchId: string) {

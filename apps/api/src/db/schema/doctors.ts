@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { check, index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { branches } from './branches';
 import { contentStatusValues, timestamps } from './common';
 
 export const doctors = sqliteTable(
@@ -92,5 +93,25 @@ export const doctorRelatedDoctors = sqliteTable(
   (table) => [
     uniqueIndex('doctor_related_doctors_unique').on(table.doctorId, table.relatedDoctorId),
     index('doctor_related_doctors_doctor_order_idx').on(table.doctorId, table.displayOrder),
+  ],
+);
+
+export const doctorBranches = sqliteTable(
+  'doctor_branches',
+  {
+    id: text('id').primaryKey(),
+    doctorId: text('doctor_id')
+      .notNull()
+      .references(() => doctors.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    branchId: text('branch_id')
+      .notNull()
+      .references(() => branches.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    displayOrder: integer('display_order').notNull().default(0),
+    ...timestamps(),
+  },
+  (table) => [
+    uniqueIndex('doctor_branches_unique').on(table.doctorId, table.branchId),
+    index('doctor_branches_doctor_id_idx').on(table.doctorId),
+    index('doctor_branches_branch_id_idx').on(table.branchId),
   ],
 );

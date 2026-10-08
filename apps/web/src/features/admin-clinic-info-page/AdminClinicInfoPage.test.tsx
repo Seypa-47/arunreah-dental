@@ -11,6 +11,8 @@ const mockClinicData = {
     taglineKm: 'ការថែទាំដែលគួរឱ្យទុកចិត្ត',
     shortAboutEn: 'Modern dental clinic',
     shortAboutKm: 'គ្លីនិកធ្មេញទំនើប',
+    footerDescriptionEn: 'Trusted care in Phnom Penh',
+    footerDescriptionKm: 'ការថែទាំដែលទុកចិត្តបាននៅភ្នំពេញ',
     logoKey: '',
     yearsExperience: '15',
     successfulCases: '10000',
@@ -32,6 +34,33 @@ const mockClinicData = {
       displayOrder: 1,
       status: 'PUBLISHED' as const,
       featured: true,
+      acceptsAppointments: true,
+      showOnBranchesPage: true,
+      showOnHomepage: true,
+      includeInHomepageHero: true,
+      descriptionEn: '',
+      descriptionKm: '',
+      latitude: null,
+      longitude: null,
+      mapEmbedUrl: '',
+      heroImageKey: '',
+      photoKeys: [],
+    },
+    {
+      id: 'branch-2',
+      slug: 'psa-chas',
+      nameEn: 'Psa Chas Branch',
+      nameKm: 'សាខាផ្សារចាស់',
+      name: 'Psa Chas Branch',
+      addressEn: 'Street 13, Daun Penh',
+      addressKm: 'ផ្លូវ ១៣ ដូនពេញ',
+      address: 'Street 13, Daun Penh',
+      phone1: '069 978 997',
+      phone2: '061 978 997',
+      phone: '069 978 997',
+      displayOrder: 2,
+      status: 'PUBLISHED' as const,
+      featured: false,
       acceptsAppointments: true,
       showOnBranchesPage: true,
       showOnHomepage: true,
@@ -80,7 +109,7 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
       data: {
         items: mockClinicData.branches,
         meta: {
-          total: 1,
+          total: 2,
           page: 1,
           limit: 20,
           totalPages: 1,
@@ -102,14 +131,11 @@ describe('resolveClinicInfoTab', () => {
     expect(resolveClinicInfoTab('/admin/clinic-info/branches/')).toBe('branches');
   });
 
-  it('resolves contact route to contact tab', () => {
-    expect(resolveClinicInfoTab('/admin/clinic-info/contact')).toBe('contact');
-    expect(resolveClinicInfoTab('/admin/clinic-info/contact/')).toBe('contact');
-  });
-
-  it('resolves clinic root route to clinic tab', () => {
+  it('resolves clinic root route and former contact route to clinic tab', () => {
     expect(resolveClinicInfoTab('/admin/clinic-info')).toBe('clinic');
     expect(resolveClinicInfoTab('/admin/clinic-info/')).toBe('clinic');
+    expect(resolveClinicInfoTab('/admin/clinic-info/contact')).toBe('clinic');
+    expect(resolveClinicInfoTab('/admin/clinic-info/contact/')).toBe('clinic');
   });
 
   it('falls back to provided fallback when route is outside clinic-info', () => {
@@ -140,9 +166,11 @@ describe('AdminClinicInfoPage tab synchronisation with router', () => {
     // Tab content
     expect(html).toContain('Clinic Name (English)');
     expect(html).toContain('Clinic Name (Khmer)');
+    expect(html).toContain('Clinic Contact &amp; Socials');
+    expect(html).toContain('General Inquiries Email');
+    expect(html).toContain('Clinic Hotline / Primary Phone');
     // Other tabs content should not be rendered
     expect(html).not.toContain('Branch Directory');
-    expect(html).not.toContain('Website Contact Details');
   });
 
   it('renders Branches tab content when at /admin/clinic-info/branches', () => {
@@ -152,20 +180,21 @@ describe('AdminClinicInfoPage tab synchronisation with router', () => {
     // Tab content
     expect(html).toContain('Branch Directory');
     expect(html).toContain('Add New Branch');
+    expect(html).toContain('Add Open Day &amp; Hours');
     // Other tabs content should not be rendered
-    expect(html).not.toContain('Clinic identity');
-    expect(html).not.toContain('Website Contact Details');
+    expect(html).not.toContain('Clinic Contact &amp; Socials');
   });
 
-  it('renders Contact Settings tab content when at /admin/clinic-info/contact', () => {
+  it('renders Clinic Information tab content with merged contact settings when at /admin/clinic-info/contact', () => {
     const html = renderAt('/admin/clinic-info/contact');
     // Tab active indicator
-    expect(html).toMatch(/aria-current="page"[^>]*>Contact Settings<\/button>/);
-    // Tab content
-    expect(html).toContain('Website Contact Details');
-    expect(html).toContain('Main Phone Number');
+    expect(html).toMatch(/aria-current="page"[^>]*>Clinic Information<\/button>/);
+    // Merged contact fields are present on clinic info tab
+    expect(html).toContain('Clinic Contact &amp; Socials');
+    expect(html).toContain('General Inquiries Email');
+    expect(html).toContain('Clinic Hotline / Primary Phone');
+    expect(html).toContain('Facebook Page URL');
     // Other tabs content should not be rendered
-    expect(html).not.toContain('Clinic identity');
     expect(html).not.toContain('Branch Directory');
   });
 });

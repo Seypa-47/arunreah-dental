@@ -6,7 +6,7 @@ type AppointmentRecord = {
   reference: string;
   idempotencyKey: string;
   status: 'PENDING';
-  serviceId: string;
+  serviceId: string | null;
   doctorId: string | null;
   branchId: string;
   serviceNameSnapshot: string;
@@ -41,7 +41,12 @@ const state = vi.hoisted(() => ({
   appointments: [] as AppointmentRecord[],
   rateLimits: new Map<string, { attempts: number; windowStartedAt: string }>(),
   notificationReferences: [] as string[],
-  notificationPayloads: [] as Array<{ reference: string; status?: string; patientName?: string }>,
+  notificationPayloads: [] as Array<{
+    reference: string;
+    status?: string;
+    patientName?: string;
+    serviceName?: string;
+  }>,
   notificationFails: false,
   createFails: false,
 }));
@@ -185,6 +190,29 @@ describe('public appointment request API', () => {
     expect(state.appointments.map((appointment) => appointment.doctorNameSnapshot)).toEqual([
       null,
       null,
+    ]);
+  });
+
+  it('accepts an omitted or null service when the patient is not sure what to choose', async () => {
+    const omitted = await submit({
+      serviceId: undefined,
+      idempotencyKey: '550e8400-e29b-41d4-a716-446655440021',
+    });
+    const nullService = await submit({
+      serviceId: null,
+      idempotencyKey: '550e8400-e29b-41d4-a716-446655440022',
+    });
+
+    expect(omitted.status).toBe(201);
+    expect(nullService.status).toBe(201);
+    expect(state.appointments.map((appointment) => appointment.serviceId)).toEqual([null, null]);
+    expect(state.appointments.map((appointment) => appointment.serviceNameSnapshot)).toEqual([
+      'Not sure / No preference',
+      'Not sure / No preference',
+    ]);
+    expect(state.notificationPayloads.map((payload) => payload.serviceName)).toEqual([
+      'Not sure / No preference',
+      'Not sure / No preference',
     ]);
   });
 

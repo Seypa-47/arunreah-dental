@@ -25,7 +25,7 @@ export const createPublicAppointmentSchema = z
     patientName: z.string().trim().min(2).max(160),
     phone: cambodianPhone.transform((value) => value.replace(/\s+/g, ' ').trim()),
     email: z.string().trim().email().max(320),
-    serviceId: z.string().uuid(),
+    serviceId: z.string().uuid().nullable().optional(),
     doctorId: z.string().uuid().nullable().optional(),
     branchId: z.string().uuid(),
     preferredDate: isoDate,

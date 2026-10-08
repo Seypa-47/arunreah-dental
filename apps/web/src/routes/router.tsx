@@ -1,38 +1,42 @@
-import { createBrowserRouter } from 'react-router-dom';
-import { lazy, Suspense, type ReactNode } from 'react';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { Suspense, type ReactNode } from 'react';
 import '@/styles/admin.css';
 import { LandingPage } from '@/features/landing-page/LandingPage';
 import { RedirectAuthenticatedAdmin, RequireAdminRoute } from '@/features/admin-auth/admin-route-guard';
+import { lazyWithRetry, registerVitePreloadErrorHandler } from './lazy-with-retry';
+import { RouteErrorBoundary } from './RouteErrorBoundary';
 
-const AboutPage = lazy(() => import('@/features/about-page/AboutPage').then(({ AboutPage: Page }) => ({ default: Page })));
-const AdminLoginPage = lazy(() => import('@/features/admin-login-page/AdminLoginPage').then(({ AdminLoginPage: Page }) => ({ default: Page })));
-const AdminInboxPage = lazy(() => import('@/features/admin-inbox-page/AdminInboxPage').then(({ AdminInboxPage: Page }) => ({ default: Page })));
-const AdminDashboardPage = lazy(() => import('@/features/admin-dashboard-page/AdminDashboardPage').then(({ AdminDashboardPage: Page }) => ({ default: Page })));
-const AdminCalendarPage = lazy(() => import('@/features/admin-calendar-page/AdminCalendarPage').then(({ AdminCalendarPage: Page }) => ({ default: Page })));
-const AdminAllAppointmentsPage = lazy(() => import('@/features/admin-all-appointments-page/AdminAllAppointmentsPage').then(({ AdminAllAppointmentsPage: Page }) => ({ default: Page })));
-const AdminServiceDetailPage = lazy(() => import('@/features/admin-service-detail-page/AdminServiceDetailPage').then(({ AdminServiceDetailPage: Page }) => ({ default: Page })));
-const AdminServiceCreatePage = lazy(() => import('@/features/admin-service-create-page/AdminServiceCreatePage').then(({ AdminServiceCreatePage: Page }) => ({ default: Page })));
-const AdminServicesPage = lazy(() => import('@/features/admin-services-page/AdminServicesPage').then(({ AdminServicesPage: Page }) => ({ default: Page })));
-const AdminDoctorsPage = lazy(() => import('@/features/admin-doctors-page/AdminDoctorsPage').then(({ AdminDoctorsPage: Page }) => ({ default: Page })));
-const AdminAddDoctorPage = lazy(() => import('@/features/admin-add-doctor-page/AdminAddDoctorPage').then(({ AdminAddDoctorPage: Page }) => ({ default: Page })));
-const AdminShowcasePage = lazy(() => import('@/features/admin-showcase-page/AdminShowcasePage').then(({ AdminShowcasePage: Page }) => ({ default: Page })));
-const AdminShowcaseDetailPage = lazy(() => import('@/features/admin-showcase-page/AdminShowcaseDetailPage').then(({ AdminShowcaseDetailPage: Page }) => ({ default: Page })));
-const AdminAddShowcasePage = lazy(() => import('@/features/admin-add-showcase-page/AdminAddShowcasePage').then(({ AdminAddShowcasePage: Page }) => ({ default: Page })));
-const AdminClinicInfoPage = lazy(() => import('@/features/admin-clinic-info-page/AdminClinicInfoPage').then(({ AdminClinicInfoPage: Page }) => ({ default: Page })));
-const AdminManagementPage = lazy(() => import('@/features/admin-management-page/AdminManagementPage').then(({ AdminManagementPage: Page }) => ({ default: Page })));
-const AdminPageMediaPage = lazy(() => import('@/features/admin-page-media-page/AdminPageMediaPage').then(({ AdminPageMediaPage: Page }) => ({ default: Page })));
-const AdminPageHeroesPage = lazy(() => import('@/features/admin-page-heroes-page/AdminPageHeroesPage').then(({ AdminPageHeroesPage: Page }) => ({ default: Page })));
-const AdminAboutTimelinePage = lazy(() => import('@/features/admin-about-timeline-page/AdminAboutTimelinePage').then(({ AdminAboutTimelinePage: Page }) => ({ default: Page })));
-const BookAppointmentPage = lazy(() => import('@/features/book-appointment-page/BookAppointmentPage').then(({ BookAppointmentPage: Page }) => ({ default: Page })));
-const BranchesPage = lazy(() => import('@/features/branches-page/BranchesPage').then(({ BranchesPage: Page }) => ({ default: Page })));
-const ContactPage = lazy(() => import('@/features/contact-page/ContactPage').then(({ ContactPage: Page }) => ({ default: Page })));
-const DoctorDetailPage = lazy(() => import('@/features/doctor-detail-page/DoctorDetailPage').then(({ DoctorDetailPage: Page }) => ({ default: Page })));
-const DoctorsPage = lazy(() => import('@/features/doctors-page/DoctorsPage').then(({ DoctorsPage: Page }) => ({ default: Page })));
-const ServiceDetailPage = lazy(() => import('@/features/service-detail-page/ServiceDetailPage').then(({ ServiceDetailPage: Page }) => ({ default: Page })));
-const ServicesPage = lazy(() => import('@/features/services-page/ServicesPage').then(({ ServicesPage: Page }) => ({ default: Page })));
-const ShowcasesPage = lazy(() => import('@/features/showcases-page/ShowcasesPage').then(({ ShowcasesPage: Page }) => ({ default: Page })));
-const ShowcaseDetailPage = lazy(() => import('@/features/showcase-detail-page/ShowcaseDetailPage').then(({ ShowcaseDetailPage: Page }) => ({ default: Page })));
-const PublicNotFoundPage = lazy(() => import('@/features/public-content/PublicNotFoundPage').then(({ PublicNotFoundPage: Page }) => ({ default: Page })));
+registerVitePreloadErrorHandler();
+
+const AboutPage = lazyWithRetry(() => import('@/features/about-page/AboutPage').then(({ AboutPage: Page }) => ({ default: Page })));
+const AdminLoginPage = lazyWithRetry(() => import('@/features/admin-login-page/AdminLoginPage').then(({ AdminLoginPage: Page }) => ({ default: Page })));
+const AdminInboxPage = lazyWithRetry(() => import('@/features/admin-inbox-page/AdminInboxPage').then(({ AdminInboxPage: Page }) => ({ default: Page })));
+const AdminDashboardPage = lazyWithRetry(() => import('@/features/admin-dashboard-page/AdminDashboardPage').then(({ AdminDashboardPage: Page }) => ({ default: Page })));
+const AdminCalendarPage = lazyWithRetry(() => import('@/features/admin-calendar-page/AdminCalendarPage').then(({ AdminCalendarPage: Page }) => ({ default: Page })));
+const AdminAllAppointmentsPage = lazyWithRetry(() => import('@/features/admin-all-appointments-page/AdminAllAppointmentsPage').then(({ AdminAllAppointmentsPage: Page }) => ({ default: Page })));
+const AdminServiceDetailPage = lazyWithRetry(() => import('@/features/admin-service-detail-page/AdminServiceDetailPage').then(({ AdminServiceDetailPage: Page }) => ({ default: Page })));
+const AdminServiceCreatePage = lazyWithRetry(() => import('@/features/admin-service-create-page/AdminServiceCreatePage').then(({ AdminServiceCreatePage: Page }) => ({ default: Page })));
+const AdminServicesPage = lazyWithRetry(() => import('@/features/admin-services-page/AdminServicesPage').then(({ AdminServicesPage: Page }) => ({ default: Page })));
+const AdminDoctorsPage = lazyWithRetry(() => import('@/features/admin-doctors-page/AdminDoctorsPage').then(({ AdminDoctorsPage: Page }) => ({ default: Page })));
+const AdminAddDoctorPage = lazyWithRetry(() => import('@/features/admin-add-doctor-page/AdminAddDoctorPage').then(({ AdminAddDoctorPage: Page }) => ({ default: Page })));
+const AdminShowcasePage = lazyWithRetry(() => import('@/features/admin-showcase-page/AdminShowcasePage').then(({ AdminShowcasePage: Page }) => ({ default: Page })));
+const AdminShowcaseDetailPage = lazyWithRetry(() => import('@/features/admin-showcase-page/AdminShowcaseDetailPage').then(({ AdminShowcaseDetailPage: Page }) => ({ default: Page })));
+const AdminAddShowcasePage = lazyWithRetry(() => import('@/features/admin-add-showcase-page/AdminAddShowcasePage').then(({ AdminAddShowcasePage: Page }) => ({ default: Page })));
+const AdminClinicInfoPage = lazyWithRetry(() => import('@/features/admin-clinic-info-page/AdminClinicInfoPage').then(({ AdminClinicInfoPage: Page }) => ({ default: Page })));
+const AdminManagementPage = lazyWithRetry(() => import('@/features/admin-management-page/AdminManagementPage').then(({ AdminManagementPage: Page }) => ({ default: Page })));
+const AdminPageMediaPage = lazyWithRetry(() => import('@/features/admin-page-media-page/AdminPageMediaPage').then(({ AdminPageMediaPage: Page }) => ({ default: Page })));
+const AdminPageHeroesPage = lazyWithRetry(() => import('@/features/admin-page-heroes-page/AdminPageHeroesPage').then(({ AdminPageHeroesPage: Page }) => ({ default: Page })));
+const AdminAboutTimelinePage = lazyWithRetry(() => import('@/features/admin-about-timeline-page/AdminAboutTimelinePage').then(({ AdminAboutTimelinePage: Page }) => ({ default: Page })));
+const BookAppointmentPage = lazyWithRetry(() => import('@/features/book-appointment-page/BookAppointmentPage').then(({ BookAppointmentPage: Page }) => ({ default: Page })));
+const BranchesPage = lazyWithRetry(() => import('@/features/branches-page/BranchesPage').then(({ BranchesPage: Page }) => ({ default: Page })));
+const ContactPage = lazyWithRetry(() => import('@/features/contact-page/ContactPage').then(({ ContactPage: Page }) => ({ default: Page })));
+const DoctorDetailPage = lazyWithRetry(() => import('@/features/doctor-detail-page/DoctorDetailPage').then(({ DoctorDetailPage: Page }) => ({ default: Page })));
+const DoctorsPage = lazyWithRetry(() => import('@/features/doctors-page/DoctorsPage').then(({ DoctorsPage: Page }) => ({ default: Page })));
+const ServiceDetailPage = lazyWithRetry(() => import('@/features/service-detail-page/ServiceDetailPage').then(({ ServiceDetailPage: Page }) => ({ default: Page })));
+const ServicesPage = lazyWithRetry(() => import('@/features/services-page/ServicesPage').then(({ ServicesPage: Page }) => ({ default: Page })));
+const ShowcasesPage = lazyWithRetry(() => import('@/features/showcases-page/ShowcasesPage').then(({ ShowcasesPage: Page }) => ({ default: Page })));
+const ShowcaseDetailPage = lazyWithRetry(() => import('@/features/showcase-detail-page/ShowcaseDetailPage').then(({ ShowcaseDetailPage: Page }) => ({ default: Page })));
+const PublicNotFoundPage = lazyWithRetry(() => import('@/features/public-content/PublicNotFoundPage').then(({ PublicNotFoundPage: Page }) => ({ default: Page })));
 
 const protectedAdminRoute = (element: ReactNode) => (
   <div className="admin-ui"><RequireAdminRoute><RouteLoadingBoundary>{element}</RouteLoadingBoundary></RequireAdminRoute></div>
@@ -44,7 +48,7 @@ function RouteLoadingBoundary({ children }: { children: ReactNode }) {
 
 const lazyPublicRoute = (element: ReactNode) => <RouteLoadingBoundary>{element}</RouteLoadingBoundary>;
 
-export const router = createBrowserRouter([
+const routes = [
   {
     path: '/admin/login',
     element: <div className="admin-ui"><RedirectAuthenticatedAdmin><RouteLoadingBoundary><AdminLoginPage /></RouteLoadingBoundary></RedirectAuthenticatedAdmin></div>,
@@ -143,7 +147,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/clinic-info/contact',
-    element: protectedAdminRoute(<AdminClinicInfoPage initialTab="contact" />),
+    element: protectedAdminRoute(<Navigate replace to="/admin/clinic-info" />),
   },
   {
     path: '/admin/admins',
@@ -209,4 +213,12 @@ export const router = createBrowserRouter([
     path: '*',
     element: lazyPublicRoute(<PublicNotFoundPage />),
   },
-]);
+];
+
+export const router = createBrowserRouter(
+  routes.map((route) => ({
+    ...route,
+    errorElement: <RouteErrorBoundary />,
+  })),
+);
+

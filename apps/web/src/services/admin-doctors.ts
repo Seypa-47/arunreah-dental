@@ -48,6 +48,7 @@ export type AdminDoctor = {
   shortIntroKm?: string;
   specialtyKm?: string;
   relatedDoctorIds?: string[];
+  branchIds?: string[];
   displayOrder?: number;
   showOnWebsite: boolean;
   specialty: string;
@@ -89,6 +90,7 @@ export type AdminDoctorsContent = {
   }[];
   meta: CmsListMeta;
   table: {
+    branch: string;
     doctor: string;
     specialty: string;
     status: string;
@@ -134,6 +136,7 @@ const adminDoctorsContent: AdminDoctorsContent = {
   ],
   meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
   table: {
+    branch: 'BRANCH',
     doctor: 'DOCTOR',
     specialty: 'SPECIALTY / TITLE',
     status: 'STATUS',
@@ -405,7 +408,7 @@ export function toAdminDoctor(doctor: AdminDoctorRecord): AdminDoctor {
   return {
     id: doctor.id, name: doctor.nameEn, nameKm: doctor.nameKm, roleTitle: doctor.titleEn ?? '', roleTitleKm: doctor.titleKm ?? '', specialty: doctor.specialtyEn ?? '', specialtyKm: doctor.specialtyKm ?? '', shortIntro: doctor.shortBioEn ?? '', shortIntroKm: doctor.shortBioKm ?? '', content: doctor.aboutEn ?? '', contentKm: doctor.aboutKm ?? '',
     imageAlt: doctor.nameEn, imageUrl: getPublicMediaUrl(doctor.photoKey), photoKey: doctor.photoKey, photoImagePresentation: doctor.photoImagePresentation, contactPhone: doctor.phone ?? '', expertise: [], expertiseItems: [],
-    education: [], educationItems: [], relatedDoctorIds: [], procedures: doctor.successfulProcedures?.toString() ?? '', satisfaction: doctor.patientSatisfaction?.toString() ?? '', yearsExp: doctor.yearsExperience?.toString() ?? '',
+    education: [], educationItems: [], relatedDoctorIds: [], branchIds: doctor.branchIds ?? [], procedures: doctor.successfulProcedures?.toString() ?? '', satisfaction: doctor.patientSatisfaction?.toString() ?? '', yearsExp: doctor.yearsExperience?.toString() ?? '',
     featuredDoctor: doctor.featured, showOnWebsite: doctor.status === 'PUBLISHED', status: statusForUi(doctor.status), updatedAt: doctor.updatedAt, ctaButtonText: 'Book Now', seo: { slug: doctor.slug }, displayOrder: doctor.displayOrder,
   };
 }

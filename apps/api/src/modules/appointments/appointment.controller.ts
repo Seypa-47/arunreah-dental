@@ -64,6 +64,7 @@ export async function updateAdminAppointmentStatusController(context: Context<Ap
     id,
     input,
     admin.id,
+    context.env,
   );
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ appointment }));
@@ -78,46 +79,21 @@ export async function getAdminTelegramStatusController(context: Context<AppEnv>)
     return context.json(
       successResponse({
         enabled,
-        configuredChatId,
         botConfigured: false,
-        message: 'TELEGRAM_BOT_TOKEN is not configured.',
+        message: 'Telegram notifications are not configured.',
       }),
     );
   }
 
-  let botInfo: unknown = null;
-  const recentChats: Array<{ id: number | string; title?: string; type: string; username?: string }> = [];
+  let botReachable = false;
 
   try {
     const meRes = await fetch(`https://api.telegram.org/bot${encodeURIComponent(botToken)}/getMe`, {
       signal: AbortSignal.timeout(5000),
     });
     if (meRes.ok) {
-      const data = (await meRes.json()) as { result?: unknown };
-      botInfo = data.result;
-    }
-
-    const updatesRes = await fetch(
-      `https://api.telegram.org/bot${encodeURIComponent(botToken)}/getUpdates?limit=20`,
-      { signal: AbortSignal.timeout(5000) },
-    );
-    if (updatesRes.ok) {
-      const data = (await updatesRes.json()) as {
-        result?: Array<{
-          message?: { chat?: { id: number; title?: string; type: string; username?: string } };
-          my_chat_member?: { chat?: { id: number; title?: string; type: string } };
-        }>;
-      };
-      if (Array.isArray(data.result)) {
-        const seen = new Set<number>();
-        for (const update of data.result) {
-          const chat = update.message?.chat ?? update.my_chat_member?.chat;
-          if (chat && !seen.has(chat.id)) {
-            seen.add(chat.id);
-            recentChats.push(chat);
-          }
-        }
-      }
+      const data = (await meRes.json()) as { ok?: boolean };
+      botReachable = Boolean(data.ok);
     }
   } catch (error) {
     console.error('Failed to query Telegram API:', error);
@@ -127,9 +103,8 @@ export async function getAdminTelegramStatusController(context: Context<AppEnv>)
   return context.json(
     successResponse({
       enabled,
-      configuredChatId,
-      botInfo,
-      recentChats,
+      botConfigured: true,
+      botReachable,
       isGroupConfigured: Boolean(
         configuredChatId && (configuredChatId.startsWith('-') || configuredChatId.startsWith('@')),
       ),
@@ -139,10 +114,10 @@ export async function getAdminTelegramStatusController(context: Context<AppEnv>)
 
 export async function testAdminTelegramNotificationController(context: Context<AppEnv>) {
   const botToken = context.env.TELEGRAM_BOT_TOKEN;
-  const chatId = context.req.query('chatId') || context.env.TELEGRAM_CHAT_ID;
+  const chatId = context.env.TELEGRAM_CHAT_ID;
 
   if (!botToken || !chatId) {
-    throw new HttpError(400, 'VALIDATION_ERROR', 'Bot token or Chat ID is not configured.');
+    throw new HttpError(400, 'VALIDATION_ERROR', 'Telegram notification settings are not configured.');
   }
 
   const text = '🔔 Arunreah Dental Clinic — Test notification to Telegram group. Group notifications are active!';
@@ -159,20 +134,18 @@ export async function testAdminTelegramNotificationController(context: Context<A
     },
   );
 
-  const responseBody = await response.text();
   context.header('Cache-Control', 'private, no-store');
   if (!response.ok) {
+    console.error('Telegram test notification failed with status:', response.status);
     return context.json(
-      errorResponse('INTERNAL_ERROR', `Telegram API returned ${response.status}: ${responseBody}`),
-      400,
+      errorResponse('INTERNAL_ERROR', 'Unable to send test notification via Telegram.'),
+      502,
     );
   }
 
   return context.json(
     successResponse({
       sent: true,
-      chatId,
-      telegramResponse: JSON.parse(responseBody),
     }),
   );
 }

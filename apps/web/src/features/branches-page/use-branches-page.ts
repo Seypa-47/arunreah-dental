@@ -4,17 +4,10 @@ import { queryKeys } from '@/lib/query-keys';
 import { getPublicBranches, getPublicPageMedia } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+import { formatPublicBranchHours, formatPublicBranchSchedules } from '@/features/public-content/public-branch';
+import { getBranchDefaultMapUrl } from './branch-coordinates';
 
-function formatBranchHours(openingDays: string | null | undefined, openingHours: string | null | undefined, openingTime: string | null | undefined, closingTime: string | null | undefined) {
-  const days = openingDays?.trim() ?? '';
-  const hours = openingHours?.trim() ?? [openingTime, closingTime].filter(Boolean).join(' - ');
-
-  if (!days || !hours.toLocaleLowerCase().startsWith(days.toLocaleLowerCase())) {
-    return { days, hours };
-  }
-
-  return { days, hours: hours.slice(days.length).replace(/^[:\s-]+/, '') };
-}
+export { formatPublicBranchHours as formatBranchHours };
 
 export function useBranchesPageQuery() {
   const { language } = usePublicLanguage();
@@ -34,22 +27,25 @@ export function useBranchesPageQuery() {
       return {
         ...chrome,
         branches: publicBranches.map((branch) => {
-          const hours = formatBranchHours(branch.openingDays, branch.openingHours, branch.openingTime, branch.closingTime);
+          const hours = formatPublicBranchHours(branch);
+          const hoursSchedules = formatPublicBranchSchedules(branch);
+          const resolvedMapUrl = getBranchDefaultMapUrl(branch.slug || branch.name, branch.googleMapsUrl);
 
           return {
             address: branch.address,
             badge: branch.badge ?? branch.name,
             bookingLabel: branch.heroCtaLabel ?? (isKm ? 'កក់នៅសាខានេះ' : 'Book at this Branch'),
             directionsLabel: isKm ? 'ស្វែងរកផ្លូវ' : 'Get Directions',
-            directionsUrl: branch.googleMapsUrl ?? '#',
+            directionsUrl: resolvedMapUrl,
             hoursDays: hours.days,
-            hoursTime: hours.hours,
+            hoursTime: hours.time,
+            hoursSchedules,
             id: branch.id,
             imageAlt: branch.name,
             imagePresentation: branch.branchImagePresentation,
             imageUrl: getPublicMediaUrl(branch.branchImageKey) ?? '',
             mapLabel: isKm ? 'មើលលើផែនទី' : 'View on Map',
-            mapUrl: branch.googleMapsUrl ?? '#',
+            mapUrl: resolvedMapUrl,
             name: branch.name,
             phoneLabel: isKm ? 'ទូរស័ព្ទឥឡូវ' : 'Call Now',
             phones: [branch.phone, branch.secondaryPhone].filter((phone): phone is string => Boolean(phone)),
@@ -81,7 +77,7 @@ export function useBranchesPageQuery() {
               title: String(appointmentBranches.length),
             },
           ],
-          subtitle: heroItem?.body || primaryBranch?.heroSupportingText || chrome.hero.subtitle,
+          subtitle: heroItem?.body || chrome.hero.subtitle,
         },
       };
     },

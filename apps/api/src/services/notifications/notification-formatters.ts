@@ -538,3 +538,504 @@ export function patientAppointmentEmailHtml(payload: AppointmentNotificationPayl
 </html>`;
 }
 
+export function patientAppointmentConfirmedEmailSubject(payload: AppointmentNotificationPayload) {
+  return `Appointment Confirmed — ${payload.reference} | Arunreah Dental Clinic`;
+}
+
+export function patientAppointmentConfirmedEmailText(payload: AppointmentNotificationPayload) {
+  return [
+    '============================================================',
+    '                  ARUNREAH DENTAL CLINIC',
+    '               Appointment Request Confirmed',
+    '============================================================',
+    '',
+    `Dear ${payload.patientName},`,
+    '',
+    'Great news! Your appointment at Arunreah Dental Clinic has been CONFIRMED.',
+    'We look forward to welcoming you at our clinic.',
+    '',
+    `Appointment Reference: ${payload.reference}`,
+    'Status: CONFIRMED',
+    '',
+    '------------------------------------------------------------',
+    'CONFIRMED APPOINTMENT DETAILS',
+    '------------------------------------------------------------',
+    `Service: ${payload.serviceName}`,
+    `Branch: ${payload.branchName}`,
+    `Doctor: ${doctorName(payload)}`,
+    `Confirmed Date: ${payload.preferredDate}`,
+    `Confirmed Time: ${payload.preferredTime}`,
+    `Contact Phone: ${payload.phone}`,
+    '',
+    'Notes / Remarks:',
+    notes(payload),
+    '',
+    '------------------------------------------------------------',
+    'PATIENT REMINDERS',
+    '------------------------------------------------------------',
+    '1. Arrival Time: Please arrive approximately 10 minutes prior to your scheduled time.',
+    '2. Records & Info: Bring any relevant dental records, X-rays, or list of current medications.',
+    '3. Rescheduling: If you need to modify your visit, please contact us at least 24 hours in advance.',
+    '',
+    '------------------------------------------------------------',
+    'CLINIC LOCATIONS & CONTACT',
+    '------------------------------------------------------------',
+    'Toul Tompoung Branch: 098 701 302 / 012 964 200',
+    'Psa Chas Branch: 069 978 997 / 061 978 997',
+    'Operating Hours: Monday – Sunday, 8:00 AM – 7:00 PM',
+    '',
+    '============================================================',
+    'Arunreah Dental Clinic • Phnom Penh, Cambodia',
+    'This is an automated confirmation of your appointment booking.',
+  ].join('\n');
+}
+
+export function patientAppointmentConfirmedEmailHtml(payload: AppointmentNotificationPayload) {
+  const patientNotes = payload.notes
+    ? escapeHtml(payload.notes)
+    : 'No special notes provided.';
+  const notesStyle = payload.notes
+    ? 'color: #1e293b; font-style: normal;'
+    : 'color: #94a3b8; font-style: italic;';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointment Confirmed</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1e293b;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);">
+          
+          <!-- Header Banner -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #005687 0%, #075d83 100%); padding: 30px 32px; text-align: left;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <span style="display: inline-block; background-color: #10b981; color: #ffffff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 9999px; margin-bottom: 12px;">
+                      Confirmed
+                    </span>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: -0.02em;">
+                      Arunreah Dental Clinic
+                    </h1>
+                    <p style="margin: 4px 0 0 0; color: #d0e8f2; font-size: 14px; font-weight: 500;">
+                      Dental Care &amp; Implant Center
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Content Body -->
+          <tr>
+            <td style="padding: 28px 32px;">
+              
+              <!-- Greeting -->
+              <p style="margin: 0 0 12px 0; font-size: 16px; line-height: 24px; color: #0f172a; font-weight: 700;">
+                Dear ${escapeHtml(payload.patientName)},
+              </p>
+              <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 22px; color: #475569;">
+                Great news! Your appointment request at Arunreah Dental Clinic has been <strong>confirmed</strong> by our reception desk. We look forward to seeing you at your scheduled time.
+              </p>
+
+              <!-- Reference & Status Card -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;">
+                <tr>
+                  <td>
+                    <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">
+                      Appointment Reference
+                    </span>
+                    <span style="font-size: 17px; font-weight: 800; color: #005687; font-family: 'Courier New', Courier, monospace; letter-spacing: 0.02em;">
+                      ${escapeHtml(payload.reference)}
+                    </span>
+                  </td>
+                  <td align="right" valign="middle">
+                    <span style="display: inline-block; background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.04em;">
+                      Confirmed
+                    </span>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Notice Callout -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 4px; padding: 12px 16px; margin-bottom: 28px;">
+                <tr>
+                  <td style="font-size: 13px; line-height: 20px; color: #166534; font-weight: 500;">
+                    <strong>Reminder:</strong> Please arrive approximately 10 minutes prior to your confirmed time so our team can prepare your consultation.
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Confirmed Details Section -->
+              <h2 style="margin: 0 0 12px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.06em;">
+                Confirmed Appointment Details
+              </h2>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 28px;">
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f8fafc; width: 35%; font-size: 13px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0;">
+                    Service
+                  </td>
+                  <td style="padding: 12px 16px; background-color: #ffffff; font-size: 14px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #e2e8f0;">
+                    ${escapeHtml(payload.serviceName)}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f8fafc; font-size: 13px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0;">
+                    Branch
+                  </td>
+                  <td style="padding: 12px 16px; background-color: #ffffff; font-size: 14px; font-weight: 600; color: #334155; border-bottom: 1px solid #e2e8f0;">
+                    ${escapeHtml(payload.branchName)}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f8fafc; font-size: 13px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0;">
+                    Doctor
+                  </td>
+                  <td style="padding: 12px 16px; background-color: #ffffff; font-size: 14px; font-weight: 600; color: #334155; border-bottom: 1px solid #e2e8f0;">
+                    ${escapeHtml(doctorName(payload))}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f8fafc; font-size: 13px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0;">
+                    Confirmed Schedule
+                  </td>
+                  <td style="padding: 12px 16px; background-color: #ffffff; font-size: 14px; font-weight: 700; color: #005687; border-bottom: 1px solid #e2e8f0;">
+                    ${escapeHtml(payload.preferredDate)} &nbsp;•&nbsp; ${escapeHtml(payload.preferredTime)}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f8fafc; font-size: 13px; font-weight: 600; color: #475569;">
+                    Contact Phone
+                  </td>
+                  <td style="padding: 12px 16px; background-color: #ffffff; font-size: 14px; font-weight: 600; color: #0f172a;">
+                    ${escapeHtml(payload.phone)}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Notes Section -->
+              <h2 style="margin: 0 0 12px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.06em;">
+                Notes / Special Requests
+              </h2>
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; font-size: 13px; line-height: 20px; margin-bottom: 28px; ${notesStyle}">
+                ${patientNotes}
+              </div>
+
+              <!-- Helpful Reminders -->
+              <h2 style="margin: 0 0 12px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.06em;">
+                Preparing for Your Visit
+              </h2>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 28px;">
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td width="28" valign="top">
+                          <span style="display: inline-block; width: 22px; height: 22px; background-color: #005687; color: #ffffff; font-size: 12px; font-weight: 700; line-height: 22px; text-align: center; border-radius: 50%;">1</span>
+                        </td>
+                        <td style="padding-left: 8px; font-size: 13px; line-height: 19px; color: #334155;">
+                          <strong>Arrival:</strong> Please arrive 10 minutes early so our staff can check you in.
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td width="28" valign="top">
+                          <span style="display: inline-block; width: 22px; height: 22px; background-color: #005687; color: #ffffff; font-size: 12px; font-weight: 700; line-height: 22px; text-align: center; border-radius: 50%;">2</span>
+                        </td>
+                        <td style="padding-left: 8px; font-size: 13px; line-height: 19px; color: #334155;">
+                          <strong>Dental History:</strong> If you have recent dental records or X-rays, please bring them along.
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td width="28" valign="top">
+                          <span style="display: inline-block; width: 22px; height: 22px; background-color: #005687; color: #ffffff; font-size: 12px; font-weight: 700; line-height: 22px; text-align: center; border-radius: 50%;">3</span>
+                        </td>
+                        <td style="padding-left: 8px; font-size: 13px; line-height: 19px; color: #334155;">
+                          <strong>Need to Reschedule?:</strong> Please let us know at least 24 hours in advance by phone so we can accommodate other patients.
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Contact & Support -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border: 1px dashed #cbd5e1; border-radius: 10px; padding: 16px; background-color: #ffffff;">
+                <tr>
+                  <td>
+                    <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #005687; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">
+                      Questions or Location Assistance?
+                    </span>
+                    <p style="margin: 0 0 8px 0; font-size: 13px; line-height: 20px; color: #475569;">
+                      Our reception desk is here to help you:
+                    </p>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size: 13px; line-height: 20px; color: #1e293b;">
+                      <tr>
+                        <td style="padding: 2px 0;"><strong>Toul Tompoung:</strong> 098 701 302 / 012 964 200</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 2px 0;"><strong>Psa Chas:</strong> 069 978 997 / 061 978 997</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 2px 0; color: #64748b; font-size: 12px;">Hours: Mon – Sun, 8:00 AM – 7:00 PM</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 32px; text-align: center;">
+              <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 18px;">
+                <strong>Arunreah Dental Clinic</strong> • Phnom Penh, Cambodia<br>
+                This automated confirmation was sent for appointment reference ${escapeHtml(payload.reference)}.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export function patientAppointmentCancelledEmailSubject(payload: AppointmentNotificationPayload) {
+  return `Appointment Cancelled — ${payload.reference} | Arunreah Dental Clinic`;
+}
+
+export function patientAppointmentCancelledEmailText(payload: AppointmentNotificationPayload) {
+  return [
+    '============================================================',
+    '                  ARUNREAH DENTAL CLINIC',
+    '               Appointment Request Cancelled',
+    '============================================================',
+    '',
+    `Dear ${payload.patientName},`,
+    '',
+    `This email is to inform you that your appointment request (${payload.reference})`,
+    'at Arunreah Dental Clinic has been CANCELLED.',
+    '',
+    `Appointment Reference: ${payload.reference}`,
+    'Status: CANCELLED',
+    '',
+    '------------------------------------------------------------',
+    'CANCELLED REQUEST DETAILS',
+    '------------------------------------------------------------',
+    `Service: ${payload.serviceName}`,
+    `Branch: ${payload.branchName}`,
+    `Doctor: ${doctorName(payload)}`,
+    `Scheduled Date: ${payload.preferredDate}`,
+    `Scheduled Time: ${payload.preferredTime}`,
+    '',
+    '------------------------------------------------------------',
+    'NEED TO RESCHEDULE?',
+    '------------------------------------------------------------',
+    'If you wish to reschedule or if this cancellation was unexpected, please feel free to',
+    'submit a new appointment request on our website or call our reception desk directly.',
+    '',
+    '------------------------------------------------------------',
+    'CLINIC LOCATIONS & CONTACT',
+    '------------------------------------------------------------',
+    'Toul Tompoung Branch: 098 701 302 / 012 964 200',
+    'Psa Chas Branch: 069 978 997 / 061 978 997',
+    'Operating Hours: Monday – Sunday, 8:00 AM – 7:00 PM',
+    '',
+    '============================================================',
+    'Arunreah Dental Clinic • Phnom Penh, Cambodia',
+    'This is an automated notification regarding your appointment status.',
+  ].join('\n');
+}
+
+export function patientAppointmentCancelledEmailHtml(payload: AppointmentNotificationPayload) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointment Cancelled</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1e293b;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);">
+          
+          <!-- Header Banner -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #005687 0%, #075d83 100%); padding: 30px 32px; text-align: left;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <span style="display: inline-block; background-color: #ef4444; color: #ffffff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 9999px; margin-bottom: 12px;">
+                      Cancelled
+                    </span>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: -0.02em;">
+                      Arunreah Dental Clinic
+                    </h1>
+                    <p style="margin: 4px 0 0 0; color: #d0e8f2; font-size: 14px; font-weight: 500;">
+                      Dental Care &amp; Implant Center
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Content Body -->
+          <tr>
+            <td style="padding: 28px 32px;">
+              
+              <!-- Greeting -->
+              <p style="margin: 0 0 12px 0; font-size: 16px; line-height: 24px; color: #0f172a; font-weight: 700;">
+                Dear ${escapeHtml(payload.patientName)},
+              </p>
+              <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 22px; color: #475569;">
+                This email is to notify you that your appointment request (${escapeHtml(payload.reference)}) at Arunreah Dental Clinic has been <strong>cancelled</strong>.
+              </p>
+
+              <!-- Reference & Status Card -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;">
+                <tr>
+                  <td>
+                    <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">
+                      Appointment Reference
+                    </span>
+                    <span style="font-size: 17px; font-weight: 800; color: #005687; font-family: 'Courier New', Courier, monospace; letter-spacing: 0.02em;">
+                      ${escapeHtml(payload.reference)}
+                    </span>
+                  </td>
+                  <td align="right" valign="middle">
+                    <span style="display: inline-block; background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.04em;">
+                      Cancelled
+                    </span>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Notice Callout -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #fff7ed; border-left: 4px solid #f97316; border-radius: 4px; padding: 12px 16px; margin-bottom: 28px;">
+                <tr>
+                  <td style="font-size: 13px; line-height: 20px; color: #9a3412; font-weight: 500;">
+                    If this cancellation was unexpected or done in error, please contact our clinic team immediately so we can assist you.
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Details Section -->
+              <h2 style="margin: 0 0 12px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.06em;">
+                Cancelled Request Details
+              </h2>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 28px;">
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f8fafc; width: 35%; font-size: 13px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0;">
+                    Service
+                  </td>
+                  <td style="padding: 12px 16px; background-color: #ffffff; font-size: 14px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #e2e8f0;">
+                    ${escapeHtml(payload.serviceName)}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f8fafc; font-size: 13px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0;">
+                    Branch
+                  </td>
+                  <td style="padding: 12px 16px; background-color: #ffffff; font-size: 14px; font-weight: 600; color: #334155; border-bottom: 1px solid #e2e8f0;">
+                    ${escapeHtml(payload.branchName)}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f8fafc; font-size: 13px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0;">
+                    Doctor
+                  </td>
+                  <td style="padding: 12px 16px; background-color: #ffffff; font-size: 14px; font-weight: 600; color: #334155; border-bottom: 1px solid #e2e8f0;">
+                    ${escapeHtml(doctorName(payload))}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; background-color: #f8fafc; font-size: 13px; font-weight: 600; color: #475569;">
+                    Scheduled Date &amp; Time
+                  </td>
+                  <td style="padding: 12px 16px; background-color: #ffffff; font-size: 14px; font-weight: 600; color: #475569;">
+                    ${escapeHtml(payload.preferredDate)} &nbsp;•&nbsp; ${escapeHtml(payload.preferredTime)}
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Rescheduling Options -->
+              <h2 style="margin: 0 0 12px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #005687; letter-spacing: 0.06em;">
+                Would You Like to Reschedule?
+              </h2>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 28px;">
+                <tr>
+                  <td style="font-size: 13px; line-height: 20px; color: #475569;">
+                    We would be delighted to welcome you at another time that suits your schedule. You can submit a new appointment request on our website anytime or contact our reception desk directly.
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Contact & Support -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border: 1px dashed #cbd5e1; border-radius: 10px; padding: 16px; background-color: #ffffff;">
+                <tr>
+                  <td>
+                    <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #005687; letter-spacing: 0.05em; display: block; margin-bottom: 6px;">
+                      Contact Our Clinics
+                    </span>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size: 13px; line-height: 20px; color: #1e293b;">
+                      <tr>
+                        <td style="padding: 2px 0;"><strong>Toul Tompoung:</strong> 098 701 302 / 012 964 200</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 2px 0;"><strong>Psa Chas:</strong> 069 978 997 / 061 978 997</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 2px 0; color: #64748b; font-size: 12px;">Hours: Mon – Sun, 8:00 AM – 7:00 PM</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 32px; text-align: center;">
+              <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 18px;">
+                <strong>Arunreah Dental Clinic</strong> • Phnom Penh, Cambodia<br>
+                This automated update was sent regarding appointment reference ${escapeHtml(payload.reference)}.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+

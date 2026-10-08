@@ -6,10 +6,11 @@ import { Card } from '@/components/ui/card';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ContentBlocks, PublicPageHero, ResilientImage } from '@/components/layout/public-ui';
-import type { AboutPageContent } from '@/features/landing-page/types';
+import type { AboutDoctorProfile, AboutPageContent } from '@/features/landing-page/types';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 import { useAboutPageQuery } from './use-about-page';
 import { getPublicMediaUrl } from '@/services/media';
 
@@ -69,9 +70,51 @@ function ExperienceBadgeIcon() {
   );
 }
 
-function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPageContent, 'editorial' | 'featuredDoctor' | 'stats' | 'story'>) {
+/** One founder: index rule, portrait, then details — set like a magazine spread, not a card. */
+function FounderProfile({ doctor, index, viewProfileLabel }: { doctor: AboutDoctorProfile; index: number; viewProfileLabel: string }) {
+  return (
+    <article className="group flex h-full flex-col">
+      <div className="flex items-center gap-3">
+        <span className="text-[11px] font-extrabold tabular-nums tracking-[0.2em] text-[#3695B9]">{String(index + 1).padStart(2, '0')}</span>
+        <span aria-hidden="true" className="h-px flex-1 bg-[#dde9ef]" />
+        {doctor.specialty ? <span className="ui-eyebrow min-w-0 truncate text-right text-[10.5px] font-bold uppercase leading-4 tracking-[0.06em] text-[#5b8ca6]">{doctor.specialty}</span> : null}
+      </div>
+
+      <div className="mt-5 flex flex-1 flex-col gap-4 min-[480px]:flex-row sm:gap-6">
+        <div className="shrink-0 self-start overflow-hidden rounded-lg bg-[#eef5f8]">
+          <ResilientImage
+            alt={doctor.imageAlt || doctor.name}
+            className="aspect-[4/5] w-full max-w-[200px] object-cover min-[480px]:w-[136px] sm:w-[152px] lg:w-[180px] xl:w-[196px]"
+            fallbackSrc="/assets/landing/doctor-chea-kimly.png"
+            presentation={doctor.presentation}
+            src={doctor.imageUrl}
+          />
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <h3 className="text-[18px] font-extrabold leading-[1.15] tracking-[-0.025em] text-[#073f60] sm:text-[22px] md:text-[25px]">{doctor.name}</h3>
+          {doctor.title ? <p className="mt-1.5 text-[13.5px] font-semibold leading-5 text-[#46697d]">{doctor.title}</p> : null}
+          <span aria-hidden="true" className="mt-4 block h-px w-10 bg-[#9fcfe2]" />
+          {doctor.summary ? <p className="mt-4 text-[13.5px] leading-6 text-[#5f7789]">{doctor.summary}</p> : null}
+          <Link
+            className="mt-5 inline-flex min-h-11 w-fit items-center gap-2 text-[13px] font-bold text-[#087b9f] underline decoration-[#bfe0ec] decoration-2 underline-offset-[6px] transition hover:decoration-[#087b9f]"
+            to={doctor.profileHref}
+          >
+            {viewProfileLabel} <ArrowIcon />
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function StorySection({ editorial, featuredDoctor, secondFeaturedDoctor, stats, story }: Pick<AboutPageContent, 'editorial' | 'featuredDoctor' | 'secondFeaturedDoctor' | 'stats' | 'story'>) {
   const { language } = usePublicLanguage();
   const aboutCopy = publicUiCopy(language).about;
+  const isKm = language === 'km';
+  const leadership = [featuredDoctor, secondFeaturedDoctor].filter(
+    (doctor): doctor is AboutDoctorProfile => Boolean(doctor?.imageUrl),
+  );
   return (
     <section className="bg-white py-12 sm:py-16">
       <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8">
@@ -81,73 +124,63 @@ function StorySection({ editorial, featuredDoctor, stats, story }: Pick<AboutPag
           <span className="mt-1 block sm:mt-0">{editorial.editionLabel}</span>
         </div>
 
-        <div className="border-b border-[#d6e5eb] py-8 sm:py-10">
-          <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.profileLabel}</p>
-          <h2 className="mt-3 max-w-[820px] text-[32px] font-extrabold leading-[1.08] tracking-[-0.045em] text-[#073f60] sm:text-[46px]">{editorial.profileTitle}</h2>
-          <div className="mt-5 h-1 w-16 rounded-full bg-[#3695B9]" />
+        <div className="border-b border-[#d6e5eb] py-6 sm:py-10">
+          <p className="ui-eyebrow text-[11px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9] sm:text-[12px]">{editorial.profileLabel}</p>
+          <h2 className="mt-2.5 max-w-[820px] text-[22px] font-extrabold leading-[1.15] tracking-[-0.03em] text-[#073f60] sm:mt-3 sm:text-[36px] md:text-[44px]">{editorial.profileTitle}</h2>
+          <div className="mt-3.5 h-1 w-12 rounded-full bg-[#3695B9] sm:mt-5 sm:w-16" />
         </div>
 
-        <div className={`grid gap-8 py-8 sm:gap-10 ${featuredDoctor ? 'lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.18fr)_minmax(200px,0.5fr)]' : 'mx-auto max-w-[760px]'}`}>
-          {featuredDoctor?.imageUrl ? (
-            <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#f8fbfc]">
-              <ResilientImage alt={featuredDoctor.imageAlt || featuredDoctor.name} className="h-[320px] w-full object-cover object-top sm:h-[400px]" fallbackSrc="/assets/landing/doctor-chea-kimly.png" src={featuredDoctor.imageUrl} />
-              <div className="border-t border-[#dceaf0] px-5 py-5">
-                <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[0.14em] text-[#3695B9]">{featuredDoctor.specialty}</p>
-                <h3 className="mt-2 text-[21px] font-extrabold leading-6 text-[#073f60]">{featuredDoctor.name}</h3>
-                {featuredDoctor.title ? <p className="mt-1 text-[14px] font-medium leading-5 text-[#587080]">{featuredDoctor.title}</p> : null}
-                <Link className="mt-4 inline-flex items-center gap-2 text-[13px] font-bold text-[#087b9f] hover:text-[#005687]" to={featuredDoctor.profileHref}>{aboutCopy.viewProfile} <ArrowIcon /></Link>
-              </div>
-            </article>
-          ) : null}
-
-          <div className={featuredDoctor ? undefined : 'text-center'}>
-            <h3 className="text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-[#073f60] sm:text-[32px]">{story.title}</h3>
-            <div className={`mt-5 space-y-4 ${featuredDoctor ? '' : 'mx-auto max-w-[700px]'}`}>
-              {story.paragraphs.map((paragraph) => <ContentBlocks key={paragraph} value={paragraph} />)}
-              {featuredDoctor?.summary ? <p className="border-l-2 border-[#3695B9] pl-4 font-medium text-[#255d74]">{featuredDoctor.summary}</p> : null}
+        <div className="grid gap-8 py-7 sm:gap-10 sm:py-11 lg:grid-cols-[minmax(0,640px)_280px] lg:items-start lg:justify-between lg:gap-12">
+          <div>
+            <h3 className="text-[18px] font-extrabold leading-snug tracking-[-0.025em] text-[#073f60] sm:text-[22px] md:text-[26px]">{story.title}</h3>
+            <div className="mt-4 max-w-[62ch] space-y-3.5 sm:mt-5 sm:space-y-4">
+              {/* The opening paragraph reads as a lede, the rest as body copy. */}
+              {story.paragraphs.map((paragraph, index) => (
+                <ContentBlocks
+                  className={
+                    index === 0
+                      ? 'text-[14.5px] leading-relaxed text-[#3c5a6e] sm:text-[16.5px] sm:leading-[30px]'
+                      : 'text-[13.5px] leading-relaxed text-[#61798a] sm:text-[15px] sm:leading-7'
+                  }
+                  key={paragraph}
+                  value={paragraph}
+                />
+              ))}
             </div>
           </div>
 
           {stats.length > 0 ? (
-            <aside className="mx-auto flex w-full max-w-[340px] flex-col justify-start border-t border-[#d6e5eb] pt-6 sm:max-w-[400px] lg:mx-0 lg:max-w-none lg:border-l lg:border-t-0 lg:border-[#dceaf0] lg:pl-8">
-              {stats.map((stat) => {
-                const isKm = stat.label === 'ឆ្នាំនៃបទពិសោធន៍';
-                return (
-                  <div
-                    className="group relative overflow-hidden rounded-[26px] border border-[#bfe0ec] bg-gradient-to-b from-[#f0f8fb] via-[#e6f4f8] to-[#d6eff7] p-6 text-center shadow-[0_8px_30px_rgba(7,93,131,0.08)] transition hover:shadow-[0_12px_36px_rgba(7,93,131,0.12)] sm:p-7"
-                    key={stat.label}
-                  >
-                    <div className="pointer-events-none absolute -right-6 -top-6 size-24 rounded-full bg-[#3695b9]/15 blur-2xl" />
-                    <div className="pointer-events-none absolute -bottom-6 -left-6 size-24 rounded-full bg-[#087b9f]/10 blur-2xl" />
-
-                    <div className="relative mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-[#3695b9]/20">
-                      <ExperienceBadgeIcon />
-                    </div>
-
-                    <div className="relative flex items-baseline justify-center gap-1">
-                      <span className="text-[64px] font-black leading-none tracking-[-0.04em] text-[#075d83] sm:text-[76px]">
-                        {stat.value}
-                      </span>
-                      <span className="text-[36px] font-extrabold leading-none text-[#3695b9]">+</span>
-                    </div>
-
-                    <p className="ui-eyebrow relative mt-3 text-[15px] font-extrabold uppercase tracking-[0.08em] text-[#073f60] sm:text-[16px]">
-                      {stat.label}
-                    </p>
-
-                    <div className="relative mx-auto mt-4 h-1 w-12 rounded-full bg-[#3695b9]/40" />
-
-                    <p className="relative mt-3 text-[12px] font-medium leading-relaxed text-[#506e80]">
-                      {isKm
-                        ? 'ការថែទាំធ្មេញប្រកបដោយការយកចិត្តទុកដាក់ និងជំនាញទុកចិត្តបាន'
-                        : 'Dedicated dental care & trusted clinical expertise'}
-                    </p>
+            <aside className="mx-auto w-full max-w-[320px] lg:mx-0 lg:max-w-none">
+              {stats.map((stat) => (
+                <div className="border-t-2 border-[#075d83] pt-5" key={stat.label}>
+                  <ExperienceBadgeIcon />
+                  <div className="mt-4 flex items-baseline gap-1">
+                    <span className="text-[68px] font-black leading-[0.9] tracking-[-0.05em] text-[#075d83] sm:text-[76px]">{stat.value}</span>
+                    <span className="text-[30px] font-extrabold leading-none text-[#3695b9]">+</span>
                   </div>
-                );
-              })}
+                  <p className="ui-eyebrow mt-3 text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#073f60]">{stat.label}</p>
+                  <p className="mt-3 max-w-[240px] text-[12.5px] leading-5 text-[#61798a]">
+                    {isKm
+                      ? 'ការថែទាំធ្មេញប្រកបដោយការយកចិត្តទុកដាក់ និងជំនាញទុកចិត្តបាន'
+                      : 'Dedicated dental care & trusted clinical expertise'}
+                  </p>
+                </div>
+              ))}
             </aside>
           ) : null}
         </div>
+
+        {leadership.length > 0 ? (
+          <div className="border-t border-[#d6e5eb] pt-9 sm:pt-11">
+            <div className="grid gap-10 lg:grid-cols-2 lg:gap-0 lg:divide-x lg:divide-[#e4eef3]">
+              {leadership.map((doctor, index) => (
+                <div className="lg:px-9 lg:first:pl-0 lg:last:pr-0" key={doctor.profileHref}>
+                  <FounderProfile doctor={doctor} index={index} viewProfileLabel={aboutCopy.viewProfile} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );
@@ -178,7 +211,7 @@ function ClinicGallery({
           address: isKm ? 'ផ្ទះ159c ផ្លូវ 113 ភូមិ 4 សង្កាត់បឹងកេងកង3 ខណ្ឌបឹងកេងកង' : '#159c, st113, Boeng Keng Kang 3, Phnom Penh',
           openingHours: isKm ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM',
           phone: '061 978 997',
-          googleMapsUrl: 'https://maps.app.goo.gl/LHQeXEkpcAvcfnT18',
+          googleMapsUrl: 'https://maps.app.goo.gl/6HenBVpmvf4PiWwv6',
           images,
         },
       ];
@@ -199,10 +232,10 @@ function ClinicGallery({
         {/* Section Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-[620px]">
-            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">
+            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">
               {editorial.galleryEyebrow}
             </p>
-            <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">
+            <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">
               {editorial.galleryTitle}
             </h2>
             <p className="mt-2 text-[14.5px] font-normal leading-relaxed text-[#597184]">
@@ -214,9 +247,9 @@ function ClinicGallery({
 
           {/* Simple Branch Filter Tabs */}
           {branches.length > 1 && (
-            <div className="inline-flex self-start rounded-full border border-[#d6e5eb] bg-white p-1 shadow-xs sm:self-end">
+            <div className="flex flex-wrap gap-1 self-start rounded-2xl border border-[#d6e5eb] bg-white p-1 shadow-xs sm:inline-flex sm:flex-nowrap sm:self-end sm:rounded-full">
               <button
-                className={`rounded-full px-4 py-1.5 text-[12.5px] font-bold transition ${
+                className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition sm:px-4 ${
                   selectedBranchSlug === 'all'
                     ? 'bg-[#005687] text-white shadow-xs'
                     : 'text-[#62778a] hover:text-[#005687]'
@@ -228,7 +261,7 @@ function ClinicGallery({
               </button>
               {branches.map((b) => (
                 <button
-                  className={`rounded-full px-4 py-1.5 text-[12.5px] font-bold transition ${
+                  className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition sm:px-4 ${
                     selectedBranchSlug === b.branchSlug
                       ? 'bg-[#005687] text-white shadow-xs'
                       : 'text-[#62778a] hover:text-[#005687]'
@@ -288,15 +321,19 @@ function ClinicGallery({
                     }`}
                     key={`${branch.branchSlug}-${image.imageUrl}-${index}`}
                   >
-                    <ResilientImage
-                      alt={image.imageAlt || branch.branchName}
-                      className={`w-full object-cover ${
+                    <div
+                      className={`w-full overflow-hidden ${
                         index === 0 ? 'h-[230px] sm:h-[300px]' : 'h-[190px] sm:h-[300px]'
                       }`}
-                      fallbackSrc="/assets/landing/branches-clinic.png"
-                      presentation={image.imagePresentation}
-                      src={image.imageUrl}
-                    />
+                    >
+                      <ResilientImage
+                        alt={image.imageAlt || branch.branchName}
+                        className="h-full w-full object-cover"
+                        fallbackSrc="/assets/landing/branches-clinic.png"
+                        presentation={image.imagePresentation}
+                        src={image.imageUrl}
+                      />
+                    </div>
                     {image.imageAlt ? (
                       <figcaption className="ui-caption px-4 pb-3 pt-2 text-[13px] font-semibold text-[#073f60]">
                         {image.imageAlt}
@@ -315,7 +352,7 @@ function ClinicGallery({
 
 function ProfessionalDevelopment({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['professionalMedia']> }) {
   if (items.length === 0) return null;
-  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <CmsImage alt={item.title || editorial.professionalTitle} className="h-[240px] w-full sm:h-[280px]" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
+  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#073f60] sm:text-[28px] md:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <div className="h-[240px] w-full overflow-hidden sm:h-[280px]"><CmsImage alt={item.title || editorial.professionalTitle} className="h-full w-full" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /></div> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
 }
 
 function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['timeline']> }) {
@@ -325,8 +362,8 @@ function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['edi
     <section className="border-y border-[#e2edf2] bg-[#f7fafc] py-12 sm:py-16">
       <div className="mx-auto max-w-[1040px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[620px]">
-          <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[3.6px] text-[#3695B9]">{editorial.timelineEyebrow}</p>
-          <h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">{editorial.timelineTitle}</h2>
+          <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">{editorial.timelineEyebrow}</p>
+          <h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#073f60] sm:text-[28px] md:text-[34px]">{editorial.timelineTitle}</h2>
         </div>
         <ol className="relative mt-8 border-l border-[#b9dbe6] pl-7 sm:mt-10 sm:border-l-0 sm:pl-0 sm:before:absolute sm:before:inset-y-0 sm:before:left-1/2 sm:before:w-px sm:before:-translate-x-1/2 sm:before:bg-[#b9dbe6]">
           {items.map((item, index) => (
@@ -352,18 +389,18 @@ function VisionMissionSection({
   if (!mission.title && !vision.title) return null;
   return (
     <section className="grid lg:grid-cols-2">
-      <article className="bg-[#3695B9] px-5 py-10 text-white sm:px-10 sm:py-12 lg:pl-[calc((100vw-1280px)/2)]">
-        <div className="ml-auto max-w-[500px] lg:mr-14">
+      <article className="bg-[#3695B9] px-5 py-10 text-white sm:px-10 sm:py-12 lg:pl-[max(2rem,calc((100vw-1280px)/2+2rem))]">
+        <div className="max-w-[500px] lg:ml-auto lg:mr-14">
           <div className="mb-4 flex items-center gap-4">
             <span className="grid size-12 place-items-center rounded-xl bg-white/16">
               <img alt="" aria-hidden="true" className="size-5 brightness-0 invert" src={vision.iconUrl} />
             </span>
-            <h2 className="text-[24px] font-extrabold leading-7 sm:text-[26px]">{vision.title}</h2>
+            <h2 className="text-[20px] font-extrabold leading-snug sm:text-[24px] md:text-[26px]">{vision.title}</h2>
           </div>
           <p className="text-[14px] font-normal leading-6 text-white/85">{vision.description}</p>
         </div>
       </article>
-      <article className="relative bg-[#f1f7fa] px-5 py-10 sm:px-10 sm:py-12 lg:pr-[calc((100vw-1280px)/2)]">
+      <article className="relative bg-[#f1f7fa] px-5 py-10 sm:px-10 sm:py-12 lg:pr-[max(2rem,calc((100vw-1280px)/2+2rem))]">
         <span
           aria-hidden="true"
           className="absolute left-0 top-1/2 hidden size-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-[22px] font-bold text-[#3695B9] shadow-[0_8px_20px_rgba(15,23,42,0.12)] lg:grid"
@@ -375,7 +412,7 @@ function VisionMissionSection({
             <span className="grid size-12 place-items-center rounded-xl bg-[#dff2f7]">
               <img alt="" aria-hidden="true" className="size-5" src={mission.iconUrl} />
             </span>
-            <h2 className="text-[24px] font-extrabold leading-7 text-[#005687] sm:text-[26px]">{mission.title}</h2>
+            <h2 className="text-[20px] font-extrabold leading-snug text-[#005687] sm:text-[24px] md:text-[26px]">{mission.title}</h2>
           </div>
           <p className="text-[14px] font-normal leading-6 text-[#6b7280]">{mission.description}</p>
         </div>
@@ -391,8 +428,8 @@ function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences
   return (
     <section className="bg-white py-14 text-center sm:py-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{copy.whyTitle}</p>
-        <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{copy.differenceTitle}</h2>
+        <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{copy.whyTitle}</p>
+        <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">{copy.differenceTitle}</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {differences.map((item) => (
             <Card className="rounded-xl border border-[#e4edf2] bg-[#fbfdfe] px-5 py-6 text-center shadow-none" key={item.title}>
@@ -415,8 +452,8 @@ function FacilitiesSection({ editorial, facilities }: Pick<AboutPageContent, 'ed
     <section className="border-y border-[#e2edf2] bg-[#f7fafc] py-14 sm:py-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[720px]">
-          <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[3.6px] text-[#3695B9]">{editorial.facilitiesEyebrow}</p>
-          <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[34px]">{editorial.facilitiesTitle}</h2>
+          <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{editorial.facilitiesEyebrow}</p>
+          <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">{editorial.facilitiesTitle}</h2>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {facilities.map((facility, index) => (
@@ -441,7 +478,7 @@ function AboutPageView({ content }: { content: AboutPageContent }) {
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main>
         <AboutHero hero={content.hero} />
-        <StorySection editorial={content.editorial} featuredDoctor={content.featuredDoctor} stats={content.stats} story={content.story} />
+        <StorySection editorial={content.editorial} featuredDoctor={content.featuredDoctor} secondFeaturedDoctor={content.secondFeaturedDoctor} stats={content.stats} story={content.story} />
         <GrowthTimeline editorial={content.editorial} items={content.timeline ?? []} />
         <ProfessionalDevelopment editorial={content.editorial} items={content.professionalMedia ?? []} />
         <ClinicGallery branchGalleries={content.branchGalleries} editorial={content.editorial} images={content.clinicGallery ?? []} />
@@ -559,6 +596,8 @@ function hasAboutContent(content: AboutPageContent | undefined): content is Abou
 
 export function AboutPage() {
   const { data, isError, isLoading, refetch } = useAboutPageQuery();
+  const { language } = usePublicLanguage();
+  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'អំពីយើង' : 'About Us'));
 
   if (isLoading) {
     return <AboutPageSkeleton />;

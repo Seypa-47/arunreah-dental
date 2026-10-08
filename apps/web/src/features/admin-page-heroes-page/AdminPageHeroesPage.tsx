@@ -18,7 +18,7 @@ import { cmsApi, type AdminPageMediaRecord } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
 import { ContactIcon } from '@/components/layout/public-ui';
 
-type HeroPreviewLayout = 'image-only' | 'light' | 'overlay' | 'overlay-or-text';
+type HeroPreviewLayout = 'doctors-overlay' | 'light' | 'overlay' | 'overlay-or-text';
 
 export type HeroPageConfig = {
   aspectRatio: string;
@@ -83,26 +83,25 @@ export const HERO_PAGES: HeroPageConfig[] = [
   },
   {
     aspectRatio: 'aspect-[16/9]',
-    defaultEyebrowEn: 'Our Dental Team',
+    defaultEyebrowEn: 'OUR DENTAL TEAM',
     defaultEyebrowKm: 'ក្រុមទន្តបណ្ឌិតរបស់យើង',
     defaultImage: '/assets/landing/hero-clinic.png',
-    defaultSubtitleEn: 'Meet our clinic professionals committed to exceptional patient care.',
-    defaultSubtitleKm: 'ជួបជាមួយក្រុមទន្តបណ្ឌិតឯកទេសរបស់យើងដែលប្តេជ្ញាផ្តល់ការថែទាំដ៏ល្អបំផុត។',
-    defaultTitleEn: 'Our Specialists',
-    defaultTitleKm: 'ទន្តបណ្ឌិតឯកទេស',
+    defaultSubtitleEn: 'Thoughtful dental care from our experienced clinic team.',
+    defaultSubtitleKm: 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ពីក្រុមទន្តបណ្ឌិតរបស់យើង។',
+    defaultTitleEn: 'Meet the Arunreah Dental Team',
+    defaultTitleKm: 'ជួបជាមួយក្រុមទន្តបណ្ឌិតអរុណរះ',
     icon: 'doctors',
     id: 'doctors',
     name: 'Our Doctors',
     placement: 'DOCTORS_HERO',
-    previewLayout: 'image-only',
+    previewLayout: 'doctors-overlay',
     publicUrl: '/doctors',
-    supportsCopy: false,
     subtitle: 'Specialists team introduction and group photo banner',
   },
   {
     aspectRatio: 'aspect-[21/9]',
-    defaultEyebrowEn: '',
-    defaultEyebrowKm: '',
+    defaultEyebrowEn: 'PHNOM PENH CLINIC',
+    defaultEyebrowKm: 'គ្លីនិកនៅរាជធានីភ្នំពេញ',
     defaultImage: '/assets/landing/figma-branches/image2_183_4173.png',
     defaultSubtitleEn: 'Find a clinic branch that works for you.',
     defaultSubtitleKm: 'ស្វែងរកសាខាគ្លីនិកដែលសមស្របសម្រាប់អ្នក។',
@@ -153,8 +152,8 @@ export const HERO_PAGES: HeroPageConfig[] = [
   },
   {
     aspectRatio: 'aspect-[21/9]',
-    defaultEyebrowEn: '',
-    defaultEyebrowKm: '',
+    defaultEyebrowEn: 'Appointment request',
+    defaultEyebrowKm: 'ស្នើសុំការណាត់ជួប',
     defaultImage: '/assets/landing/figma-branches/image5_183_4173.jpg',
     defaultSubtitleEn: 'Send a preferred appointment request and our clinic will review it.',
     defaultSubtitleKm: 'ផ្ញើសំណើណាត់ជួបដែលអ្នកពេញចិត្ត ហើយគ្លីនិករបស់យើងនឹងពិនិត្យមើល។',
@@ -355,12 +354,8 @@ export function AdminPageHeroesPage() {
       : form.titleEn || activePage.defaultTitleEn;
   const previewSubtitle =
     previewLanguage === 'km'
-      ? form.bodyKm ||
-        (activePage.id === 'branches' ? primaryPublicBranch?.heroSupportingTextKm : undefined) ||
-        activePage.defaultSubtitleKm
-      : form.bodyEn ||
-        (activePage.id === 'branches' ? primaryPublicBranch?.heroSupportingTextEn : undefined) ||
-        activePage.defaultSubtitleEn;
+      ? form.bodyKm || activePage.defaultSubtitleKm
+      : form.bodyEn || activePage.defaultSubtitleEn;
   const isPublishedHero = existingRecord?.status === 'PUBLISHED';
   const previewShowsImage = heroPreviewShowsImage(activePage, form.imageKey);
   const contact = contactQuery.data?.contact;
@@ -460,8 +455,8 @@ export function AdminPageHeroesPage() {
               <div>
                 <h2 className="text-[16px] font-bold text-[#182238]">Homepage carousel</h2>
                 <p className="mt-0.5 max-w-2xl text-xs leading-5 text-[#71839e]">
-                  These are the published branch slides currently visible to website visitors.
-                  Edit a branch slide in Branches &amp; Locations.
+                  These are the published branch slides currently visible to website visitors. Edit
+                  a branch slide in Branches &amp; Locations.
                 </p>
               </div>
               <span className="rounded-full bg-[#eef8fb] px-3 py-1 text-xs font-bold text-[#2187a8]">
@@ -576,13 +571,13 @@ export function AdminPageHeroesPage() {
                   <div>
                     <h2 className="text-[16px] font-bold text-[#182238]">
                       {isPublishedHero
-                          ? `Live Page Layout · ${activePage.name}`
-                          : `Draft Editor Preview · ${activePage.name}`}
+                        ? `Live Page Layout · ${activePage.name}`
+                        : `Draft Editor Preview · ${activePage.name}`}
                     </h2>
                     <p className="mt-0.5 text-xs text-[#71839e]">
                       {isPublishedHero
-                          ? 'This is the layout currently shown to website visitors.'
-                          : 'Draft changes are not visible to website visitors until you publish them.'}
+                        ? 'This is the layout currently shown to website visitors.'
+                        : 'Draft changes are not visible to website visitors until you publish them.'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -626,80 +621,120 @@ export function AdminPageHeroesPage() {
                         src={previewImage}
                         style={{
                           objectPosition: `${form.imagePresentation.positionX}% ${form.imagePresentation.positionY}%`,
-                          transform: `scale(${form.imagePresentation.zoom})`,
+                          transform:
+                            form.imagePresentation.zoom > 1
+                              ? `scale(${form.imagePresentation.zoom})`
+                              : undefined,
+                          transformOrigin: `${form.imagePresentation.positionX}% ${form.imagePresentation.positionY}%`,
                         }}
                       />
                     ) : null}
                     {activePage.placement === 'CONTACT_HERO' ? (
-                      <div className="relative z-10 grid min-h-[220px] items-center gap-4 p-4 sm:min-h-[280px] sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-6 sm:p-6">
-                        <div className="max-w-[360px]">
-                          {previewEyebrow ? (
-                            <p className="text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
-                              {previewEyebrow}
-                            </p>
-                          ) : null}
-                          <h3 className="mt-1 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-2 sm:text-[24px]">
-                            {previewTitle}
-                          </h3>
-                          {previewSubtitle ? (
-                            <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#0e3b5e] sm:text-[13px]">
-                              {previewSubtitle}
-                            </p>
-                          ) : null}
-                        </div>
-                        <div className="hidden rounded-xl border border-[#d9e9ee] bg-white/95 p-3.5 shadow-[0_4px_16px_rgba(0,86,135,0.08)] backdrop-blur-md sm:block">
-                          {contactQuery.isLoading ? (
-                            <div className="h-24 animate-pulse rounded-lg bg-[#eef8fb]" />
-                          ) : (
-                            <div className="space-y-2.5">
-                              {contactPreviewItems.map((item) => (
-                                <div className="flex items-center gap-2.5" key={item.label}>
-                                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9]">
-                                    <ContactIcon className="size-3.5" name={item.icon} />
-                                  </span>
-                                  <div className="min-w-0">
-                                    <p className="text-[10px] font-bold text-[#3695b9]">
-                                      {item.label}
-                                    </p>
-                                    <p className="whitespace-pre-line text-[11px] font-extrabold text-[#005687]">
-                                      {item.value}
-                                    </p>
+                      <>
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
+                        />
+                        <div className="relative z-10 grid min-h-[220px] items-center gap-4 p-4 sm:min-h-[280px] sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-6 sm:p-6">
+                          <div className="max-w-[360px]">
+                            {previewEyebrow ? (
+                              <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-2.5 py-0.5 text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[11px]">
+                                {previewEyebrow}
+                              </p>
+                            ) : null}
+                            <h3 className="mt-1.5 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-2 sm:text-[24px]">
+                              {previewTitle}
+                            </h3>
+                            {previewSubtitle ? (
+                              <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)] sm:text-[13px]">
+                                {previewSubtitle}
+                              </p>
+                            ) : null}
+                          </div>
+                          <div className="hidden rounded-xl border border-[#d9e9ee] bg-white/95 p-3.5 shadow-[0_4px_16px_rgba(0,86,135,0.08)] backdrop-blur-md sm:block">
+                            {contactQuery.isLoading ? (
+                              <div className="h-24 animate-pulse rounded-lg bg-[#eef8fb]" />
+                            ) : (
+                              <div className="space-y-2.5">
+                                {contactPreviewItems.map((item) => (
+                                  <div className="flex items-center gap-2.5" key={item.label}>
+                                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#eef8fb] text-[#3695b9]">
+                                      <ContactIcon className="size-3.5" name={item.icon} />
+                                    </span>
+                                    <div className="min-w-0">
+                                      <p className="text-[10px] font-bold text-[#3695b9]">
+                                        {item.label}
+                                      </p>
+                                      <p className="whitespace-pre-line text-[11px] font-extrabold text-[#005687]">
+                                        {item.value}
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      </>
                     ) : activePage.previewLayout === 'light' ? (
-                      <div className="relative z-10 flex min-h-[220px] items-center p-4 sm:min-h-[280px] sm:p-6">
-                        <div className="max-w-[420px]">
-                          {previewEyebrow ? (
-                            <p className="text-[10px] font-extrabold uppercase leading-4 tracking-[2.5px] text-[#3695B9] sm:text-[11px] sm:tracking-[3px]">
-                              {previewEyebrow}
-                            </p>
-                          ) : null}
-                          <h3 className="mt-1 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-2 sm:text-[24px]">
-                            {previewTitle}
-                          </h3>
-                          {previewSubtitle ? (
-                            <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#0e3b5e] sm:text-[13px]">
-                              {previewSubtitle}
-                            </p>
-                          ) : null}
+                      <>
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/75 via-white/40 to-transparent sm:w-[70%] sm:bg-[linear-gradient(90deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0.42)_52%,transparent_100%)]"
+                        />
+                        <div className="relative z-10 flex min-h-[220px] items-center p-4 sm:min-h-[280px] sm:p-6">
+                          <div className="max-w-[420px]">
+                            {previewEyebrow ? (
+                              <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-2.5 py-0.5 text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[11px]">
+                                {previewEyebrow}
+                              </p>
+                            ) : null}
+                            <h3 className="mt-1.5 text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.85)] sm:mt-2 sm:text-[24px]">
+                              {previewTitle}
+                            </h3>
+                            {previewSubtitle ? (
+                              <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.85)] sm:text-[13px]">
+                                {previewSubtitle}
+                              </p>
+                            ) : null}
+                          </div>
                         </div>
-                      </div>
-                    ) : activePage.previewLayout ===
-                      'image-only' /* Doctors hero displays the clean doctor team photo without text or overlay so all doctors are clearly visible */ ? null : activePage.previewLayout ===
-                        'overlay-or-text' && !previewShowsImage ? (
+                      </>
+                    ) : activePage.previewLayout === 'doctors-overlay' ? (
+                      <>
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-white/90 via-white/65 to-transparent sm:right-auto sm:h-[68%] sm:w-[66%] sm:bg-[radial-gradient(100%_100%_at_0%_100%,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.62)_48%,rgba(255,255,255,0.22)_76%,transparent_100%)]"
+                        />
+                        <div className="relative z-10 flex min-h-[220px] flex-col justify-end p-4 sm:min-h-[280px] sm:p-6">
+                          <div className="max-w-[360px] sm:max-w-[420px]">
+                            {previewEyebrow ? (
+                              <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-2.5 py-0.5 text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[11px]">
+                                {previewEyebrow}
+                              </p>
+                            ) : null}
+                            <h3
+                              className={`${previewEyebrow ? 'mt-1.5 sm:mt-2' : ''} text-[18px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] [text-shadow:_0_1px_12px_rgba(255,255,255,0.9)] sm:text-[24px]`}
+                            >
+                              {previewTitle}
+                            </h3>
+                            {previewSubtitle ? (
+                              <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-[#0e3b5e] [text-shadow:_0_1px_10px_rgba(255,255,255,0.9)] sm:text-[13px]">
+                                {previewSubtitle}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                      </>
+                    ) : activePage.previewLayout === 'overlay-or-text' && !previewShowsImage ? (
                       <div className="flex min-h-[220px] items-center justify-center p-6 text-center sm:min-h-[280px] sm:p-10">
                         <div className="max-w-[620px]">
                           {previewEyebrow ? (
-                            <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[3px] text-[#3695B9] sm:text-[12px] sm:tracking-[3.6px]">
+                            <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-2.5 py-0.5 text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[11px]">
                               {previewEyebrow}
                             </p>
                           ) : null}
-                          <h3 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">
+                          <h3 className="mt-2.5 text-[28px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[38px]">
                             {previewTitle}
                           </h3>
                           {previewSubtitle ? (
@@ -717,8 +752,7 @@ export function AdminPageHeroesPage() {
                         />
                         <div className="relative z-10 flex min-h-[220px] max-w-[640px] flex-col justify-end p-6 text-white sm:min-h-[280px] sm:p-8">
                           {previewEyebrow ? (
-                            <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-0.5 text-[11px] font-bold uppercase tracking-[1.5px] text-[#7ee1f8] backdrop-blur-md">
-                              <span className="size-1.5 rounded-full bg-[#7ee1f8] shadow-[0_0_8px_#7ee1f8]" />
+                            <div className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-2.5 py-0.5 text-[10px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[11px]">
                               <span>{previewEyebrow}</span>
                             </div>
                           ) : null}
@@ -780,14 +814,12 @@ export function AdminPageHeroesPage() {
                         value: form.imagePresentation,
                       }}
                       help={
-                        activePage.supportsCopy === false
+                        activePage.id === 'doctors'
                           ? 'Choose the team photo shown at the top of the Doctors page. JPEG, PNG, or WEBP up to 5 MB.'
                           : 'Choose a high quality landscape photo. JPEG, PNG, or WEBP up to 5 MB.'
                       }
                       label={
-                        activePage.supportsCopy === false
-                          ? 'Doctor Team Photo'
-                          : 'Hero Background Photo'
+                        activePage.id === 'doctors' ? 'Doctor Team Photo' : 'Hero Background Photo'
                       }
                       onClear={() => setForm((prev) => ({ ...prev, imageKey: '' }))}
                       onUploaded={(key) => setForm((prev) => ({ ...prev, imageKey: key }))}
@@ -919,12 +951,7 @@ export function AdminPageHeroesPage() {
                         </div>
                       </fieldset>
                     </>
-                  ) : (
-                    <p className="rounded-xl border border-[#dce5ef] bg-[#f8fcfd] px-4 py-3 text-sm leading-6 text-[#52647d]">
-                      The Doctors page hero is a team photo only. Its title and supporting copy are
-                      managed by the public page design, so there are no unused text fields here.
-                    </p>
-                  )}
+                  ) : null}
 
                   {/* Actions Footer */}
                   <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#edf1f5] pt-5">
