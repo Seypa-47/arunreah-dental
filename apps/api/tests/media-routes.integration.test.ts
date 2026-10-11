@@ -25,7 +25,7 @@ const state = vi.hoisted(() => ({
 vi.mock('../src/db/client', () => ({ createDbClient: () => ({}) }));
 vi.mock('../src/repositories/media.repository', () => ({
   isMediaKeyReferenced: async () => state.referenced,
-  createMediaDeletionLock: async () => undefined,
+  createMediaDeletionLock: async () => !state.referenced,
   removeMediaDeletionLock: async () => undefined,
 }));
 vi.mock('../src/repositories/session.repository', () => ({
@@ -180,6 +180,19 @@ describe('media API routes', () => {
       body: new FormData(),
     });
     expect((await app.request(oversizedRequest, undefined, bindings)).status).toBe(400);
+
+    const misleadingForm = new FormData();
+    misleadingForm.set('category', 'doctors');
+    misleadingForm.set(
+      'file',
+      new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'large.jpg', { type: 'image/jpeg' }),
+    );
+    const misleadingRequest = new Request('http://localhost/api/admin/media', {
+      method: 'POST',
+      headers: { ...(await headers('CMS_ADMIN')), 'Content-Length': '10' },
+      body: misleadingForm,
+    });
+    expect((await app.request(misleadingRequest, undefined, bindings)).status).toBe(400);
   });
 
   it('stores valid JPEG, PNG, and WEBP images using safe unique keys', async () => {

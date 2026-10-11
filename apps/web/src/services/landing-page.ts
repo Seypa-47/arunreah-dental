@@ -73,7 +73,7 @@ const doctorProfiles: LandingDoctor[] = [
       heroSummary:
         'A leading expert in implantology with over 25 years of clinical excellence and academic contribution.',
       pageDescription: 'Implant specialist with 25+ years of dental experience.',
-      profileHref: '/doctors/sreng-heng',
+      profileHref: '/team/sreng-heng',
       roleTitle: 'Senior Implant Specialist',
       services: ['Implant Dentistry'],
       stats: [
@@ -106,7 +106,7 @@ const doctorProfiles: LandingDoctor[] = [
       heroSummary:
         'An orthodontics and implant dentistry clinician focused on healthy alignment, confident smiles, and precise restorative care.',
       pageDescription: 'Orthodontics and implant dentistry specialist.',
-      profileHref: '/doctors/chho-sonthary',
+      profileHref: '/team/chho-sonthary',
       roleTitle: 'Orthodontics & Implant Dentistry',
       services: ['Orthodontics', 'Implant Dentistry'],
       stats: [
@@ -139,7 +139,7 @@ const doctorProfiles: LandingDoctor[] = [
       heroSummary:
         'A Germany-trained orthodontics specialist helping patients improve alignment, bite function, and smile confidence.',
       pageDescription: 'Orthodontics specialist trained in Germany.',
-      profileHref: '/doctors/yim-delux',
+      profileHref: '/team/yim-delux',
       roleTitle: 'Orthodontics Specialist',
       services: ['Orthodontics'],
       stats: [
@@ -171,7 +171,7 @@ const doctorProfiles: LandingDoctor[] = [
       heroSummary:
         'A Germany-trained implantology clinician focused on precise implant planning and long-lasting restorative outcomes.',
       pageDescription: 'Implantology specialist trained in Germany.',
-      profileHref: '/doctors/chuong-kunthy',
+      profileHref: '/team/chuong-kunthy',
       roleTitle: 'Implantology Specialist',
       services: ['Implant Dentistry'],
       stats: [
@@ -203,7 +203,7 @@ const doctorProfiles: LandingDoctor[] = [
       heroSummary:
         'A digital smile design clinician focused on aesthetic planning, implant care, and confident smile transformation.',
       pageDescription: 'Digital smile design and implant dentistry care.',
-      profileHref: '/doctors/taing-thanith',
+      profileHref: '/team/taing-thanith',
       roleTitle: 'Digital Smile Design Clinician',
       services: ['Digital Smile Design', 'Implant Dentistry'],
       stats: [
@@ -243,7 +243,7 @@ const doctorProfiles: LandingDoctor[] = [
       heroSummary:
         'A multidisciplinary clinician focused on full mouth reconstruction, orthodontics, endodontics, and implant care.',
       pageDescription: 'Full mouth reconstruction, orthodontics, endodontics, and implant care.',
-      profileHref: '/doctors/chea-kimly',
+      profileHref: '/team/chea-kimly',
       roleTitle: 'Full Mouth Reconstruction Clinician',
       services: ['Full Mouth Reconstruction', 'Orthodontics', 'Endodontics', 'Implant Dentistry'],
       stats: [
@@ -275,7 +275,7 @@ const doctorProfiles: LandingDoctor[] = [
       heroSummary:
         'An endodontic and implant dentistry clinician focused on tooth preservation and restorative treatment planning.',
       pageDescription: 'Endodontic and implantology specialist.',
-      profileHref: '/doctors/heng-bunhabb',
+      profileHref: '/team/heng-bunhabb',
       roleTitle: 'Endodontic & Implant Dentistry',
       services: ['Endodontics', 'Implant Dentistry'],
       stats: [
@@ -308,8 +308,8 @@ function pageNavigation(navigation: LandingNavigationItem[]) {
         ? '/about'
         : item.label === 'Services'
           ? '/services'
-        : item.label === 'Doctors'
-          ? '/doctors'
+        : item.label === 'Doctors' || item.label === 'Our Team'
+          ? '/team'
             : item.label === 'Branches'
               ? '/branches'
               : item.label === 'Contact'
@@ -344,8 +344,8 @@ function publicPageFooter() {
           : group.links.map((link) => ({
               ...link,
               href:
-                link.label === 'Doctor' || link.label === 'Doctors'
-                  ? '/doctors'
+                link.label === 'Doctor' || link.label === 'Doctors' || link.label === 'Our Team'
+                  ? '/team'
                   : link.label === 'Services'
                     ? '/services'
                     : homeHref(link.href),
@@ -360,7 +360,7 @@ const servicesPageServices: LandingService[] = [
     iconAlt: 'General dentistry icon',
     iconUrl: '/assets/landing/service-icon-general.svg',
     imageAlt: 'Modern dental equipment for general dentistry',
-    imageUrl: '/assets/landing/branches-clinic.png',
+    imageUrl: '/assets/landing/branches-clinic.webp',
     name: 'General Dentistry',
   },
   {
@@ -481,6 +481,7 @@ function buildServiceDetail({
       subtitle: subtitle ?? service.description,
       title: `Restore Your Smile with ${service.name}`,
     },
+    seo: { description: null, title: null },
     slug: serviceSlug(service.name),
   };
 }
@@ -575,7 +576,7 @@ const landingPageContent: LandingPageContent = {
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/services', label: 'Services' },
-    { href: '/doctors', label: 'Doctors' },
+    { href: '/team', label: 'Our Team' },
     { href: '/branches', label: 'Branches' },
   ],
   heroes: [
@@ -595,7 +596,7 @@ const landingPageContent: LandingPageContent = {
       appointmentLabel: 'Book Appointment',
       callLabel: 'Contact',
       imageAlt: 'Arunreah Dental Clinic Psa Chas exterior',
-      imageUrl: '/assets/landing/hero-psa-chas.png',
+      imageUrl: '/assets/landing/hero-psa-chas.webp',
       locationLabel: 'Arunreah Dental Clinic',
       phones: ['012 964 200', '098 701 302'],
       qrImageUrl: '/assets/landing/qr-code.png',
@@ -610,6 +611,13 @@ const landingPageContent: LandingPageContent = {
     eyebrow: 'News and special offers',
     subtitle: 'Explore current clinic campaigns and helpful updates from our care team.',
     title: 'Clinic promotions',
+  },
+  sectionIssues: {
+    branches: false,
+    doctors: false,
+    promotions: false,
+    services: false,
+    showcase: false,
   },
   services: [
     {
@@ -728,7 +736,7 @@ const landingPageContent: LandingPageContent = {
           { href: '/', label: 'Home' },
           { href: '/about', label: 'About' },
           { href: '/services', label: 'Services' },
-          { href: '/doctors', label: 'Doctors' },
+          { href: '/team', label: 'Our Team' },
           { href: '/branches', label: 'Branches' },
           { href: '/contact', label: 'Contact' },
         ],
@@ -826,7 +834,7 @@ export async function fetchBranchesPage(): Promise<BranchesPageContent> {
     hero: {
       appointmentLabel: landingPageContent.actions.appointmentLabel,
       backgroundImageAlt: 'Bright modern Arunreah Dental Clinic treatment room',
-      backgroundImageUrl: '/assets/landing/figma-branches/image2_183_4173.png',
+      backgroundImageUrl: '/assets/landing/figma-branches/image2_183_4173.webp',
       eyebrow: 'Container',
       highlights: [
         {
@@ -965,7 +973,7 @@ export async function fetchAboutPage(): Promise<AboutPageContent> {
       {
         description: 'Equipped with the latest ergonomic technology for maximum patient comfort during procedures.',
         imageAlt: 'Modern dental treatment room',
-        imageUrl: '/assets/landing/branches-clinic.png',
+        imageUrl: '/assets/landing/branches-clinic.webp',
         imagePresentation: defaultImagePresentation,
         title: 'Advanced Treatment Rooms',
       },
@@ -988,7 +996,7 @@ export async function fetchAboutPage(): Promise<AboutPageContent> {
     hero: {
       eyebrow: 'Who We Are',
       imageAlt: 'Arunreah Dental Clinic building exterior',
-      imageUrl: '/assets/landing/hero-psa-chas.png',
+      imageUrl: '/assets/landing/hero-psa-chas.webp',
       subtitle: 'Providing world-class dental care with a touch of luxury and precision in Cambodia.',
       title: 'About Arunreah Dental Clinic',
     },
@@ -1087,7 +1095,7 @@ export async function fetchContactPage(): Promise<ContactPageContent> {
     },
     hero: {
       backgroundImageAlt: 'Bright modern dental treatment room',
-      backgroundImageUrl: '/assets/landing/figma-branches/image2_183_4173.png',
+      backgroundImageUrl: '/assets/landing/figma-branches/image2_183_4173.webp',
       eyebrow: 'Get In Touch',
       info: [
         {
@@ -1255,7 +1263,7 @@ export async function fetchBookAppointmentPage(): Promise<BookAppointmentPageCon
     },
     hero: {
       backgroundImageAlt: 'Arunreah Dental Clinic treatment room',
-      backgroundImageUrl: '/assets/landing/figma-branches/image2_183_4173.png',
+      backgroundImageUrl: '/assets/landing/figma-branches/image2_183_4173.webp',
       subtitle: "We're here to make your dental care experience simple, comfortable, and personalized.",
       title: 'Book Your Appointment',
     },

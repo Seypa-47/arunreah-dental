@@ -51,7 +51,7 @@ export const HERO_PAGES: HeroPageConfig[] = [
     aspectRatio: 'aspect-[21/9]',
     defaultEyebrowEn: 'ABOUT US',
     defaultEyebrowKm: 'អំពីយើង',
-    defaultImage: '/assets/landing/figma-branches/image2_183_4173.png',
+    defaultImage: '/assets/landing/figma-branches/image2_183_4173.webp',
     defaultSubtitleEn: 'Thoughtful dental care for a healthier, more confident smile.',
     defaultSubtitleKm: 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ ដើម្បីស្នាមញញឹមមានសុខភាពល្អ និងទំនុកចិត្ត។',
     defaultTitleEn: 'About Arunreah Dental Clinic',
@@ -92,17 +92,17 @@ export const HERO_PAGES: HeroPageConfig[] = [
     defaultTitleKm: 'ជួបជាមួយក្រុមទន្តបណ្ឌិតអរុណរះ',
     icon: 'doctors',
     id: 'doctors',
-    name: 'Our Doctors',
+    name: 'Our Team',
     placement: 'DOCTORS_HERO',
     previewLayout: 'doctors-overlay',
-    publicUrl: '/doctors',
+    publicUrl: '/team',
     subtitle: 'Specialists team introduction and group photo banner',
   },
   {
     aspectRatio: 'aspect-[21/9]',
     defaultEyebrowEn: 'PHNOM PENH CLINIC',
     defaultEyebrowKm: 'គ្លីនិកនៅរាជធានីភ្នំពេញ',
-    defaultImage: '/assets/landing/figma-branches/image2_183_4173.png',
+    defaultImage: '/assets/landing/figma-branches/image2_183_4173.webp',
     defaultSubtitleEn: 'Find a clinic branch that works for you.',
     defaultSubtitleKm: 'ស្វែងរកសាខាគ្លីនិកដែលសមស្របសម្រាប់អ្នក។',
     defaultTitleEn: 'Our Locations',
@@ -119,7 +119,7 @@ export const HERO_PAGES: HeroPageConfig[] = [
     aspectRatio: 'aspect-[21/9]',
     defaultEyebrowEn: 'Get In Touch',
     defaultEyebrowKm: 'ទំនាក់ទំនង',
-    defaultImage: '/assets/landing/figma-branches/image2_183_4173.png',
+    defaultImage: '/assets/landing/figma-branches/image2_183_4173.webp',
     defaultSubtitleEn: 'Contact our clinic team for help with your care.',
     defaultSubtitleKm:
       'ទាក់ទងមកកាន់ក្រុមការងារគ្លីនិករបស់យើងសម្រាប់ការជួយសម្រួលដល់ការព្យាបាលរបស់អ្នក។',
@@ -815,7 +815,7 @@ export function AdminPageHeroesPage() {
                       }}
                       help={
                         activePage.id === 'doctors'
-                          ? 'Choose the team photo shown at the top of the Doctors page. JPEG, PNG, or WEBP up to 5 MB.'
+                          ? 'Choose the team photo shown at the top of Our Team page. JPEG, PNG, or WEBP up to 5 MB.'
                           : 'Choose a high quality landscape photo. JPEG, PNG, or WEBP up to 5 MB.'
                       }
                       label={

@@ -1,13 +1,11 @@
 import { AdminListDate, AdminListEmpty, AdminListPagination, AdminPublicationStatus } from '@/components/admin/admin-list';
+import { AdminFeedback, AdminStatus } from '@/components/admin/admin-feedback';
 import { AdminPageHeading } from '@/components/layout/admin-workspace';
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AdminBranchRead, AdminDoctorListQuery } from '@arunreah/shared';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { AdminDoctorListQuery, ReorderDoctorsInput, TeamCategory } from '@arunreah/shared';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
-import { AdminToggle } from '@/components/admin/admin-toggle';
-import { imageFrames } from '@/components/admin/image-frames';
-import { MediaUploader } from '@/components/admin/media-uploader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toAdminDoctorDetail, type AdminDoctor, type AdminDoctorsContent, type DoctorStatus } from '@/services/admin-doctors';
@@ -15,9 +13,9 @@ import { queryKeys } from '@/lib/query-keys';
 import { useAdminDoctorsPageQuery } from './use-admin-doctors-page';
 import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
-import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
-import { getPublicMediaUrl } from '@/services/media';
 import { sanitizeDoctorUpdatePayload } from './doctor-payload';
+import { isTeamCategory, moveIdRelative, teamCategoryLabel, teamCategoryTabs, teamMemberSaveError } from './team-workspace';
+import { TeamMemberForm } from './TeamMemberForm';
 
 function StatusBadge({ status }: { status: DoctorStatus }) { return <AdminPublicationStatus status={status} />; }
 
@@ -73,20 +71,8 @@ function DoctorsFooter({ footer }: { footer: AdminDoctorsContent['footer'] }) {
   );
 }
 
-type TabType = 'overview' | 'content' | 'expertise' | 'education' | 'seo';
-
-function DoctorDetailPanel({
-  doctor,
-  branches,
-  isSaving = false,
-  saveError = null,
-  saveSuccess = false,
-  onClose,
-  onDelete,
-  onSave,
-}: {
+function DoctorDetailPanel({ doctor, isSaving = false, saveError = null, saveSuccess = false, onClose, onDelete, onSave }: {
   doctor: AdminDoctor;
-  branches?: AdminBranchRead[];
   isSaving?: boolean;
   saveError?: string | null;
   saveSuccess?: boolean;
@@ -94,587 +80,7 @@ function DoctorDetailPanel({
   onDelete: (id: string) => void;
   onSave: (updated: AdminDoctor) => void;
 }) {
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
-  const [formData, setFormData] = useState<AdminDoctor>(doctor);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [isDirty, setIsDirty] = useState(false);
-  useUnsavedChangesGuard(isDirty);
-
-  // Sync form when selected doctor changes
-  useEffect(() => {
-    setFormData(doctor);
-    setIsDirty(false);
-  }, [doctor]);
-
-  // When save succeeds, clear isDirty
-  useEffect(() => {
-    if (saveSuccess) {
-      setIsDirty(false);
-    }
-  }, [saveSuccess]);
-
-  const handleFieldChange = (field: keyof AdminDoctor, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setIsDirty(true);
-  };
-
-  const handleToggleBranch = (branchId: string) => {
-    const currentBranches = formData.branchIds ?? [];
-    const nextBranches = currentBranches.includes(branchId)
-      ? currentBranches.filter((id) => id !== branchId)
-      : [...currentBranches, branchId];
-    handleFieldChange('branchIds', nextBranches);
-  };
-
-  const handlePhotoChange = (photoKey: string | null) => {
-    setFormData((prev) => ({
-      ...prev,
-      imageUrl: getPublicMediaUrl(photoKey),
-      photoKey,
-    }));
-    setIsDirty(true);
-  };
-
-  const handleDiscard = () => {
-    setFormData(doctor);
-    setIsDirty(false);
-  };
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  return (
-    <aside
-      aria-label="Specialist details editor"
-      className="flex min-h-full flex-col rounded-[28px] border border-[#e1e8f0] bg-white p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)] xl:p-7"
-    >
-      {/* Header Profile Area */}
-      <div className="relative flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <DoctorAvatar doctor={formData} size="lg" />
-          <div>
-            <h2 className="text-[18px] font-bold text-[#182238]">{formData.name}</h2>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-[13px] text-[#71839e]">
-              <StatusBadge status={formData.status} />
-              <span aria-hidden="true" className="text-[#a6b6ca]">
-                •
-              </span>
-              <span>{formData.roleTitle}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative flex items-center gap-1">
-          {onClose ? (
-            <button
-              aria-label="Close specialist panel"
-              className="rounded-lg p-2 text-xl text-[#71839e] hover:bg-[#f4f8fb]"
-              onClick={onClose}
-              type="button"
-            >
-              ×
-            </button>
-          ) : null}
-
-          <button
-            aria-expanded={menuOpen}
-            aria-label="Specialist actions menu"
-            className="grid size-9 place-items-center rounded-xl text-lg text-[#71839e] hover:bg-[#f4f8fb] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2187a8]"
-            onClick={() => setMenuOpen(!menuOpen)}
-            type="button"
-          >
-            ⋮
-          </button>
-
-          {menuOpen ? (
-            <div className="absolute right-0 top-11 z-20 w-48 rounded-xl border border-[#e1e8f0] bg-white p-1.5 shadow-lg text-[13px] font-medium text-[#182238]">
-              <button
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-[#f4f8fb]"
-                onClick={() => {
-                  const newStatus = formData.status === 'published' ? 'draft' : 'published';
-                  const newShowOnWebsite = newStatus === 'published';
-                  handleFieldChange('status', newStatus);
-                  handleFieldChange('showOnWebsite', newShowOnWebsite);
-                  onSave({ ...formData, status: newStatus, showOnWebsite: newShowOnWebsite });
-                  setMenuOpen(false);
-                }}
-                type="button"
-              >
-                {formData.status === 'published' ? 'Set as Draft' : 'Publish Specialist'}
-              </button>
-              <a
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-[#f4f8fb] text-[#2187a8]"
-                href={`/doctors/${formData.seo?.slug || formData.id}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                Preview on Website ↗
-              </a>
-              <button
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[#ef4147] hover:bg-[#fff0f1]"
-                onClick={() => {
-                  setMenuOpen(false);
-                  onDelete(formData.id);
-                }}
-                type="button"
-              >
-                Delete Specialist
-              </button>
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="mt-6 flex overflow-x-auto whitespace-nowrap border-b border-[#e5edf5] text-[14px] font-semibold text-[#71839e]">
-        {(
-          [
-            ['overview', 'Overview'],
-            ['content', 'Content'],
-            ['expertise', 'Expertise'],
-            ['education', 'Education'],
-            ['seo', 'Publishing'],
-          ] as const
-        ).map(([tabKey, tabLabel]) => (
-          <button
-            className={`border-b-2 px-3 pb-3 text-center transition-colors focus-visible:outline-none ${
-              activeTab === tabKey
-                ? 'border-[#2187a8] text-[#2187a8]'
-                : 'border-transparent hover:text-[#182238]'
-            }`}
-            key={tabKey}
-            onClick={() => setActiveTab(tabKey)}
-            type="button"
-          >
-            {tabLabel}
-          </button>
-        ))}
-      </div>
-
-      {/* Form Content */}
-      <form className="mt-6 flex flex-1 flex-col justify-between" onSubmit={handleSubmit}>
-        {activeTab === 'overview' && (
-          <div className="space-y-5">
-            <MediaUploader
-              category="doctors"
-              framing={{
-                frames: imageFrames.doctorPhoto,
-                onChange: (photoImagePresentation) => handleFieldChange('photoImagePresentation', photoImagePresentation),
-                value: formData.photoImagePresentation,
-              }}
-              help="Use a clear portrait image. You can replace or remove it without deleting the stored media asset."
-              label="Doctor profile photo"
-              onClear={() => handlePhotoChange(null)}
-              onUploaded={handlePhotoChange}
-              value={formData.photoKey ?? undefined}
-            />
-
-            {/* Doctor Name & Role/Title */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Doctor Name *
-                </span>
-                <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('name', e.target.value)}
-                  required
-                  type="text"
-                  value={formData.name}
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Role / Title *
-                </span>
-                <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('roleTitle', e.target.value)}
-                  required
-                  type="text"
-                  value={formData.roleTitle}
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Specialty *
-                </span>
-                <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('specialty', e.target.value)}
-                  placeholder="e.g. Dental Implantology"
-                  required
-                  type="text"
-                  value={formData.specialty}
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Specialty (Khmer)
-                </span>
-                <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('specialtyKm', e.target.value)}
-                  type="text"
-                  value={formData.specialtyKm ?? ''}
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Doctor Name (Khmer)
-                </span>
-                <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('nameKm', e.target.value)}
-                  placeholder={formData.name}
-                  type="text"
-                  value={formData.nameKm ?? ''}
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Role / Title (Khmer)
-                </span>
-                <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('roleTitleKm', e.target.value)}
-                  type="text"
-                  value={formData.roleTitleKm ?? ''}
-                />
-              </label>
-            </div>
-
-            {/* Short Intro / Hero Description */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Short Intro / Hero Description *
-                </span>
-                <textarea
-                  className="mt-1.5 min-h-[90px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('shortIntro', e.target.value)}
-                  required
-                  rows={3}
-                  value={formData.shortIntro}
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Short Intro (Khmer)
-                </span>
-                <textarea
-                  className="mt-1.5 min-h-[90px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('shortIntroKm', e.target.value)}
-                  rows={3}
-                  value={formData.shortIntroKm ?? ''}
-                />
-              </label>
-            </div>
-
-            {/* Stats: Years Exp, Procedures, Satisfaction */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Years Exp
-                </span>
-                <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('yearsExp', e.target.value)}
-                  type="text"
-                  value={formData.yearsExp}
-                />
-              </label>
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Procedures
-                </span>
-                <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('procedures', e.target.value)}
-                  type="text"
-                  value={formData.procedures}
-                />
-              </label>
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Satisfaction
-                </span>
-                <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('satisfaction', e.target.value)}
-                  type="text"
-                  value={formData.satisfaction}
-                />
-              </label>
-            </div>
-
-            {/* Contact Phone & CTA Button Text */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  Contact Phone
-                </span>
-                <div className="relative mt-1.5">
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[#71839e]"
-                  >
-                    📞
-                  </span>
-                  <input
-                    className="h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] pl-9 pr-3.5 text-[14px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                    onChange={(e) => handleFieldChange('contactPhone', e.target.value)}
-                    type="tel"
-                    value={formData.contactPhone}
-                  />
-                </div>
-              </label>
-
-              <label className="block">
-                <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                  CTA Button Text
-                </span>
-                <input
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                  onChange={(e) => handleFieldChange('ctaButtonText', e.target.value)}
-                  type="text"
-                  value={formData.ctaButtonText}
-                />
-              </label>
-            </div>
-
-            {/* Branch Assignment */}
-            <div className="rounded-2xl border border-[#e1e8f0] bg-[#fcfdfe] p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                    Branch Assignment
-                  </span>
-                  <p className="mt-0.5 text-[12px] text-[#71839e]">
-                    Select which clinic branch(es) this doctor practices at.
-                  </p>
-                </div>
-                {branches && branches.length > 0 ? (
-                  <div className="flex items-center gap-2 text-[12px]">
-                    <button
-                      className="font-bold text-[#2187a8] hover:underline"
-                      onClick={() => handleFieldChange('branchIds', branches.map((b) => b.id))}
-                      type="button"
-                    >
-                      Both Branches
-                    </button>
-                    <span className="text-[#cbd5e1]">•</span>
-                    <button
-                      className="font-medium text-[#71839e] hover:text-[#182238]"
-                      onClick={() => handleFieldChange('branchIds', [])}
-                      type="button"
-                    >
-                      All (Unrestricted)
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="mt-3 space-y-2.5">
-                {(branches ?? []).map((branch) => {
-                  const isChecked = (formData.branchIds ?? []).includes(branch.id);
-                  return (
-                    <label
-                      className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
-                        isChecked
-                          ? 'border-[#2187a8] bg-[#f0f9fc]'
-                          : 'border-[#e1e8f0] bg-white hover:border-[#ccd7e4]'
-                      }`}
-                      key={branch.id}
-                    >
-                      <input
-                        checked={isChecked}
-                        className="mt-0.5 size-4 rounded border-[#ccd7e4] text-[#2187a8] accent-[#2187a8]"
-                        onChange={() => handleToggleBranch(branch.id)}
-                        type="checkbox"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[13px] font-bold text-[#182238]">{branch.nameEn}</span>
-                          {branch.nameKm ? (
-                            <span className="text-[11px] text-[#71839e]">({branch.nameKm})</span>
-                          ) : null}
-                        </div>
-                        <p className="mt-0.5 text-[11px] text-[#71839e]">{branch.addressEn}</p>
-                      </div>
-                    </label>
-                  );
-                })}
-
-                <div className="rounded-xl border border-[#e1e8f0] bg-white p-2.5 text-[11px] leading-relaxed text-[#64748b]">
-                  {!(formData.branchIds?.length) || (branches && formData.branchIds.length === branches.length) ? (
-                    <span className="font-semibold text-[#0284c7]">
-                      ✓ Available for booking across all branches.
-                    </span>
-                  ) : (
-                    <span>
-                      Available only at:{' '}
-                      <strong className="text-[#182238]">
-                        {(branches ?? [])
-                          .filter((b) => formData.branchIds?.includes(b.id))
-                          .map((b) => b.nameEn)
-                          .join(', ')}
-                      </strong>
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Switches: Show on Website & Featured Doctor */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-              <AdminToggle
-                checked={formData.showOnWebsite}
-                label="Show on Website"
-                onChange={(checked) => {
-                  handleFieldChange('showOnWebsite', checked);
-                  handleFieldChange('status', checked ? 'published' : 'draft');
-                }}
-                showLabel
-              />
-              <AdminToggle
-                checked={formData.featuredDoctor}
-                label="Featured Doctor"
-                onChange={(checked) => handleFieldChange('featuredDoctor', checked)}
-                showLabel
-              />
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'content' && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                Extended Bio / Biography
-              </span>
-              <textarea
-                className="mt-1.5 min-h-[180px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition placeholder:text-[#a9b7c9] focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                onChange={(e) => handleFieldChange('content', e.target.value)}
-                placeholder="Detailed clinical background, qualifications, and patient care philosophy..."
-                rows={6}
-                value={formData.content || ''}
-              />
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Extended Bio / Biography (Khmer)</span>
-              <textarea className="mt-1.5 min-h-[180px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]" onChange={(e) => handleFieldChange('contentKm', e.target.value)} rows={6} value={formData.contentKm ?? ''} />
-            </label>
-          </div>
-        )}
-
-        {activeTab === 'expertise' && (
-          <div className="space-y-4">
-            <p className="text-sm text-[#71839e]">Ordered expertise items require both English and Khmer values.</p>
-            {(formData.expertiseItems ?? []).map((item, index) => (
-              <div className="grid gap-3 rounded-xl border border-[#e1e8f0] p-3 sm:grid-cols-[1fr_1fr_auto]" key={`${item.displayOrder}-${index}`}>
-                <input className="h-10 rounded-lg border border-[#dce5ef] px-3 text-sm" onChange={(e) => handleFieldChange('expertiseItems', (formData.expertiseItems ?? []).map((entry, itemIndex) => itemIndex === index ? { ...entry, titleEn: e.target.value } : entry))} placeholder="Expertise (English)" value={item.titleEn} />
-                <input className="h-10 rounded-lg border border-[#dce5ef] px-3 text-sm" onChange={(e) => handleFieldChange('expertiseItems', (formData.expertiseItems ?? []).map((entry, itemIndex) => itemIndex === index ? { ...entry, titleKm: e.target.value } : entry))} placeholder="Expertise (Khmer)" value={item.titleKm} />
-                <Button className="text-[#b91c1c]" onClick={() => handleFieldChange('expertiseItems', (formData.expertiseItems ?? []).filter((_, itemIndex) => itemIndex !== index))} type="button" variant="secondary">Remove</Button>
-              </div>
-            ))}
-            <Button onClick={() => handleFieldChange('expertiseItems', [...(formData.expertiseItems ?? []), { displayOrder: (formData.expertiseItems ?? []).length, titleEn: '', titleKm: '' }])} type="button" variant="secondary">Add expertise</Button>
-          </div>
-        )}
-
-        {activeTab === 'education' && (
-          <div className="space-y-4">
-            <p className="text-sm text-[#71839e]">Each qualification and institution is stored bilingually and in display order.</p>
-            {(formData.educationItems ?? []).map((item, index) => (
-              <div className="grid gap-2 rounded-xl border border-[#e1e8f0] p-3 sm:grid-cols-2" key={`${item.displayOrder}-${index}`}>
-                {(['qualificationEn', 'qualificationKm', 'institutionEn', 'institutionKm'] as const).map((field) => <input className="h-10 rounded-lg border border-[#dce5ef] px-3 text-sm" key={field} onChange={(e) => handleFieldChange('educationItems', (formData.educationItems ?? []).map((entry, itemIndex) => itemIndex === index ? { ...entry, [field]: e.target.value } : entry))} placeholder={field.replace(/([A-Z])/g, ' $1')} value={item[field]} />)}
-                <input className="h-10 rounded-lg border border-[#dce5ef] px-3 text-sm" onChange={(e) => handleFieldChange('educationItems', (formData.educationItems ?? []).map((entry, itemIndex) => itemIndex === index ? { ...entry, yearLabel: e.target.value || null } : entry))} placeholder="Year label (optional)" value={item.yearLabel ?? ''} />
-                <Button className="text-[#b91c1c]" onClick={() => handleFieldChange('educationItems', (formData.educationItems ?? []).filter((_, itemIndex) => itemIndex !== index))} type="button" variant="secondary">Remove</Button>
-              </div>
-            ))}
-            <Button onClick={() => handleFieldChange('educationItems', [...(formData.educationItems ?? []), { displayOrder: (formData.educationItems ?? []).length, institutionEn: '', institutionKm: '', qualificationEn: '', qualificationKm: '', yearLabel: null }])} type="button" variant="secondary">Add education</Button>
-          </div>
-        )}
-
-        {activeTab === 'seo' && (
-          <div className="space-y-4">
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                URL Slug
-              </span>
-              <input
-                className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                onChange={(e) => handleFieldChange('seo', { ...formData.seo, slug: e.target.value })}
-                type="text"
-                value={formData.seo?.slug || ''}
-              />
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">
-                Related Doctor IDs (maximum 3, comma separated)
-              </span>
-              <textarea
-                className="mt-1.5 min-h-[80px] w-full resize-y rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] p-3.5 text-[14px] leading-relaxed text-[#182238] outline-none transition focus:border-[#2187a8] focus:bg-white focus:ring-2 focus:ring-[#d9f0f7]"
-                onChange={(e) => handleFieldChange('relatedDoctorIds', e.target.value.split(',').map((id) => id.trim()).filter(Boolean))}
-                rows={3}
-                value={(formData.relatedDoctorIds ?? []).join(', ')}
-              />
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-bold tracking-[0.5px] uppercase text-[#61738d]">Display order</span>
-              <input className="mt-1.5 h-11 w-full rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-3.5 text-[14px] font-medium text-[#182238] outline-none transition focus:border-[#2187a8]" min="0" onChange={(e) => handleFieldChange('displayOrder', Number(e.target.value) || 0)} type="number" value={formData.displayOrder ?? 0} />
-            </label>
-          </div>
-        )}
-
-        {/* Feedback message */}
-        {saveError ? (
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#fecdca] bg-[#fef3f2] px-4 py-2.5 text-[13px] font-medium text-[#b42318]" role="alert">
-            <AdminIcon className="size-4 shrink-0 text-[#b42318]" name="info" />
-            <span>{saveError}</span>
-          </div>
-        ) : null}
-        {saveSuccess ? (
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-[#c4f3d8] bg-[#effdf5] px-4 py-2.5 text-[13px] font-bold text-[#13ad63]" role="status">
-            <span>✓ Specialist profile saved successfully!</span>
-          </div>
-        ) : null}
-
-        {/* Action Buttons */}
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#e5edf5] pt-6">
-          <Button
-            className="h-11 rounded-xl border border-[#dce5ef] bg-white px-5 text-[14px] font-bold text-[#71839e] shadow-none hover:bg-[#f4f8fb]"
-            disabled={isSaving}
-            onClick={handleDiscard}
-            type="button"
-            variant="secondary"
-          >
-            Discard Changes
-          </Button>
-
-          <Button
-            className="h-11 rounded-xl bg-[#2187a8] px-6 text-[14px] font-bold text-white shadow-none hover:bg-[#1a718c] disabled:opacity-60"
-            disabled={isSaving}
-            type="submit"
-          >
-            {isSaving ? 'Saving Specialist…' : 'Save Specialist'}
-          </Button>
-        </div>
-      </form>
-    </aside>
-  );
+  return <TeamMemberForm initialValue={doctor} mode="edit" onCancel={onClose ?? (() => undefined)} onDelete={() => onDelete(doctor.id)} onSubmit={onSave} saveError={saveError} saveSuccess={saveSuccess} saving={isSaving} />;
 }
 
 export function NoDoctorSelectedPanel() {
@@ -742,9 +148,9 @@ export function NoDoctorSelectedPanel() {
   );
 }
 
-function DoctorsEmptyState({ onAddDoctor }: { onAddDoctor: () => void }) {
+function TeamEmptyState({ description, noun, onAdd }: { description: string; noun: string; onAdd: () => void }) {
   return (
-    <Card className="mt-8 flex min-h-[580px] flex-col items-center justify-center rounded-[28px] border-[#e1e8f0] bg-white p-10 text-center shadow-[0_2px_4px_rgba(15,23,42,0.02)] sm:p-14">
+    <div className="flex min-h-[28rem] flex-col items-center justify-center p-8 text-center sm:p-12">
       {/* Decorative circular disc */}
       <div className="relative mb-7 flex size-44 items-center justify-center rounded-full bg-[#edf6fb]">
         {/* Floating sparkles / stars */}
@@ -799,19 +205,18 @@ function DoctorsEmptyState({ onAddDoctor }: { onAddDoctor: () => void }) {
       </div>
 
       {/* Text */}
-      <h2 className="text-[24px] font-bold text-[#182238]">No Doctors Found</h2>
+      <h2 className="text-[24px] font-bold text-[#182238]">No {noun} yet</h2>
       <p className="mt-3 max-w-[460px] text-[15px] leading-relaxed text-[#71839e]">
-        It looks like you haven&apos;t added any doctors to your clinic yet. Start by adding your first
-        specialist profile to show them on your website.
+        {description}
       </p>
 
       {/* Button */}
       <Button
         className="mt-7 h-11 rounded-xl bg-[#2187a8] px-6 text-[14px] font-bold text-white shadow-[0_6px_14px_rgba(33,135,168,0.2)] hover:bg-[#1a718c]"
         icon={<span aria-hidden="true" className="text-lg leading-none font-bold">+</span>}
-        onClick={onAddDoctor}
+        onClick={onAdd}
       >
-        Add Your First Doctor
+        Add Team Member
       </Button>
 
       {/* Tip */}
@@ -829,273 +234,39 @@ function DoctorsEmptyState({ onAddDoctor }: { onAddDoctor: () => void }) {
           <circle cx="12" cy="12" r="10" />
           <path d="M12 16v-4M12 8h.01" />
         </svg>
-        <span>Quick Tip: Profiles can be saved as drafts first</span>
-      </div>
-    </Card>
-  );
-}
-
-function AddDoctorModal({
-  isOpen,
-  onClose,
-  onCreate,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onCreate: (doctor: AdminDoctor) => void;
-}) {
-  const [name, setName] = useState('');
-  const [roleTitle, setRoleTitle] = useState('');
-  const [specialty, setSpecialty] = useState('Dental Implantology');
-  const [status, setStatus] = useState<DoctorStatus>('published');
-  const [shortIntro, setShortIntro] = useState('');
-  const [yearsExp, setYearsExp] = useState('10+');
-  const [procedures, setProcedures] = useState('5k+');
-  const [satisfaction, setSatisfaction] = useState('99%');
-  const [contactPhone, setContactPhone] = useState('+855 23 456 789');
-  const [ctaButtonText, setCtaButtonText] = useState('Book Now');
-  const [showOnWebsite, setShowOnWebsite] = useState(true);
-  const [featuredDoctor, setFeaturedDoctor] = useState(false);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-
-    const initials = name
-      .split(' ')
-      .filter(Boolean)
-      .slice(-2)
-      .map((w) => w[0]?.toUpperCase())
-      .join('');
-
-    const newDoctor: AdminDoctor = {
-      id: `doctor-${Date.now()}`,
-      name,
-      roleTitle,
-      specialty,
-      status,
-      updatedAt: 'Just now',
-      initials: initials || 'DR',
-      avatarBgColor: 'bg-[#e3f0f7] text-[#1f738f]',
-      shortIntro,
-      yearsExp,
-      procedures,
-      satisfaction,
-      contactPhone,
-      ctaButtonText,
-      showOnWebsite,
-      featuredDoctor,
-      branchIds: [],
-    };
-
-    onCreate(newDoctor);
-    onClose();
-  };
-
-  return (
-    <div
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
-      role="dialog"
-    >
-      <div className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto rounded-3xl border border-[#e1e8f0] bg-white p-5 shadow-2xl sm:p-7">
-        <div className="flex items-center justify-between border-b border-[#e5edf5] pb-4">
-          <h3 className="text-xl font-bold text-[#182238]">Add New Specialist</h3>
-          <button
-            aria-label="Close dialog"
-            className="rounded-lg p-1.5 text-2xl leading-none text-[#71839e] hover:bg-[#f4f8fb]"
-            onClick={onClose}
-            type="button"
-          >
-            ×
-          </button>
-        </div>
-
-        <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-[12px] font-bold uppercase text-[#61738d]">Doctor Name *</span>
-              <input
-                className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Dr. Meas Vanna"
-                required
-                type="text"
-                value={name}
-              />
-            </label>
-            <label className="block">
-              <span className="text-[12px] font-bold uppercase text-[#61738d]">Role / Title *</span>
-              <input
-                className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-                onChange={(e) => setRoleTitle(e.target.value)}
-                placeholder="e.g. Senior Specialist"
-                required
-                type="text"
-                value={roleTitle}
-              />
-            </label>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-[12px] font-bold uppercase text-[#61738d]">Specialty</span>
-              <select
-                className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-                onChange={(e) => setSpecialty(e.target.value)}
-                value={specialty}
-              >
-                <option>Dental Implantology</option>
-                <option>Prosthodontics</option>
-                <option>Orthodontics</option>
-                <option>General Dentistry</option>
-                <option>Endodontics</option>
-                <option>Pediatric Dentistry</option>
-                <option>Oral Surgery</option>
-                <option>Periodontics</option>
-                <option>Cosmetic Dentistry</option>
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="text-[12px] font-bold uppercase text-[#61738d]">Status</span>
-              <select
-                className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-                onChange={(e) => setStatus(e.target.value as DoctorStatus)}
-                value={status}
-              >
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
-              </select>
-            </label>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <label className="block">
-              <span className="text-[12px] font-bold uppercase text-[#61738d]">Years Exp</span>
-              <input
-                className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-                onChange={(e) => setYearsExp(e.target.value)}
-                type="text"
-                value={yearsExp}
-              />
-            </label>
-            <label className="block">
-              <span className="text-[12px] font-bold uppercase text-[#61738d]">Procedures</span>
-              <input
-                className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-                onChange={(e) => setProcedures(e.target.value)}
-                type="text"
-                value={procedures}
-              />
-            </label>
-            <label className="block">
-              <span className="text-[12px] font-bold uppercase text-[#61738d]">Satisfaction</span>
-              <input
-                className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-                onChange={(e) => setSatisfaction(e.target.value)}
-                type="text"
-                value={satisfaction}
-              />
-            </label>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-[12px] font-bold uppercase text-[#61738d]">Contact Phone</span>
-              <input
-                className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-                onChange={(e) => setContactPhone(e.target.value)}
-                type="tel"
-                value={contactPhone}
-              />
-            </label>
-            <label className="block">
-              <span className="text-[12px] font-bold uppercase text-[#61738d]">CTA Button Text</span>
-              <input
-                className="mt-1 h-10 w-full rounded-xl border border-[#dce5ef] bg-[#f9fbfd] px-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-                onChange={(e) => setCtaButtonText(e.target.value)}
-                type="text"
-                value={ctaButtonText}
-              />
-            </label>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-4 py-1">
-            <AdminToggle
-              checked={showOnWebsite}
-              label="Show on Website"
-              onChange={setShowOnWebsite}
-              showLabel
-            />
-            <AdminToggle
-              checked={featuredDoctor}
-              label="Featured Doctor"
-              onChange={setFeaturedDoctor}
-              showLabel
-            />
-          </div>
-
-          <label className="block">
-            <span className="text-[12px] font-bold uppercase text-[#61738d]">Short Intro *</span>
-            <textarea
-              className="mt-1 w-full rounded-xl border border-[#dce5ef] bg-[#f9fbfd] p-3 text-[14px] text-[#182238] outline-none focus:border-[#2187a8]"
-              onChange={(e) => setShortIntro(e.target.value)}
-              placeholder="Brief description of doctor's clinical focus..."
-              required
-              rows={2}
-              value={shortIntro}
-            />
-          </label>
-
-          <div className="flex flex-wrap items-center justify-end gap-3 pt-3">
-            <Button
-              className="border border-[#dce5ef] bg-white text-[#71839e]"
-              onClick={onClose}
-              type="button"
-              variant="secondary"
-            >
-              Cancel
-            </Button>
-            <Button className="bg-[#2187a8] text-white hover:bg-[#1a718c]" type="submit">
-              Create Specialist
-            </Button>
-          </div>
-        </form>
+        <span>Tip: Team profiles can be saved as drafts before publishing.</span>
       </div>
     </div>
   );
 }
 
-type DoctorListState = Pick<AdminDoctorListQuery, 'page' | 'limit' | 'search' | 'status' | 'specialty' | 'sort' | 'order'>;
+type DoctorListState = Pick<AdminDoctorListQuery, 'page' | 'limit' | 'search' | 'status' | 'specialty' | 'category' | 'sort' | 'order'>;
+type TeamCategoryCounts = Record<'ALL' | TeamCategory, number | undefined>;
 
-function DoctorsContent({ content, listState, onListStateChange, busy }: { busy: boolean; content: AdminDoctorsContent; listState: DoctorListState; onListStateChange: (next: DoctorListState) => void }) {
+function DoctorsContent({ content, listState, onListStateChange, busy, categoryCounts }: { busy: boolean; categoryCounts: TeamCategoryCounts; content: AdminDoctorsContent; listState: DoctorListState; onListStateChange: (next: DoctorListState) => void }) {
   const navigate = useNavigate();
   const { doctorId } = useParams();
   const queryClient = useQueryClient();
   const [doctors, setDoctors] = useState<AdminDoctor[]>(content.doctors);
   const [selectedId, setSelectedId] = useState<string | null>(doctorId ?? null);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [reorderNotice, setReorderNotice] = useState<{ tone: 'error' | 'success'; title: string; message: string } | null>(null);
   useEffect(() => { setDoctors(content.doctors); }, [content.doctors]);
   useEffect(() => { setSelectedId(doctorId ?? null); }, [doctorId]);
+  useEffect(() => { setReorderNotice(null); setDraggedId(null); }, [listState.category]);
   const doctorDetailQuery = useQuery({
     enabled: selectedId !== null,
     queryFn: () => cmsApi.doctors.get(selectedId!),
     queryKey: queryKeys.admin.doctor(selectedId ?? ''),
   });
 
-  const branchesQuery = useQuery({
-    queryKey: queryKeys.admin.branches({ limit: 100 }),
-    queryFn: () => cmsApi.branches.list({ limit: 100 }),
+  const categoryOrderQuery = useQuery({
+    enabled: listState.category !== undefined,
+    queryFn: () => cmsApi.doctors.list({ category: listState.category, limit: 100, page: 1, sort: 'displayOrder', order: 'asc' }),
+    queryKey: queryKeys.admin.doctors({ category: listState.category, limit: 100, page: 1, sort: 'displayOrder', order: 'asc', purpose: 'reorder' }),
   });
-  const activeBranches = useMemo(
-    () => (branchesQuery.data?.items ?? []).filter((b) => b.status !== 'ARCHIVED'),
-    [branchesQuery.data?.items],
-  );
 
   // Extract unique specialties
   const specialties = useMemo(() => {
@@ -1111,7 +282,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
   const pageDoctors = doctors;
 
   // Currently selected doctor
-  const selectedDoctor = doctorDetailQuery.data ? toAdminDoctorDetail(doctorDetailQuery.data.doctor) : null;
+  const selectedDoctor = useMemo(() => doctorDetailQuery.data ? toAdminDoctorDetail(doctorDetailQuery.data.doctor) : null, [doctorDetailQuery.data]);
 
   const updateMutation = useMutation({
     mutationFn: (doctor: AdminDoctor) => {
@@ -1125,11 +296,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
       void invalidateCmsDomain(queryClient, 'doctors');
     },
     onError: (error: unknown) => {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Unable to save this doctor. Please check the form and try again.';
-      setActionError(message || 'Unable to save this doctor. Please check the form and try again.');
+      setActionError(teamMemberSaveError(error));
       setSaveSuccess(false);
     },
   });
@@ -1137,6 +304,20 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
     mutationFn: (id: string) => cmsApi.doctors.delete(id),
     onSuccess: () => { setSelectedId(null); setActionError(null); void invalidateCmsDomain(queryClient, 'doctors'); },
     onError: (error: unknown) => setActionError(error instanceof Error && 'code' in error && error.code === 'DOCTOR_IN_USE' ? 'This doctor is used by appointment history. Unpublish the profile instead.' : 'Unable to delete this doctor.'),
+  });
+  const reorderMutation = useMutation({
+    mutationFn: (input: ReorderDoctorsInput) => cmsApi.doctors.reorder(input),
+    onSuccess: () => {
+      setReorderNotice({ tone: 'success', title: 'Team order saved', message: 'The public display order for this category is up to date.' });
+      void invalidateCmsDomain(queryClient, 'doctors');
+    },
+    onError: (error: unknown) => {
+      setReorderNotice({
+        tone: 'error',
+        title: 'Team order was not saved',
+        message: error instanceof Error && error.message ? error.message : 'The previous order has been restored. Please try again.',
+      });
+    },
   });
   const handleSaveDoctor = (updated: AdminDoctor) => updateMutation.mutate(updated);
   const handleDeleteDoctor = (id: string) => {
@@ -1146,11 +327,39 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
     }
   };
 
-  const handleAddDoctor = (newDoc: AdminDoctor) => {
-    setDoctors((prev) => [newDoc, ...prev]);
-    setSelectedId(newDoc.id);
-    onListStateChange({ ...listState, page: 1 });
+  const handleReorder = (targetId: string, placement: 'before' | 'after') => {
+    const category = listState.category;
+    const movingId = draggedId;
+    const fullOrder = categoryOrderQuery.data?.items.map((doctor) => doctor.id) ?? [];
+    setDraggedId(null);
+    if (!category || !movingId || movingId === targetId || reorderMutation.isPending) return;
+    if (categoryOrderQuery.data && categoryOrderQuery.data.meta.total > 100) {
+      setReorderNotice({ tone: 'error', title: 'Team order was not changed', message: 'This category has more than 100 members and cannot be reordered from this screen.' });
+      return;
+    }
+    const nextFullOrder = moveIdRelative(fullOrder, movingId, targetId, placement);
+    if (nextFullOrder.join('|') === fullOrder.join('|')) return;
+    const previousDoctors = doctors;
+    const visibleIds = moveIdRelative(doctors.map((doctor) => doctor.id), movingId, targetId, placement);
+    const byId = new Map(doctors.map((doctor) => [doctor.id, doctor]));
+    setDoctors(visibleIds.flatMap((id) => {
+      const doctor = byId.get(id);
+      return doctor ? [doctor] : [];
+    }));
+    setReorderNotice(null);
+    reorderMutation.mutate(
+      { category, ids: nextFullOrder },
+      { onError: () => setDoctors(previousDoctors) },
+    );
   };
+  const selectedCategoryTab = teamCategoryTabs.find((tab) => tab.category === listState.category) ?? teamCategoryTabs[0]!;
+  const hasListFilters = Boolean(listState.search || listState.specialty || listState.status || (listState.page ?? 1) > 1);
+  const canReorder = Boolean(
+    listState.category &&
+    categoryOrderQuery.data &&
+    categoryOrderQuery.data.meta.total <= 100 &&
+    !reorderMutation.isPending,
+  );
 
   if (doctorId) {
     return (
@@ -1159,16 +368,15 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
           {actionError ? <p className="mb-4 rounded-xl border border-[#fecaca] bg-[#fff1f2] p-3 text-sm text-[#b91c1c]" role="alert">{actionError}</p> : null}
           <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <AdminPageHeading />
-            <Button onClick={() => navigate('/admin/doctors')} type="button" variant="secondary">Back to doctors</Button>
+            <Button onClick={() => navigate('/admin/team')} type="button" variant="secondary">Back to team</Button>
           </header>
           {doctorDetailQuery.isLoading ? (
             <Card className="min-h-[32rem] animate-pulse rounded-[28px] bg-white" />
           ) : selectedDoctor ? (
             <DoctorDetailPanel
-              branches={activeBranches}
               doctor={selectedDoctor}
               isSaving={updateMutation.isPending}
-              onClose={() => navigate('/admin/doctors')}
+              onClose={() => navigate('/admin/team')}
               onDelete={handleDeleteDoctor}
               onSave={handleSaveDoctor}
               saveError={actionError}
@@ -1177,7 +385,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
           ) : (
             <Card className="p-6">
               <p className="admin-feedback" role="alert">This doctor could not be found.</p>
-              <Button className="mt-4" onClick={() => navigate('/admin/doctors')} type="button" variant="secondary">Back to doctors</Button>
+              <Button className="mt-4" onClick={() => navigate('/admin/team')} type="button" variant="secondary">Back to team</Button>
             </Card>
           )}
         </div>
@@ -1200,24 +408,41 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
           <Button
             className="h-[46px] rounded-xl bg-[#2187a8] px-5 text-[14px] font-bold text-white shadow-[0_6px_14px_rgba(33,135,168,0.2)] hover:bg-[#1a718c]"
             icon={<span aria-hidden="true" className="text-lg leading-none font-bold">+</span>}
-            onClick={() => navigate('/admin/doctors/new')}
+            onClick={() => navigate(`/admin/team/new${listState.category ? `?category=${listState.category}` : ''}`)}
           >
-            {content.controls.addLabel}
+            Add Team Member
           </Button>
         </div>
       </header>
-      {/* Empty State: no doctors exist at all */}
-      {content.meta.total === 0 && !listState.search && !listState.specialty && !listState.status ? (
-        <DoctorsEmptyState onAddDoctor={() => navigate('/admin/doctors/new')} />
-      ) : (
       <div className="mt-8">
+        <nav aria-label="Team categories" className="admin-team-tabs">
+          {teamCategoryTabs.map((tab) => {
+            const active = tab.category === listState.category;
+            const count = categoryCounts[tab.category ?? 'ALL'];
+            return (
+              <button
+                aria-current={active ? 'page' : undefined}
+                className="admin-team-tab"
+                data-active={active}
+                key={tab.category ?? 'ALL'}
+                onClick={() => onListStateChange({ ...listState, category: tab.category, page: 1 })}
+                type="button"
+              >
+                <span>{tab.label}</span>
+                <span aria-label={count === undefined ? 'Count loading' : `${count} team members`} className="admin-team-tab-count">
+                  {count ?? '–'}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
         <Card className="flex flex-col overflow-hidden rounded-[28px] border-[#e1e8f0] bg-white p-6 shadow-[0_2px_4px_rgba(15,23,42,0.02)]">
           {/* Filters inside card header */}
           <div className="admin-list-toolbar">
             {/* Search Input */}
             <label className="flex h-11 min-w-[200px] flex-1 items-center gap-3 rounded-xl border border-[#e1e8f0] bg-[#f9fbfd] px-4 text-[#9badc5] transition focus-within:border-[#2187a8] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <AdminIcon className="size-4 shrink-0 text-[#9badc5]" name="search" />
-              <span className="sr-only">Search doctors</span>
+              <span className="sr-only">Search team members</span>
               <input
                 className="min-w-0 flex-1 bg-transparent text-[14px] text-[#182238] outline-none placeholder:text-[#a9b7c9]"
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -1264,15 +489,35 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
             </label>
           </div>
 
+          <div className="admin-team-reorder-status" aria-live="polite">
+            {reorderMutation.isPending ? (
+              <AdminFeedback title="Saving team order…" tone="loading"><p>Please keep this page open while the new order is saved.</p></AdminFeedback>
+            ) : reorderNotice ? (
+              <AdminFeedback title={reorderNotice.title} tone={reorderNotice.tone}><p>{reorderNotice.message}</p></AdminFeedback>
+            ) : listState.category && categoryOrderQuery.isLoading ? (
+              <AdminFeedback title="Preparing reorder controls…" tone="loading"><p>Loading the complete {selectedCategoryTab.label.toLowerCase()} order.</p></AdminFeedback>
+            ) : listState.category && categoryOrderQuery.isError ? (
+              <AdminFeedback title="Reordering is temporarily unavailable" tone="error"><p>The list is still usable, but the complete category order could not be loaded.</p></AdminFeedback>
+            ) : categoryOrderQuery.data && categoryOrderQuery.data.meta.total > 100 ? (
+              <AdminFeedback title="Reordering is unavailable for this category" tone="error"><p>Categories with more than 100 members must be reordered in smaller groups.</p></AdminFeedback>
+            ) : listState.category ? (
+              <p className="admin-helper">Drag a row by its handle to change the order within {selectedCategoryTab.label}. Search, status, and pagination filters can remain active.</p>
+            ) : (
+              <AdminFeedback title="Choose a category to reorder" tone="empty"><p>Reordering is disabled in All because each category keeps its own display order.</p></AdminFeedback>
+            )}
+          </div>
+
           {/* Table */}
-          {busy ? <p role="status" className="admin-helper px-4">Updating doctors…</p> : null}<div aria-busy={busy} className="admin-table-scroll" role="region" aria-label="Doctors table, scroll horizontally for more columns" tabIndex={0}>
-            <table className="admin-management-table w-full min-w-[580px] border-collapse text-left">
+          {busy ? <p role="status" className="admin-helper px-4">Updating team members…</p> : null}<div aria-busy={busy || reorderMutation.isPending} className="admin-table-scroll admin-team-table-region" role="region" aria-label="Team members table, scroll horizontally for more columns" tabIndex={0}>
+            <table className="admin-management-table w-full min-w-[820px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-[#f0f4f8] text-[11px] font-bold uppercase tracking-[0.5px] text-[#8699b0]">
-                  <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.doctor}</th>
-                  <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.specialty}</th>
-                  <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.branch}</th>
+                  <th aria-label="Reorder" scope="col" className="w-12 pb-3.5 pt-1 font-bold" />
+                  <th scope="col" className="pb-3.5 pt-1 font-bold">Team member</th>
+                  <th scope="col" className="pb-3.5 pt-1 font-bold">Role</th>
+                  <th scope="col" className="pb-3.5 pt-1 font-bold">Category</th>
                   <th scope="col" className="pb-3.5 pt-1 font-bold">{content.table.status}</th>
+                  <th scope="col" className="pb-3.5 pt-1 font-bold">Booking</th>
                   <th scope="col" className="pb-3.5 pt-1 text-right font-bold">{content.table.updated}</th>
                   <th scope="col" className="pb-3.5 pt-1 pr-2 text-right font-bold">Actions</th>
                 </tr>
@@ -1280,53 +525,59 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
               <tbody className="divide-y divide-[#f0f4f8]">
                 {pageDoctors.map((doc) => {
                   return (
-                    <tr className="transition-colors hover:bg-[#f8fbfd]" key={doc.id}>
+                    <tr
+                      className="admin-team-row transition-colors hover:bg-[#f8fbfd]"
+                      data-dragging={draggedId === doc.id}
+                      draggable={canReorder}
+                      key={doc.id}
+                      onDragEnd={() => setDraggedId(null)}
+                      onDragOver={(event) => { if (canReorder) event.preventDefault(); }}
+                      onDragStart={(event) => {
+                        if (!canReorder) return;
+                        event.dataTransfer.effectAllowed = 'move';
+                        event.dataTransfer.setData('text/plain', doc.id);
+                        setDraggedId(doc.id);
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        const bounds = event.currentTarget.getBoundingClientRect();
+                        handleReorder(doc.id, event.clientY >= bounds.top + bounds.height / 2 ? 'after' : 'before');
+                      }}
+                    >
+                      <td className="py-4 pr-1">
+                        <span aria-label={canReorder ? `Drag ${doc.name} to reorder` : 'Reordering unavailable'} className="admin-team-drag-handle" data-enabled={canReorder} title={canReorder ? 'Drag to reorder' : 'Choose one category to reorder'}>⋮⋮</span>
+                      </td>
                       {/* Doctor info */}
                       <td className="py-4 pr-4">
-                        <button type="button" className="flex items-center gap-3.5 text-left" aria-label={`Edit ${doc.name}`} onClick={() => navigate(`/admin/doctors/${doc.id}/edit`)}>
+                        <button type="button" className="flex items-center gap-3.5 text-left" aria-label={`Edit ${doc.name}`} onClick={() => navigate(`/admin/team/${doc.id}/edit`)}>
                           <DoctorAvatar doctor={doc} size="md" />
                           <div>
                             <span className="block text-[15px] font-bold text-[#182238]">
                               {doc.name}
                             </span>
-                            <span className="mt-0.5 block text-[13px] text-[#71839e]">
-                              {doc.roleTitle}
-                            </span>
+                            <span className="mt-0.5 block text-[13px] text-[#71839e]" lang="km">{doc.nameKm || '—'}</span>
                           </div>
                         </button>
                       </td>
 
-                      {/* Specialty */}
-                      <td className="py-4 pr-4 text-[14px] text-[#71839e]">
-                        {doc.specialty}
+                      <td className="py-4 pr-4 text-[14px] text-[#526477]">
+                        <span className="block font-semibold text-[#182238]">{doc.roleTitle || '—'}</span>
+                        {doc.roleTitleKm ? <span className="mt-0.5 block text-[13px]" lang="km">{doc.roleTitleKm}</span> : null}
                       </td>
 
-                      {/* Branch assignment */}
-                      <td className="py-4 pr-4 text-[13px]">
-                        {!doc.branchIds || doc.branchIds.length === 0 || (activeBranches.length > 0 && doc.branchIds.length === activeBranches.length) ? (
-                          <span className="inline-flex items-center rounded-md border border-[#bae6fd] bg-[#f0f9ff] px-2 py-0.5 text-[11px] font-medium text-[#0369a1]">
-                            All Branches
-                          </span>
-                        ) : (
-                          <div className="flex flex-wrap gap-1">
-                            {doc.branchIds.map((branchId) => {
-                              const b = activeBranches.find((br) => br.id === branchId);
-                              return (
-                                <span
-                                  className="inline-flex items-center rounded-md border border-[#e2e8f0] bg-[#f8fafc] px-2 py-0.5 text-[11px] font-medium text-[#475569]"
-                                  key={branchId}
-                                >
-                                  {b?.nameEn ?? 'Branch'}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        )}
+                      <td className="py-4 pr-4">
+                        <span className="admin-team-category-badge">{teamCategoryLabel(doc.category ?? 'DENTIST')}</span>
                       </td>
 
                       {/* Status badge */}
                       <td className="py-4 pr-4">
                         <StatusBadge status={doc.status} />
+                      </td>
+
+                      <td className="py-4 pr-4">
+                        {doc.category === 'DENTIST' || doc.category === 'GENERAL_PRACTITIONER' || doc.category === undefined ? (
+                          <AdminStatus tone={doc.bookable === false ? 'neutral' : 'success'}>{doc.bookable === false ? 'Not bookable' : 'Bookable'}</AdminStatus>
+                        ) : <span aria-label="Not applicable" className="text-[#71839e]">—</span>}
                       </td>
 
                       {/* Updated Date */}
@@ -1339,7 +590,7 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
                         <button
                           aria-label={`Edit ${doc.name}`}
                           className="rounded-lg px-3 py-1.5 text-[13px] font-bold text-[#2187a8] transition hover:bg-[#edf7fb]"
-                          onClick={() => navigate(`/admin/doctors/${doc.id}/edit`)}
+                          onClick={() => navigate(`/admin/team/${doc.id}/edit`)}
                           type="button"
                         >
                           Edit
@@ -1352,22 +603,15 @@ function DoctorsContent({ content, listState, onListStateChange, busy }: { busy:
             </table>
           </div>
 
-          {filteredDoctors.length === 0 ? <AdminListEmpty noun="doctors" filtered={Boolean(listState.search || listState.specialty || listState.status || (listState.page ?? 1) > 1)} onClear={() => onListStateChange({ ...listState, search: undefined, specialty: undefined, status: undefined, page: 1 })} /> : null}
-          <AdminListPagination busy={busy} noun="doctors" page={effectivePage} totalPages={totalPages} total={content.meta.total} limit={content.meta.limit} count={pageDoctors.length} onPageChange={(page) => onListStateChange({ ...listState, page })} />
+          {filteredDoctors.length === 0 ? hasListFilters ? <AdminListEmpty noun={selectedCategoryTab.noun} filtered onClear={() => onListStateChange({ ...listState, search: undefined, specialty: undefined, status: undefined, page: 1 })} /> : <TeamEmptyState description={selectedCategoryTab.emptyDescription} noun={selectedCategoryTab.noun} onAdd={() => navigate(`/admin/team/new${listState.category ? `?category=${listState.category}` : ''}`)} /> : null}
+          <AdminListPagination busy={busy || reorderMutation.isPending} noun="team members" page={effectivePage} totalPages={totalPages} total={content.meta.total} limit={content.meta.limit} count={pageDoctors.length} onPageChange={(page) => onListStateChange({ ...listState, page })} />
         </Card>
 
       </div>
-      )} {/* end doctors.length === 0 ternary */}
 
       <DoctorsFooter footer={content.footer} />
 
-      {/* Add Specialist Modal */}
       </div>
-      <AddDoctorModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onCreate={handleAddDoctor}
-      />
     </main>
   );
 }
@@ -1376,7 +620,7 @@ function DoctorsSkeleton() {
   return (
     <main
       aria-busy="true"
-      aria-label="Loading doctor management"
+      aria-label="Loading team management"
       className="min-h-screen flex-1 bg-[#f6f8fb] p-7 lg:p-10"
     >
       <div className="h-10 w-72 animate-pulse rounded bg-[#e7edf3]" />
@@ -1392,9 +636,9 @@ function DoctorsUnavailable({ onRetry }: { onRetry: () => void }) {
   return (
     <main className="grid min-h-screen flex-1 place-items-center bg-[#f6f8fb] p-6">
       <Card className="max-w-md p-8 text-center rounded-[28px]">
-        <h1 className="text-2xl font-bold text-[#182238]">Doctor Management is unavailable</h1>
+        <h1 className="text-2xl font-bold text-[#182238]">Team Management is unavailable</h1>
         <p className="mt-3 text-[#71839e]">
-          Unable to retrieve specialist profiles. Please try again.
+          Unable to retrieve team profiles. Please try again.
         </p>
         <Button className="mt-6 bg-[#2187a8] text-white" onClick={onRetry}>
           Retry
@@ -1405,8 +649,34 @@ function DoctorsUnavailable({ onRetry }: { onRetry: () => void }) {
 }
 
 export function AdminDoctorsPage() {
-  const [listState, setListState] = useState<DoctorListState>({ page: 1, limit: 20, sort: 'displayOrder', order: 'asc' });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryFromUrl = isTeamCategory(searchParams.get('category')) ? searchParams.get('category') as TeamCategory : undefined;
+  const [listState, setListState] = useState<DoctorListState>({ category: categoryFromUrl, page: 1, limit: 20, sort: 'displayOrder', order: 'asc' });
   const { data, isError, isLoading, isFetching, refetch } = useAdminDoctorsPageQuery(listState);
+  const countQueries = useQueries({
+    queries: teamCategoryTabs.map((tab) => ({
+      queryFn: () => cmsApi.doctors.list({ category: tab.category, limit: 1, page: 1 }),
+      queryKey: queryKeys.admin.doctors({ category: tab.category, limit: 1, page: 1, purpose: 'category-count' }),
+      staleTime: 30_000,
+    })),
+  });
+  const categoryCounts = teamCategoryTabs.reduce<TeamCategoryCounts>((counts, tab, index) => {
+    counts[tab.category ?? 'ALL'] = countQueries[index]?.data?.meta.total;
+    return counts;
+  }, { ALL: undefined, DENTIST: undefined, GENERAL_PRACTITIONER: undefined, RECEPTIONIST: undefined, ASSISTANT: undefined });
+
+  useEffect(() => {
+    setListState((current) => current.category === categoryFromUrl ? current : { ...current, category: categoryFromUrl, page: 1 });
+  }, [categoryFromUrl]);
+
+  const handleListStateChange = (next: DoctorListState) => {
+    setListState(next);
+    if (next.category === listState.category) return;
+    const updated = new URLSearchParams(searchParams);
+    if (next.category) updated.set('category', next.category);
+    else updated.delete('category');
+    setSearchParams(updated, { replace: false });
+  };
 
   if (isLoading) {
     return <DoctorsSkeleton />;
@@ -1419,7 +689,7 @@ export function AdminDoctorsPage() {
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
 
-      <DoctorsContent busy={isFetching} content={data} listState={listState} onListStateChange={setListState} />
+      <DoctorsContent busy={isFetching} categoryCounts={categoryCounts} content={data} listState={listState} onListStateChange={handleListStateChange} />
     </div>
   );
 }

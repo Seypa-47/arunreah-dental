@@ -5,12 +5,12 @@ import { getAdminAppointment, getAdminAppointments, normalizeAppointmentFilters,
 describe('appointment API service', () => {
   it('normalizes paging and sends authenticated list requests', async () => {
     let request: { path: string; authenticated?: boolean } | undefined;
-    const client = { get: async <T>(path: string, options?: { authenticated?: boolean }) => { request = { authenticated: options?.authenticated, path }; return { appointments: [], meta: { limit: 20, page: 1, total: 0, totalPages: 0 } } as T; } } satisfies Pick<ApiClient, 'get'>;
-    await getAdminAppointments({ search: '  ', status: 'PENDING' }, client);
+    const client = { get: async <T>(path: string, options?: { authenticated?: boolean }) => { request = { authenticated: options?.authenticated, path }; return { appointments: [], branchCounts: [], meta: { limit: 20, page: 1, total: 0, totalPages: 0 } } as T; } } satisfies Pick<ApiClient, 'get'>;
+    await getAdminAppointments({ branchId: 'branch-id', search: '  ', status: 'PENDING' }, client);
     expect(normalizeAppointmentFilters({})).toMatchObject({ limit: 20, order: 'desc', page: 1, sort: 'createdAt' });
     expect(request?.authenticated).toBe(true);
     const params = new URL(`https://example.test${request?.path}`).searchParams;
-    expect(Object.fromEntries(params)).toEqual({ limit: '20', order: 'desc', page: '1', sort: 'createdAt', status: 'PENDING' });
+    expect(Object.fromEntries(params)).toEqual({ branchId: 'branch-id', limit: '20', order: 'desc', page: '1', sort: 'createdAt', status: 'PENDING' });
   });
 
   it('encodes detail IDs and restricts status mutation to the API contract payload', async () => {

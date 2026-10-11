@@ -6,7 +6,6 @@ import {
   isMediaKeyReferenced,
   removeMediaDeletionLock,
 } from '../repositories/media.repository';
-import { inTransaction } from '../db/transaction';
 import { HttpError } from '../shared/http-error';
 
 export const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -109,10 +108,8 @@ export function isHeicBytes(bytes: Uint8Array): boolean {
     bytes[5] === 0x74 &&
     bytes[6] === 0x79 &&
     bytes[7] === 0x70 &&
-    (
-      (bytes[8] === 0x68 && bytes[9] === 0x65 && bytes[10] === 0x69) || // heic, heix, heim, heis
-      (bytes[8] === 0x6d && bytes[9] === 0x69 && bytes[10] === 0x66)    // mif1
-    )
+    ((bytes[8] === 0x68 && bytes[9] === 0x65 && bytes[10] === 0x69) || // heic, heix, heim, heis
+      (bytes[8] === 0x6d && bytes[9] === 0x69 && bytes[10] === 0x66)) // mif1
   );
 }
 
@@ -190,12 +187,13 @@ export async function uploadImage(
 }
 
 export async function deleteOrphanedMedia(database: DatabaseClient, bucket: R2Bucket, key: string) {
-  await inTransaction(database, async (transaction) => {
-    if (await isMediaKeyReferenced(transaction, key)) {
-      throw new HttpError(409, 'MEDIA_IN_USE', 'This image is currently used by website content and cannot be deleted.');
-    }
-    await createMediaDeletionLock(transaction, key);
-  });
+  const locked = await createMediaDeletionLock(database, key);
+  if (locked === false) {
+    const message = (await isMediaKeyReferenced(database, key))
+      ? 'This image is currently used by website content and cannot be deleted.'
+      : 'This image is already being deleted.';
+    throw new HttpError(409, 'MEDIA_IN_USE', message);
+  }
 
   try {
     const object = await bucket.head(key);

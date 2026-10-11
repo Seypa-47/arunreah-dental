@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
-import { SiteLayout } from './site-layout';
+import { SiteLayout, STATIC_NAV_ITEMS } from './site-layout';
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: undefined, isError: false, isLoading: false }),
@@ -11,6 +11,12 @@ vi.mock('@/features/public-content/public-language-provider', () => ({
 }));
 
 describe('public site layout', () => {
+  it('uses Our Team as the bilingual canonical navigation destination', () => {
+    expect(STATIC_NAV_ITEMS.en).toContainEqual({ href: '/team', label: 'Our Team' });
+    expect(STATIC_NAV_ITEMS.km).toContainEqual({ href: '/team', label: 'ក្រុមការងាររបស់យើង' });
+    expect(STATIC_NAV_ITEMS.en.some((item) => item.href === '/doctors')).toBe(false);
+  });
+
   const render = () =>
     renderToStaticMarkup(
       <MemoryRouter initialEntries={['/about']}>

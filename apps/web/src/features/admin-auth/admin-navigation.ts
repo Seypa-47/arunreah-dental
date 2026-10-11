@@ -18,9 +18,9 @@ const appointmentNavigation: AdminNavigationItem[] = [
 
 const cmsNavigation: AdminNavigationItem[] = [
   { icon: 'services', label: 'Services' },
-  { icon: 'doctors', label: 'Doctors' },
-  { icon: 'doctors', label: 'Doctor Management', section: 'doctors' },
-  { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' },
+  { icon: 'doctors', label: 'Team' },
+  { icon: 'doctors', label: 'Team Management', section: 'doctors' },
+  { icon: 'doctors', label: 'Add Team Member', section: 'doctors' },
   { icon: 'showcase', label: 'Showcase' },
   { icon: 'clinicInfo', label: 'Clinic Info' },
   { icon: 'clinicInfo', label: 'Clinic Settings', section: 'clinic' },

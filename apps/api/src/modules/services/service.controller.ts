@@ -4,11 +4,12 @@ import {
   servicePublicQuerySchema,
   successResponse,
   updateServiceSchema,
+  slugPathParamSchema,
+  uuidPathParamSchema,
 } from '@arunreah/shared';
 import type { Context } from 'hono';
 import { createDbClient } from '../../db/client';
-import { parseRequestBody, parseRequestQuery } from '../../shared/request';
-import { HttpError } from '../../shared/http-error';
+import { parseRequestBody, parseRequestParams, parseRequestQuery } from '../../shared/request';
 import * as service from '../../services/service.service';
 import type { AppEnv } from '../../types/env';
 import { applyPublicCmsCache } from '../../shared/public-cache';
@@ -22,8 +23,7 @@ export async function listPublicServicesController(context: Context<AppEnv>) {
 
 export async function getPublicServiceController(context: Context<AppEnv>) {
   const query = parseRequestQuery(context, servicePublicQuerySchema);
-  const slug = context.req.param('slug');
-  if (!slug) throw new HttpError(404, 'NOT_FOUND', 'Service not found.');
+  const { slug } = parseRequestParams(context, slugPathParamSchema);
   const serviceDetail = await service.getPublicService(
     createDbClient(context.env.DB),
     slug,
@@ -48,16 +48,14 @@ export async function createAdminServiceController(context: Context<AppEnv>) {
 }
 
 export async function getAdminServiceController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Service not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   const serviceDetail = await service.getAdminService(createDbClient(context.env.DB), id);
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ service: serviceDetail }));
 }
 
 export async function updateAdminServiceController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Service not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   const input = await parseRequestBody(context, updateServiceSchema);
   const serviceDetail = await service.updateManagedService(
     createDbClient(context.env.DB),
@@ -69,8 +67,7 @@ export async function updateAdminServiceController(context: Context<AppEnv>) {
 }
 
 export async function deleteAdminServiceController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Service not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   await service.deleteManagedService(createDbClient(context.env.DB), id);
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ deleted: true }));

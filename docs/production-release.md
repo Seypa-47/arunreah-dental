@@ -11,12 +11,18 @@ Planned topology, following the staging pattern of same-site HTTPS subdomains:
 ```text
 Frontend: https://arunreah.mekhla.digital
 API:      https://api.arunreah.mekhla.digital
-Media:    set after the production R2 bucket exists
+Media:    https://media.arunreah.mekhla.digital
 ```
 
 Production must never share D1 data, R2 objects, admin accounts, sessions,
 cookie signing keys or provider credentials with staging. Copying staging
 secrets into production, or the reverse, is a security incident.
+
+Before any remote action, run `pnpm check:production-config`. It performs a
+local, non-secret check of the committed production Worker bindings and fails
+while the D1 id, media origin, route, or R2 bucket is missing or still a
+placeholder. After it passes, `pnpm build:production:api` performs a Wrangler
+production-environment dry run without deploying.
 
 ## 1. Create the data stores
 
@@ -40,9 +46,11 @@ applied migration; add a new one.
 
 ## 3. Set the media URL
 
-Expose the production bucket (its `r2.dev` URL, or a custom media domain) and
-set `MEDIA_PUBLIC_BASE_URL` in the `production` vars. An empty value renders
-the site without images.
+Attach `media.arunreah.mekhla.digital` to the production bucket and set that
+exact HTTPS origin as `MEDIA_PUBLIC_BASE_URL`. Do not enable or use an `r2.dev`
+development URL in production. Keep direct bucket listing private; public reads
+must use only the intended custom domain. An empty value renders the site
+without images.
 
 ## 4. Set the Worker secrets
 
@@ -65,8 +73,13 @@ disabled so a fresh deploy cannot message a staging chat.
 ## 5. Deploy the Worker and attach the domain
 
 ```bash
-npx wrangler deploy --env production
+pnpm deploy:production:api
 ```
+
+The guarded command runs the committed production-config check first and then
+selects the production environment explicitly. Record the resulting Worker
+version/deployment id in the release record. Do not bypass the guard with a
+direct Wrangler deploy during a routine release.
 
 The `routes` entry claims `api.arunreah.mekhla.digital` as a custom domain, so
 that hostname must be on the same Cloudflare account as the zone.
@@ -105,9 +118,76 @@ session across.
 ## 8. Verify before announcing
 
 - `GET https://api.arunreah.mekhla.digital/api/health` returns ok.
+- `GET https://api.arunreah.mekhla.digital/api/health/ready` returns 200. Treat
+  any non-200 response as a release blocker; the response intentionally omits
+  provider and database details.
 - The site loads at the custom domain and its asset hash matches the local build.
 - Admin sign-in works, and a CMS save round-trips.
 - An image uploaded in the admin renders on the public site.
 - The public pages render in both English and Khmer, including the booking
   calendar, and language survives navigation between pages.
 - A test appointment request succeeds and its notification arrives.
+
+Also verify that an unknown public SPA route shows the branded 404 experience.
+Cloudflare Pages may still return HTTP 200 for a client-side fallback, so record
+the observed network status as a known hosting limitation unless a Pages routing
+rule provides a real 404.
+
+## 9. Migration rehearsal and recovery bookmark
+
+Before production, apply every pending migration to a disposable or staging
+copy in filename order and verify expected table row counts, foreign-key
+integrity, required indexes, and trigger definitions. Store the exact migration
+list and results in the release record. Never edit an already-applied file.
+
+Immediately before a production migration, an authorized operator must record a
+D1 Time Travel bookmark:
+
+```bash
+pnpm --filter @arunreah/api exec wrangler d1 time-travel info arunreah-dental-production --env production
+```
+
+If validation fails after migration, prefer a forward corrective migration.
+Use Time Travel restore only under the incident owner's explicit authorization,
+because it replaces database state after the selected bookmark:
+
+```bash
+pnpm --filter @arunreah/api exec wrangler d1 time-travel restore arunreah-dental-production --bookmark=<recorded-bookmark> --env production
+```
+
+Capture the undo bookmark printed by the restore, re-run integrity checks, and
+record the incident. Confirm the account's current Time Travel retention window
+in Cloudflare before relying on it.
+
+## 10. R2 orphan and retention procedure
+
+R2 has no transaction shared with D1. Periodically export the referenced media
+keys from D1 and compare them with a read-only listing of the production bucket.
+Never delete a key that is referenced by any clinic, branch, service, doctor,
+showcase, or page-media row. Place unmatched keys in an orphan report, retain
+them for the clinic's approved recovery window, recheck references, then delete
+only through an authorized maintenance procedure. Normal user-driven deletion
+must continue through the API so the media deletion lock and reference checks
+run. Record object key, discovery time, decision, and deletion time without
+logging patient data or signed URLs.
+
+## 11. Monitoring and external-provider checks
+
+- Confirm Worker logs and traces are retained in the production dashboard.
+- Confirm invocation logs remain disabled so URL query strings are not captured
+  by the automatic request log; application logs must remain metadata-only.
+- Enable and test Cloudflare alerting/issues for elevated 5xx responses and
+  availability. These controls cannot be proven by repository configuration.
+- Confirm Resend and Telegram dashboards use production-only credentials and
+  destinations. Notification delivery is best effort; durable retries require a
+  separately approved Queue or Workflow and are not created by this release.
+- Run a synthetic readiness check from outside Cloudflare and alert on a
+  sustained non-200 response.
+
+## 12. Font privacy and CSP decision
+
+The public CSP allows Google Fonts stylesheet and font origins because the
+current frontend loads that hosted font. This means a visitor's browser contacts
+Google. Obtain privacy approval for that behavior, or self-host properly
+licensed font files and then remove both Google origins from the CSP. Do not
+weaken the remaining CSP directives to solve a font-loading error.

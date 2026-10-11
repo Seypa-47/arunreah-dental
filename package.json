@@ -9,6 +9,10 @@
     "dev:web": "pnpm --filter @arunreah/web dev",
     "dev:api": "pnpm --filter @arunreah/api dev",
     "build": "pnpm -r build",
+    "build:production:api": "pnpm --filter @arunreah/api build:production",
+    "deploy:production:api": "pnpm --filter @arunreah/api deploy:production",
+    "db:migrate:production": "pnpm --filter @arunreah/api db:migrate:production",
+    "check:production-config": "node scripts/check-production-config.mjs",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
@@ -25,5 +29,10 @@
     "prettier": "^3.5.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "source-map-js": "^1.2.2"
+    }
   }
 }

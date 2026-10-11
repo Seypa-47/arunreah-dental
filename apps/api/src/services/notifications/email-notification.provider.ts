@@ -74,7 +74,12 @@ export class EmailNotificationProvider implements NotificationProvider {
     });
 
     if (response.ok) {
-      return { ok: true, status: response.status, statusText: response.statusText, errorBody: undefined };
+      return {
+        ok: true,
+        status: response.status,
+        statusText: response.statusText,
+        errorBody: undefined,
+      };
     }
 
     const errorBody = await response.text().catch(() => '');
@@ -92,29 +97,46 @@ export class EmailNotificationProvider implements NotificationProvider {
     replyTo?: string,
   ): Promise<DeliveryResult> {
     try {
-      let result = await this.postResend(fromAddress, recipient, apiKey, subject, text, html, replyTo);
+      let result = await this.postResend(
+        fromAddress,
+        recipient,
+        apiKey,
+        subject,
+        text,
+        html,
+        replyTo,
+      );
 
       if (!result.ok) {
         console.error(`Resend ${targetType} email delivery failed`, {
+          provider: 'resend',
+          code: 'PROVIDER_REQUEST_FAILED',
           status: result.status,
-          statusText: result.statusText,
-          from: fromAddress,
-          recipient: targetType === 'clinic' ? recipient : '[redacted]',
-          error: result.errorBody,
         });
 
         // When the custom domain is not yet verified in Resend (HTTP 403), try the default sandbox sender.
-        const isDomainError = result.status === 403 || result.errorBody?.toLowerCase().includes('domain');
+        const isDomainError =
+          result.status === 403 || result.errorBody?.toLowerCase().includes('domain');
         if (isDomainError && fromAddress !== RESEND_FALLBACK_FROM) {
-          console.warn(`Attempting Resend ${targetType} email delivery fallback with onboarding@resend.dev`);
-          result = await this.postResend(RESEND_FALLBACK_FROM, recipient, apiKey, subject, text, html, replyTo);
+          console.warn(
+            `Attempting Resend ${targetType} email delivery fallback with onboarding@resend.dev`,
+          );
+          result = await this.postResend(
+            RESEND_FALLBACK_FROM,
+            recipient,
+            apiKey,
+            subject,
+            text,
+            html,
+            replyTo,
+          );
           if (result.ok) {
             return { success: true };
           }
           console.error(`Resend fallback ${targetType} email delivery failed`, {
+            provider: 'resend',
+            code: 'PROVIDER_REQUEST_FAILED',
             status: result.status,
-            statusText: result.statusText,
-            error: result.errorBody,
           });
         }
 
@@ -127,8 +149,8 @@ export class EmailNotificationProvider implements NotificationProvider {
       const errorCode = isTimeout ? 'PROVIDER_TIMEOUT' : 'PROVIDER_REQUEST_FAILED';
 
       console.error(`Resend ${targetType} email delivery exception`, {
+        provider: 'resend',
         errorCode,
-        error: error instanceof Error ? error.message : String(error),
       });
 
       return { success: false, errorCode };
@@ -172,17 +194,31 @@ export class EmailNotificationProvider implements NotificationProvider {
       );
     }
 
-    const [clinicResult] = await Promise.all(tasks);
+    const [clinicResult, patientResult] = await Promise.all(tasks);
+    const deliveries = {
+      clinic: clinicResult.success,
+      patient: patientEmail ? Boolean(patientResult?.success) : null,
+    };
 
     if (!clinicResult.success) {
       return {
         provider: this.name,
         success: false,
         errorCode: clinicResult.errorCode ?? 'PROVIDER_REQUEST_FAILED',
+        deliveries,
       };
     }
 
-    return { provider: this.name, success: true };
+    if (patientResult && !patientResult.success) {
+      return {
+        provider: this.name,
+        success: false,
+        errorCode: patientResult.errorCode ?? 'PROVIDER_REQUEST_FAILED',
+        deliveries,
+      };
+    }
+
+    return { provider: this.name, success: true, deliveries };
   }
 
   public async sendAppointmentConfirmation(
@@ -255,5 +291,3 @@ export class EmailNotificationProvider implements NotificationProvider {
     return { provider: this.name, success: true };
   }
 }
-
-

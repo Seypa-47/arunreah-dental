@@ -1,7 +1,7 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
 import type { AppointmentStatus } from '@arunreah/shared';
 import { getAdminAppointments, type AppointmentListItem } from '@/services/appointments';
-import { getPublicDoctors, getPublicServices } from '@/services/public-content';
+import { getPublicBookableDoctors, getPublicServices } from '@/services/public-content';
 import { cmsApi } from '@/services/cms';
 
 export type CalendarAppointmentItem = {
@@ -41,6 +41,7 @@ export type AdminCalendarContent = {
     views: ('Month' | 'Week' | 'Day')[];
     year: number;
   };
+  bookingDoctors: string[];
   doctors: string[];
   newAppointment: {
     cancelLabel: string;
@@ -124,15 +125,14 @@ export async function fetchAdminCalendarContent(options?: {
 
   let doctorsList: string[] = [];
   try {
-    const docsRes = await cmsApi.doctors.list({ limit: 100 });
+    const docsRes = await cmsApi.doctors.list({ bookable: true, limit: 100, status: 'PUBLISHED' });
     if (docsRes.items?.length) {
       doctorsList = docsRes.items
-        .filter((d) => d.status !== 'ARCHIVED')
         .map((d) => d.nameEn.trim());
     }
   } catch {
     try {
-      const publicDocs = await getPublicDoctors('en');
+      const publicDocs = await getPublicBookableDoctors('en');
       if (publicDocs.doctors?.length) {
         doctorsList = publicDocs.doctors.map((d) => d.name.trim());
       }
@@ -245,6 +245,7 @@ export async function fetchAdminCalendarContent(options?: {
       views: ['Month', 'Week', 'Day'],
       year,
     },
+    bookingDoctors: doctorsList,
     doctors: allDoctorNames,
     empty: { description: 'Try a different search or doctor selection.', title: 'No appointments found' },
     footer: {
@@ -260,9 +261,9 @@ export async function fetchAdminCalendarContent(options?: {
       { icon: 'calendar', label: 'Calendar', section: 'appointments' },
       { icon: 'appointments', label: 'All Appointments', section: 'appointments' },
       { icon: 'services', label: 'Services' },
-      { icon: 'doctors', label: 'Doctors' },
-      { icon: 'doctors', label: 'Doctor Management', section: 'doctors' },
-      { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' },
+      { icon: 'doctors', label: 'Team' },
+      { icon: 'doctors', label: 'Team Management', section: 'doctors' },
+      { icon: 'doctors', label: 'Add Team Member', section: 'doctors' },
       { icon: 'showcase', label: 'Showcase' },
       { icon: 'clinicInfo', label: 'Clinic Info' },
     ],

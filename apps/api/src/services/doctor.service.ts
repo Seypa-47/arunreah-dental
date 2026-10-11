@@ -2,9 +2,15 @@ import type {
   AdminDoctorListQuery,
   CreateDoctorInput,
   DoctorLanguage,
+  ReorderDoctorsInput,
+  TeamCategory,
   UpdateDoctorInput,
 } from '@arunreah/shared';
-import { defaultImagePresentation, type ImagePresentation } from '@arunreah/shared';
+import {
+  defaultImagePresentation,
+  isClinicalTeamCategory,
+  type ImagePresentation,
+} from '@arunreah/shared';
 import type { DatabaseClient } from '../db/client';
 import * as repository from '../repositories/doctor.repository';
 import * as branchRepository from '../repositories/branch.repository';
@@ -43,6 +49,10 @@ function localize(
     photoKey: doctor.photoKey,
     photoImagePresentation: presentationFor(presentations, doctor.id),
     featured: doctor.featured,
+    category: doctor.category,
+    bookable: doctor.bookable,
+    department: localizeText(doctor.departmentEn, doctor.departmentKm, language),
+    teamNote: localizeText(doctor.teamNoteEn, doctor.teamNoteKm, language),
     branchIds,
   };
 }
@@ -69,10 +79,56 @@ function toAdminDoctor(doctor: DoctorRecord, branchIds: string[] = []) {
     successfulProcedures: doctor.successfulProcedures,
     patientSatisfaction: doctor.patientSatisfaction,
     phone: doctor.phone,
+    category: doctor.category,
+    bookable: doctor.bookable,
+    departmentEn: doctor.departmentEn,
+    departmentKm: doctor.departmentKm,
+    teamNoteEn: doctor.teamNoteEn,
+    teamNoteKm: doctor.teamNoteKm,
     branchIds,
     createdAt: doctor.createdAt,
     updatedAt: doctor.updatedAt,
   };
+}
+
+function toAdminProfileItem(
+  item: Awaited<ReturnType<typeof repository.getProfileItems>>[number],
+) {
+  return {
+    id: item.id,
+    kind: item.kind,
+    icon: item.icon,
+    titleEn: item.titleEn,
+    titleKm: item.titleKm,
+    subtitleEn: item.subtitleEn,
+    subtitleKm: item.subtitleKm,
+    meta: item.meta,
+    displayOrder: item.displayOrder,
+  };
+}
+
+function toPublicProfileItem(
+  item: Awaited<ReturnType<typeof repository.getProfileItems>>[number],
+  language: DoctorLanguage,
+) {
+  return {
+    kind: item.kind,
+    icon: item.icon,
+    title: localizeText(item.titleEn, item.titleKm, language) ?? item.titleEn,
+    subtitle: localizeText(item.subtitleEn, item.subtitleKm, language),
+    meta: item.meta,
+    displayOrder: item.displayOrder,
+  };
+}
+
+function validateBookableCategory(category: TeamCategory, bookable: boolean) {
+  if (bookable && !isClinicalTeamCategory(category)) {
+    throw new HttpError(
+      400,
+      'VALIDATION_ERROR',
+      'Only dentists and general practitioners can be bookable.',
+    );
+  }
 }
 
 async function validateNested(
@@ -105,13 +161,14 @@ async function validateNested(
 }
 
 export async function createManagedDoctor(database: DatabaseClient, input: CreateDoctorInput) {
+  validateBookableCategory(input.category, input.bookable);
   if (await repository.findDoctorBySlug(database, input.slug)) {
     throw new HttpError(409, 'CONFLICT', 'A doctor with this slug already exists.');
   }
   await validateNested(database, undefined, input.relatedDoctorIds, input.branchIds);
   const doctor = await repository.createDoctor(database, input);
   if (!doctor) throw new Error('Created doctor could not be loaded.');
-  return toAdminDoctor(doctor, input.branchIds);
+  return getAdminDoctor(database, doctor.id);
 }
 
 export async function updateManagedDoctor(
@@ -121,6 +178,21 @@ export async function updateManagedDoctor(
 ) {
   const current = await repository.findDoctorById(database, id);
   if (!current) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
+  const category = input.category ?? current.category;
+  const bookable = input.bookable ?? current.bookable;
+  if (
+    input.category !== undefined &&
+    input.category !== current.category &&
+    !isClinicalTeamCategory(input.category) &&
+    (await repository.countAppointmentsForDoctor(database, id)) > 0
+  ) {
+    throw new HttpError(
+      409,
+      'CONFLICT',
+      'This doctor is referenced by appointment history and cannot be changed to a non-clinical category. Unpublish or deactivate the doctor instead.',
+    );
+  }
+  validateBookableCategory(category, bookable);
   if (input.slug !== undefined) {
     const existing = await repository.findDoctorBySlug(database, input.slug);
     if (existing && existing.id !== id) {
@@ -130,16 +202,16 @@ export async function updateManagedDoctor(
   await validateNested(database, id, input.relatedDoctorIds, input.branchIds);
   const doctor = await repository.updateDoctor(database, id, input);
   if (!doctor) throw new Error('Updated doctor could not be loaded.');
-  const branchIds = input.branchIds !== undefined ? input.branchIds : await repository.getDoctorBranchIds(database, id);
-  return toAdminDoctor(doctor, branchIds);
+  return getAdminDoctor(database, doctor.id);
 }
 
 export async function getAdminDoctor(database: DatabaseClient, id: string) {
   const doctor = await repository.findDoctorById(database, id);
   if (!doctor) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
-  const [expertise, education, relatedDoctors, branchIds, presentations] = await Promise.all([
+  const [expertise, education, profileItems, relatedDoctors, branchIds, presentations] = await Promise.all([
     repository.getExpertise(database, id),
     repository.getEducation(database, id),
+    repository.getProfileItems(database, id),
     repository.getRelatedDoctors(database, id),
     repository.getDoctorBranchIds(database, id),
     listForOwners(database, [{ ownerType: 'DOCTOR', ownerId: id, slot: 'PRIMARY' }]),
@@ -162,20 +234,23 @@ export async function getAdminDoctor(database: DatabaseClient, id: string) {
       yearLabel: item.yearLabel,
       displayOrder: item.displayOrder,
     })),
+    profileItems: profileItems.map(toAdminProfileItem),
     relatedDoctorIds: relatedDoctors.map((item) => item.relation.relatedDoctorId),
   };
 }
 
 export async function getAdminDoctorList(database: DatabaseClient, query: AdminDoctorListQuery) {
   const { items, total } = await repository.listAdminDoctors(database, query);
-  const [presentations, branchMap] = await Promise.all([
+  const [presentations, branchMap, profileItemMap] = await Promise.all([
     listForOwners(database, items.map((doctor) => ({ ownerType: 'DOCTOR' as const, ownerId: doctor.id, slot: 'PRIMARY' }))),
     repository.getDoctorBranchIdsForDoctors(database, items.map((d) => d.id)),
+    repository.getProfileItemsForDoctors(database, items.map((doctor) => doctor.id)),
   ]);
   return {
     doctors: items.map((doctor) => ({
       ...toAdminDoctor(doctor, branchMap.get(doctor.id) ?? []),
       photoImagePresentation: presentationFor(presentations, doctor.id),
+      profileItems: (profileItemMap.get(doctor.id) ?? []).map(toAdminProfileItem),
     })),
     meta: {
       page: query.page,
@@ -186,13 +261,42 @@ export async function getAdminDoctorList(database: DatabaseClient, query: AdminD
   };
 }
 
-export async function getPublicDoctorList(database: DatabaseClient, language: DoctorLanguage) {
-  const doctors = await repository.listPublicDoctors(database);
-  const [presentations, branchMap] = await Promise.all([
+export async function reorderManagedDoctors(
+  database: DatabaseClient,
+  input: ReorderDoctorsInput,
+) {
+  const current = await repository.listDoctorIdsByCategory(database, input.category);
+  const currentIds = new Set(current.map((doctor) => doctor.id));
+  if (
+    current.length !== input.ids.length ||
+    input.ids.some((id) => !currentIds.has(id))
+  ) {
+    throw new HttpError(
+      400,
+      'VALIDATION_ERROR',
+      'Doctor IDs must include every doctor in the category exactly once.',
+    );
+  }
+  await repository.reorderDoctorsWithinCategory(database, input);
+}
+
+export async function getPublicDoctorList(
+  database: DatabaseClient,
+  language: DoctorLanguage,
+  filters: repository.PublicDoctorListFilters = {},
+) {
+  const doctors = await repository.listPublicDoctors(database, filters);
+  const [presentations, branchMap, profileItemMap] = await Promise.all([
     listForOwners(database, doctors.map((doctor) => ({ ownerType: 'DOCTOR' as const, ownerId: doctor.id, slot: 'PRIMARY' }))),
     repository.getDoctorBranchIdsForDoctors(database, doctors.map((d) => d.id)),
+    repository.getProfileItemsForDoctors(database, doctors.map((doctor) => doctor.id)),
   ]);
-  return doctors.map((doctor) => localize(doctor, language, presentations, branchMap.get(doctor.id) ?? []));
+  return doctors.map((doctor) => ({
+    ...localize(doctor, language, presentations, branchMap.get(doctor.id) ?? []),
+    profileItems: (profileItemMap.get(doctor.id) ?? []).map((item) =>
+      toPublicProfileItem(item, language),
+    ),
+  }));
 }
 
 export async function getPublicDoctor(
@@ -202,9 +306,10 @@ export async function getPublicDoctor(
 ) {
   const doctor = await repository.findPublicDoctorBySlug(database, slug);
   if (!doctor) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
-  const [expertise, education, relatedDoctors] = await Promise.all([
+  const [expertise, education, profileItems, relatedDoctors] = await Promise.all([
     repository.getExpertise(database, doctor.id),
     repository.getEducation(database, doctor.id),
+    repository.getProfileItems(database, doctor.id),
     repository.getRelatedDoctors(database, doctor.id),
   ]);
   const publishedRelatedDoctors = relatedDoctors.filter((item) => item.doctor.status === 'PUBLISHED');
@@ -231,6 +336,7 @@ export async function getPublicDoctor(
       yearLabel: item.yearLabel,
       displayOrder: item.displayOrder,
     })),
+    profileItems: profileItems.map((item) => toPublicProfileItem(item, language)),
     relatedDoctors: publishedRelatedDoctors.map((item) => localize(item.doctor, language, presentations, branchMap.get(item.doctor.id) ?? [])),
   };
 }

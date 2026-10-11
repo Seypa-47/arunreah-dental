@@ -16,7 +16,7 @@ import { publicContactModule } from './modules/contact/contact.route';
 import { adminBranchesModule } from './modules/branches/branch-admin.route';
 import { publicBranchesModule } from './modules/branches/branch.route';
 import { adminServicesModule, publicServicesModule } from './modules/services/service.route';
-import { adminDoctorsModule, publicDoctorsModule } from './modules/doctors/doctor.route';
+import { adminTeamModule, publicTeamModule } from './modules/doctors/doctor.route';
 import { adminShowcasesModule, publicShowcasesModule } from './modules/showcases/showcase.route';
 import { adminMediaModule } from './modules/media/media.route';
 import { adminPageMediaModule, publicPageMediaModule } from './modules/page-media/page-media.route';
@@ -50,8 +50,12 @@ app.route('/api/admin/branches', adminBranchesModule);
 app.route('/api/public/branches', publicBranchesModule);
 app.route('/api/admin/services', adminServicesModule);
 app.route('/api/public/services', publicServicesModule);
-app.route('/api/admin/doctors', adminDoctorsModule);
-app.route('/api/public/doctors', publicDoctorsModule);
+app.route('/api/admin/team', adminTeamModule);
+app.route('/api/public/team', publicTeamModule);
+// Compatibility aliases for existing bookmarks and API consumers. New clients
+// use the canonical Team endpoints above.
+app.route('/api/admin/doctors', adminTeamModule);
+app.route('/api/public/doctors', publicTeamModule);
 app.route('/api/admin/showcases', adminShowcasesModule);
 app.route('/api/admin/media', adminMediaModule);
 app.route('/api/admin/page-media', adminPageMediaModule);

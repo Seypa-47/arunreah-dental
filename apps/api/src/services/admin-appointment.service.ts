@@ -66,6 +66,7 @@ export async function getAdminAppointmentList(
   const result = await repository.listAdminAppointments(database, query);
   return {
     appointments: result.items.map(toInboxItem),
+    branchCounts: result.branchCounts ?? [],
     meta: {
       page: query.page,
       limit: query.limit,
@@ -172,10 +173,11 @@ export async function changeAppointmentStatus(
         input.status,
         environment,
       );
-    } catch (error) {
-      console.error(`Failed to send ${input.status} email to patient`, {
+    } catch {
+      console.error('Patient appointment notification failed', {
         reference: updated.reference,
-        error: error instanceof Error ? error.message : String(error),
+        provider: 'email',
+        code: 'PROVIDER_REQUEST_FAILED',
       });
     }
   }

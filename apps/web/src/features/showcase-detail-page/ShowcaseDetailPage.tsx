@@ -18,7 +18,10 @@ export function ShowcaseDetailPage() {
   const { data, error, isError, isLoading, refetch } = useShowcaseDetailPageQuery(showcaseSlug);
   const { language } = usePublicLanguage();
   const copy = publicUiCopy(language);
-  usePublicDocumentTitle(data?.showcase.title ?? (language === 'km' ? 'ស្នាដៃ' : 'Showcase'));
+  usePublicDocumentTitle(
+    data?.showcase.seo.title ?? data?.showcase.title ?? (language === 'km' ? 'ស្នាដៃ' : 'Showcase'),
+    data?.showcase.seo.description,
+  );
 
   if (isLoading) return <ShowcaseDetailPageSkeleton />;
   if ((isError && isPublicNotFoundError(error)) || (!isError && !data)) return <main className="grid min-h-screen place-items-center bg-[#f7fafc] px-4"><Card className="max-w-lg p-8 text-center"><Badge>{copy.showcaseDetail.notFound}</Badge><h1 className="mt-4 text-2xl font-extrabold text-[#005687]">{copy.showcaseDetail.errorTitle}</h1><p className="mt-2 text-sm text-[#62798b]">{copy.showcaseDetail.errorBody}</p><Link className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695B9] px-5 text-sm font-extrabold text-white hover:bg-[#2c84a5]" to="/showcases">{language === 'km' ? 'មើលស្នាដៃទាំងអស់' : 'Browse Showcases'}</Link></Card></main>;

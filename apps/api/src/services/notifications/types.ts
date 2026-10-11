@@ -18,6 +18,10 @@ export type NotificationResult = {
   provider: NotificationProviderName;
   success: boolean;
   errorCode?: 'NOT_CONFIGURED' | 'PROVIDER_REQUEST_FAILED' | 'PROVIDER_TIMEOUT';
+  deliveries?: {
+    clinic: boolean;
+    patient: boolean | null;
+  };
 };
 
 export interface NotificationProvider {

@@ -4,11 +4,12 @@ import {
   publicBranchQuerySchema,
   successResponse,
   updateBranchSchema,
+  slugPathParamSchema,
+  uuidPathParamSchema,
 } from '@arunreah/shared';
 import type { Context } from 'hono';
 import { createDbClient } from '../../db/client';
-import { parseRequestBody, parseRequestQuery } from '../../shared/request';
-import { HttpError } from '../../shared/http-error';
+import { parseRequestBody, parseRequestParams, parseRequestQuery } from '../../shared/request';
 import {
   createManagedBranch,
   deleteManagedBranch,
@@ -30,13 +31,8 @@ export async function listPublicBranchesController(context: Context<AppEnv>) {
 
 export async function getPublicBranchController(context: Context<AppEnv>) {
   const { lang } = parseRequestQuery(context, publicBranchQuerySchema);
-  const slug = context.req.param('slug');
-  if (!slug) throw new HttpError(404, 'NOT_FOUND', 'Branch not found.');
-  const branch = await getPublicBranch(
-    createDbClient(context.env.DB),
-    slug,
-    lang,
-  );
+  const { slug } = parseRequestParams(context, slugPathParamSchema);
+  const branch = await getPublicBranch(createDbClient(context.env.DB), slug, lang);
   applyPublicCmsCache(context);
   return context.json(successResponse({ branch }));
 }
@@ -49,8 +45,7 @@ export async function listAdminBranchesController(context: Context<AppEnv>) {
 }
 
 export async function getAdminBranchController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Branch not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   const branch = await getAdminBranch(createDbClient(context.env.DB), id);
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ branch }));
@@ -65,20 +60,14 @@ export async function createAdminBranchController(context: Context<AppEnv>) {
 
 export async function updateAdminBranchController(context: Context<AppEnv>) {
   const input = await parseRequestBody(context, updateBranchSchema);
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Branch not found.');
-  const branch = await updateManagedBranch(
-    createDbClient(context.env.DB),
-    id,
-    input,
-  );
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
+  const branch = await updateManagedBranch(createDbClient(context.env.DB), id, input);
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ branch }));
 }
 
 export async function deleteAdminBranchController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Branch not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   await deleteManagedBranch(createDbClient(context.env.DB), id);
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ deleted: true }));

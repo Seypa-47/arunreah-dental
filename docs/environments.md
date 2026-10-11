@@ -19,10 +19,13 @@ Copy `apps/web/.env.example` to `apps/web/.env.local`.
 VITE_API_BASE_URL=http://localhost:8787
 VITE_MEDIA_PUBLIC_BASE_URL=https://media.example.com
 VITE_TURNSTILE_SITE_KEY=0x0000000000000000000000000000000AA
+VITE_GOOGLE_MAPS_API_KEY=<optional browser-visible restricted key>
 ```
 
 Every `VITE_*` value is embedded in the browser bundle. Never add tokens,
 private keys, Worker secrets, R2 credentials, D1 credentials, or session keys.
+If `VITE_GOOGLE_MAPS_API_KEY` is configured, restrict it in Google Cloud to the
+exact deployed frontend hostnames and only the Maps APIs used by the site.
 
 ## Worker configuration and secrets
 
@@ -82,6 +85,9 @@ stable URL returned after CMS media uploads. Configure it to the HTTPS origin of
 the R2 custom domain for each environment, without a trailing slash. It is
 empty locally because Wrangler's local R2 simulation has no public custom
 domain. Do not use the R2 API endpoint or credentials as this value.
+Production must use the approved custom media domain
+`https://media.arunreah.mekhla.digital`; keep the public `r2.dev` development
+URL disabled.
 
 ## Staging browser-admin prerequisite
 

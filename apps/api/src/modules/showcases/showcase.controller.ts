@@ -4,11 +4,12 @@ import {
   publicShowcaseQuerySchema,
   successResponse,
   updateShowcaseSchema,
+  slugPathParamSchema,
+  uuidPathParamSchema,
 } from '@arunreah/shared';
 import type { Context } from 'hono';
 import { createDbClient } from '../../db/client';
-import { parseRequestBody, parseRequestQuery } from '../../shared/request';
-import { HttpError } from '../../shared/http-error';
+import { parseRequestBody, parseRequestParams, parseRequestQuery } from '../../shared/request';
 import * as showcase from '../../services/showcase.service';
 import type { AppEnv } from '../../types/env';
 import { applyPublicCmsCache } from '../../shared/public-cache';
@@ -26,8 +27,7 @@ export async function listPublicShowcasesController(context: Context<AppEnv>) {
 
 export async function getPublicShowcaseController(context: Context<AppEnv>) {
   const query = parseRequestQuery(context, publicShowcaseQuerySchema);
-  const slug = context.req.param('slug');
-  if (!slug) throw new HttpError(404, 'NOT_FOUND', 'Showcase not found.');
+  const { slug } = parseRequestParams(context, slugPathParamSchema);
   const showcaseDetail = await showcase.getPublicShowcase(
     createDbClient(context.env.DB),
     slug,
@@ -55,16 +55,14 @@ export async function createAdminShowcaseController(context: Context<AppEnv>) {
 }
 
 export async function getAdminShowcaseController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Showcase not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   const showcaseDetail = await showcase.getAdminShowcase(createDbClient(context.env.DB), id);
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ showcase: showcaseDetail }));
 }
 
 export async function updateAdminShowcaseController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Showcase not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   const input = await parseRequestBody(context, updateShowcaseSchema);
   const showcaseDetail = await showcase.updateManagedShowcase(
     createDbClient(context.env.DB),
@@ -76,8 +74,7 @@ export async function updateAdminShowcaseController(context: Context<AppEnv>) {
 }
 
 export async function deleteAdminShowcaseController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Showcase not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   await showcase.deleteManagedShowcase(createDbClient(context.env.DB), id);
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ deleted: true }));

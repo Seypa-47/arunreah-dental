@@ -118,12 +118,23 @@ vi.mock('../src/repositories/appointment.repository', () => ({
       items = items.filter((appointment) => appointment.serviceId === query.serviceId);
     if (query.doctorId)
       items = items.filter((appointment) => appointment.doctorId === query.doctorId);
-    if (query.branchId)
-      items = items.filter((appointment) => appointment.branchId === query.branchId);
     if (query.fromDate)
       items = items.filter((appointment) => appointment.preferredDate >= query.fromDate!);
     if (query.toDate)
       items = items.filter((appointment) => appointment.preferredDate <= query.toDate!);
+    const branchCounts = Array.from(
+      items.reduce((counts, appointment) => {
+        const current = counts.get(appointment.branchId);
+        counts.set(appointment.branchId, {
+          id: appointment.branchId,
+          nameSnapshot: appointment.branchNameSnapshot,
+          count: (current?.count ?? 0) + 1,
+        });
+        return counts;
+      }, new Map<string, { id: string; nameSnapshot: string; count: number }>()),
+    ).map(([, branch]) => branch);
+    if (query.branchId)
+      items = items.filter((appointment) => appointment.branchId === query.branchId);
     items.sort((left, right) => {
       const leftValue = left[query.sort];
       const rightValue = right[query.sort];
@@ -134,6 +145,7 @@ vi.mock('../src/repositories/appointment.repository', () => ({
     return {
       items: items.slice((query.page - 1) * query.limit, query.page * query.limit),
       total,
+      branchCounts,
     };
   },
   updateAppointmentStatus: async (
@@ -244,6 +256,7 @@ describe('admin appointment inbox API', () => {
         serviceId: '550e8400-e29b-41d4-a716-446655440021',
         doctorId: null,
         branchId: '550e8400-e29b-41d4-a716-446655440023',
+        branchNameSnapshot: 'Psa Chas Branch',
         preferredDate: '2026-09-20',
         createdAt: '2026-09-02T10:00:00.000Z',
       }),
@@ -259,7 +272,11 @@ describe('admin appointment inbox API', () => {
 
     const response = await request('/api/admin/appointments?page=1&limit=2', 'RECEPTIONIST');
     const body = await response.json<{
-      data: { appointments: AppointmentRecord[]; meta: { total: number; totalPages: number } };
+      data: {
+        appointments: AppointmentRecord[];
+        branchCounts: { id: string; nameSnapshot: string; count: number }[];
+        meta: { total: number; totalPages: number };
+      };
     }>();
     expect(response.status).toBe(200);
     expect(body.data.appointments.map((appointment) => appointment.reference)).toEqual([
@@ -267,6 +284,18 @@ describe('admin appointment inbox API', () => {
       'AR-20260901-ABC123',
     ]);
     expect(body.data.meta).toMatchObject({ total: 3, totalPages: 2 });
+    expect(body.data.branchCounts).toEqual([
+      {
+        id: '550e8400-e29b-41d4-a716-446655440013',
+        nameSnapshot: 'Main Branch',
+        count: 2,
+      },
+      {
+        id: '550e8400-e29b-41d4-a716-446655440023',
+        nameSnapshot: 'Psa Chas Branch',
+        count: 1,
+      },
+    ]);
     expect(body.data.appointments[0]).not.toHaveProperty('patientNote');
 
     for (const search of ['Sok Dara', '098 701 302', 'chan@example.com', 'ABC123']) {

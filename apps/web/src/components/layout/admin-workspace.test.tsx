@@ -24,9 +24,9 @@ describe('shared admin workspace', () => {
     expect(html).toContain('aria-current="page">Edit service');
   });
   it('does not render restricted destinations for a content editor', () => {
-    const html = render('/admin/doctors');
+    const html = render('/admin/team');
     expect(html).not.toContain('href="/admin/admins"');
     expect(html).not.toContain('href="/admin/appointments');
-    expect(html).toContain('aria-current="page" href="/admin/doctors"');
+    expect(html).toContain('aria-current="page" href="/admin/team"');
   });
 });

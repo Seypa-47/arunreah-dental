@@ -435,7 +435,7 @@ export function PublicPageHero({
   backgroundImageAlt,
   backgroundImageUrl,
   eyebrow,
-  fallbackSrc = '/assets/landing/figma-branches/image2_183_4173.png',
+  fallbackSrc = '/assets/landing/figma-branches/image2_183_4173.webp',
   imagePresentation,
   info,
   infoHeader,

@@ -61,14 +61,16 @@ function CarouselArrowIcon({ direction }: { direction: 'left' | 'right' }) {
 
 function HeroArrowButton({
   direction,
+  label,
   onClick,
 }: {
   direction: 'left' | 'right';
+  label: string;
   onClick: () => void;
 }) {
   return (
     <button
-      aria-label={direction === 'left' ? 'Previous branch' : 'Next branch'}
+      aria-label={label}
       className="grid size-11 place-items-center rounded-full border border-[#3695B9] bg-white/95 text-[#3695B9] shadow-sm transition hover:bg-[#3695B9] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
       onClick={onClick}
       type="button"
@@ -97,7 +99,7 @@ function SectionHeader({
     <div className="mx-auto flex w-full max-w-[1280px] items-end justify-between gap-4 px-4 sm:px-6 lg:px-8">
       <div className={align === 'center' ? 'mx-auto text-center' : undefined}>
         {eyebrow ? (
-          <p className="ui-eyebrow mb-4 text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695b9]">
+          <p className="ui-eyebrow mb-4 text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#0d7596]">
             {eyebrow}
           </p>
         ) : null}
@@ -193,7 +195,7 @@ export function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }
 
     setActiveHeroIndex(nextIndex);
     carousel.scrollTo({
-      behavior: 'smooth',
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
       left: carousel.clientWidth * nextIndex,
     });
   };
@@ -229,10 +231,10 @@ export function HeroSection({ heroes }: { heroes: LandingPageContent['heroes'] }
         <>
           <div className="pointer-events-none absolute inset-x-0 top-[165px] mx-auto flex w-full max-w-[1180px] items-center justify-between px-2 sm:top-[215px] sm:px-5 md:top-[250px] lg:top-[265px]">
             <div className="pointer-events-auto">
-              <HeroArrowButton direction="left" onClick={() => scrollToBranch(-1)} />
+              <HeroArrowButton direction="left" label={copy.previousBranch} onClick={() => scrollToBranch(-1)} />
             </div>
             <div className="pointer-events-auto">
-              <HeroArrowButton direction="right" onClick={() => scrollToBranch(1)} />
+              <HeroArrowButton direction="right" label={copy.nextBranch} onClick={() => scrollToBranch(1)} />
             </div>
           </div>
         </>
@@ -261,7 +263,7 @@ function PromotionsSection({
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-[680px]">
-            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{editorial.eyebrow}</p>
+            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#0d7596]">{editorial.eyebrow}</p>
             <h2 className="mt-2 text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]" id="promotions-title">{editorial.title}</h2>
             <p className="mt-3 max-w-[620px] text-[15px] leading-6 text-[#607486] sm:text-[16px]">{editorial.subtitle}</p>
           </div>
@@ -277,7 +279,7 @@ function PromotionsSection({
                 {promotion.badge ? <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[12px] font-bold text-[#07577f] shadow-sm">{promotion.badge}</span> : null}
               </div>
               <div className="p-5 sm:p-6">
-                <h3 className="text-[18px] font-bold leading-6 text-[#073f60]">{promotion.title}</h3>
+                <h3 className="text-[18px] font-bold leading-6 text-[#005687]">{promotion.title}</h3>
                 {promotion.description ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{promotion.description}</p> : null}
                 {promotion.discount ? <div className="mt-4 inline-flex rounded-full bg-[#e6f6fb] px-4 py-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#005687]">{promotion.discount}</div> : null}
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
@@ -345,7 +347,7 @@ function useSmoothCarousel<T>(items: T[]) {
         : Math.min(maxScroll, el.scrollLeft + scrollDistance);
 
       el.scrollTo({
-        behavior: 'smooth',
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
         left: target,
       });
     }
@@ -483,7 +485,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695b9]">
+            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#0d7596]">
               {copy.servicesEyebrow}
             </p>
             <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">{copy.servicesTitle}</h2>
@@ -549,7 +551,7 @@ function ServicesSection({ services }: { services: LandingService[] }) {
                 key={service.name}
               >
                 <Link
-                  aria-label={`View ${service.name}`}
+                  aria-label={copy.viewService(service.name)}
                   className="group block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
                   onClick={(e) => {
                     if (hasMoved.current) {
@@ -597,7 +599,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">
+            <p className="ui-eyebrow mb-3 text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#0d7596]">
               {copy.specialistsEyebrow}
             </p>
             <h2 className="text-[28px] font-extrabold leading-tight tracking-[-0.035em] text-[#005687] sm:text-[38px]">{copy.specialistsTitle}</h2>
@@ -605,7 +607,7 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
           <div className="flex items-center gap-5">
             <Link
               className="hidden items-center gap-2 text-[14px] font-bold leading-5 text-[#005687] transition hover:text-[#3695B9] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:inline-flex"
-              to="/doctors"
+              to="/team"
             >
               {copy.seeAllDoctors}
               <ArrowIcon />
@@ -658,14 +660,14 @@ function DoctorsSection({ doctors }: { doctors: LandingDoctor[] }) {
               key={doctor.name}
             >
               <Link
-                aria-label={`View profile for ${doctor.name}`}
+                aria-label={copy.viewProfile(doctor.name)}
                 className="group block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
                 onClick={(e) => {
                   if (hasMoved.current) {
                     e.preventDefault();
                   }
                 }}
-                to={doctor.detail?.profileHref || '/doctors'}
+                to={doctor.detail?.profileHref || '/team'}
               >
                 {hasImage ? (
                   <div className="h-[244px] w-full overflow-hidden bg-[#eaf2f6] sm:h-[260px]">
@@ -702,7 +704,7 @@ export function BranchesSection({ branches, eyebrow }: { branches: LandingBranch
               <div className="p-4 sm:p-5 md:p-6">
                 <h3 className="mb-4 text-[16px] font-bold leading-5 text-[#005687] sm:text-[19px] sm:leading-[22px]">
                   <Link
-                    aria-label={`View ${branch.name}`}
+                    aria-label={copy.viewBranch(branch.name)}
                     className="inline-flex items-center gap-2 transition group-hover:text-[#3695B9] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] after:absolute after:inset-0 after:z-0"
                     to="/branches"
                   >
@@ -778,7 +780,7 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
             <article className="w-full" key={item.slug ?? item.title}>
               {item.slug ? (
                 <Link
-                  aria-label={`View ${item.title}`}
+                  aria-label={copy.viewShowcase(item.title)}
                   className="group block overflow-hidden rounded-xl border border-white/10 bg-white/[0.05] p-2 transition duration-200 hover:bg-white/[0.10] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                   to={`/showcases/${item.slug}`}
                 >
@@ -807,19 +809,40 @@ function ShowcaseSection({ showcase }: { showcase: LandingShowcase[] }) {
   );
 }
 
-function LandingPageView({ content }: { content: LandingPageContent }) {
+export function OptionalLandingSection({
+  failed,
+  label,
+  onRetry,
+}: {
+  failed: boolean;
+  label: string;
+  onRetry: () => void;
+}) {
+  const copy = publicUiCopy(usePublicLanguage().language);
+  return (
+    <section className="bg-white px-4 py-10 text-center" role={failed ? 'alert' : 'status'}>
+      <p className="font-semibold text-[var(--clinic-copy)]">
+        {failed ? copy.landing.sectionError(label) : copy.landing.sectionEmpty(label)}
+      </p>
+      {failed ? <Button className="mt-4" onClick={onRetry}>{copy.common.retry}</Button> : null}
+    </section>
+  );
+}
+
+export function LandingPageView({ content, onRetry = () => undefined }: { content: LandingPageContent; onRetry?: () => void }) {
   const { language } = usePublicLanguage();
+  const copy = publicUiCopy(language).landing;
 
   return (
     <SiteLayout actions={content.actions} navigation={content.navigation} services={content.services}>
       <main>
         <h1 className="sr-only">{publicUiCopy(language).landing.srHeading}</h1>
-        <HeroSection heroes={content.heroes} />
-        <PromotionsSection appointmentLabel={content.actions.appointmentLabel} editorial={content.promotionsEditorial} language={language} promotions={content.promotions} />
-        <ServicesSection services={content.services} />
-        <DoctorsSection doctors={content.doctors} />
-        <BranchesSection branches={content.branches} eyebrow={content.branchesEditorial.eyebrow} />
-        <ShowcaseSection showcase={content.showcase} />
+        {content.heroes.length > 0 ? <HeroSection heroes={content.heroes} /> : <OptionalLandingSection failed={content.sectionIssues.branches} label={copy.branchesTitle} onRetry={onRetry} />}
+        {content.promotions.length > 0 ? <PromotionsSection appointmentLabel={content.actions.appointmentLabel} editorial={content.promotionsEditorial} language={language} promotions={content.promotions} /> : content.sectionIssues.promotions ? <OptionalLandingSection failed label={copy.promotionsLabel} onRetry={onRetry} /> : null}
+        {content.services.length > 0 ? <ServicesSection services={content.services} /> : <OptionalLandingSection failed={content.sectionIssues.services} label={copy.servicesTitle} onRetry={onRetry} />}
+        {content.doctors.length > 0 ? <DoctorsSection doctors={content.doctors} /> : <OptionalLandingSection failed={content.sectionIssues.doctors} label={copy.specialistsTitle} onRetry={onRetry} />}
+        {content.branches.length > 0 ? <BranchesSection branches={content.branches} eyebrow={content.branchesEditorial.eyebrow} /> : <OptionalLandingSection failed={content.sectionIssues.branches} label={copy.branchesTitle} onRetry={onRetry} />}
+        {content.showcase.length > 0 ? <ShowcaseSection showcase={content.showcase} /> : <OptionalLandingSection failed={content.sectionIssues.showcase} label={copy.showcaseTitle} onRetry={onRetry} />}
       </main>
       <SiteFooter {...content.footer} />
     </SiteLayout>
@@ -942,15 +965,10 @@ function LandingPageError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-function hasLandingContent(content: LandingPageContent | undefined): content is LandingPageContent {
+export function hasLandingContent(content: LandingPageContent | undefined): content is LandingPageContent {
   return Boolean(
       content &&
-      content.navigation.length > 0 &&
-      content.heroes.length > 0 &&
-      content.services.length > 0 &&
-      content.doctors.length > 0 &&
-      content.branches.length > 0 &&
-      content.showcase.length > 0,
+      content.navigation.length > 0,
   );
 }
 
@@ -971,5 +989,5 @@ export function LandingPage() {
     return <LandingPageEmpty />;
   }
 
-  return <LandingPageView content={data} />;
+  return <LandingPageView content={data} onRetry={() => void refetch()} />;
 }

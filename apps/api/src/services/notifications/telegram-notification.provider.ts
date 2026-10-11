@@ -64,7 +64,11 @@ export class TelegramNotificationProvider implements NotificationProvider {
         }
 
         const errorText = await response.text().catch(() => '');
-        console.error(`Telegram notification failed HTTP ${response.status} for chat ${targetChatId}: ${errorText}`);
+        console.error('Notification provider request failed', {
+          provider: 'telegram',
+          code: 'PROVIDER_REQUEST_FAILED',
+          status: response.status,
+        });
 
         // If the group chat was upgraded/migrated, Telegram provides migrate_to_chat_id
         try {
@@ -92,7 +96,8 @@ export class TelegramNotificationProvider implements NotificationProvider {
           // Ignore JSON parse errors
         }
 
-        const isChatNotFound = response.status === 400 && errorText.toLowerCase().includes('chat not found');
+        const isChatNotFound =
+          response.status === 400 && errorText.toLowerCase().includes('chat not found');
         if (!isChatNotFound) {
           break;
         }
@@ -101,7 +106,10 @@ export class TelegramNotificationProvider implements NotificationProvider {
           error instanceof DOMException && error.name === 'TimeoutError'
             ? 'PROVIDER_TIMEOUT'
             : 'PROVIDER_REQUEST_FAILED';
-        console.error(`Telegram notification exception for chat ${targetChatId}:`, error);
+        console.error('Notification provider request failed', {
+          provider: 'telegram',
+          code: lastErrorCode,
+        });
         break;
       }
     }

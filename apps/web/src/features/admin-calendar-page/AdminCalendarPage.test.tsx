@@ -6,6 +6,7 @@ import {
   NewAppointmentDialog,
   WeekView,
   formatDateKey,
+  getBookingDoctorOptions,
   getCalendarPeriodLabel,
   getWeekDays,
   parseDateKey,
@@ -66,6 +67,14 @@ const mockContent: AdminCalendarContent = {
     views: ['Month', 'Week', 'Day'],
     year: 2026,
   },
+  bookingDoctors: [
+    'Dr. Chea Kimly',
+    'Dr. Chuong Kunthy',
+    'Dr. Heng Bunhabb',
+    'Dr. Sreng Heng',
+    'Dr. Taing Thanith',
+    'Dr. Yim Delux',
+  ],
   doctors: [
     'Dr. Chea Kimly',
     'Dr. Chho Sonthary',
@@ -209,6 +218,11 @@ describe('AdminCalendarPage Views Rendering', () => {
 });
 
 describe('NewAppointmentDialog Doctor List', () => {
+  it('does not restore a historical non-bookable name to the create picker', () => {
+    expect(getBookingDoctorOptions(mockContent.bookingDoctors)).not.toContain('Dr. Chho Sonthary');
+    expect(mockContent.doctors).toContain('Dr. Chho Sonthary');
+  });
+
   it('renders all real clinic doctors in the dropdown options', () => {
     const doctors = [
       'Any Doctor',

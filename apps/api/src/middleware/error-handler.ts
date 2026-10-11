@@ -6,7 +6,7 @@ import type { AppEnv } from '../types/env';
 export const globalErrorHandler: ErrorHandler<AppEnv> = (error, context) => {
   const requestId = context.get('requestId');
 
-  if (error instanceof Error && error.message.includes('MEDIA_DELETION_IN_PROGRESS')) {
+  if (isMediaDeletionConflict(error)) {
     return context.json(
       errorResponse('CONFLICT', 'This image is currently being deleted. Please choose another image.'),
       409,
@@ -33,3 +33,10 @@ export const globalErrorHandler: ErrorHandler<AppEnv> = (error, context) => {
 
   return context.json(errorResponse('INTERNAL_ERROR', 'An unexpected error occurred.'), 500);
 };
+
+export function isMediaDeletionConflict(error: unknown) {
+  return (
+    error instanceof Error &&
+    error.message.toUpperCase().includes('MEDIA_DELETION_IN_PROGRESS')
+  );
+}

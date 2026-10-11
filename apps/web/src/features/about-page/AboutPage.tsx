@@ -27,9 +27,9 @@ function AboutHero({ hero }: { hero: AboutPageContent['hero'] }) {
   return (
     <PublicPageHero
       backgroundImageAlt={hero.imageAlt}
-      backgroundImageUrl={hero.imageUrl || '/assets/landing/figma-branches/image2_183_4173.png'}
+      backgroundImageUrl={hero.imageUrl || '/assets/landing/figma-branches/image2_183_4173.webp'}
       eyebrow={hero.eyebrow}
-      fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
+      fallbackSrc="/assets/landing/figma-branches/image2_183_4173.webp"
       imagePresentation={hero.imagePresentation}
       subtitle={hero.subtitle}
       title={hero.title}
@@ -77,7 +77,7 @@ function FounderProfile({ doctor, index, viewProfileLabel }: { doctor: AboutDoct
       <div className="flex items-center gap-3">
         <span className="text-[11px] font-extrabold tabular-nums tracking-[0.2em] text-[#3695B9]">{String(index + 1).padStart(2, '0')}</span>
         <span aria-hidden="true" className="h-px flex-1 bg-[#dde9ef]" />
-        {doctor.specialty ? <span className="ui-eyebrow min-w-0 truncate text-right text-[10.5px] font-bold uppercase leading-4 tracking-[0.06em] text-[#5b8ca6]">{doctor.specialty}</span> : null}
+        {doctor.specialty ? <span className="ui-eyebrow min-w-0 truncate text-right text-[10.5px] font-bold uppercase leading-4 tracking-[0.06em] text-[#0d7596]">{doctor.specialty}</span> : null}
       </div>
 
       <div className="mt-5 flex flex-1 flex-col gap-4 min-[480px]:flex-row sm:gap-6">
@@ -92,7 +92,7 @@ function FounderProfile({ doctor, index, viewProfileLabel }: { doctor: AboutDoct
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <h3 className="text-[18px] font-extrabold leading-[1.15] tracking-[-0.025em] text-[#073f60] sm:text-[22px] md:text-[25px]">{doctor.name}</h3>
+          <h3 className="text-[18px] font-extrabold leading-[1.15] tracking-[-0.025em] text-[#005687] sm:text-[22px] md:text-[25px]">{doctor.name}</h3>
           {doctor.title ? <p className="mt-1.5 text-[13.5px] font-semibold leading-5 text-[#46697d]">{doctor.title}</p> : null}
           <span aria-hidden="true" className="mt-4 block h-px w-10 bg-[#9fcfe2]" />
           {doctor.summary ? <p className="mt-4 text-[13.5px] leading-6 text-[#5f7789]">{doctor.summary}</p> : null}
@@ -125,14 +125,14 @@ function StorySection({ editorial, featuredDoctor, secondFeaturedDoctor, stats, 
         </div>
 
         <div className="border-b border-[#d6e5eb] py-6 sm:py-10">
-          <p className="ui-eyebrow text-[11px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9] sm:text-[12px]">{editorial.profileLabel}</p>
-          <h2 className="mt-2.5 max-w-[820px] text-[22px] font-extrabold leading-[1.15] tracking-[-0.03em] text-[#073f60] sm:mt-3 sm:text-[36px] md:text-[44px]">{editorial.profileTitle}</h2>
+          <p className="ui-eyebrow text-[11px] font-bold uppercase leading-4 tracking-[0.06em] text-[#0d7596] sm:text-[12px]">{editorial.profileLabel}</p>
+          <h2 className="mt-2.5 max-w-[820px] text-[22px] font-extrabold leading-[1.15] tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[36px] md:text-[44px]">{editorial.profileTitle}</h2>
           <div className="mt-3.5 h-1 w-12 rounded-full bg-[#3695B9] sm:mt-5 sm:w-16" />
         </div>
 
         <div className="grid gap-8 py-7 sm:gap-10 sm:py-11 lg:grid-cols-[minmax(0,640px)_280px] lg:items-start lg:justify-between lg:gap-12">
           <div>
-            <h3 className="text-[18px] font-extrabold leading-snug tracking-[-0.025em] text-[#073f60] sm:text-[22px] md:text-[26px]">{story.title}</h3>
+            <h3 className="text-[18px] font-extrabold leading-snug tracking-[-0.025em] text-[#005687] sm:text-[22px] md:text-[26px]">{story.title}</h3>
             <div className="mt-4 max-w-[62ch] space-y-3.5 sm:mt-5 sm:space-y-4">
               {/* The opening paragraph reads as a lede, the rest as body copy. */}
               {story.paragraphs.map((paragraph, index) => (
@@ -158,7 +158,7 @@ function StorySection({ editorial, featuredDoctor, secondFeaturedDoctor, stats, 
                     <span className="text-[68px] font-black leading-[0.9] tracking-[-0.05em] text-[#075d83] sm:text-[76px]">{stat.value}</span>
                     <span className="text-[30px] font-extrabold leading-none text-[#3695b9]">+</span>
                   </div>
-                  <p className="ui-eyebrow mt-3 text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#073f60]">{stat.label}</p>
+                  <p className="ui-eyebrow mt-3 text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#0d7596]">{stat.label}</p>
                   <p className="mt-3 max-w-[240px] text-[12.5px] leading-5 text-[#61798a]">
                     {isKm
                       ? 'ការថែទាំធ្មេញប្រកបដោយការយកចិត្តទុកដាក់ និងជំនាញទុកចិត្តបាន'
@@ -232,7 +232,7 @@ function ClinicGallery({
         {/* Section Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-[620px]">
-            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">
+            <p className="ui-eyebrow text-[12px] font-bold uppercase leading-4 tracking-[0.06em] text-[#0d7596]">
               {editorial.galleryEyebrow}
             </p>
             <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">
@@ -312,24 +312,17 @@ function ClinicGallery({
                 </div>
               )}
 
-              {/* 4-Photo Clean Grid */}
               <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
                 {branch.images.map((image, index) => (
                   <figure
-                    className={`overflow-hidden rounded-xl border border-[#e1ebef] bg-white transition hover:shadow-xs ${
-                      index === 0 ? 'sm:col-span-2 lg:col-span-2' : ''
-                    }`}
+                    className="overflow-hidden rounded-xl border border-[#e1ebef] bg-white transition hover:shadow-xs"
                     key={`${branch.branchSlug}-${image.imageUrl}-${index}`}
                   >
-                    <div
-                      className={`w-full overflow-hidden ${
-                        index === 0 ? 'h-[230px] sm:h-[300px]' : 'h-[190px] sm:h-[300px]'
-                      }`}
-                    >
+                    <div className="h-[190px] w-full overflow-hidden sm:h-[240px]">
                       <ResilientImage
                         alt={image.imageAlt || branch.branchName}
                         className="h-full w-full object-cover"
-                        fallbackSrc="/assets/landing/branches-clinic.png"
+                        fallbackSrc="/assets/landing/branches-clinic.webp"
                         presentation={image.imagePresentation}
                         src={image.imageUrl}
                       />
@@ -352,7 +345,7 @@ function ClinicGallery({
 
 function ProfessionalDevelopment({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['professionalMedia']> }) {
   if (items.length === 0) return null;
-  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#073f60] sm:text-[28px] md:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <div className="h-[240px] w-full overflow-hidden sm:h-[280px]"><CmsImage alt={item.title || editorial.professionalTitle} className="h-full w-full" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /></div> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#073f60]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
+  return <section className="bg-white py-12 sm:py-16"><div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8"><div className="border-b border-[#dce9ee] pb-5"><p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#0d7596]">{editorial.professionalEyebrow}</p><h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">{editorial.professionalTitle}</h2></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{items.map((item) => { const url = getPublicMediaUrl(item.imageKey); return <article className="overflow-hidden rounded-xl border border-[#dceaf0] bg-[#fbfdfe]" key={item.id}>{url ? <div className="h-[240px] w-full overflow-hidden sm:h-[280px]"><CmsImage alt={item.title || editorial.professionalTitle} className="h-full w-full" fallbackSrc="/assets/landing/hero-clinic.png" presentation={item.imagePresentation} src={url} /></div> : null}{item.title || item.body ? <div className="p-5">{item.title ? <h3 className="text-[17px] font-bold text-[#005687]">{item.title}</h3> : null}{item.body ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{item.body}</p> : null}</div> : null}</article>; })}</div></div></section>;
 }
 
 function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['editorial']; items: NonNullable<AboutPageContent['timeline']> }) {
@@ -362,8 +355,8 @@ function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['edi
     <section className="border-y border-[#e2edf2] bg-[#f7fafc] py-12 sm:py-16">
       <div className="mx-auto max-w-[1040px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[620px]">
-          <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">{editorial.timelineEyebrow}</p>
-          <h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#073f60] sm:text-[28px] md:text-[34px]">{editorial.timelineTitle}</h2>
+          <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#0d7596]">{editorial.timelineEyebrow}</p>
+          <h2 className="mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">{editorial.timelineTitle}</h2>
         </div>
         <ol className="relative mt-8 border-l border-[#b9dbe6] pl-7 sm:mt-10 sm:border-l-0 sm:pl-0 sm:before:absolute sm:before:inset-y-0 sm:before:left-1/2 sm:before:w-px sm:before:-translate-x-1/2 sm:before:bg-[#b9dbe6]">
           {items.map((item, index) => (
@@ -371,7 +364,7 @@ function GrowthTimeline({ editorial, items }: { editorial: AboutPageContent['edi
               <span aria-hidden="true" className="absolute -left-[35px] top-1 grid size-4 rounded-full border-[3px] border-[#f7fafc] bg-[#1687aa] sm:static sm:col-start-2 sm:mx-auto sm:size-5 sm:border-4" />
               <article className={`max-w-[420px] sm:row-start-1 ${index % 2 === 0 ? 'sm:col-start-1 sm:justify-self-end sm:pr-8 sm:text-right' : 'sm:col-start-3 sm:pl-8'}`}>
                 <p className="text-[13px] font-extrabold tracking-[0.12em] text-[#1687aa]">{item.year}</p>
-                <h3 className="mt-1 text-[19px] font-bold leading-7 text-[#073f60] sm:text-[21px]">{item.title}</h3>
+                <h3 className="mt-1 text-[19px] font-bold leading-7 text-[#005687] sm:text-[21px]">{item.title}</h3>
                 <p className="mt-2 text-[15px] leading-7 text-[#587080]">{item.body}</p>
               </article>
             </li>
@@ -428,7 +421,7 @@ function DifferencesSection({ differences }: Pick<AboutPageContent, 'differences
   return (
     <section className="bg-white py-14 text-center sm:py-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{copy.whyTitle}</p>
+        <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#0d7596]">{copy.whyTitle}</p>
         <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">{copy.differenceTitle}</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {differences.map((item) => (
@@ -452,7 +445,7 @@ function FacilitiesSection({ editorial, facilities }: Pick<AboutPageContent, 'ed
     <section className="border-y border-[#e2edf2] bg-[#f7fafc] py-14 sm:py-16">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[720px]">
-          <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9]">{editorial.facilitiesEyebrow}</p>
+          <p className="ui-eyebrow text-[12px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#0d7596]">{editorial.facilitiesEyebrow}</p>
           <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:text-[28px] md:text-[34px]">{editorial.facilitiesTitle}</h2>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -462,7 +455,7 @@ function FacilitiesSection({ editorial, facilities }: Pick<AboutPageContent, 'ed
                 <CmsImage alt={facility.imageAlt} className="h-full w-full transition duration-300 group-hover:scale-[1.03]" fit="contain" presentation={facility.imagePresentation} src={facility.imageUrl} />
               </div>
               <div className="border-t border-[#e7eff3] p-5">
-                <h3 className="text-[17px] font-bold leading-6 text-[#073f60]">{facility.title}</h3>
+                <h3 className="text-[17px] font-bold leading-6 text-[#005687]">{facility.title}</h3>
                 {facility.description ? <p className="mt-2 text-[14px] leading-6 text-[#607486]">{facility.description}</p> : null}
               </div>
             </article>

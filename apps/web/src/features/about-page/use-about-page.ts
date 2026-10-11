@@ -4,16 +4,12 @@ import { usePublicLanguage } from '@/features/public-content/public-language-pro
 import { queryKeys } from '@/lib/query-keys';
 import {
   getPublicAboutTimeline,
+  getPublicBookableDoctors,
   getPublicBranches,
   getPublicClinic,
-  getPublicDoctors,
   getPublicPageMedia,
-  getPublicShowcase,
 } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
-
-const clinicGalleryToulTompoungSlug = 'what-to-expect-during-your-first-visit';
-const clinicGalleryPsaChasSlug = 'what-to-expect-during-your-first-visit-psa-chas';
 
 export function useAboutPageQuery() {
   const { language } = usePublicLanguage();
@@ -21,8 +17,8 @@ export function useAboutPageQuery() {
     queryFn: async () => {
       const [
         clinic,
-        showcaseTtp,
-        showcasePsaChas,
+        psaChasGallery,
+        toulTompoungGallery,
         branchesResponse,
         doctors,
         pageMedia,
@@ -31,10 +27,10 @@ export function useAboutPageQuery() {
         aboutHero,
       ] = await Promise.all([
         getPublicClinic(),
-        getPublicShowcase(clinicGalleryToulTompoungSlug, language).catch(() => undefined),
-        getPublicShowcase(clinicGalleryPsaChasSlug, language).catch(() => undefined),
+        getPublicPageMedia('ABOUT_CLINIC_GALLERY_PSA_CHAS', language).catch(() => ({ items: [] })),
+        getPublicPageMedia('ABOUT_CLINIC_GALLERY_TOUL_TOMPOUNG', language).catch(() => ({ items: [] })),
         getPublicBranches(language, 'branches').catch(() => ({ branches: [] })),
-        getPublicDoctors(language).catch(() => ({ doctors: [] })),
+        getPublicBookableDoctors(language).catch(() => ({ doctors: [] })),
         getPublicPageMedia('ABOUT_PROFESSIONAL_DEVELOPMENT', language).catch(() => ({ items: [] })),
         getPublicPageMedia('ABOUT_ADVANCED_FACILITIES', language).catch(() => ({ items: [] })),
         getPublicAboutTimeline(language).catch(() => ({ items: [] })),
@@ -47,13 +43,12 @@ export function useAboutPageQuery() {
       const baseContent = publicAboutContent(
         clinic,
         language,
-        showcaseTtp?.showcase,
         featuredDoctor,
         advancedFacilities.items,
         branchesResponse.branches,
         {
-          psaChas: showcasePsaChas?.showcase,
-          toulTompoung: showcaseTtp?.showcase,
+          psaChas: psaChasGallery,
+          toulTompoung: toulTompoungGallery,
         },
         secondFeaturedDoctor,
       );
@@ -83,11 +78,11 @@ export function useAboutPageQuery() {
       queryKeys.public.doctors(language),
       queryKeys.public.aboutTimeline(language),
       queryKeys.public.pageMedia('ABOUT_ADVANCED_FACILITIES', language),
+      queryKeys.public.pageMedia('ABOUT_CLINIC_GALLERY_PSA_CHAS', language),
+      queryKeys.public.pageMedia('ABOUT_CLINIC_GALLERY_TOUL_TOMPOUNG', language),
       queryKeys.public.pageMedia('ABOUT_HERO', language),
       language,
       'about',
-      clinicGalleryPsaChasSlug,
-      clinicGalleryToulTompoungSlug,
     ],
   });
 }

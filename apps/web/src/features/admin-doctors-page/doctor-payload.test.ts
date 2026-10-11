@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { updateDoctorSchema } from '@arunreah/shared';
+import { createDoctorSchema, updateDoctorSchema } from '@arunreah/shared';
 import type { AdminDoctor } from '@/services/admin-doctors';
 import {
   parsePhone,
   parseProcedures,
   parseSatisfaction,
   parseYearsExp,
+  sanitizeDoctorCreatePayload,
   sanitizeDoctorUpdatePayload,
   sanitizeSlug,
 } from './doctor-payload';
@@ -98,14 +99,15 @@ describe('sanitizeDoctorUpdatePayload', () => {
     expect(parsed.success).toBe(true);
   });
 
-  it('handles empty Khmer name by falling back to English name so min(1) is satisfied', () => {
+  it('keeps an empty Khmer name so the shared schema can report the field error', () => {
     const payload = sanitizeDoctorUpdatePayload({
       ...baseDoctor,
       nameKm: '',
     });
-    expect(payload.nameKm).toBe(baseDoctor.name);
+    expect(payload.nameKm).toBe('');
     const parsed = updateDoctorSchema.safeParse(payload);
-    expect(parsed.success).toBe(true);
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) expect(parsed.error.issues[0]?.path).toEqual(['nameKm']);
   });
 
   it('sanitizes local assets or full URLs for photoKey', () => {
@@ -122,7 +124,7 @@ describe('sanitizeDoctorUpdatePayload', () => {
     expect(withFullUrl.photoKey).toBe('doctors/ab2bcf1d-b3c4-4400-ad90-5a042b70b00d-sreng-heng.jpg');
   });
 
-  it('filters empty expertise and education items and provides bilingual fallbacks', () => {
+  it('filters fully empty expertise and education rows while preserving bilingual validation errors', () => {
     const payload = sanitizeDoctorUpdatePayload({
       ...baseDoctor,
       expertiseItems: [
@@ -150,14 +152,41 @@ describe('sanitizeDoctorUpdatePayload', () => {
     });
 
     expect(payload.expertise).toHaveLength(1);
-    expect(payload.expertise?.[0]?.titleKm).toBe('Cosmetic Dentistry');
+    expect(payload.expertise?.[0]?.titleKm).toBe('');
 
     expect(payload.education).toHaveLength(1);
-    expect(payload.education?.[0]?.qualificationKm).toBe('BDS');
-    expect(payload.education?.[0]?.institutionKm).toBe('Dental School');
+    expect(payload.education?.[0]?.qualificationKm).toBe('');
+    expect(payload.education?.[0]?.institutionKm).toBe('');
 
     const parsed = updateDoctorSchema.safeParse(payload);
-    expect(parsed.success).toBe(true);
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) expect(parsed.error.issues.map((issue) => issue.path.join('.'))).toEqual(expect.arrayContaining(['expertise.0.titleKm', 'education.0.qualificationKm', 'education.0.institutionKm']));
+  });
+
+  it('forces non-clinical categories to be non-bookable without dropping hidden profile data', () => {
+    const payload = sanitizeDoctorUpdatePayload({
+      ...baseDoctor,
+      category: 'RECEPTIONIST',
+      bookable: true,
+      profileItems: [{ kind: 'RESPONSIBILITY', icon: 'welcome', titleEn: 'Welcome patients', titleKm: 'ស្វាគមន៍អ្នកជំងឺ', subtitleEn: null, subtitleKm: null, meta: null, displayOrder: 0 }],
+      expertiseItems: [],
+      educationItems: [],
+    });
+    expect(payload.bookable).toBe(false);
+    expect(payload.profileItems).toHaveLength(1);
+    expect(updateDoctorSchema.safeParse(payload).success).toBe(true);
+  });
+
+  it('builds a strict create payload with the selected category and profile items', () => {
+    const payload = sanitizeDoctorCreatePayload({
+      ...baseDoctor,
+      id: '',
+      category: 'GENERAL_PRACTITIONER',
+      profileItems: [{ kind: 'EXPERIENCE', icon: null, titleEn: 'Community medicine', titleKm: 'វេជ្ជសាស្ត្រសហគមន៍', subtitleEn: 'Five years', subtitleKm: 'ប្រាំឆ្នាំ', meta: null, displayOrder: 0 }],
+    });
+    expect(payload.category).toBe('GENERAL_PRACTITIONER');
+    expect(payload.profileItems).toHaveLength(1);
+    expect(createDoctorSchema.safeParse(payload).success).toBe(true);
   });
 
   it('filters self-referencing related doctor IDs', () => {

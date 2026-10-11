@@ -12,6 +12,7 @@ export const appointments = sqliteTable(
     id: text('id').primaryKey(),
     reference: text('reference').notNull(),
     idempotencyKey: text('idempotency_key').notNull(),
+    requestFingerprint: text('request_fingerprint'),
     status: text('status', { enum: appointmentStatusValues }).notNull().default('PENDING'),
     serviceId: text('service_id').references(() => services.id, {
       onDelete: 'set null',

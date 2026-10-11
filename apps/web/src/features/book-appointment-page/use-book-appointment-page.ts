@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { publicBookingChrome } from '@/features/public-content/public-page-chrome';
-import { getPublicBranches, getPublicContact, getPublicDoctors, getPublicPageMedia, getPublicServices } from '@/services/public-content';
+import { getPublicBookableDoctors, getPublicBranches, getPublicContact, getPublicPageMedia, getPublicServices } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
 import { mapBookingOptions } from '@/services/public-page-mappers';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
@@ -13,7 +13,7 @@ export function useBookAppointmentPageQuery() {
     queryFn: async () => {
       const [services, doctors, branches, contact, heroMediaResponse] = await Promise.all([
         getPublicServices(language),
-        getPublicDoctors(language),
+        getPublicBookableDoctors(language),
         getPublicBranches(language, 'appointments'),
         getPublicContact(),
         getPublicPageMedia('BOOKING_HERO', language).catch(() => ({ items: [] })),

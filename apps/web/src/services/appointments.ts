@@ -30,6 +30,7 @@ export type AppointmentListItem = {
 
 export type AppointmentListResponse = {
   appointments: AppointmentListItem[];
+  branchCounts: { id: string; nameSnapshot: string; count: number }[];
   meta: { page: number; limit: number; total: number; totalPages: number };
 };
 

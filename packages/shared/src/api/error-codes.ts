@@ -17,6 +17,7 @@ export const apiErrorCodes = [
   'INVALID_APPOINTMENT_DATE',
   'TURNSTILE_FAILED',
   'DUPLICATE_REQUEST',
+  'SERVICE_UNAVAILABLE',
   'INTERNAL_ERROR',
 ] as const;
 

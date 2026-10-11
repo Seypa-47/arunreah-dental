@@ -69,7 +69,7 @@ function ServiceCard({ service }: { service: LandingService }) {
       id={id}
     >
       <Link
-        aria-label={`View ${service.name}`}
+        aria-label={`${servicesCopy.learnMore}: ${service.name}`}
         className="flex h-full flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
         to={`/services/${slug}`}
       >

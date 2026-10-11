@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ApiClientError } from './api-error';
 import { createApiClient } from './client';
+import { z } from 'zod';
 
 function jsonResponse(payload: unknown, status = 200) {
   return new Response(JSON.stringify(payload), {
@@ -121,5 +122,19 @@ describe('API client', () => {
       message: 'Unable to reach the clinic service. Please try again.',
       status: 0,
     });
+  });
+
+  it('rejects a malformed success payload at the runtime schema boundary', async () => {
+    const client = createApiClient({
+      baseUrl: 'https://api.example.test',
+      fetchImplementation: async () =>
+        jsonResponse({ success: true, data: { services: [{ id: 42 }] } }),
+    });
+
+    await expect(
+      client.get('/api/public/services', {
+        responseSchema: z.object({ services: z.array(z.object({ id: z.string() })) }),
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE', status: 200 });
   });
 });

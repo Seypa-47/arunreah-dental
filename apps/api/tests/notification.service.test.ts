@@ -134,7 +134,9 @@ describe('notification formatters', () => {
     expect(htmlContent).toContain('Dear Sok Dara &lt;script&gt;,');
     expect(htmlContent).toContain('AR-20990101-ABC123');
     expect(htmlContent).toContain('Pending Review');
-    expect(htmlContent).toContain('This is a request acknowledgment. Your appointment is pending clinic review');
+    expect(htmlContent).toContain(
+      'This is a request acknowledgment. Your appointment is pending clinic review',
+    );
     expect(htmlContent).toContain('What Happens Next?');
     expect(htmlContent).toContain('Need Direct Assistance?');
     expect(htmlContent).toContain('098 701 302');
@@ -191,6 +193,7 @@ describe('HTTP notification providers', () => {
     await expect(provider.sendAppointmentRequest(payload)).resolves.toEqual({
       provider: 'email',
       success: true,
+      deliveries: { clinic: true, patient: true },
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
 
@@ -223,13 +226,14 @@ describe('HTTP notification providers', () => {
     await expect(provider.sendAppointmentRequest(payloadWithoutEmail)).resolves.toEqual({
       provider: 'email',
       success: true,
+      deliveries: { clinic: true, patient: null },
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const clinicBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
     expect(clinicBody.to).toEqual(['clinic@example.com']);
   });
 
-  it('tolerates patient email delivery failure without failing clinic notification', async () => {
+  it('reports patient partial failure without failing appointment persistence', async () => {
     const logSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (_url, options) => {
       const body = JSON.parse(String(options?.body));
@@ -249,15 +253,20 @@ describe('HTTP notification providers', () => {
 
     await expect(provider.sendAppointmentRequest(payload)).resolves.toEqual({
       provider: 'email',
-      success: true,
+      success: false,
+      errorCode: 'PROVIDER_REQUEST_FAILED',
+      deliveries: { clinic: true, patient: false },
     });
     expect(logSpy).toHaveBeenCalledWith(
       'Resend patient email delivery failed',
       expect.objectContaining({
-        recipient: '[redacted]',
+        provider: 'resend',
+        code: 'PROVIDER_REQUEST_FAILED',
         status: 400,
       }),
     );
+    expect(JSON.stringify(logSpy.mock.calls)).not.toContain('patient@example.com');
+    expect(JSON.stringify(logSpy.mock.calls)).not.toContain('test-secret');
   });
 
   it('fails safely when email is not configured or its provider fails', async () => {
@@ -285,6 +294,7 @@ describe('HTTP notification providers', () => {
       provider: 'email',
       success: false,
       errorCode: 'PROVIDER_REQUEST_FAILED',
+      deliveries: { clinic: false, patient: false },
     });
   });
 
@@ -315,6 +325,7 @@ describe('HTTP notification providers', () => {
     await expect(provider.sendAppointmentRequest(payloadWithoutEmail)).resolves.toEqual({
       provider: 'email',
       success: true,
+      deliveries: { clinic: true, patient: null },
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const secondCallBody = JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body));
@@ -337,6 +348,7 @@ describe('HTTP notification providers', () => {
       provider: 'email',
       success: false,
       errorCode: 'PROVIDER_TIMEOUT',
+      deliveries: { clinic: false, patient: false },
     });
   });
 
@@ -437,4 +449,54 @@ describe('HTTP notification providers', () => {
       errorCode: 'PROVIDER_REQUEST_FAILED',
     });
   });
+
+  it('does not log bot token, URL, chat ID, or patient details when Telegram request fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ description: 'Unauthorized' }), { status: 401 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const provider = new TelegramNotificationProvider({
+      enabled: true,
+      botToken: 'secret-bot-token-xyz',
+      chatId: '-100999999999',
+    });
+
+    const result = await provider.sendAppointmentRequest(payload);
+    expect(result.success).toBe(false);
+    expect(errorSpy).toHaveBeenCalled();
+    const loggedCalls = JSON.stringify(errorSpy.mock.calls);
+    expect(loggedCalls).not.toContain('secret-bot-token-xyz');
+    expect(loggedCalls).not.toContain('-100999999999');
+    expect(loggedCalls).not.toContain(payload.patientName);
+    expect(loggedCalls).not.toContain(payload.email);
+    expect(loggedCalls).not.toContain('api.telegram.org');
+    errorSpy.mockRestore();
+  });
+
+  it('does not log API key, recipient email, or patient details when Resend email fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ message: 'Domain verification failed' }), { status: 403 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const provider = new EmailNotificationProvider({
+      enabled: true,
+      recipient: 'clinic-target@example.com',
+      fromAddress: 'Appointments <appointments@example.com>',
+      apiKey: 're_secret_api_key_123',
+    });
+
+    const result = await provider.sendAppointmentRequest(payload);
+    expect(result.success).toBe(false);
+    expect(errorSpy).toHaveBeenCalled();
+    const loggedCalls = JSON.stringify(errorSpy.mock.calls);
+    expect(loggedCalls).not.toContain('re_secret_api_key_123');
+    expect(loggedCalls).not.toContain('clinic-target@example.com');
+    expect(loggedCalls).not.toContain(payload.patientName);
+    expect(loggedCalls).not.toContain(payload.email);
+    expect(loggedCalls).not.toContain('api.resend.com');
+    errorSpy.mockRestore();
+  });
 });
+

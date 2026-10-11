@@ -84,7 +84,7 @@ export function toLandingService(service: PublicServiceSummary): LandingService 
 
 export function toLandingDoctor(doctor: PublicDoctorSummary, language: 'en' | 'km' = 'en'): LandingDoctor {
   const isKm = language === 'km';
-  const profileHref = `/doctors/${doctor.slug}`;
+  const profileHref = `/team/${doctor.slug}`;
   return {
     bookingLabel: isKm ? `កក់ជាមួយ ${doctor.name}` : `Book with ${doctor.name}`,
     credential: doctor.title ?? doctor.specialty ?? undefined,
@@ -189,6 +189,7 @@ export function mapServiceDetail(
       subtitle: detail.shortDescription ?? detail.hero.summary ?? '',
       title: detail.hero.title ?? detail.name,
     },
+    seo: detail.seo,
   };
   return { ...base, otherServices: related, service, services: [toLandingService(detail), ...related] };
 }
@@ -218,7 +219,7 @@ export function mapDoctorDetail(
     heroSummary: detail.shortBio ?? '',
     languages: [],
     pageDescription: detail.shortBio ?? '',
-    profileHref: `/doctors/${detail.slug}`,
+    profileHref: `/team/${detail.slug}`,
     roleTitle: detail.title ?? detail.specialty ?? '',
     services: detail.expertise.map((item) => item.title),
     stats: [
@@ -284,12 +285,18 @@ export function mapBookingOptions(
     },
     doctors: [
       { name: isKm ? 'គ្មានចំណូលចិត្ត' : 'No Preference', value: '', branchIds: [] },
-      ...doctors.map((doctor) => ({
+      ...doctors
+        .filter(
+          (doctor) =>
+            doctor.bookable &&
+            (doctor.category === 'DENTIST' || doctor.category === 'GENERAL_PRACTITIONER'),
+        )
+        .map((doctor) => ({
         name: doctor.name,
         slug: doctor.slug,
         value: doctor.id,
         branchIds: doctor.branchIds ?? [],
-      })),
+        })),
     ],
     services: services.map(toLandingService),
     servicesList: services.map((service) => ({ name: service.name, slug: service.slug, value: service.id })),

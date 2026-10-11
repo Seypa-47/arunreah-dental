@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { ApiClient } from '@/lib/api';
-import { createPublicAppointment, getPublicBranch, getPublicClinic, getPublicContact, getPublicDoctor, getPublicPageMedia, getPublicServices, getPublicShowcase, getPublicShowcases } from './public-content';
+import {
+  createPublicAppointment,
+  getPublicBookableDoctors,
+  getPublicBranch,
+  getPublicClinic,
+  getPublicContact,
+  getPublicDoctor,
+  getPublicDoctors,
+  getPublicPageMedia,
+  getPublicServices,
+  getPublicShowcase,
+  getPublicShowcases,
+} from './public-content';
 
 describe('public content API service', () => {
   it('uses language-specific public endpoints without admin credentials', async () => {
@@ -15,19 +27,42 @@ describe('public content API service', () => {
     await getPublicServices('km', client);
     await getPublicShowcases('en', true, client);
     await getPublicShowcase('smile/transformation', 'en', client);
+    await getPublicDoctors('en', 'ASSISTANT', client);
+    await getPublicBookableDoctors('km', client);
     await getPublicDoctor('a/doctor', 'km', client);
     await getPublicPageMedia('DOCTORS_PATIENT_EDUCATION', 'km', client);
     await getPublicPageMedia('ABOUT_ADVANCED_FACILITIES', 'en', client);
+    await getPublicPageMedia('ABOUT_CLINIC_GALLERY_PSA_CHAS', 'en', client);
+    await getPublicPageMedia('ABOUT_CLINIC_GALLERY_TOUL_TOMPOUNG', 'km', client);
     await getPublicPageMedia('HOME_PROMOTIONS', 'en', client);
 
     expect(requests).toEqual([
       { authenticated: undefined, path: '/api/public/services?lang=km' },
       { authenticated: undefined, path: '/api/public/showcases?lang=en&homepage=true' },
       { authenticated: undefined, path: '/api/public/showcases/smile%2Ftransformation?lang=en' },
-      { authenticated: undefined, path: '/api/public/doctors/a%2Fdoctor?lang=km' },
-      { authenticated: undefined, path: '/api/public/page-media?lang=km&placement=DOCTORS_PATIENT_EDUCATION' },
-      { authenticated: undefined, path: '/api/public/page-media?lang=en&placement=ABOUT_ADVANCED_FACILITIES' },
-      { authenticated: undefined, path: '/api/public/page-media?lang=en&placement=HOME_PROMOTIONS' },
+      { authenticated: undefined, path: '/api/public/team?lang=en&category=ASSISTANT' },
+      { authenticated: undefined, path: '/api/public/team?lang=km&bookable=true' },
+      { authenticated: undefined, path: '/api/public/team/a%2Fdoctor?lang=km' },
+      {
+        authenticated: undefined,
+        path: '/api/public/page-media?lang=km&placement=DOCTORS_PATIENT_EDUCATION',
+      },
+      {
+        authenticated: undefined,
+        path: '/api/public/page-media?lang=en&placement=ABOUT_ADVANCED_FACILITIES',
+      },
+      {
+        authenticated: undefined,
+        path: '/api/public/page-media?lang=en&placement=ABOUT_CLINIC_GALLERY_PSA_CHAS',
+      },
+      {
+        authenticated: undefined,
+        path: '/api/public/page-media?lang=km&placement=ABOUT_CLINIC_GALLERY_TOUL_TOMPOUNG',
+      },
+      {
+        authenticated: undefined,
+        path: '/api/public/page-media?lang=en&placement=HOME_PROMOTIONS',
+      },
     ]);
   });
 
@@ -57,6 +92,7 @@ describe('public content API service', () => {
       doctorId: null,
       email: 'patient@example.com',
       idempotencyKey: '550e8400-e29b-41d4-a716-446655440004',
+      locale: 'en' as const,
       notes: null,
       patientName: 'Sok Dara',
       phone: '012 345 678',
@@ -74,6 +110,9 @@ describe('public content API service', () => {
 
     await createPublicAppointment(input, client);
 
-    expect(request).toEqual({ path: '/api/public/appointments', options: { json: input } });
+    expect(request).toEqual({
+      path: '/api/public/appointments',
+      options: { json: input, responseSchema: expect.anything() },
+    });
   });
 });

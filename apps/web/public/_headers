@@ -1,5 +1,13 @@
 # Cloudflare Pages Headers
 
+/*
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://pub-0dae1b4d79d0465fa30f0366829841b4.r2.dev https://media.arunreah.mekhla.digital; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.staging.mekhla.digital https://api.arunreah.mekhla.digital https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com https://www.google.com https://maps.google.com; upgrade-insecure-requests
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+
 # Cache-bust index.html so users always get the latest bundle references immediately
 /
   Cache-Control: public, max-age=0, must-revalidate
@@ -7,6 +15,6 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
-# Hashed assets are immutable and safe to cache for 1 year
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
+# Do not override Cloudflare Pages' asset caching. During deployment propagation,
+# an unavailable SPA asset can briefly resolve to index.html; marking that fallback
+# immutable would cache HTML under a JavaScript or CSS URL in the browser.

@@ -13,12 +13,45 @@ import {
 import type { AppEnv } from '../../types/env';
 
 export async function uploadMediaController(context: Context<AppEnv>) {
-  const contentLength = Number(context.req.header('Content-Length'));
-  if (Number.isFinite(contentLength) && contentLength > MAX_MEDIA_MULTIPART_BYTES) {
+  const contentLengthHeader = context.req.header('Content-Length');
+  const contentLength = contentLengthHeader === undefined ? undefined : Number(contentLengthHeader);
+  if (contentLength !== undefined && (!Number.isSafeInteger(contentLength) || contentLength < 0)) {
+    throw new HttpError(
+      400,
+      'VALIDATION_ERROR',
+      'Content-Length must be a valid non-negative integer.',
+    );
+  }
+  if (contentLength !== undefined && contentLength > MAX_MEDIA_MULTIPART_BYTES) {
     throw new HttpError(400, 'MEDIA_TOO_LARGE', 'Image uploads must not exceed 5 MB.');
   }
 
-  const formData = await context.req.formData().catch(() => undefined);
+  const body = context.req.raw.body;
+  if (!body) throw new HttpError(400, 'VALIDATION_ERROR', 'A multipart request body is required.');
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > MAX_MEDIA_MULTIPART_BYTES) {
+      await reader.cancel();
+      throw new HttpError(400, 'MEDIA_TOO_LARGE', 'Image uploads must not exceed 5 MB.');
+    }
+    chunks.push(value);
+  }
+  const buffered = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    buffered.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  const formData = await new Response(buffered, {
+    headers: { 'Content-Type': context.req.header('Content-Type') ?? '' },
+  })
+    .formData()
+    .catch(() => undefined);
   const file = formData?.get('file');
   const category = formData?.get('category');
 

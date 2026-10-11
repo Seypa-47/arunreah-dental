@@ -1,10 +1,21 @@
 import { and, asc, count, desc, eq, inArray, like, or } from 'drizzle-orm';
-import type { CreateServiceInput, ImagePresentation, ServiceListQuery, UpdateServiceInput } from '@arunreah/shared';
-import { appointments, serviceBenefits, serviceDetailSections, serviceRelatedServices, services } from '../db/schema';
+import type {
+  CreateServiceInput,
+  ImagePresentation,
+  ServiceListQuery,
+  UpdateServiceInput,
+} from '@arunreah/shared';
+import {
+  appointments,
+  imagePresentations,
+  serviceBenefits,
+  serviceDetailSections,
+  serviceRelatedServices,
+  services,
+} from '../db/schema';
 import type { DatabaseClient } from '../db/client';
-import { inTransaction } from '../db/transaction';
-import { removeForOwners, upsert } from './image-presentation.repository';
-type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
+import { atomicBatch, type AtomicBatchStatement } from '../db/transaction';
+import { upsertStatement } from './image-presentation.repository';
 export async function findServiceById(db: DatabaseClient, id: string) {
   const [x] = await db.select().from(services).where(eq(services.id, id)).limit(1);
   return x;
@@ -34,16 +45,48 @@ export async function findPublicServiceBySlug(db: DatabaseClient, slug: string) 
 export async function createService(db: DatabaseClient, input: CreateServiceInput) {
   const id = crypto.randomUUID(),
     now = new Date().toISOString();
-  const { benefits, detailSections, relatedServiceIds, imagePresentation, heroImagePresentation, aboutImagePresentation, ...row } = input;
-  await inTransaction(db, async (transaction) => {
-    await transaction.insert(services).values({ id, ...row, createdAt: now, updatedAt: now });
-    await replaceBenefits(transaction, id, benefits);
-    await replaceDetailSections(transaction, id, detailSections);
-    await replaceRelated(transaction, id, relatedServiceIds);
-    if (imagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'PRIMARY' }, imagePresentation);
-    if (heroImagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'HERO' }, heroImagePresentation);
-    if (aboutImagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'ABOUT' }, aboutImagePresentation);
-  });
+  const {
+    benefits,
+    detailSections,
+    relatedServiceIds,
+    imagePresentation,
+    heroImagePresentation,
+    aboutImagePresentation,
+    ...row
+  } = input;
+  const statements: [AtomicBatchStatement, ...AtomicBatchStatement[]] = [
+    db.insert(services).values({ id, ...row, createdAt: now, updatedAt: now }),
+  ];
+  statements.push(
+    ...replaceBenefitsStatements(db, id, benefits),
+    ...replaceDetailSectionStatements(db, id, detailSections, []),
+    ...replaceRelatedStatements(db, id, relatedServiceIds),
+  );
+  if (imagePresentation)
+    statements.push(
+      upsertStatement(
+        db,
+        { ownerType: 'SERVICE', ownerId: id, slot: 'PRIMARY' },
+        imagePresentation,
+      ),
+    );
+  if (heroImagePresentation)
+    statements.push(
+      upsertStatement(
+        db,
+        { ownerType: 'SERVICE', ownerId: id, slot: 'HERO' },
+        heroImagePresentation,
+      ),
+    );
+  if (aboutImagePresentation)
+    statements.push(
+      upsertStatement(
+        db,
+        { ownerType: 'SERVICE', ownerId: id, slot: 'ABOUT' },
+        aboutImagePresentation,
+      ),
+    );
+  await atomicBatch(db, statements);
   return findServiceById(db, id);
 }
 export async function updateService(db: DatabaseClient, id: string, input: UpdateServiceInput) {
@@ -52,66 +95,150 @@ export async function updateService(db: DatabaseClient, id: string, input: Updat
     heroImagePresentation?: ImagePresentation;
     aboutImagePresentation?: ImagePresentation;
   };
-  const { benefits, detailSections, relatedServiceIds, imagePresentation, heroImagePresentation, aboutImagePresentation, ...row } = presentationInput;
-  await inTransaction(db, async (transaction) => {
-    if (Object.keys(row).length)
-      await transaction
+  const {
+    benefits,
+    detailSections,
+    relatedServiceIds,
+    imagePresentation,
+    heroImagePresentation,
+    aboutImagePresentation,
+    ...row
+  } = presentationInput;
+  const previousSections =
+    detailSections === undefined
+      ? []
+      : await db
+          .select({ id: serviceDetailSections.id })
+          .from(serviceDetailSections)
+          .where(eq(serviceDetailSections.serviceId, id));
+  const statements: AtomicBatchStatement[] = [];
+  if (Object.keys(row).length)
+    statements.push(
+      db
         .update(services)
         .set({ ...row, updatedAt: new Date().toISOString() })
-        .where(eq(services.id, id));
-    if (benefits !== undefined) await replaceBenefits(transaction, id, benefits);
-    if (detailSections !== undefined) await replaceDetailSections(transaction, id, detailSections);
-    if (relatedServiceIds !== undefined) await replaceRelated(transaction, id, relatedServiceIds);
-    if (imagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'PRIMARY' }, imagePresentation);
-    if (heroImagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'HERO' }, heroImagePresentation);
-    if (aboutImagePresentation) await upsert(transaction, { ownerType: 'SERVICE', ownerId: id, slot: 'ABOUT' }, aboutImagePresentation);
-  });
+        .where(eq(services.id, id)),
+    );
+  if (benefits !== undefined) statements.push(...replaceBenefitsStatements(db, id, benefits));
+  if (detailSections !== undefined)
+    statements.push(
+      ...replaceDetailSectionStatements(
+        db,
+        id,
+        detailSections,
+        previousSections.map(({ id: ownerId }) => ownerId),
+      ),
+    );
+  if (relatedServiceIds !== undefined)
+    statements.push(...replaceRelatedStatements(db, id, relatedServiceIds));
+  if (imagePresentation)
+    statements.push(
+      upsertStatement(
+        db,
+        { ownerType: 'SERVICE', ownerId: id, slot: 'PRIMARY' },
+        imagePresentation,
+      ),
+    );
+  if (heroImagePresentation)
+    statements.push(
+      upsertStatement(
+        db,
+        { ownerType: 'SERVICE', ownerId: id, slot: 'HERO' },
+        heroImagePresentation,
+      ),
+    );
+  if (aboutImagePresentation)
+    statements.push(
+      upsertStatement(
+        db,
+        { ownerType: 'SERVICE', ownerId: id, slot: 'ABOUT' },
+        aboutImagePresentation,
+      ),
+    );
+  if (statements.length)
+    await atomicBatch(db, statements as [AtomicBatchStatement, ...AtomicBatchStatement[]]);
   return findServiceById(db, id);
 }
-async function replaceBenefits(
-  db: WriteDatabase,
+function replaceBenefitsStatements(
+  db: DatabaseClient,
   id: string,
   items: CreateServiceInput['benefits'],
-) {
-  await db.delete(serviceBenefits).where(eq(serviceBenefits.serviceId, id));
+): AtomicBatchStatement[] {
+  const statements: AtomicBatchStatement[] = [
+    db.delete(serviceBenefits).where(eq(serviceBenefits.serviceId, id)),
+  ];
   for (const item of items)
-    await db.insert(serviceBenefits).values({
-      id: crypto.randomUUID(),
-      serviceId: id,
-      ...item,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+    statements.push(
+      db.insert(serviceBenefits).values({
+        id: crypto.randomUUID(),
+        serviceId: id,
+        ...item,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }),
+    );
+  return statements;
 }
-async function replaceDetailSections(
-  db: WriteDatabase,
+function replaceDetailSectionStatements(
+  db: DatabaseClient,
   id: string,
   items: CreateServiceInput['detailSections'],
-) {
-  // Sections are replaced wholesale, so their framing is re-keyed to the new row ids.
-  const previous = await db.select({ id: serviceDetailSections.id }).from(serviceDetailSections).where(eq(serviceDetailSections.serviceId, id));
-  await removeForOwners(db, previous.map((section) => ({ ownerType: 'SERVICE_DETAIL_SECTION' as const, ownerId: section.id })));
-  await db.delete(serviceDetailSections).where(eq(serviceDetailSections.serviceId, id));
+  previousOwnerIds: string[],
+): AtomicBatchStatement[] {
+  const statements: AtomicBatchStatement[] = [];
+  if (previousOwnerIds.length) {
+    statements.push(
+      db
+        .delete(imagePresentations)
+        .where(
+          and(
+            eq(imagePresentations.ownerType, 'SERVICE_DETAIL_SECTION'),
+            inArray(imagePresentations.ownerId, previousOwnerIds),
+          ),
+        ),
+    );
+  }
+  statements.push(db.delete(serviceDetailSections).where(eq(serviceDetailSections.serviceId, id)));
   if (items.length > 0) {
     const now = new Date().toISOString();
-    const rows = items.map(({ imagePresentation, ...item }) => ({ imagePresentation, row: { id: crypto.randomUUID(), serviceId: id, ...item, createdAt: now, updatedAt: now } }));
-    await db.insert(serviceDetailSections).values(rows.map(({ row }) => row));
+    const rows = items.map(({ imagePresentation, ...item }) => ({
+      imagePresentation,
+      row: { id: crypto.randomUUID(), serviceId: id, ...item, createdAt: now, updatedAt: now },
+    }));
+    statements.push(db.insert(serviceDetailSections).values(rows.map(({ row }) => row)));
     for (const { imagePresentation, row } of rows) {
-      if (imagePresentation && row.imageKey) await upsert(db, { ownerType: 'SERVICE_DETAIL_SECTION', ownerId: row.id, slot: 'PRIMARY' }, imagePresentation);
+      if (imagePresentation && row.imageKey)
+        statements.push(
+          upsertStatement(
+            db,
+            { ownerType: 'SERVICE_DETAIL_SECTION', ownerId: row.id, slot: 'PRIMARY' },
+            imagePresentation,
+          ),
+        );
     }
   }
+  return statements;
 }
-async function replaceRelated(db: WriteDatabase, id: string, ids: string[]) {
-  await db.delete(serviceRelatedServices).where(eq(serviceRelatedServices.serviceId, id));
+function replaceRelatedStatements(
+  db: DatabaseClient,
+  id: string,
+  ids: string[],
+): AtomicBatchStatement[] {
+  const statements: AtomicBatchStatement[] = [
+    db.delete(serviceRelatedServices).where(eq(serviceRelatedServices.serviceId, id)),
+  ];
   for (const [i, relatedServiceId] of ids.entries())
-    await db.insert(serviceRelatedServices).values({
-      id: crypto.randomUUID(),
-      serviceId: id,
-      relatedServiceId,
-      displayOrder: i,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+    statements.push(
+      db.insert(serviceRelatedServices).values({
+        id: crypto.randomUUID(),
+        serviceId: id,
+        relatedServiceId,
+        displayOrder: i,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }),
+    );
+  return statements;
 }
 export async function getBenefits(db: DatabaseClient, id: string) {
   return db
@@ -143,14 +270,37 @@ export async function countAppointmentsForService(db: DatabaseClient, id: string
   return x?.value ?? 0;
 }
 export async function deleteService(db: DatabaseClient, id: string) {
-  await inTransaction(db, async (transaction) => {
-    await transaction.delete(serviceRelatedServices).where(
-      or(eq(serviceRelatedServices.serviceId, id), eq(serviceRelatedServices.relatedServiceId, id)),
-    );
-    await transaction.delete(serviceBenefits).where(eq(serviceBenefits.serviceId, id));
-    await transaction.delete(serviceDetailSections).where(eq(serviceDetailSections.serviceId, id));
-    await transaction.delete(services).where(eq(services.id, id));
-  });
+  const sectionIds = await db
+    .select({ id: serviceDetailSections.id })
+    .from(serviceDetailSections)
+    .where(eq(serviceDetailSections.serviceId, id));
+  await atomicBatch(db, [
+    db.delete(imagePresentations).where(
+      or(
+        and(eq(imagePresentations.ownerType, 'SERVICE'), eq(imagePresentations.ownerId, id)),
+        sectionIds.length
+          ? and(
+              eq(imagePresentations.ownerType, 'SERVICE_DETAIL_SECTION'),
+              inArray(
+                imagePresentations.ownerId,
+                sectionIds.map((item) => item.id),
+              ),
+            )
+          : undefined,
+      ),
+    ),
+    db
+      .delete(serviceRelatedServices)
+      .where(
+        or(
+          eq(serviceRelatedServices.serviceId, id),
+          eq(serviceRelatedServices.relatedServiceId, id),
+        ),
+      ),
+    db.delete(serviceBenefits).where(eq(serviceBenefits.serviceId, id)),
+    db.delete(serviceDetailSections).where(eq(serviceDetailSections.serviceId, id)),
+    db.delete(services).where(eq(services.id, id)),
+  ]);
 }
 export async function listPublicServices(db: DatabaseClient) {
   return db

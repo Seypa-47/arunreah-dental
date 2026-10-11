@@ -59,7 +59,7 @@ function CalendarIcon({ className = 'size-[18px]' }: { className?: string }) {
 
 function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
   const navigate = useNavigate();
-  const imageUrl = hero.backgroundImageUrl || '/assets/landing/figma-branches/image2_183_4173.png';
+  const imageUrl = hero.backgroundImageUrl || '/assets/landing/figma-branches/image2_183_4173.webp';
 
   return (
     <section className="relative bg-[#f7fafc] pb-0 pt-5 sm:pt-7">
@@ -68,7 +68,7 @@ function BranchesHero({ hero }: { hero: BranchesPageContent['hero'] }) {
           <ResilientImage
             alt={hero.backgroundImageAlt}
             className="absolute inset-0 h-full w-full object-cover object-center contrast-[1.06] saturate-[1.05]"
-            fallbackSrc="/assets/landing/figma-branches/image2_183_4173.png"
+            fallbackSrc="/assets/landing/figma-branches/image2_183_4173.webp"
             presentation={hero.imagePresentation}
             src={imageUrl}
           />
@@ -153,7 +153,7 @@ function SectionIntro({
 }) {
   return (
     <div className="mx-auto max-w-[720px] px-4 text-center sm:px-6">
-      <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9] sm:text-[12px]">{eyebrow}</p>
+      <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#0d7596] sm:text-[12px]">{eyebrow}</p>
       <h2 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[32px]">
         {title}
       </h2>

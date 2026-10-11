@@ -25,7 +25,7 @@ export const STATIC_NAV_ITEMS: Record<PublicLanguage, LandingNavigationItem[]> =
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/services', label: 'Services' },
-    { href: '/doctors', label: 'Doctors' },
+    { href: '/team', label: 'Our Team' },
     { href: '/branches', label: 'Branches' },
     { href: '/showcases', label: 'Showcases' },
   ],
@@ -33,7 +33,7 @@ export const STATIC_NAV_ITEMS: Record<PublicLanguage, LandingNavigationItem[]> =
     { href: '/', label: 'ទំព័រដើម' },
     { href: '/about', label: 'អំពីយើង' },
     { href: '/services', label: 'សេវាកម្ម' },
-    { href: '/doctors', label: 'វេជ្ជបណ្ឌិត' },
+    { href: '/team', label: 'ក្រុមការងាររបស់យើង' },
     { href: '/branches', label: 'សាខា' },
     { href: '/showcases', label: 'ស្នាដៃ' },
   ],
@@ -92,17 +92,20 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
   const { hash, pathname } = useLocation();
   const navigate = useNavigate();
   const mainContentRef = useRef<HTMLDivElement>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const topBarRef = useRef<HTMLDivElement>(null);
   const serviceHref = (service: Pick<LandingService, 'name' | 'slug'>) => `/services/${service.slug ?? serviceSlug(service.name)}`;
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
     if (!hash) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     } else {
       const targetId = hash.replace('#', '');
       const element = document.getElementById(targetId);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        element.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       }
     }
   }, [pathname, hash]);
@@ -111,20 +114,53 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
     if (!isMobileMenuOpen) return undefined;
 
     const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsMobileMenuOpen(false);
+    const menu = mobileMenuRef.current;
+    const background = mainContentRef.current;
+    const topBar = topBarRef.current;
+    const restoreFocusTarget = mobileMenuButtonRef.current;
+    const focusable = () => Array.from(
+      menu?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])') ?? [],
+    );
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsMobileMenuOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = focusable();
+      const first = items[0];
+      const last = items.at(-1);
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', closeOnEscape);
+    background?.setAttribute('inert', '');
+    background?.setAttribute('aria-hidden', 'true');
+    topBar?.setAttribute('inert', '');
+    topBar?.setAttribute('aria-hidden', 'true');
+    window.addEventListener('keydown', handleKeyDown);
+    queueMicrotask(() => focusable()[0]?.focus());
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', closeOnEscape);
+      background?.removeAttribute('inert');
+      background?.removeAttribute('aria-hidden');
+      topBar?.removeAttribute('inert');
+      topBar?.removeAttribute('aria-hidden');
+      window.removeEventListener('keydown', handleKeyDown);
+      restoreFocusTarget?.focus();
     };
   }, [isMobileMenuOpen]);
 
   const isActiveNavigationItem = (item: LandingNavigationItem) => {
-    if (item.href.startsWith('/doctors')) {
-      return pathname.startsWith('/doctors');
+    if (item.href.startsWith('/team')) {
+      return pathname.startsWith('/team');
     }
 
     if (item.href.startsWith('/services')) {
@@ -159,7 +195,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f7fafc] text-[#005687]">
+    <div className="public-site min-h-screen overflow-x-hidden bg-[#f7fafc] text-[#005687]">
       <a
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-[14px] focus:font-bold focus:text-[#005687] focus:shadow-[0_8px_20px_rgba(15,61,84,0.16)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad]"
         href="#main-content"
@@ -168,7 +204,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
         {layoutCopy.skipToContent}
       </a>
       <header className="sticky top-0 z-40 border-b border-[#d9e9ee] bg-white/95 shadow-[0_2px_12px_rgba(10,63,90,0.05)] backdrop-blur-xl">
-        <div className="ui-page-container flex h-[64px] items-center justify-between gap-2 sm:h-[74px] sm:gap-4">
+        <div className="ui-page-container flex h-[64px] items-center justify-between gap-2 sm:h-[74px] sm:gap-4" ref={topBarRef}>
           <Link aria-label={layoutCopy.homeLink} className="min-w-0 shrink-0 leading-none" to="/">
             {logoUrl ? <img alt={clinicName ?? 'Arunreah Dental Clinic'} className="h-10 w-auto max-w-[140px] object-contain object-left min-[375px]:h-11 min-[375px]:max-w-[175px] sm:h-[48px] sm:max-w-[220px] lg:max-w-[200px] xl:h-[52px] xl:max-w-[260px]" src={logoUrl} /> : <span className="block truncate text-[15px] font-extrabold uppercase leading-5 tracking-[-0.25px] text-[#3695B9] sm:text-[20px]">{clinicName ?? 'Arunreah Dental Clinic'}</span>}
           </Link>
@@ -275,6 +311,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
               aria-label={isMobileMenuOpen ? layoutCopy.closeMenu : layoutCopy.openMenu}
               className="grid size-11 shrink-0 place-items-center rounded-full border border-[#cfe4ec] text-[#005687] transition hover:bg-[#eef9fc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3695B9] lg:hidden"
               onClick={() => setIsMobileMenuOpen((open) => !open)}
+              ref={mobileMenuButtonRef}
               type="button"
             >
               <span aria-hidden="true" className="flex w-5 flex-col gap-1.5">
@@ -286,8 +323,9 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
           </div>
         </div>
         {isMobileMenuOpen ? (
-          <div className="h-[calc(100dvh-64px)] overflow-y-auto overscroll-contain border-t border-[#e7f0f4] bg-white px-4 pt-3 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-[0_16px_30px_rgba(15,61,84,0.10)] sm:h-[calc(100dvh-74px)] lg:hidden" id="mobile-primary-navigation">
+          <div aria-label={layoutCopy.mobileNavigation} aria-modal="true" className="h-[calc(100dvh-64px)] overflow-y-auto overscroll-contain border-t border-[#e7f0f4] bg-white px-4 pt-3 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-[0_16px_30px_rgba(15,61,84,0.10)] sm:h-[calc(100dvh-74px)] lg:hidden" id="mobile-primary-navigation" ref={mobileMenuRef} role="dialog">
             <nav aria-label={layoutCopy.mobileNavigation} className="ui-page-container grid gap-1 px-0 sm:px-2">
+              <button className="ml-auto grid size-11 place-items-center rounded-full text-2xl text-[#005687]" onClick={() => setIsMobileMenuOpen(false)} type="button" aria-label={layoutCopy.closeMenu}>×</button>
               {effectiveNavigation.map((item) => (
                 <div key={item.label}>
                   <div className="flex items-center gap-2">

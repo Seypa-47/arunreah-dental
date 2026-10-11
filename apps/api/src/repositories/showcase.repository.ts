@@ -4,11 +4,10 @@ import type {
   CreateShowcaseInput,
   UpdateShowcaseInput,
 } from '@arunreah/shared';
-import { showcaseRelated, showcaseSections, showcases } from '../db/schema';
+import { imagePresentations, showcaseRelated, showcaseSections, showcases } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
-import { inTransaction } from '../db/transaction';
-import { removeForOwners, upsert } from './image-presentation.repository';
-type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
+import { atomicBatch, type AtomicBatchStatement } from '../db/transaction';
+import { upsertStatement } from './image-presentation.repository';
 
 function toShowcaseRow(input: UpdateShowcaseInput) {
   const {
@@ -70,14 +69,24 @@ export async function findPublicShowcaseBySlug(database: DatabaseClient, slug: s
 export async function createShowcase(database: DatabaseClient, input: CreateShowcaseInput) {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  await inTransaction(database, async (transaction) => {
-    await transaction
+  const statements: [AtomicBatchStatement, ...AtomicBatchStatement[]] = [
+    database
       .insert(showcases)
-      .values({ id, ...toCreatedShowcaseRow(input), createdAt: now, updatedAt: now });
-    await replaceSections(transaction, id, input.sections);
-    await replaceRelatedShowcases(transaction, id, input.relatedShowcaseIds);
-    if (input.coverImagePresentation) await upsert(transaction, { ownerType: 'SHOWCASE', ownerId: id, slot: 'PRIMARY' }, input.coverImagePresentation);
-  });
+      .values({ id, ...toCreatedShowcaseRow(input), createdAt: now, updatedAt: now }),
+  ];
+  statements.push(
+    ...replaceSectionStatements(database, id, input.sections, []),
+    ...replaceRelatedShowcaseStatements(database, id, input.relatedShowcaseIds),
+  );
+  if (input.coverImagePresentation)
+    statements.push(
+      upsertStatement(
+        database,
+        { ownerType: 'SHOWCASE', ownerId: id, slot: 'PRIMARY' },
+        input.coverImagePresentation,
+      ),
+    );
+  await atomicBatch(database, statements);
   return findShowcaseById(database, id);
 }
 
@@ -87,63 +96,111 @@ export async function updateShowcase(
   input: UpdateShowcaseInput,
 ) {
   const row = toShowcaseRow(input);
-  await inTransaction(database, async (transaction) => {
-    if (Object.keys(row).length > 0) {
-      await transaction
+  const previousSections =
+    input.sections === undefined
+      ? []
+      : await database
+          .select({ id: showcaseSections.id })
+          .from(showcaseSections)
+          .where(eq(showcaseSections.showcaseId, id));
+  const statements: AtomicBatchStatement[] = [];
+  if (Object.keys(row).length > 0)
+    statements.push(
+      database
         .update(showcases)
         .set({ ...row, updatedAt: new Date().toISOString() })
-        .where(eq(showcases.id, id));
-    }
-    if (input.sections !== undefined) await replaceSections(transaction, id, input.sections);
-    if (input.relatedShowcaseIds !== undefined) {
-      await replaceRelatedShowcases(transaction, id, input.relatedShowcaseIds);
-    }
-    if (input.coverImagePresentation) await upsert(transaction, { ownerType: 'SHOWCASE', ownerId: id, slot: 'PRIMARY' }, input.coverImagePresentation);
-  });
+        .where(eq(showcases.id, id)),
+    );
+  if (input.sections !== undefined)
+    statements.push(
+      ...replaceSectionStatements(
+        database,
+        id,
+        input.sections,
+        previousSections.map(({ id: ownerId }) => ownerId),
+      ),
+    );
+  if (input.relatedShowcaseIds !== undefined)
+    statements.push(...replaceRelatedShowcaseStatements(database, id, input.relatedShowcaseIds));
+  if (input.coverImagePresentation)
+    statements.push(
+      upsertStatement(
+        database,
+        { ownerType: 'SHOWCASE', ownerId: id, slot: 'PRIMARY' },
+        input.coverImagePresentation,
+      ),
+    );
+  if (statements.length)
+    await atomicBatch(database, statements as [AtomicBatchStatement, ...AtomicBatchStatement[]]);
   return findShowcaseById(database, id);
 }
 
-async function replaceSections(
-  database: WriteDatabase,
+function replaceSectionStatements(
+  database: DatabaseClient,
   showcaseId: string,
   sections: CreateShowcaseInput['sections'],
-) {
-  // Sections are replaced wholesale, so their framing is re-keyed to the new row ids.
-  const previous = await database.select({ id: showcaseSections.id }).from(showcaseSections).where(eq(showcaseSections.showcaseId, showcaseId));
-  await removeForOwners(database, previous.map((section) => ({ ownerType: 'SHOWCASE_SECTION' as const, ownerId: section.id })));
-  await database.delete(showcaseSections).where(eq(showcaseSections.showcaseId, showcaseId));
+  previousOwnerIds: string[],
+): AtomicBatchStatement[] {
+  const statements: AtomicBatchStatement[] = [];
+  if (previousOwnerIds.length)
+    statements.push(
+      database
+        .delete(imagePresentations)
+        .where(
+          and(
+            eq(imagePresentations.ownerType, 'SHOWCASE_SECTION'),
+            inArray(imagePresentations.ownerId, previousOwnerIds),
+          ),
+        ),
+    );
+  statements.push(
+    database.delete(showcaseSections).where(eq(showcaseSections.showcaseId, showcaseId)),
+  );
   if (sections.length > 0) {
     const now = new Date().toISOString();
     const rows = sections.map(({ imagePresentation, ...section }) => ({
       imagePresentation,
       row: { id: crypto.randomUUID(), showcaseId, ...section, createdAt: now, updatedAt: now },
     }));
-    await database.insert(showcaseSections).values(rows.map(({ row }) => row));
+    statements.push(database.insert(showcaseSections).values(rows.map(({ row }) => row)));
     for (const { imagePresentation, row } of rows) {
-      if (imagePresentation && row.imageKey) await upsert(database, { ownerType: 'SHOWCASE_SECTION', ownerId: row.id, slot: 'PRIMARY' }, imagePresentation);
+      if (imagePresentation && row.imageKey)
+        statements.push(
+          upsertStatement(
+            database,
+            { ownerType: 'SHOWCASE_SECTION', ownerId: row.id, slot: 'PRIMARY' },
+            imagePresentation,
+          ),
+        );
     }
   }
+  return statements;
 }
 
-async function replaceRelatedShowcases(
-  database: WriteDatabase,
+function replaceRelatedShowcaseStatements(
+  database: DatabaseClient,
   showcaseId: string,
   relatedShowcaseIds: string[],
-) {
-  await database.delete(showcaseRelated).where(eq(showcaseRelated.showcaseId, showcaseId));
+): AtomicBatchStatement[] {
+  const statements: AtomicBatchStatement[] = [
+    database.delete(showcaseRelated).where(eq(showcaseRelated.showcaseId, showcaseId)),
+  ];
   if (relatedShowcaseIds.length > 0) {
     const now = new Date().toISOString();
-    await database.insert(showcaseRelated).values(
-      relatedShowcaseIds.map((relatedShowcaseId, displayOrder) => ({
-        id: crypto.randomUUID(),
-        showcaseId,
-        relatedShowcaseId,
-        displayOrder,
-        createdAt: now,
-        updatedAt: now,
-      })),
+    statements.push(
+      database.insert(showcaseRelated).values(
+        relatedShowcaseIds.map((relatedShowcaseId, displayOrder) => ({
+          id: crypto.randomUUID(),
+          showcaseId,
+          relatedShowcaseId,
+          displayOrder,
+          createdAt: now,
+          updatedAt: now,
+        })),
+      ),
     );
   }
+  return statements;
 }
 
 export async function getSections(database: DatabaseClient, showcaseId: string) {
@@ -169,13 +226,31 @@ export async function showcasesExist(database: DatabaseClient, ids: string[]) {
 }
 
 export async function deleteShowcase(database: DatabaseClient, id: string) {
-  await inTransaction(database, async (transaction) => {
-    await transaction.delete(showcaseRelated).where(
-      or(eq(showcaseRelated.showcaseId, id), eq(showcaseRelated.relatedShowcaseId, id)),
-    );
-    await transaction.delete(showcaseSections).where(eq(showcaseSections.showcaseId, id));
-    await transaction.delete(showcases).where(eq(showcases.id, id));
-  });
+  const sectionIds = await database
+    .select({ id: showcaseSections.id })
+    .from(showcaseSections)
+    .where(eq(showcaseSections.showcaseId, id));
+  await atomicBatch(database, [
+    database.delete(imagePresentations).where(
+      or(
+        and(eq(imagePresentations.ownerType, 'SHOWCASE'), eq(imagePresentations.ownerId, id)),
+        sectionIds.length
+          ? and(
+              eq(imagePresentations.ownerType, 'SHOWCASE_SECTION'),
+              inArray(
+                imagePresentations.ownerId,
+                sectionIds.map((item) => item.id),
+              ),
+            )
+          : undefined,
+      ),
+    ),
+    database
+      .delete(showcaseRelated)
+      .where(or(eq(showcaseRelated.showcaseId, id), eq(showcaseRelated.relatedShowcaseId, id))),
+    database.delete(showcaseSections).where(eq(showcaseSections.showcaseId, id)),
+    database.delete(showcases).where(eq(showcases.id, id)),
+  ]);
 }
 
 function buildFilters(query: AdminShowcaseListQuery): SQL | undefined {
