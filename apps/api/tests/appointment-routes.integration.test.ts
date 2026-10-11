@@ -1,0 +1,436 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Bindings } from '../src/types/env';
+
+type AppointmentRecord = {
+  id: string;
+  reference: string;
+  idempotencyKey: string;
+  requestFingerprint: string | null;
+  status: 'PENDING';
+  serviceId: string | null;
+  doctorId: string | null;
+  branchId: string;
+  serviceNameSnapshot: string;
+  doctorNameSnapshot: string | null;
+  branchNameSnapshot: string;
+  patientName: string;
+  patientPhone: string;
+  patientEmail: string;
+  patientNote: string | null;
+  preferredDate: string;
+  preferredTime: string;
+  locale: 'en' | 'km';
+  statusUpdatedAt: string | null;
+  statusUpdatedByAdminId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+const ids = {
+  service: '550e8400-e29b-41d4-a716-446655440001',
+  doctor: '550e8400-e29b-41d4-a716-446655440002',
+  branch: '550e8400-e29b-41d4-a716-446655440003',
+};
+
+const state = vi.hoisted(() => ({
+  services: new Map<
+    string,
+    { id: string; status: 'DRAFT' | 'PUBLISHED'; nameEn: string; nameKm?: string }
+  >(),
+  doctors: new Map<
+    string,
+    {
+      id: string;
+      status: 'DRAFT' | 'PUBLISHED';
+      nameEn: string;
+      nameKm?: string;
+      category: 'DENTIST' | 'GENERAL_PRACTITIONER' | 'RECEPTIONIST' | 'ASSISTANT';
+      bookable: boolean;
+    }
+  >(),
+  branches: new Map<
+    string,
+    {
+      id: string;
+      status: 'DRAFT' | 'PUBLISHED';
+      acceptsAppointments: boolean;
+      nameEn: string;
+      nameKm?: string;
+      openingDaysEn?: string | null;
+      openingDaysKm?: string | null;
+      openingTime?: string | null;
+      closingTime?: string | null;
+    }
+  >(),
+  doctorBranches: new Map<string, string[]>(),
+  appointments: [] as AppointmentRecord[],
+  rateLimits: new Map<string, { attempts: number; windowStartedAt: string }>(),
+  notificationReferences: [] as string[],
+  notificationPayloads: [] as Array<{
+    reference: string;
+    status?: string;
+    patientName?: string;
+    serviceName?: string;
+  }>,
+  notificationFails: false,
+  createFails: false,
+}));
+
+vi.mock('../src/db/client', () => ({ createDbClient: () => ({}) }));
+vi.mock('../src/repositories/service.repository', () => ({
+  findServiceById: async (_database: unknown, id: string) => state.services.get(id),
+}));
+vi.mock('../src/repositories/doctor.repository', () => ({
+  findDoctorById: async (_database: unknown, id: string) => state.doctors.get(id),
+  getDoctorBranchIds: async (_database: unknown, id: string) => state.doctorBranches.get(id) ?? [],
+}));
+vi.mock('../src/repositories/branch.repository', () => ({
+  findBranchById: async (_database: unknown, id: string) => state.branches.get(id),
+}));
+vi.mock('../src/repositories/appointment.repository', () => ({
+  findAppointmentByIdempotencyKey: async (_database: unknown, key: string) =>
+    state.appointments.find((appointment) => appointment.idempotencyKey === key),
+  createAppointment: async (_database: unknown, input: AppointmentRecord) => {
+    if (state.createFails) throw new Error('D1 insert failed');
+    state.appointments.push(input);
+    return input;
+  },
+  getAppointmentRequestRateLimit: async (_database: unknown, key: string) =>
+    state.rateLimits.get(key),
+  saveAppointmentRequestRateLimit: async (
+    _database: unknown,
+    input: { key: string; now: string; windowCutoff: string; attemptLimit: number },
+  ) => {
+    const current = state.rateLimits.get(input.key);
+    if (
+      current &&
+      current.windowStartedAt > input.windowCutoff &&
+      current.attempts >= input.attemptLimit
+    )
+      return false;
+    state.rateLimits.set(input.key, {
+      attempts: current && current.windowStartedAt > input.windowCutoff ? current.attempts + 1 : 1,
+      windowStartedAt:
+        current && current.windowStartedAt > input.windowCutoff
+          ? current.windowStartedAt
+          : input.now,
+    });
+    return true;
+  },
+}));
+vi.mock('../src/services/appointment-notification.service', () => ({
+  notifyClinicOfAppointment: async ({ reference, ...payload }: { reference: string }) => {
+    state.notificationReferences.push(reference);
+    state.notificationPayloads.push({ reference, ...payload });
+    if (state.notificationFails) throw new Error('Notification provider failed');
+  },
+}));
+
+const { app } = await import('../src/app');
+const { createAppointmentRequestRateLimitKey } =
+  await import('../src/services/appointment-abuse.service');
+const bindings = {
+  APP_ENV: 'development',
+  CORS_ALLOWED_ORIGINS: 'http://localhost:5173',
+  MEDIA_PUBLIC_BASE_URL: '',
+  DB: {} as D1Database,
+  ASSETS: {} as R2Bucket,
+} satisfies Bindings;
+
+function payload(overrides: Record<string, unknown> = {}) {
+  return {
+    patientName: 'Sok Dara',
+    phone: '+855 12 345 678',
+    email: 'patient@example.com',
+    serviceId: ids.service,
+    doctorId: ids.doctor,
+    branchId: ids.branch,
+    preferredDate: '2099-01-01',
+    preferredTime: '10:30',
+    notes: 'Please call before the appointment.',
+    idempotencyKey: '550e8400-e29b-41d4-a716-446655440010',
+    locale: 'en',
+    ...overrides,
+  };
+}
+
+async function submit(overrides: Record<string, unknown> = {}) {
+  return app.request(
+    'http://localhost/api/public/appointments',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload(overrides)),
+    },
+    bindings,
+  );
+}
+
+beforeEach(() => {
+  state.services.clear();
+  state.doctors.clear();
+  state.branches.clear();
+  state.doctorBranches.clear();
+  state.appointments = [];
+  state.rateLimits.clear();
+  state.notificationReferences = [];
+  state.notificationPayloads = [];
+  state.notificationFails = false;
+  state.createFails = false;
+  state.services.set(ids.service, {
+    id: ids.service,
+    status: 'PUBLISHED',
+    nameEn: 'Dental Implants',
+    nameKm: 'ដាំធ្មេញ',
+  });
+  state.doctors.set(ids.doctor, {
+    id: ids.doctor,
+    status: 'PUBLISHED',
+    nameEn: 'Dr. Dara',
+    nameKm: 'វេជ្ជបណ្ឌិត ដារ៉ា',
+    category: 'DENTIST',
+    bookable: true,
+  });
+  state.branches.set(ids.branch, {
+    id: ids.branch,
+    status: 'PUBLISHED',
+    acceptsAppointments: true,
+    nameEn: 'Main Branch',
+    nameKm: 'សាខាចម្បង',
+  });
+});
+
+describe('public appointment request API', () => {
+  it('creates a PENDING request with immutable CMS snapshots and a patient-safe reference', async () => {
+    const response = await submit();
+    const body = await response.json<{ data: { reference: string; status: string } }>();
+
+    expect(response.status).toBe(201);
+    expect(body.data).toEqual({
+      reference: expect.stringMatching(/^AR-\d{8}-[A-F0-9]{6}$/),
+      status: 'PENDING',
+    });
+    expect(state.appointments).toHaveLength(1);
+    expect(state.appointments[0]).toMatchObject({
+      status: 'PENDING',
+      serviceNameSnapshot: 'Dental Implants',
+      doctorNameSnapshot: 'Dr. Dara',
+      branchNameSnapshot: 'Main Branch',
+      patientPhone: '+855 12 345 678',
+    });
+    expect(state.notificationReferences).toEqual([body.data.reference]);
+    expect(state.notificationPayloads[0]).toMatchObject({
+      reference: body.data.reference,
+      patientName: 'Sok Dara',
+    });
+  });
+
+  it('accepts No Preference when doctorId is omitted or null', async () => {
+    const omitted = await submit({
+      doctorId: undefined,
+      idempotencyKey: '550e8400-e29b-41d4-a716-446655440011',
+    });
+    const nullDoctor = await submit({
+      doctorId: null,
+      idempotencyKey: '550e8400-e29b-41d4-a716-446655440012',
+    });
+
+    expect(omitted.status).toBe(201);
+    expect(nullDoctor.status).toBe(201);
+    expect(state.appointments.map((appointment) => appointment.doctorId)).toEqual([null, null]);
+    expect(state.appointments.map((appointment) => appointment.doctorNameSnapshot)).toEqual([
+      null,
+      null,
+    ]);
+  });
+
+  it('accepts an omitted or null service when the patient is not sure what to choose', async () => {
+    const omitted = await submit({
+      serviceId: undefined,
+      idempotencyKey: '550e8400-e29b-41d4-a716-446655440021',
+    });
+    const nullService = await submit({
+      serviceId: null,
+      idempotencyKey: '550e8400-e29b-41d4-a716-446655440022',
+    });
+
+    expect(omitted.status).toBe(201);
+    expect(nullService.status).toBe(201);
+    expect(state.appointments.map((appointment) => appointment.serviceId)).toEqual([null, null]);
+    expect(state.appointments.map((appointment) => appointment.serviceNameSnapshot)).toEqual([
+      'Not sure / No preference',
+      'Not sure / No preference',
+    ]);
+    expect(state.notificationPayloads.map((payload) => payload.serviceName)).toEqual([
+      'Not sure / No preference',
+      'Not sure / No preference',
+    ]);
+  });
+
+  it('enforces public request validation and bookable CMS entities', async () => {
+    expect((await submit({ patientName: '' })).status).toBe(400);
+    expect((await submit({ email: 'not-an-email' })).status).toBe(400);
+    expect((await submit({ phone: '123' })).status).toBe(400);
+    expect((await submit({ preferredDate: '2000-01-01' })).status).toBe(400);
+    expect((await submit({ preferredDate: '2099-02-31' })).status).toBe(400);
+    expect((await submit({ preferredTime: '29:95' })).status).toBe(400);
+    expect((await submit({ notes: 'x'.repeat(2_001) })).status).toBe(400);
+    expect((await submit({ serviceId: '550e8400-e29b-41d4-a716-446655440099' })).status).toBe(404);
+    state.services.set(ids.service, { id: ids.service, status: 'DRAFT', nameEn: 'Draft' });
+    expect((await submit()).status).toBe(404);
+    state.services.set(ids.service, {
+      id: ids.service,
+      status: 'PUBLISHED',
+      nameEn: 'Dental Implants',
+    });
+    state.doctors.set(ids.doctor, {
+      id: ids.doctor,
+      status: 'DRAFT',
+      nameEn: 'Draft Doctor',
+      category: 'DENTIST',
+      bookable: true,
+    });
+    expect((await submit()).status).toBe(404);
+    state.doctors.set(ids.doctor, {
+      id: ids.doctor,
+      status: 'PUBLISHED',
+      nameEn: 'Dr. Dara',
+      category: 'DENTIST',
+      bookable: true,
+    });
+    state.branches.set(ids.branch, {
+      id: ids.branch,
+      status: 'PUBLISHED',
+      acceptsAppointments: false,
+      nameEn: 'Main Branch',
+    });
+    expect((await submit()).status).toBe(404);
+  });
+
+  it('rejects a receptionist doctor id with the shared availability error code', async () => {
+    state.doctors.set(ids.doctor, {
+      id: ids.doctor,
+      status: 'PUBLISHED',
+      nameEn: 'Sokha Reception',
+      category: 'RECEPTIONIST',
+      bookable: false,
+    });
+
+    const response = await submit();
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toMatchObject({
+      success: false,
+      error: {
+        code: 'DOCTOR_NOT_AVAILABLE',
+        message: 'The selected doctor is not available.',
+      },
+    });
+    expect(state.appointments).toHaveLength(0);
+    expect(state.notificationReferences).toHaveLength(0);
+  });
+
+  it('is idempotent and generates distinct references for distinct requests', async () => {
+    const first = await submit();
+    const retry = await submit();
+    const second = await submit({ idempotencyKey: '550e8400-e29b-41d4-a716-446655440013' });
+    const firstBody = await first.json<{ data: { reference: string } }>();
+    const retryBody = await retry.json<{ data: { reference: string } }>();
+    const secondBody = await second.json<{ data: { reference: string } }>();
+
+    expect(first.status).toBe(201);
+    expect(retry.status).toBe(200);
+    expect(state.appointments).toHaveLength(2);
+    expect(retryBody.data.reference).toBe(firstBody.data.reference);
+    expect(secondBody.data.reference).not.toBe(firstBody.data.reference);
+  });
+
+  it('binds an idempotency key to the normalized appointment payload', async () => {
+    expect((await submit()).status).toBe(201);
+    const conflict = await submit({ preferredTime: '11:00' });
+    expect(conflict.status).toBe(409);
+    await expect(conflict.json()).resolves.toMatchObject({
+      success: false,
+      error: { code: 'CONFLICT' },
+    });
+    expect(state.appointments).toHaveLength(1);
+  });
+
+  it('persists Khmer locale and localized immutable snapshots', async () => {
+    const response = await submit({ locale: 'km' });
+    expect(response.status).toBe(201);
+    expect(state.appointments[0]).toMatchObject({
+      locale: 'km',
+      serviceNameSnapshot: 'ដាំធ្មេញ',
+      doctorNameSnapshot: 'វេជ្ជបណ្ឌិត ដារ៉ា',
+      branchNameSnapshot: 'សាខាចម្បង',
+    });
+  });
+
+  it('rejects a doctor assigned to a different branch', async () => {
+    state.doctorBranches.set(ids.doctor, ['550e8400-e29b-41d4-a716-446655440099']);
+    const response = await submit();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'DOCTOR_NOT_AVAILABLE' },
+    });
+  });
+
+  it('rejects closed days, outside hours, past times today, and malformed schedules', async () => {
+    const branch = state.branches.get(ids.branch)!;
+    const appointmentDate = '2099-01-01';
+    const weekday = new Date(`${appointmentDate}T12:00:00.000Z`).getUTCDay();
+    const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    branch.openingDaysEn = labels[(weekday + 1) % 7];
+    branch.openingTime = '08:00';
+    branch.closingTime = '17:00';
+    expect((await submit()).status).toBe(400);
+
+    branch.openingDaysEn = 'Mon - Sun';
+    expect((await submit({ preferredTime: '17:30' })).status).toBe(400);
+
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Phnom_Penh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date());
+    const part = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find((item) => item.type === type)?.value;
+    expect(
+      (
+        await submit({
+          preferredDate: `${part('year')}-${part('month')}-${part('day')}`,
+          preferredTime: '00:00',
+        })
+      ).status,
+    ).toBe(400);
+
+    branch.openingDaysEn = 'Mon - Sun | Sun';
+    branch.openingTime = '08:00';
+    branch.closingTime = '17:00 | 16:00';
+    expect((await submit()).status).toBe(409);
+  });
+
+  it('applies the request rate limit and never rolls back a persisted request when notification fails', async () => {
+    const rateLimitKey = await createAppointmentRequestRateLimitKey(new Headers());
+    state.rateLimits.set(rateLimitKey, { attempts: 10, windowStartedAt: new Date().toISOString() });
+    expect((await submit()).status).toBe(429);
+
+    state.rateLimits.clear();
+    state.notificationFails = true;
+    const response = await submit();
+    expect(response.status).toBe(201);
+    expect(state.appointments).toHaveLength(1);
+    expect(state.appointments[0]?.status).toBe('PENDING');
+  });
+
+  it('does not notify the clinic or return success when persistence fails', async () => {
+    state.createFails = true;
+    const response = await submit();
+    expect(response.status).toBe(500);
+    expect(state.appointments).toHaveLength(0);
+    expect(state.notificationReferences).toEqual([]);
+    expect(state.notificationPayloads).toEqual([]);
+  });
+});

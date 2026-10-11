@@ -1,0 +1,81 @@
+import {
+  adminShowcaseListQuerySchema,
+  createShowcaseSchema,
+  publicShowcaseQuerySchema,
+  successResponse,
+  updateShowcaseSchema,
+  slugPathParamSchema,
+  uuidPathParamSchema,
+} from '@arunreah/shared';
+import type { Context } from 'hono';
+import { createDbClient } from '../../db/client';
+import { parseRequestBody, parseRequestParams, parseRequestQuery } from '../../shared/request';
+import * as showcase from '../../services/showcase.service';
+import type { AppEnv } from '../../types/env';
+import { applyPublicCmsCache } from '../../shared/public-cache';
+
+export async function listPublicShowcasesController(context: Context<AppEnv>) {
+  const query = parseRequestQuery(context, publicShowcaseQuerySchema);
+  const showcases = await showcase.getPublicShowcaseList(
+    createDbClient(context.env.DB),
+    query.lang,
+    query.homepage,
+  );
+  applyPublicCmsCache(context);
+  return context.json(successResponse({ showcases }));
+}
+
+export async function getPublicShowcaseController(context: Context<AppEnv>) {
+  const query = parseRequestQuery(context, publicShowcaseQuerySchema);
+  const { slug } = parseRequestParams(context, slugPathParamSchema);
+  const showcaseDetail = await showcase.getPublicShowcase(
+    createDbClient(context.env.DB),
+    slug,
+    query.lang,
+  );
+  applyPublicCmsCache(context);
+  return context.json(successResponse({ showcase: showcaseDetail }));
+}
+
+export async function listAdminShowcasesController(context: Context<AppEnv>) {
+  const query = parseRequestQuery(context, adminShowcaseListQuerySchema);
+  const result = await showcase.getAdminShowcaseList(createDbClient(context.env.DB), query);
+  context.header('Cache-Control', 'private, no-store');
+  return context.json(successResponse(result));
+}
+
+export async function createAdminShowcaseController(context: Context<AppEnv>) {
+  const input = await parseRequestBody(context, createShowcaseSchema);
+  const showcaseDetail = await showcase.createManagedShowcase(
+    createDbClient(context.env.DB),
+    input,
+  );
+  context.header('Cache-Control', 'private, no-store');
+  return context.json(successResponse({ showcase: showcaseDetail }), 201);
+}
+
+export async function getAdminShowcaseController(context: Context<AppEnv>) {
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
+  const showcaseDetail = await showcase.getAdminShowcase(createDbClient(context.env.DB), id);
+  context.header('Cache-Control', 'private, no-store');
+  return context.json(successResponse({ showcase: showcaseDetail }));
+}
+
+export async function updateAdminShowcaseController(context: Context<AppEnv>) {
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
+  const input = await parseRequestBody(context, updateShowcaseSchema);
+  const showcaseDetail = await showcase.updateManagedShowcase(
+    createDbClient(context.env.DB),
+    id,
+    input,
+  );
+  context.header('Cache-Control', 'private, no-store');
+  return context.json(successResponse({ showcase: showcaseDetail }));
+}
+
+export async function deleteAdminShowcaseController(context: Context<AppEnv>) {
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
+  await showcase.deleteManagedShowcase(createDbClient(context.env.DB), id);
+  context.header('Cache-Control', 'private, no-store');
+  return context.json(successResponse({ deleted: true }));
+}

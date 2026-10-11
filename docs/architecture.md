@@ -12,10 +12,13 @@
 The frontend does not access D1 or R2 directly. D1 stores structured data and
 R2 stores file/image objects; D1 stores only R2 keys and metadata.
 
-## API baseline
+## API surface
 
-The only current endpoint is `GET /health`. Future routes belong under a
-versioned API prefix such as `/api/v1`. The shared API response baseline is:
+The Worker exposes `GET /api/health`, cookie-authenticated routes under
+`/api/auth` and `/api/admin`, and public website routes under `/api/public`.
+Route modules are mounted centrally in `apps/api/src/app.ts`; new business
+routes must preserve those public/private boundaries and use the shared API
+response shape:
 
 ```ts
 { success: true, data: T }

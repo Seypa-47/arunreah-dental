@@ -1,0 +1,39 @@
+import { describe, expect, it } from 'vitest';
+import { getAdminNavigation } from './admin-navigation';
+
+const labelsFor = (role: Parameters<typeof getAdminNavigation>[0]) =>
+  getAdminNavigation(role).map((item) => item.label);
+
+describe('role-based admin navigation', () => {
+  it('limits receptionists to appointment operations', () => {
+    const labels = labelsFor('RECEPTIONIST');
+    expect(labels).toContain('Appointments');
+    expect(labels).toContain('Inbox');
+    expect(labels).toContain('Calendar');
+    expect(labels).not.toContain('Services');
+    expect(labels).not.toContain('Clinic Info');
+    expect(labels).not.toContain('Admin Management');
+  });
+
+  it('limits CMS admins to content operations', () => {
+    const labels = labelsFor('CMS_ADMIN');
+    expect(labels).toContain('Services');
+    expect(labels).toContain('Team');
+    expect(labels).toContain('Team Management');
+    expect(labels).toContain('Add Team Member');
+    expect(labels).toContain('Showcase');
+    expect(labels).toContain('Page Media');
+    expect(labels).not.toContain('Appointments');
+    expect(labels).not.toContain('Inbox');
+    expect(labels).not.toContain('Calendar');
+    expect(labels).not.toContain('Admin Management');
+  });
+
+  it('gives super admins both navigation groups including calendar navigation', () => {
+    const labels = labelsFor('SUPER_ADMIN');
+    expect(labels).toContain('Appointments');
+    expect(labels).toContain('Calendar');
+    expect(labels).toContain('Services');
+    expect(labels).toContain('Admin Management');
+  });
+});

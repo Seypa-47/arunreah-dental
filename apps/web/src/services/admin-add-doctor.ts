@@ -1,0 +1,183 @@
+import type { AdminNavIcon } from '@/services/admin-inbox';
+import type { AdminDoctor, DoctorStatus } from '@/services/admin-doctors';
+import { cmsApi } from '@/services/cms';
+import { toMediaKey } from '@/services/media';
+import { parsePhone, parseProcedures, parseSatisfaction, parseYearsExp } from '@/features/admin-doctors-page/doctor-payload';
+
+export type NewDoctorFormState = {
+  contactEmail: string;
+  contactPhone: string;
+  content: string;
+  expertise: string[];
+  name: string;
+  nameKm: string;
+  photoUrl: string;
+  procedures: string;
+  roleTitle: string;
+  satisfaction: string;
+  shortIntro: string;
+  showOnWebsite: boolean;
+  specialty: string;
+  status: DoctorStatus;
+  yearsExp: string;
+  branchIds?: string[];
+};
+
+export type AdminAddDoctorContent = {
+  brand: {
+    logoAlt: string;
+    logoUrl: string;
+  };
+  defaultExpertise: string[];
+  footer: {
+    copyright: string;
+    encryptionLabel: string;
+    sslLabel: string;
+  };
+  header: {
+    dateLabel: string;
+    subtitle: string;
+    title: string;
+  };
+  navigation: {
+    icon: AdminNavIcon;
+    label: string;
+    section?: 'appointments' | 'services' | 'doctors';
+  }[];
+  tips: string[];
+};
+
+const adminAddDoctorContent: AdminAddDoctorContent = {
+  brand: {
+    logoAlt: 'Arunreah Dental Clinic',
+    logoUrl: '/assets/landing/footer-logo-cropped.png',
+  },
+  defaultExpertise: [
+    'Digital Dental Implants',
+    'Full Mouth Rehabilitation',
+    'Bone Grafting Procedures',
+    'Cosmetic Smile Makeovers',
+    'Advanced Oral Surgery',
+  ],
+  footer: {
+    copyright: '© 2026 Arunreah Dental Clinic. All rights reserved.',
+    encryptionLabel: '256-bit Encryption',
+    sslLabel: 'SSL Secured',
+  },
+  header: {
+    dateLabel: 'October 24, 2024',
+    subtitle: 'Fill in the details below to add a new doctor to the clinic.',
+    title: 'Add Team Member',
+  },
+  navigation: [
+    { icon: 'dashboard', label: 'Dashboard' },
+    { icon: 'appointments', label: 'Appointments', section: 'appointments' },
+    { icon: 'inbox', label: 'Inbox', section: 'appointments' },
+    { icon: 'calendar', label: 'Calendar', section: 'appointments' },
+    { icon: 'appointments', label: 'All Appointments', section: 'appointments' },
+    { icon: 'services', label: 'Services' },
+    { icon: 'doctors', label: 'Team' },
+    { icon: 'doctors', label: 'Team Management', section: 'doctors' },
+    { icon: 'doctors', label: 'Add Team Member', section: 'doctors' },
+    { icon: 'showcase', label: 'Showcase' },
+    { icon: 'clinicInfo', label: 'Clinic Info' },
+  ],
+  tips: [
+    'Use a clear, professional photo',
+    'Recommended size: 800×1000px',
+    'Photo will be displayed on the website',
+  ],
+};
+
+export async function fetchAdminAddDoctorContent(): Promise<AdminAddDoctorContent> {
+  return adminAddDoctorContent;
+}
+
+export async function saveNewDoctor(formData: NewDoctorFormState): Promise<AdminDoctor> {
+  const id =
+    formData.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') || `doctor-${Date.now()}`;
+
+  const response = await cmsApi.doctors.create({
+    slug: id,
+    status:
+      formData.status === 'published' && formData.showOnWebsite ? 'PUBLISHED' : 'DRAFT',
+    featured: false,
+    displayOrder: 0,
+    nameEn: formData.name.trim(),
+    nameKm: formData.nameKm?.trim() || formData.name.trim(),
+    titleEn: formData.roleTitle?.trim() || null,
+    titleKm: null,
+    specialtyEn: formData.specialty?.trim() || null,
+    specialtyKm: null,
+    shortBioEn: formData.shortIntro?.trim() || null,
+    shortBioKm: null,
+    aboutEn: formData.content?.trim() || null,
+    aboutKm: null,
+    photoKey: toMediaKey(formData.photoUrl),
+    yearsExperience: parseYearsExp(formData.yearsExp),
+    successfulProcedures: parseProcedures(formData.procedures),
+    patientSatisfaction: parseSatisfaction(formData.satisfaction),
+    phone: parsePhone(formData.contactPhone),
+    expertise: (formData.expertise ?? [])
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((item, displayOrder) => ({
+        titleEn: item,
+        titleKm: item,
+        displayOrder,
+      })),
+    education: [],
+    relatedDoctorIds: [],
+    branchIds: formData.branchIds ?? [],
+  });
+  const doctor = response.doctor;
+  const createdDoctor: AdminDoctor = {
+    contactPhone: formData.contactPhone || '',
+    content: formData.content,
+    ctaButtonText: 'Book Now',
+    education: ['Doctor of Dental Surgery (DDS)'],
+    expertise: formData.expertise,
+    branchIds: formData.branchIds ?? [],
+    featuredDoctor: false,
+    id: doctor.id,
+    imageAlt: formData.name,
+    imageUrl: formData.photoUrl || '/assets/landing/doctor-sreng-heng.jpg',
+    initials: formData.name
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase(),
+    name: formData.name,
+    procedures: formData.procedures.endsWith('Procedures') || formData.procedures.endsWith('+')
+      ? formData.procedures
+      : `${formData.procedures}+`,
+    roleTitle: formData.roleTitle || 'Specialist',
+    satisfaction: formData.satisfaction.endsWith('%')
+      ? formData.satisfaction
+      : `${formData.satisfaction}%`,
+    seo: {
+      metaDescription: formData.shortIntro,
+      metaTitle: `${formData.name} | ${formData.specialty} | Arunreah Dental Clinic`,
+      slug: id,
+    },
+    shortIntro: formData.shortIntro,
+    showOnWebsite: formData.showOnWebsite,
+    specialty: formData.specialty,
+    status: doctor.status === 'PUBLISHED' ? 'published' : 'draft',
+    updatedAt: new Date().toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }),
+    yearsExp: formData.yearsExp.endsWith('Years') || formData.yearsExp.endsWith('+')
+      ? formData.yearsExp
+      : `${formData.yearsExp}+`,
+  };
+
+  return createdDoctor;
+}

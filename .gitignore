@@ -22,3 +22,5 @@ apps/*/.env.*.local
 .vite/
 playwright-report/
 test-results/
+.claude/
+.playwright-cli/

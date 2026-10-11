@@ -9,7 +9,11 @@ cp apps/api/.dev.vars.example apps/api/.dev.vars
 pnpm dev
 ```
 
-Visit `http://localhost:5173` and `http://localhost:8787/health`.
+Visit `http://localhost:5173` and `http://localhost:8787/api/health`.
+
+See [the frontend API foundation](frontend-api-foundation.md) for the public
+frontend environment value, health-client usage, and safe local/staging
+SUPER_ADMIN bootstrap instructions.
 
 ## Workspace commands
 

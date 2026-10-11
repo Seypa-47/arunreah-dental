@@ -1,0 +1,63 @@
+import type { AdminRole } from '@arunreah/shared';
+import { getAdminNavigation } from './admin-navigation';
+import { canAccessAdminPath } from '@/routes/admin-route-access';
+
+const routes: Record<string, string> = {
+  Dashboard: '/admin/dashboard', Inbox: '/admin/appointments/inbox',
+  Calendar: '/admin/appointments/calendar',
+  'All Appointments': '/admin/appointments', Services: '/admin/services',
+  'Team Management': '/admin/team', 'Add Team Member': '/admin/team/new', Showcase: '/admin/showcase',
+  'Clinic Settings': '/admin/clinic-info', 'Branches / Locations': '/admin/clinic-info/branches',
+  'Hero Sections': '/admin/page-heroes',
+  'Page Media': '/admin/page-media', 'About Timeline': '/admin/about-timeline',
+  'Admin Management': '/admin/admins',
+};
+
+export function getAdminNavigationGroups(role: AdminRole) {
+  const definitions = [
+    { label: 'Overview', labels: ['Dashboard'] },
+    { label: 'Appointments', labels: ['Inbox', 'Calendar', 'All Appointments'] },
+    { label: 'Team', labels: ['Team Management', 'Add Team Member'] },
+    { label: 'Website content', labels: ['Services', 'Showcase', 'Hero Sections', 'Page Media', 'About Timeline'] },
+    { label: 'Clinic settings', labels: ['Clinic Settings', 'Branches / Locations'] },
+    { label: 'Administration', labels: ['Admin Management'] },
+  ];
+  const allowed = getAdminNavigation(role);
+  return definitions.map((group) => ({ label: group.label, items: group.labels.flatMap((label) => {
+    const item = allowed.find((entry) => entry.label === label);
+    const to = routes[label];
+    return item && to && canAccessAdminPath(role, to) ? [{ ...item, to, label: label === 'Admin Management' ? 'Staff accounts' : label }] : [];
+  }) })).filter((group) => group.items.length > 0);
+}
+
+type PageInfo = { title: string; description: string; parent?: { title: string; to: string } };
+const pages: Record<string, PageInfo> = {
+  '/admin/dashboard': { title: 'Dashboard', description: 'Review recent activity and choose the work that needs your attention.' },
+  '/admin/appointments': { title: 'All appointments', description: 'Find appointment requests and review their current status.' },
+  '/admin/appointments/calendar': { title: 'Appointment calendar', description: 'Schedule and track patient visits by date.' },
+  '/admin/appointments/inbox': { title: 'Appointment inbox', description: 'Review patient requests and choose the next appropriate action.' },
+  '/admin/services': { title: 'Services', description: 'Manage service content, images, and publication status.' },
+  '/admin/team': { title: 'Team Management', description: 'Manage every team category, profile, publication status, and display order.' },
+  '/admin/showcase': { title: 'Showcases', description: 'Manage articles, supporting images, and publication status.' },
+  '/admin/clinic-info': { title: 'Clinic information', description: 'Update clinic identity, bilingual story, and clinic-wide contact channels.' },
+  '/admin/clinic-info/branches': { title: 'Branches and locations', description: 'Manage branch locations, reception phone numbers, opening hours, and Google Maps directions.' },
+  '/admin/clinic-info/contact': { title: 'Clinic information', description: 'Update clinic information and contact details.', parent: { title: 'Clinic information', to: '/admin/clinic-info' } },
+  '/admin/page-heroes': { title: 'Hero sections', description: 'Manage the bilingual titles, subtitles, eyebrow badges, and hero images for all public website pages.' },
+  '/admin/page-media': { title: 'Page media', description: 'Manage images and bilingual captions for existing website sections.' },
+  '/admin/about-timeline': { title: 'About timeline', description: 'Manage the bilingual milestones that tell the clinic story.' },
+  '/admin/admins': { title: 'Staff accounts', description: 'Manage staff accounts, assigned roles, and account access.' },
+};
+export function getAdminPageInfo(pathname: string): PageInfo {
+  for (const [segment, name] of [['services', 'service'], ['team', 'team member'], ['showcase', 'showcase']] as const) {
+    const parent = { title: pages[`/admin/${segment}`]!.title, to: `/admin/${segment}` };
+    const contentName = name;
+    if (pathname === `/admin/${segment}/new`) return { title: `Add ${contentName}`, description: `Complete the ${contentName} details, review your changes, then save.`, parent };
+    if (new RegExp(`^/admin/${segment}/[^/]+/edit$`).test(pathname)) return { title: `Edit ${contentName}`, description: `Review ${contentName} content and publication settings before saving.`, parent };
+  }
+  return pages[pathname] ?? { title: 'Admin CMS', description: 'Manage clinic content and operations.' };
+}
+
+export function isAdminNavigationActive(pathname: string, to: string) {
+  if (to === '/admin/team' && pathname === '/admin/team/new') return false;
+  return pathname === to || (['/admin/services', '/admin/team', '/admin/showcase'].includes(to) && pathname.startsWith(`${to}/`));
+}

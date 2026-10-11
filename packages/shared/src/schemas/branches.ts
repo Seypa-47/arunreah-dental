@@ -1,0 +1,304 @@
+import { z } from 'zod';
+import { optionalMediaKeySchema } from './media';
+import { imagePresentationSchema } from './image-presentation';
+import { parseBranchScheduleRows } from './branch-schedule';
+
+export const branchStatusValues = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
+export const publicBranchLanguageValues = ['en', 'km'] as const;
+
+const phonePattern = /^[0-9+()\-\s]+$/;
+const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d(?:\s*\|\s*(?:[01]\d|2[0-3]):[0-5]\d)*$/;
+const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function optionalText(maxLength: number) {
+  return z.string().trim().max(maxLength).nullable().optional();
+}
+
+function optionalPhone() {
+  return z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((value) => {
+      if (value === undefined) return undefined;
+      if (value === null) return null;
+      const trimmed = value.trim();
+      return trimmed === '' ? null : trimmed;
+    })
+    .pipe(z.string().min(6).max(32).regex(phonePattern).nullable().optional());
+}
+
+function optionalUrl() {
+  return z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((value) => {
+      if (value === undefined) return undefined;
+      if (value === null) return null;
+      const trimmed = value.trim();
+      if (trimmed === '') return null;
+      const iframeMatch = trimmed.match(/src=["'](https?:\/\/[^"']+)["']/i);
+      if (iframeMatch && iframeMatch[1]) {
+        return iframeMatch[1];
+      }
+      if (/^https?:\/\//i.test(trimmed)) {
+        return trimmed;
+      }
+      if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/.test(trimmed)) {
+        return `https://${trimmed}`;
+      }
+      return trimmed;
+    })
+    .pipe(
+      z
+        .string()
+        .url()
+        .max(2_048)
+        .refine((val) => /^https?:\/\//i.test(val), 'URL must use http or https.')
+        .nullable()
+        .optional(),
+    );
+}
+
+const branchFields = {
+  slug: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1)
+    .max(160)
+    .regex(slugPattern, 'Slug must use lowercase letters, numbers, and hyphens.'),
+  status: z.enum(branchStatusValues).default('DRAFT'),
+  displayOrder: z.number().int().min(0).max(1_000_000).default(0),
+  nameEn: z.string().trim().min(1).max(160),
+  nameKm: z.string().trim().min(1).max(160),
+  badgeEn: optionalText(100),
+  badgeKm: optionalText(100),
+  addressEn: z.string().trim().min(1).max(1_000),
+  addressKm: z.string().trim().min(1).max(1_000),
+  cityProvince: optionalText(160),
+  shortLocationLabelEn: optionalText(160),
+  shortLocationLabelKm: optionalText(160),
+  openingHoursEn: optionalText(1_000),
+  openingHoursKm: optionalText(1_000),
+  openingDaysEn: optionalText(300),
+  openingDaysKm: optionalText(300),
+  openingTime: z
+    .string()
+    .regex(timePattern, 'Opening time must use HH:mm format.')
+    .nullable()
+    .optional(),
+  closingTime: z
+    .string()
+    .regex(timePattern, 'Closing time must use HH:mm format.')
+    .nullable()
+    .optional(),
+  phone: z.string().trim().min(6).max(32).regex(phonePattern),
+  secondaryPhone: optionalPhone(),
+  googleMapsUrl: optionalUrl(),
+  heroImageKey: optionalMediaKeySchema,
+  branchImageKey: optionalMediaKeySchema,
+  heroImagePresentation: imagePresentationSchema.optional(),
+  branchImagePresentation: imagePresentationSchema.optional(),
+  heroHeadlineEn: optionalText(300),
+  heroHeadlineKm: optionalText(300),
+  heroSupportingTextEn: optionalText(1_000),
+  heroSupportingTextKm: optionalText(1_000),
+  heroCtaLabelEn: optionalText(120),
+  heroCtaLabelKm: optionalText(120),
+  shortSummaryEn: optionalText(2_000),
+  shortSummaryKm: optionalText(2_000),
+  featured: z.boolean().default(false),
+  acceptsAppointments: z.boolean().default(true),
+  showOnBranchesPage: z.boolean().default(true),
+  showOnHomepage: z.boolean().default(true),
+  includeInHomepageHero: z.boolean().default(false),
+} as const;
+
+function validateSchedule(
+  value: {
+    openingDaysEn?: string | null;
+    openingDaysKm?: string | null;
+    openingTime?: string | null;
+    closingTime?: string | null;
+  },
+  context: z.RefinementCtx,
+) {
+  const fields = [value.openingDaysEn, value.openingTime, value.closingTime];
+  if (fields.every((field) => field === undefined || field === null || field === '')) return;
+  if (fields.some((field) => field === undefined || field === null || field === '')) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['openingTime'],
+      message: 'Schedule days, opening time, and closing time must be provided together.',
+    });
+    return;
+  }
+  try {
+    parseBranchScheduleRows({
+      openingDays: value.openingDaysEn,
+      openingDaysKm: value.openingDaysKm,
+      openingTime: value.openingTime,
+      closingTime: value.closingTime,
+    });
+  } catch (error) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['openingTime'],
+      message: error instanceof Error ? error.message : 'Invalid branch schedule.',
+    });
+  }
+}
+
+export const createBranchSchema = z.object(branchFields).strict().superRefine(validateSchedule);
+
+export const updateBranchSchema = z
+  .object({
+    slug: branchFields.slug.optional(),
+    status: z.enum(branchStatusValues).optional(),
+    displayOrder: z.number().int().min(0).max(1_000_000).optional(),
+    nameEn: branchFields.nameEn.optional(),
+    nameKm: branchFields.nameKm.optional(),
+    badgeEn: branchFields.badgeEn,
+    badgeKm: branchFields.badgeKm,
+    addressEn: branchFields.addressEn.optional(),
+    addressKm: branchFields.addressKm.optional(),
+    cityProvince: branchFields.cityProvince,
+    shortLocationLabelEn: branchFields.shortLocationLabelEn,
+    shortLocationLabelKm: branchFields.shortLocationLabelKm,
+    openingHoursEn: branchFields.openingHoursEn,
+    openingHoursKm: branchFields.openingHoursKm,
+    openingDaysEn: branchFields.openingDaysEn,
+    openingDaysKm: branchFields.openingDaysKm,
+    openingTime: branchFields.openingTime,
+    closingTime: branchFields.closingTime,
+    phone: branchFields.phone.optional(),
+    secondaryPhone: branchFields.secondaryPhone,
+    googleMapsUrl: branchFields.googleMapsUrl,
+    heroImageKey: branchFields.heroImageKey,
+    branchImageKey: branchFields.branchImageKey,
+    heroImagePresentation: branchFields.heroImagePresentation,
+    branchImagePresentation: branchFields.branchImagePresentation,
+    heroHeadlineEn: branchFields.heroHeadlineEn,
+    heroHeadlineKm: branchFields.heroHeadlineKm,
+    heroSupportingTextEn: branchFields.heroSupportingTextEn,
+    heroSupportingTextKm: branchFields.heroSupportingTextKm,
+    heroCtaLabelEn: branchFields.heroCtaLabelEn,
+    heroCtaLabelKm: branchFields.heroCtaLabelKm,
+    shortSummaryEn: branchFields.shortSummaryEn,
+    shortSummaryKm: branchFields.shortSummaryKm,
+    featured: z.boolean().optional(),
+    acceptsAppointments: z.boolean().optional(),
+    showOnBranchesPage: z.boolean().optional(),
+    showOnHomepage: z.boolean().optional(),
+    includeInHomepageHero: z.boolean().optional(),
+  })
+  .strict()
+  .superRefine(validateSchedule)
+  .refine((value) => Object.values(value).some((field) => field !== undefined), {
+    message: 'Provide at least one field to update.',
+  });
+
+export const adminBranchListQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  search: z.string().trim().max(160).optional(),
+  status: z.enum(branchStatusValues).optional(),
+  sort: z.enum(['name', 'displayOrder', 'createdAt', 'updatedAt']).default('displayOrder'),
+  order: z.enum(['asc', 'desc']).default('asc'),
+});
+
+export const publicBranchLanguageSchema = z.enum(publicBranchLanguageValues).default('en');
+/**
+ * Public consumers need distinct, explicit visibility rules.  In particular,
+ * homepage placement must not be coupled to the /branches page toggle.
+ */
+export const publicBranchScopeSchema = z
+  .enum(['branches', 'landing', 'appointments'])
+  .default('branches');
+export const publicBranchQuerySchema = z
+  .object({
+    lang: publicBranchLanguageSchema,
+    scope: publicBranchScopeSchema,
+  })
+  .strict();
+
+export const adminBranchReadSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  status: z.enum(branchStatusValues),
+  displayOrder: z.number().int(),
+  nameEn: z.string(),
+  nameKm: z.string(),
+  badgeEn: z.string().nullable(),
+  badgeKm: z.string().nullable(),
+  addressEn: z.string(),
+  addressKm: z.string(),
+  cityProvince: z.string().nullable(),
+  shortLocationLabelEn: z.string().nullable(),
+  shortLocationLabelKm: z.string().nullable(),
+  openingHoursEn: z.string().nullable(),
+  openingHoursKm: z.string().nullable(),
+  openingDaysEn: z.string().nullable(),
+  openingDaysKm: z.string().nullable(),
+  openingTime: z.string().nullable(),
+  closingTime: z.string().nullable(),
+  phone: z.string(),
+  secondaryPhone: z.string().nullable(),
+  googleMapsUrl: z.string().nullable(),
+  heroImageKey: z.string().nullable(),
+  branchImageKey: z.string().nullable(),
+  heroHeadlineEn: z.string().nullable(),
+  heroHeadlineKm: z.string().nullable(),
+  heroSupportingTextEn: z.string().nullable(),
+  heroSupportingTextKm: z.string().nullable(),
+  heroCtaLabelEn: z.string().nullable(),
+  heroCtaLabelKm: z.string().nullable(),
+  shortSummaryEn: z.string().nullable(),
+  shortSummaryKm: z.string().nullable(),
+  featured: z.boolean(),
+  acceptsAppointments: z.boolean(),
+  showOnBranchesPage: z.boolean(),
+  showOnHomepage: z.boolean(),
+  includeInHomepageHero: z.boolean(),
+  heroImagePresentation: imagePresentationSchema.optional(),
+  branchImagePresentation: imagePresentationSchema.optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const publicBranchReadSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  badge: z.string().nullable(),
+  address: z.string(),
+  cityProvince: z.string().nullable(),
+  shortLocationLabel: z.string().nullable(),
+  openingHours: z.string().nullable(),
+  openingDays: z.string().nullable(),
+  openingTime: z.string().nullable(),
+  closingTime: z.string().nullable(),
+  phone: z.string(),
+  secondaryPhone: z.string().nullable(),
+  googleMapsUrl: z.string().nullable(),
+  heroImageKey: z.string().nullable(),
+  branchImageKey: z.string().nullable(),
+  heroImagePresentation: imagePresentationSchema,
+  branchImagePresentation: imagePresentationSchema,
+  heroHeadline: z.string().nullable(),
+  heroSupportingText: z.string().nullable(),
+  heroCtaLabel: z.string().nullable(),
+  shortSummary: z.string().nullable(),
+  featured: z.boolean(),
+  acceptsAppointments: z.boolean(),
+  showOnHomepage: z.boolean(),
+  includeInHomepageHero: z.boolean(),
+});
+
+export type BranchStatus = z.infer<typeof createBranchSchema>['status'];
+export type PublicBranchLanguage = z.infer<typeof publicBranchLanguageSchema>;
+export type CreateBranchInput = z.infer<typeof createBranchSchema>;
+export type UpdateBranchInput = z.infer<typeof updateBranchSchema>;
+export type AdminBranchListQuery = z.infer<typeof adminBranchListQuerySchema>;
+export type AdminBranchRead = z.infer<typeof adminBranchReadSchema>;
+export type PublicBranchRead = z.infer<typeof publicBranchReadSchema>;

@@ -1,0 +1,86 @@
+import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, expect, it, vi } from 'vitest';
+import { SiteLayout, STATIC_NAV_ITEMS } from './site-layout';
+
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({ data: undefined, isError: false, isLoading: false }),
+}));
+vi.mock('@/features/public-content/public-language-provider', () => ({
+  usePublicLanguage: () => ({ language: 'en', setLanguage: vi.fn() }),
+}));
+
+describe('public site layout', () => {
+  it('uses Our Team as the bilingual canonical navigation destination', () => {
+    expect(STATIC_NAV_ITEMS.en).toContainEqual({ href: '/team', label: 'Our Team' });
+    expect(STATIC_NAV_ITEMS.km).toContainEqual({ href: '/team', label: 'ក្រុមការងាររបស់យើង' });
+    expect(STATIC_NAV_ITEMS.en.some((item) => item.href === '/doctors')).toBe(false);
+  });
+
+  const render = () =>
+    renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/about']}>
+        <SiteLayout
+          actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }}
+          navigation={[
+            { href: '/', label: 'Home' },
+            { href: '/about', label: 'About' },
+          ]}
+        >
+          <main>
+            <h1>About the clinic</h1>
+          </main>
+        </SiteLayout>
+      </MemoryRouter>,
+    );
+
+  it('offers a keyboard skip link to a focusable main content target', () => {
+    const html = render();
+    expect(html).toContain('href="#main-content"');
+    expect(html).toContain('Skip to main content');
+    expect(html).toContain('id="main-content" tabindex="-1"');
+  });
+
+  it('renders the skip link before the header so it is the first stop for keyboard users', () => {
+    const html = render();
+    expect(html.indexOf('href="#main-content"')).toBeLessThan(html.indexOf('<header'));
+  });
+
+  it('preserves the page content inside the main content target', () => {
+    const html = render();
+    const wrapperIndex = html.indexOf('id="main-content"');
+    const headingIndex = html.indexOf('<h1>About the clinic</h1>');
+    expect(wrapperIndex).toBeGreaterThan(-1);
+    expect(headingIndex).toBeGreaterThan(wrapperIndex);
+  });
+
+  it('still renders the desktop nav, mobile menu toggle, and language switcher', () => {
+    const html = render();
+    expect(html).toContain('aria-label="Primary navigation"');
+    expect(html).toContain('aria-controls="mobile-primary-navigation"');
+    expect(html).toContain('aria-label="Language selector"');
+  });
+
+  it('marks Showcases as active on /showcases/:slug and exposes Contact Us on lg viewports', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter initialEntries={['/showcases/smile-makeover']}>
+        <SiteLayout
+          actions={{ appointmentLabel: 'Book Appointment', contactLabel: 'Contact Us' }}
+          navigation={[
+            { href: '/', label: 'Home' },
+            { href: '/showcases', label: 'Showcases' },
+          ]}
+        >
+          <main>
+            <h1>Showcase detail</h1>
+          </main>
+        </SiteLayout>
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('aria-current="page"');
+    expect(html).toContain('aria-label="Contact Us"');
+    expect(html).toContain('lg:inline-flex');
+    expect(html).toContain('xl:inline-block');
+  });
+});
