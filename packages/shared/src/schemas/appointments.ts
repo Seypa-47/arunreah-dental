@@ -30,6 +30,7 @@ export const createPublicAppointmentSchema = z
     branchId: z.string().uuid(),
     preferredDate: isoDate,
     preferredTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+    locale: z.enum(['en', 'km']),
     notes: z.string().trim().max(2_000).nullable().optional(),
     turnstileToken: z.string().trim().min(1).max(2_048).optional(),
     idempotencyKey: z.string().uuid(),

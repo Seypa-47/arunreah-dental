@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "arunreah-api-development",
   "main": "src/index.ts",
-  "compatibility_date": "2025-04-01",
+  "compatibility_date": "2026-10-11",
   "workers_dev": true,
   "vars": {
     "APP_ENV": "development",
@@ -66,11 +66,26 @@
     // with the placeholder database_id fails fast instead of writing anywhere.
     "production": {
       "name": "arunreah-api-production",
+      "workers_dev": false,
+      "observability": {
+        "enabled": true,
+        "logs": {
+          "enabled": true,
+          "head_sampling_rate": 1,
+          "invocation_logs": false,
+          "persist": true,
+        },
+        "traces": {
+          "enabled": true,
+          "head_sampling_rate": 0.05,
+          "persist": true,
+        },
+      },
       "vars": {
         "APP_ENV": "production",
         "CORS_ALLOWED_ORIGINS": "https://arunreah.mekhla.digital",
-        // Set once the production R2 bucket exists: its r2.dev URL, or a custom media domain.
-        "MEDIA_PUBLIC_BASE_URL": "",
+        // Set to the production R2 custom domain: https://media.arunreah.mekhla.digital
+        "MEDIA_PUBLIC_BASE_URL": "https://media.arunreah.mekhla.digital",
         "EMAIL_NOTIFICATIONS_ENABLED": "true",
         "EMAIL_NOTIFICATION_RECIPIENT": "arunreah.dental@outlook.com",
         "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.mekhla.digital>",

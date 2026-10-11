@@ -1,9 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { publicLandingChrome } from '@/features/public-content/public-page-chrome';
-import { getPublicBranches, getPublicClinic, getPublicDoctors, getPublicPageMedia, getPublicServices, getPublicShowcases } from '@/services/public-content';
+import { getPublicBookableDoctors, getPublicBranches, getPublicClinic, getPublicPageMedia, getPublicServices, getPublicShowcases } from '@/services/public-content';
 import { getPublicMediaUrl } from '@/services/media';
 import { mapLandingBranchHero, toLandingDoctor, toLandingService } from '@/services/public-page-mappers';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
+
+export function resolveOptionalResult<T>(result: PromiseSettledResult<T>, fallback: T) {
+  return result.status === 'fulfilled'
+    ? { data: result.value, failed: false }
+    : { data: fallback, failed: true };
+}
 import { queryKeys } from '@/lib/query-keys';
 import { formatPublicBranchHours, formatPublicBranchSchedules } from '@/features/public-content/public-branch';
 
@@ -11,14 +17,24 @@ export function useLandingPageQuery() {
   const { language } = usePublicLanguage();
   return useQuery({
     queryFn: async () => {
-      const [clinic, services, doctors, branches, showcases, promotions] = await Promise.all([
-        getPublicClinic(),
+      const clinic = await getPublicClinic();
+      const [servicesResult, doctorsResult, branchesResult, showcasesResult, promotionsResult] = await Promise.allSettled([
         getPublicServices(language),
-        getPublicDoctors(language),
+        getPublicBookableDoctors(language),
         getPublicBranches(language, 'landing'),
         getPublicShowcases(language, true),
-        getPublicPageMedia('HOME_PROMOTIONS', language).catch(() => ({ items: [] })),
+        getPublicPageMedia('HOME_PROMOTIONS', language),
       ]);
+      const servicesState = resolveOptionalResult(servicesResult, { services: [] });
+      const doctorsState = resolveOptionalResult(doctorsResult, { doctors: [] });
+      const branchesState = resolveOptionalResult(branchesResult, { branches: [] });
+      const showcasesState = resolveOptionalResult(showcasesResult, { showcases: [] });
+      const promotionsState = resolveOptionalResult(promotionsResult, { items: [] });
+      const services = servicesState.data;
+      const doctors = doctorsState.data;
+      const branches = branchesState.data;
+      const showcases = showcasesState.data;
+      const promotions = promotionsState.data;
       const localizedName = language === 'km' ? clinic.clinicNameKm : clinic.clinicNameEn;
       const localizedTagline = language === 'km' ? clinic.taglineKm : clinic.taglineEn;
       const publicBranches = branches.branches;
@@ -67,6 +83,13 @@ export function useLandingPageQuery() {
           }))
           .filter((promotion) => Boolean(promotion.imageUrl) && Boolean(promotion.title)),
         services: services.services.map(toLandingService),
+        sectionIssues: {
+          branches: branchesState.failed,
+          doctors: doctorsState.failed,
+          promotions: promotionsState.failed,
+          services: servicesState.failed,
+          showcase: showcasesState.failed,
+        },
         showcase: showcases.showcases.map((showcase) => ({
           imageAlt: showcase.title,
           imagePresentation: showcase.coverImagePresentation,

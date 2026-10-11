@@ -717,7 +717,7 @@ export function AdminClinicInfoPage({
                   </div>
 
                   <div className="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-[#cbe4ee] bg-gradient-to-br from-[#f0f8fb] via-[#e6f4f8] to-[#d6eff7] p-5 text-center shadow-sm">
-                    <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-white shadow-xs ring-1 ring-[#3695b9]/20">
+                    <div className="mb-2 flex size-10 items-center justify-center rounded-xl bg-white shadow-xs ring-1 ring-[#0d7596]/20">
                       <svg
                         aria-hidden="true"
                         className="size-5 text-[#087b9f]"
@@ -737,7 +737,7 @@ export function AdminClinicInfoPage({
                       <span className="text-[38px] font-black leading-none tracking-tight text-[#075d83]">
                         {generalInfo.yearsExperience || '26'}
                       </span>
-                      <span className="text-[22px] font-extrabold leading-none text-[#3695b9]">+</span>
+                      <span className="text-[22px] font-extrabold leading-none text-[#0d7596]">+</span>
                     </div>
                     <p className="mt-1 text-[13px] font-extrabold uppercase tracking-[0.06em] text-[#073f60]">
                       Years of experience
@@ -1784,58 +1784,34 @@ export function AdminClinicInfoPage({
                         </span>
                       </div>
                       <p className="text-[12px] leading-relaxed text-[#71839e]">
-                        The photo gallery under &ldquo;A look inside our clinic&rdquo; on the public About page displays this location's clinic tour. Each branch has its own dedicated 4-photo showcase in the CMS.
+                        Manage this branch's photos, bilingual captions, publishing status, and display order in Page Media.
                       </p>
 
                       <div className="rounded-2xl border border-[#dce8ee] bg-[#f8fbfe] p-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
                             <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#1687aa]">
-                              Connected Showcase
+                              About page gallery
                             </span>
                             <h4 className="mt-0.5 text-[14px] font-bold text-[#182238]">
-                              {selectedBranch.slug === 'psa-chas'
-                                ? 'What To Expect During Your First Visit - Psa Chas Branch'
-                                : 'What To Expect During Your First Visit - Toul Tompoung Branch'}
+                              {selectedBranch.name} clinic photos
                             </h4>
                             <p className="text-[12px] text-[#71839e]">
-                              Category: Clinic Experience • 4 photos
+                              Up to 4 published photos • English and Khmer captions
                             </p>
                           </div>
                           <Link
                             className="inline-flex items-center gap-1.5 rounded-xl border border-[#096b89] bg-white px-3.5 py-1.5 text-[12.5px] font-bold text-[#096b89] shadow-xs transition hover:bg-[#edf7fb]"
-                            to={
-                              selectedBranch.slug === 'psa-chas'
-                                ? '/admin/showcase/50000000-0000-4000-8000-000000000004/edit'
-                                : '/admin/showcase/50000000-0000-4000-8000-000000000003/edit'
-                            }
+                            to={`/admin/page-media?placement=${selectedBranch.slug === 'psa-chas' ? 'ABOUT_CLINIC_GALLERY_PSA_CHAS' : 'ABOUT_CLINIC_GALLERY_TOUL_TOMPOUNG'}`}
                           >
-                            <span>Edit in Showcases</span>
+                            <span>Manage gallery in Page Media</span>
                             <span aria-hidden="true">↗</span>
                           </Link>
                         </div>
-
-                        {/* Thumbnail Previews */}
-                        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-                          {(selectedBranch.slug === 'psa-chas'
-                            ? [
-                                { label: 'Exterior', url: '/assets/landing/psa-chas-exterior.jpg' },
-                                { label: 'Reception', url: '/assets/landing/psa-chas-reception.jpg' },
-                                { label: 'Waiting Lounge', url: '/assets/landing/psa-chas-waiting-area.jpg' },
-                                { label: 'Lounge / Consult', url: '/assets/landing/psa-chas-consultation-lounge.jpg' },
-                              ]
-                            : [
-                                { label: 'Exterior', url: '/assets/landing/branches-clinic.png' },
-                                { label: 'Reception', url: '/assets/landing/hero-clinic.png' },
-                                { label: 'Waiting Area', url: '/assets/landing/showcase-room.png' },
-                                { label: 'Treatment Room', url: '/assets/landing/branch-card-clinic.png' },
-                              ]
-                          ).map((thumb) => (
-                            <div className="overflow-hidden rounded-xl border border-[#dce8ee] bg-white text-center shadow-xs" key={thumb.label}>
-                              <img alt={thumb.label} className="h-16 w-full object-cover" src={thumb.url} />
-                              <span className="block truncate px-1 py-1 text-[10.5px] font-semibold text-[#5a7184]">{thumb.label}</span>
-                            </div>
-                          ))}
+                        <div className="mt-4 grid gap-2 text-[12px] text-[#52647d] sm:grid-cols-3">
+                          <span className="rounded-lg bg-white px-3 py-2 ring-1 ring-[#e2ebf0]">1. Upload and frame photos</span>
+                          <span className="rounded-lg bg-white px-3 py-2 ring-1 ring-[#e2ebf0]">2. Add EN/KM captions</span>
+                          <span className="rounded-lg bg-white px-3 py-2 ring-1 ring-[#e2ebf0]">3. Publish and order</span>
                         </div>
                       </div>
                     </div>

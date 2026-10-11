@@ -233,3 +233,27 @@ textarea {
 * {
   box-sizing: border-box;
 }
+
+/* Preserve the palette while meeting WCAG AA for small public-site text. */
+.public-site :is([class*="text-[#3695B9]"], [class*="text-[#3695b9]"], [class*="text-[#168aad]"]) {
+  color: #0d7596;
+}
+
+.public-site [class*="text-[#71839e]"] {
+  color: #526879;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .public-site *,
+  .public-site *::before,
+  .public-site *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -7,6 +7,7 @@ describe('admin route access', () => {
     expect(canAccessAdminPath('RECEPTIONIST', '/admin/services')).toBe(false);
 
     expect(canAccessAdminPath('CMS_ADMIN', '/admin/services')).toBe(true);
+    expect(canAccessAdminPath('CMS_ADMIN', '/admin/team')).toBe(true);
     expect(canAccessAdminPath('CMS_ADMIN', '/admin/page-media')).toBe(true);
     expect(canAccessAdminPath('CMS_ADMIN', '/admin/appointments/inbox')).toBe(false);
 

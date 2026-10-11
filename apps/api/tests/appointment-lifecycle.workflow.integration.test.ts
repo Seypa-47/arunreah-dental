@@ -9,12 +9,15 @@ type ContentRecord = {
   nameEn: string;
   nameKm: string;
   acceptsAppointments?: boolean;
+  bookable?: boolean;
+  category?: 'DENTIST' | 'GENERAL_PRACTITIONER' | 'RECEPTIONIST' | 'ASSISTANT';
 };
 
 type AppointmentRecord = {
   id: string;
   reference: string;
   idempotencyKey: string;
+  requestFingerprint: string | null;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
   serviceId: string;
   doctorId: string | null;
@@ -112,6 +115,7 @@ vi.mock('../src/repositories/doctor.repository', () => ({
     state.doctors.filter((doctor) => doctorIds.includes(doctor.id)),
   getExpertise: async () => [],
   getEducation: async () => [],
+  getProfileItems: async () => [],
   getRelatedDoctors: async () => [],
   getDoctorBranchIds: async () => [],
   getDoctorBranchIdsForDoctors: async () => new Map(),
@@ -288,6 +292,8 @@ beforeEach(() => {
       status: 'PUBLISHED',
       nameEn: 'Dr. Dara',
       nameKm: 'វេជ្ជបណ្ឌិត ដារ៉ា',
+      category: 'DENTIST',
+      bookable: true,
     },
   ];
   state.branches = [
@@ -322,6 +328,7 @@ describe('appointment lifecycle workflow', () => {
         preferredTime: '10:30',
         notes: 'Please call first.',
         idempotencyKey: '550e8400-e29b-41d4-a716-446655440199',
+        locale: 'en',
       }),
     });
     const submitted = await submission.json<{ data: { reference: string; status: string } }>();
@@ -439,6 +446,7 @@ describe('appointment lifecycle workflow', () => {
         preferredDate: '2099-01-02',
         preferredTime: '11:00',
         idempotencyKey: '550e8400-e29b-41d4-a716-446655440200',
+        locale: 'en',
       }),
     });
 

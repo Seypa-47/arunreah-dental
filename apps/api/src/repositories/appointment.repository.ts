@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, like, lte, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, like, lte, or, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import type { AdminAppointmentListQuery, AppointmentStatus } from '@arunreah/shared';
 import {
@@ -9,7 +9,6 @@ import {
   services,
 } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
-type WriteDatabase = DatabaseClient | Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
 
 export async function findAppointmentByIdempotencyKey(
   database: DatabaseClient,
@@ -72,25 +71,40 @@ export async function listAdminAppointments(
   query: AdminAppointmentListQuery,
 ) {
   const conditions: SQL<unknown>[] = [];
+  const branchFacetConditions: SQL<unknown>[] = [];
   if (query.status) conditions.push(eq(appointments.status, query.status));
-  if (query.serviceId) conditions.push(eq(appointments.serviceId, query.serviceId));
-  if (query.doctorId) conditions.push(eq(appointments.doctorId, query.doctorId));
+  if (query.status) branchFacetConditions.push(eq(appointments.status, query.status));
+  if (query.serviceId) {
+    conditions.push(eq(appointments.serviceId, query.serviceId));
+    branchFacetConditions.push(eq(appointments.serviceId, query.serviceId));
+  }
+  if (query.doctorId) {
+    conditions.push(eq(appointments.doctorId, query.doctorId));
+    branchFacetConditions.push(eq(appointments.doctorId, query.doctorId));
+  }
   if (query.branchId) conditions.push(eq(appointments.branchId, query.branchId));
-  if (query.fromDate) conditions.push(gte(appointments.preferredDate, query.fromDate));
-  if (query.toDate) conditions.push(lte(appointments.preferredDate, query.toDate));
+  if (query.fromDate) {
+    conditions.push(gte(appointments.preferredDate, query.fromDate));
+    branchFacetConditions.push(gte(appointments.preferredDate, query.fromDate));
+  }
+  if (query.toDate) {
+    conditions.push(lte(appointments.preferredDate, query.toDate));
+    branchFacetConditions.push(lte(appointments.preferredDate, query.toDate));
+  }
   if (query.search) {
     const search = `%${query.search}%`;
-    conditions.push(
-      or(
-        like(appointments.reference, search),
-        like(appointments.patientName, search),
-        like(appointments.patientPhone, search),
-        like(appointments.patientEmail, search),
-      ) as SQL<unknown>,
-    );
+    const searchCondition = or(
+      like(appointments.reference, search),
+      like(appointments.patientName, search),
+      like(appointments.patientPhone, search),
+      like(appointments.patientEmail, search),
+    ) as SQL<unknown>;
+    conditions.push(searchCondition);
+    branchFacetConditions.push(searchCondition);
   }
 
   const where = and(...conditions);
+  const branchFacetWhere = and(...branchFacetConditions);
   const sortableColumns = {
     createdAt: appointments.createdAt,
     preferredDate: appointments.preferredDate,
@@ -116,7 +130,7 @@ export async function listAdminAppointments(
     createdAt: appointments.createdAt,
   };
 
-  const [items, total] = await Promise.all([
+  const [items, total, branchCounts] = await Promise.all([
     database
       .select(fields)
       .from(appointments)
@@ -125,8 +139,18 @@ export async function listAdminAppointments(
       .limit(query.limit)
       .offset((query.page - 1) * query.limit),
     database.select({ value: count() }).from(appointments).where(where),
+    database
+      .select({
+        id: appointments.branchId,
+        nameSnapshot: appointments.branchNameSnapshot,
+        count: count(),
+      })
+      .from(appointments)
+      .where(branchFacetWhere)
+      .groupBy(appointments.branchId, appointments.branchNameSnapshot)
+      .orderBy(asc(appointments.branchNameSnapshot)),
   ]);
-  return { items, total: total[0]?.value ?? 0 };
+  return { items, total: total[0]?.value ?? 0, branchCounts };
 }
 
 export async function updateAppointmentStatus(
@@ -159,7 +183,7 @@ export async function createAppointment(
   return appointment;
 }
 
-export async function getAppointmentRequestRateLimit(database: WriteDatabase, key: string) {
+export async function getAppointmentRequestRateLimit(database: DatabaseClient, key: string) {
   const [record] = await database
     .select()
     .from(appointmentRequestRateLimits)
@@ -169,23 +193,35 @@ export async function getAppointmentRequestRateLimit(database: WriteDatabase, ke
 }
 
 export async function saveAppointmentRequestRateLimit(
-  database: WriteDatabase,
-  input: { key: string; attempts: number; windowStartedAt: string },
+  database: DatabaseClient,
+  input: { key: string; now: string; windowCutoff: string; attemptLimit: number },
 ) {
-  const now = new Date().toISOString();
-  const current = await getAppointmentRequestRateLimit(database, input.key);
+  const result = await database.get<{ attempts: number }>(sql`
+    INSERT INTO appointment_request_rate_limits
+      (key, attempts, window_started_at, created_at, updated_at)
+    VALUES (${input.key}, 1, ${input.now}, ${input.now}, ${input.now})
+    ON CONFLICT(key) DO UPDATE SET
+      attempts = CASE WHEN window_started_at <= ${input.windowCutoff} THEN 1 ELSE attempts + 1 END,
+      window_started_at = CASE WHEN window_started_at <= ${input.windowCutoff} THEN ${input.now} ELSE window_started_at END,
+      updated_at = ${input.now}
+    WHERE window_started_at <= ${input.windowCutoff} OR attempts < ${input.attemptLimit}
+    RETURNING attempts
+  `);
+  return Boolean(result);
+}
 
-  if (current) {
-    await database
-      .update(appointmentRequestRateLimits)
-      .set({ ...input, updatedAt: now })
-      .where(eq(appointmentRequestRateLimits.key, input.key));
-    return;
-  }
-
-  await database.insert(appointmentRequestRateLimits).values({
-    ...input,
-    createdAt: now,
-    updatedAt: now,
-  });
+export async function cleanupExpiredAppointmentRateLimits(
+  database: DatabaseClient,
+  windowStartedBefore: string,
+  limit: number,
+) {
+  return database.run(sql`
+    DELETE FROM appointment_request_rate_limits
+    WHERE rowid IN (
+      SELECT rowid FROM appointment_request_rate_limits
+      WHERE window_started_at <= ${windowStartedBefore}
+      ORDER BY window_started_at ASC
+      LIMIT ${limit}
+    )
+  `);
 }

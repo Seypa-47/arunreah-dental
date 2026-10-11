@@ -1,8 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { PublicLanguageProvider } from '@/features/public-content/public-language-provider';
+import { publicLandingChrome } from '@/features/public-content/public-page-chrome';
 import { describe, expect, it } from 'vitest';
-import { branchBookingHref, BranchesSection, HeroSection } from './LandingPage';
+import { branchBookingHref, BranchesSection, hasLandingContent, HeroSection, OptionalLandingSection } from './LandingPage';
 
 describe('BranchesSection', () => {
   it('renders the supporting eyebrow before the semantic Branches heading without changing branch cards', () => {
@@ -49,5 +50,66 @@ describe('HeroSection', () => {
     expect(html.match(/loading="eager"/g)).toHaveLength(1);
     expect(html.match(/loading="lazy"/g)).toHaveLength(1);
     expect(branchBookingHref('toul-tompoung')).toBe('/book-appointment?branch=toul-tompoung');
+  });
+
+  it('uses Khmer accessible names for carousel controls', () => {
+    const hero = {
+      address: 'Street 1', appointmentLabel: 'កក់ការណាត់ជួប', branchSlug: 'psa-chas',
+      callLabel: 'ហៅទូរស័ព្ទ', imageAlt: 'គ្លីនិក', imageUrl: '/clinic.jpg',
+      locationLabel: 'ទីតាំង', phones: ['012 345 678'], qrImageUrl: '', qrLabel: 'ព័ត៌មានគ្លីនិក',
+    };
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <PublicLanguageProvider initialLanguage="km">
+          <HeroSection heroes={[hero, { ...hero, address: 'Street 2' }]} />
+        </PublicLanguageProvider>
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('aria-label="សាខាមុន"');
+    expect(html).toContain('aria-label="សាខាបន្ទាប់"');
+    expect(html).toContain('aria-label="សាខាគ្លីនិក"');
+  });
+});
+
+describe('landing partial failures', () => {
+  it('keeps the page usable when every optional CMS collection is empty', () => {
+    const content = publicLandingChrome('en');
+    expect(hasLandingContent(content)).toBe(true);
+  });
+
+  it.each(['heroes', 'promotions', 'services', 'doctors', 'branches', 'showcase'] as const)(
+    'keeps the page usable when %s alone is empty',
+    (section) => {
+      const content = publicLandingChrome('en');
+      content.heroes = [{} as (typeof content.heroes)[number]];
+      content.promotions = [{} as (typeof content.promotions)[number]];
+      content.services = [{} as (typeof content.services)[number]];
+      content.doctors = [{} as (typeof content.doctors)[number]];
+      content.branches = [{} as (typeof content.branches)[number]];
+      content.showcase = [{} as (typeof content.showcase)[number]];
+      content[section] = [];
+
+      expect(hasLandingContent(content)).toBe(true);
+    },
+  );
+
+  it('distinguishes an empty section from a failed section and localizes Khmer output', () => {
+    const emptyHtml = renderToStaticMarkup(
+      <PublicLanguageProvider initialLanguage="km">
+        <OptionalLandingSection failed={false} label="សេវាកម្ម" onRetry={() => undefined} />
+      </PublicLanguageProvider>,
+    );
+    const failedHtml = renderToStaticMarkup(
+      <PublicLanguageProvider initialLanguage="en">
+        <OptionalLandingSection failed label="Services" onRetry={() => undefined} />
+      </PublicLanguageProvider>,
+    );
+
+    expect(emptyHtml).toContain('role="status"');
+    expect(emptyHtml).toContain('មិនទាន់មាន');
+    expect(failedHtml).toContain('role="alert"');
+    expect(failedHtml).toContain('We could not load services.');
+    expect(failedHtml).toContain('Retry');
   });
 });

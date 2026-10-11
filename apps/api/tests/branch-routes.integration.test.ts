@@ -113,7 +113,17 @@ vi.mock('../src/repositories/branch.repository', () => ({
               : branch.acceptsAppointments),
       )
       .sort((left, right) => left.displayOrder - right.displayOrder),
-  listAdminBranches: async (_database: unknown, query: { page: number; limit: number; status?: string; search?: string; sort: string; order: string }) => {
+  listAdminBranches: async (
+    _database: unknown,
+    query: {
+      page: number;
+      limit: number;
+      status?: string;
+      search?: string;
+      sort: string;
+      order: string;
+    },
+  ) => {
     let items = [...state.branches];
     if (query.status) items = items.filter((branch) => branch.status === query.status);
     if (query.search) {
@@ -153,7 +163,7 @@ const testBindings = {
 
 function branchFixture(overrides: Partial<BranchRecord> = {}): BranchRecord {
   return {
-    id: 'branch-1',
+    id: '550e8400-e29b-41d4-a716-446655440502',
     slug: 'main-branch',
     status: 'PUBLISHED',
     displayOrder: 10,
@@ -243,7 +253,11 @@ describe('branch API routes', () => {
     expect(listResponse.headers.get('Cache-Control')).toBe('public, max-age=60, must-revalidate');
     await expect(listResponse.json()).resolves.toMatchObject({
       success: true,
-      data: { branches: [{ id: 'branch-1', slug: 'main-branch', name: 'សាខាចម្បង' }] },
+      data: {
+        branches: [
+          { id: '550e8400-e29b-41d4-a716-446655440502', slug: 'main-branch', name: 'សាខាចម្បង' },
+        ],
+      },
     });
 
     const detailResponse = await app.request(
@@ -270,16 +284,60 @@ describe('branch API routes', () => {
 
   it('keeps branches, landing, and appointment visibility scopes independent', async () => {
     state.branches = [
-      branchFixture({ id: 'branch-page', slug: 'branch-page', showOnHomepage: false, includeInHomepageHero: false }),
-      branchFixture({ id: 'home-only', slug: 'home-only', showOnBranchesPage: false, showOnHomepage: true, includeInHomepageHero: false, acceptsAppointments: false }),
-      branchFixture({ id: 'hero-only', slug: 'hero-only', showOnBranchesPage: false, showOnHomepage: false, includeInHomepageHero: true, acceptsAppointments: false }),
-      branchFixture({ id: 'booking-only', slug: 'booking-only', showOnBranchesPage: false, showOnHomepage: false, includeInHomepageHero: false, acceptsAppointments: true }),
-      branchFixture({ id: 'draft', slug: 'draft', status: 'DRAFT', showOnHomepage: true, includeInHomepageHero: true, acceptsAppointments: true }),
-      branchFixture({ id: 'archived', slug: 'archived', status: 'ARCHIVED', showOnHomepage: true, includeInHomepageHero: true, acceptsAppointments: true }),
+      branchFixture({
+        id: 'branch-page',
+        slug: 'branch-page',
+        showOnHomepage: false,
+        includeInHomepageHero: false,
+      }),
+      branchFixture({
+        id: 'home-only',
+        slug: 'home-only',
+        showOnBranchesPage: false,
+        showOnHomepage: true,
+        includeInHomepageHero: false,
+        acceptsAppointments: false,
+      }),
+      branchFixture({
+        id: 'hero-only',
+        slug: 'hero-only',
+        showOnBranchesPage: false,
+        showOnHomepage: false,
+        includeInHomepageHero: true,
+        acceptsAppointments: false,
+      }),
+      branchFixture({
+        id: 'booking-only',
+        slug: 'booking-only',
+        showOnBranchesPage: false,
+        showOnHomepage: false,
+        includeInHomepageHero: false,
+        acceptsAppointments: true,
+      }),
+      branchFixture({
+        id: 'draft',
+        slug: 'draft',
+        status: 'DRAFT',
+        showOnHomepage: true,
+        includeInHomepageHero: true,
+        acceptsAppointments: true,
+      }),
+      branchFixture({
+        id: 'archived',
+        slug: 'archived',
+        status: 'ARCHIVED',
+        showOnHomepage: true,
+        includeInHomepageHero: true,
+        acceptsAppointments: true,
+      }),
     ];
 
     const idsFor = async (scope: string) => {
-      const response = await app.request(`http://localhost/api/public/branches?scope=${scope}`, undefined, testBindings);
+      const response = await app.request(
+        `http://localhost/api/public/branches?scope=${scope}`,
+        undefined,
+        testBindings,
+      );
       const body = await response.json<{ data: { branches: Array<{ id: string }> } }>();
       return body.data.branches.map((branch) => branch.id);
     };
@@ -358,7 +416,7 @@ describe('branch API routes', () => {
     });
 
     const detailResponse = await app.request(
-      'http://localhost/api/admin/branches/branch-1',
+      'http://localhost/api/admin/branches/550e8400-e29b-41d4-a716-446655440502',
       { headers },
       testBindings,
     );
@@ -377,7 +435,7 @@ describe('branch API routes', () => {
     const cmsHeaders = await authenticatedHeaders('CMS_ADMIN');
 
     const updateResponse = await app.request(
-      'http://localhost/api/admin/branches/branch-1',
+      'http://localhost/api/admin/branches/550e8400-e29b-41d4-a716-446655440502',
       {
         method: 'PATCH',
         headers: { ...cmsHeaders, 'Content-Type': 'application/json' },
@@ -404,7 +462,7 @@ describe('branch API routes', () => {
     });
 
     const duplicateSlugResponse = await app.request(
-      'http://localhost/api/admin/branches/branch-1',
+      'http://localhost/api/admin/branches/550e8400-e29b-41d4-a716-446655440502',
       {
         method: 'PATCH',
         headers: {
@@ -419,12 +477,15 @@ describe('branch API routes', () => {
   });
 
   it('deletes unused branches but protects appointment-referenced branches', async () => {
-    state.branches = [branchFixture(), branchFixture({ id: 'branch-2', slug: 'in-use' })];
-    state.appointmentBranchIds.add('branch-2');
+    state.branches = [
+      branchFixture(),
+      branchFixture({ id: '550e8400-e29b-41d4-a716-446655440510', slug: 'in-use' }),
+    ];
+    state.appointmentBranchIds.add('550e8400-e29b-41d4-a716-446655440510');
     const headers = await authenticatedHeaders('SUPER_ADMIN');
 
     const conflictResponse = await app.request(
-      'http://localhost/api/admin/branches/branch-2',
+      'http://localhost/api/admin/branches/550e8400-e29b-41d4-a716-446655440510',
       { method: 'DELETE', headers },
       testBindings,
     );
@@ -435,11 +496,14 @@ describe('branch API routes', () => {
     });
 
     const deleteResponse = await app.request(
-      'http://localhost/api/admin/branches/branch-1',
+      'http://localhost/api/admin/branches/550e8400-e29b-41d4-a716-446655440502',
       { method: 'DELETE', headers },
       testBindings,
     );
     expect(deleteResponse.status).toBe(200);
-    await expect(deleteResponse.json()).resolves.toEqual({ success: true, data: { deleted: true } });
+    await expect(deleteResponse.json()).resolves.toEqual({
+      success: true,
+      data: { deleted: true },
+    });
   });
 });

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { optionalMediaKeySchema } from './media';
 import { imagePresentationSchema } from './image-presentation';
+import { parseBranchScheduleRows } from './branch-schedule';
 
 export const branchStatusValues = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 export const publicBranchLanguageValues = ['en', 'km'] as const;
@@ -81,8 +82,16 @@ const branchFields = {
   openingHoursKm: optionalText(1_000),
   openingDaysEn: optionalText(300),
   openingDaysKm: optionalText(300),
-  openingTime: z.string().regex(timePattern, 'Opening time must use HH:mm format.').nullable().optional(),
-  closingTime: z.string().regex(timePattern, 'Closing time must use HH:mm format.').nullable().optional(),
+  openingTime: z
+    .string()
+    .regex(timePattern, 'Opening time must use HH:mm format.')
+    .nullable()
+    .optional(),
+  closingTime: z
+    .string()
+    .regex(timePattern, 'Closing time must use HH:mm format.')
+    .nullable()
+    .optional(),
   phone: z.string().trim().min(6).max(32).regex(phonePattern),
   secondaryPhone: optionalPhone(),
   googleMapsUrl: optionalUrl(),
@@ -105,7 +114,42 @@ const branchFields = {
   includeInHomepageHero: z.boolean().default(false),
 } as const;
 
-export const createBranchSchema = z.object(branchFields).strict();
+function validateSchedule(
+  value: {
+    openingDaysEn?: string | null;
+    openingDaysKm?: string | null;
+    openingTime?: string | null;
+    closingTime?: string | null;
+  },
+  context: z.RefinementCtx,
+) {
+  const fields = [value.openingDaysEn, value.openingTime, value.closingTime];
+  if (fields.every((field) => field === undefined || field === null || field === '')) return;
+  if (fields.some((field) => field === undefined || field === null || field === '')) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['openingTime'],
+      message: 'Schedule days, opening time, and closing time must be provided together.',
+    });
+    return;
+  }
+  try {
+    parseBranchScheduleRows({
+      openingDays: value.openingDaysEn,
+      openingDaysKm: value.openingDaysKm,
+      openingTime: value.openingTime,
+      closingTime: value.closingTime,
+    });
+  } catch (error) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['openingTime'],
+      message: error instanceof Error ? error.message : 'Invalid branch schedule.',
+    });
+  }
+}
+
+export const createBranchSchema = z.object(branchFields).strict().superRefine(validateSchedule);
 
 export const updateBranchSchema = z
   .object({
@@ -149,6 +193,7 @@ export const updateBranchSchema = z
     includeInHomepageHero: z.boolean().optional(),
   })
   .strict()
+  .superRefine(validateSchedule)
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
     message: 'Provide at least one field to update.',
   });
@@ -167,11 +212,15 @@ export const publicBranchLanguageSchema = z.enum(publicBranchLanguageValues).def
  * Public consumers need distinct, explicit visibility rules.  In particular,
  * homepage placement must not be coupled to the /branches page toggle.
  */
-export const publicBranchScopeSchema = z.enum(['branches', 'landing', 'appointments']).default('branches');
-export const publicBranchQuerySchema = z.object({
-  lang: publicBranchLanguageSchema,
-  scope: publicBranchScopeSchema,
-}).strict();
+export const publicBranchScopeSchema = z
+  .enum(['branches', 'landing', 'appointments'])
+  .default('branches');
+export const publicBranchQuerySchema = z
+  .object({
+    lang: publicBranchLanguageSchema,
+    scope: publicBranchScopeSchema,
+  })
+  .strict();
 
 export const adminBranchReadSchema = z.object({
   id: z.string(),

@@ -1,10 +1,10 @@
 import { and, asc, count, desc, eq, inArray, like, or } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import type { AdminBranchListQuery, CreateBranchInput, UpdateBranchInput } from '@arunreah/shared';
-import { appointments, branches } from '../db/schema';
+import { appointments, branches, imagePresentations } from '../db/schema';
 import type { DatabaseClient } from '../db/client';
-import { inTransaction } from '../db/transaction';
-import { upsert } from './image-presentation.repository';
+import { atomicBatch, type AtomicBatchStatement } from '../db/transaction';
+import { upsertStatement } from './image-presentation.repository';
 
 export async function findBranchById(database: DatabaseClient, id: string) {
   const [branch] = await database.select().from(branches).where(eq(branches.id, id)).limit(1);
@@ -20,28 +20,69 @@ export async function createBranch(database: DatabaseClient, input: CreateBranch
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   const { heroImagePresentation, branchImagePresentation, ...row } = input;
-  await inTransaction(database, async (transaction) => {
-    await transaction.insert(branches).values({ id, ...row, createdAt: now, updatedAt: now });
-    if (heroImagePresentation) await upsert(transaction, { ownerType: 'BRANCH', ownerId: id, slot: 'HERO' }, heroImagePresentation);
-    if (branchImagePresentation) await upsert(transaction, { ownerType: 'BRANCH', ownerId: id, slot: 'PRIMARY' }, branchImagePresentation);
-  });
+  const statements: [AtomicBatchStatement, ...AtomicBatchStatement[]] = [
+    database.insert(branches).values({ id, ...row, createdAt: now, updatedAt: now }),
+  ];
+  if (heroImagePresentation)
+    statements.push(
+      upsertStatement(
+        database,
+        { ownerType: 'BRANCH', ownerId: id, slot: 'HERO' },
+        heroImagePresentation,
+      ),
+    );
+  if (branchImagePresentation)
+    statements.push(
+      upsertStatement(
+        database,
+        { ownerType: 'BRANCH', ownerId: id, slot: 'PRIMARY' },
+        branchImagePresentation,
+      ),
+    );
+  await atomicBatch(database, statements);
 
   return findBranchById(database, id);
 }
 
 export async function updateBranch(database: DatabaseClient, id: string, input: UpdateBranchInput) {
   const { heroImagePresentation, branchImagePresentation, ...row } = input;
-  await inTransaction(database, async (transaction) => {
-    if (Object.keys(row).length > 0) await transaction.update(branches).set({ ...row, updatedAt: new Date().toISOString() }).where(eq(branches.id, id));
-    if (heroImagePresentation) await upsert(transaction, { ownerType: 'BRANCH', ownerId: id, slot: 'HERO' }, heroImagePresentation);
-    if (branchImagePresentation) await upsert(transaction, { ownerType: 'BRANCH', ownerId: id, slot: 'PRIMARY' }, branchImagePresentation);
-  });
+  const statements: AtomicBatchStatement[] = [];
+  if (Object.keys(row).length > 0)
+    statements.push(
+      database
+        .update(branches)
+        .set({ ...row, updatedAt: new Date().toISOString() })
+        .where(eq(branches.id, id)),
+    );
+  if (heroImagePresentation)
+    statements.push(
+      upsertStatement(
+        database,
+        { ownerType: 'BRANCH', ownerId: id, slot: 'HERO' },
+        heroImagePresentation,
+      ),
+    );
+  if (branchImagePresentation)
+    statements.push(
+      upsertStatement(
+        database,
+        { ownerType: 'BRANCH', ownerId: id, slot: 'PRIMARY' },
+        branchImagePresentation,
+      ),
+    );
+  if (statements.length > 0)
+    await atomicBatch(database, statements as [AtomicBatchStatement, ...AtomicBatchStatement[]]);
 
   return findBranchById(database, id);
 }
 
 export async function deleteBranch(database: DatabaseClient, id: string) {
-  await database.delete(branches).where(eq(branches.id, id));
+  await atomicBatch(database, [
+    database
+      .delete(imagePresentations)
+      .where(and(eq(imagePresentations.ownerType, 'BRANCH'), eq(imagePresentations.ownerId, id))),
+    database.delete(branches).where(eq(branches.id, id)),
+  ]);
 }
 
 export async function branchesExist(database: DatabaseClient, ids: string[]) {

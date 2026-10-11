@@ -69,8 +69,8 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
         <Link
-          className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#3695B9] transition hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
-          to="/doctors"
+          className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#0d7596] transition hover:text-[#005687] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]"
+          to="/team"
         >
           <span aria-hidden="true">←</span>
           <span>{detailCopy.backToDoctors}</span>
@@ -87,7 +87,7 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
           />
         </div>
         <div>
-          <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#3695B9] sm:text-[12px]">
+          <p className="ui-eyebrow text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-[#0d7596] sm:text-[12px]">
             {doctor.detail.roleTitle}
           </p>
           <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-[-0.03em] text-[#005687] sm:mt-3 sm:text-[38px]">
@@ -98,7 +98,7 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
             <div className="mt-6 grid overflow-hidden rounded-xl border border-[#dfecef] bg-white shadow-[0_2px_10px_rgba(7,93,131,0.04)] sm:grid-cols-3">
               {doctor.detail.stats.map((stat) => (
                 <div className="border-b border-[#e7eff3] px-4 py-3.5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0" key={stat.label}>
-                  <p className="text-[22px] font-extrabold leading-7 text-[#167ea7]">{stat.value}</p>
+                  <p className="text-[22px] font-extrabold leading-7 text-[#0d7596]">{stat.value}</p>
                   <p className="mt-0.5 text-[12px] font-semibold leading-4 text-[#64748b]">{statLabels[stat.label as keyof typeof statLabels] ?? stat.label}</p>
                 </div>
               ))}
@@ -121,7 +121,7 @@ function DoctorHero({ doctor }: { doctor: LandingDoctor }) {
               </div>
             ) : null}
             <Button
-              className="min-h-[52px] w-full rounded-full bg-[#168aad] px-7 text-[15px] font-bold text-white shadow-[0_8px_18px_rgba(22,138,173,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#0d7596] hover:shadow-[0_10px_22px_rgba(22,138,173,0.28)] active:translate-y-0 sm:w-auto"
+              className="min-h-[52px] w-full rounded-full bg-[#0d7596] px-7 text-[15px] font-bold text-white shadow-[0_8px_18px_rgba(13,117,150,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#075d83] hover:shadow-[0_10px_22px_rgba(13,117,150,0.28)] active:translate-y-0 sm:w-auto"
               icon={<CalendarIcon />}
               onClick={() => navigate(bookHref)}
             >
@@ -161,7 +161,7 @@ function CertificationCard({
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-[14px] font-extrabold leading-5 text-[#005687]">{certification.title}</h3>
           {certification.yearLabel ? (
-            <span className="shrink-0 rounded-full bg-[#eef8fb] px-2 py-0.5 text-[11px] font-extrabold leading-4 text-[#167ea7]">
+            <span className="shrink-0 rounded-full bg-[#eef8fb] px-2 py-0.5 text-[11px] font-extrabold leading-4 text-[#0d7596]">
               {certification.yearLabel}
             </span>
           ) : null}
@@ -190,7 +190,7 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
           <section className="rounded-2xl border border-[#e3edf1] bg-white p-5 sm:p-7">
             <div className="flex items-center gap-3">
               <span aria-hidden="true" className="h-px w-8 bg-[#3695B9]" />
-              <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#3695B9]">{copy.profile}</p>
+              <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#0d7596]">{copy.profile}</p>
             </div>
             <h2 className="mt-3 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{copy.about}</h2>
             <ContentBlocks
@@ -203,7 +203,7 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
             <section className="mt-8">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#3695B9]">{copy.qualifications}</p>
+                  <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#0d7596]">{copy.qualifications}</p>
                   <h2 className="mt-2 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">{copy.education}</h2>
                 </div>
               </div>
@@ -220,7 +220,7 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
           {doctor.detail.services.length > 0 ? (
             <Card className="overflow-hidden rounded-2xl border-[#dcebf0] bg-[#f8fcfd] p-0 shadow-none">
               <div className="border-b border-[#dcebf0] bg-[#edf8fb] px-5 py-4">
-                <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#3695B9]">{copy.profile}</p>
+                <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#0d7596]">{copy.profile}</p>
                 <h2 className="mt-1 text-[19px] font-extrabold leading-6 text-[#005687]">{copy.expertise}</h2>
               </div>
               <div className="p-5">
@@ -234,7 +234,7 @@ function DoctorDetails({ doctor }: { doctor: LandingDoctor }) {
               {copy.appointmentBody}
             </p>
             <Button
-              className="mt-4 min-h-12 w-full rounded-full border-none !bg-white text-[14px] font-bold !text-[#167ea7] shadow-none hover:!bg-[#eef8fb] sm:min-h-11"
+              className="mt-4 min-h-12 w-full rounded-full border-none !bg-white text-[14px] font-bold !text-[#0d7596] shadow-none hover:!bg-[#eef8fb] sm:min-h-11"
               onClick={() => navigate(doctor.id ? `/book-appointment?doctor=${encodeURIComponent(doctor.id)}` : '/book-appointment')}
               variant="secondary"
             >
@@ -401,7 +401,7 @@ function DoctorDetailEmpty() {
         <p className="mt-3 text-[#6b7280]">{copy.doctorDetail.unavailableBody}</p>
         <Link
           className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#3695B9] px-5 text-sm font-extrabold text-white hover:bg-[#2c84a5]"
-          to="/doctors"
+          to="/team"
         >
           {copy.doctorDetail.viewAllDoctors}
         </Link>

@@ -2,28 +2,32 @@ import {
   adminDoctorListQuerySchema,
   createDoctorSchema,
   publicDoctorQuerySchema,
+  reorderDoctorsSchema,
   successResponse,
   updateDoctorSchema,
+  slugPathParamSchema,
+  uuidPathParamSchema,
 } from '@arunreah/shared';
 import type { Context } from 'hono';
 import { createDbClient } from '../../db/client';
-import { parseRequestBody, parseRequestQuery } from '../../shared/request';
-import { HttpError } from '../../shared/http-error';
+import { parseRequestBody, parseRequestParams, parseRequestQuery } from '../../shared/request';
 import * as doctor from '../../services/doctor.service';
 import type { AppEnv } from '../../types/env';
 import { applyPublicCmsCache } from '../../shared/public-cache';
 
 export async function listPublicDoctorsController(context: Context<AppEnv>) {
   const query = parseRequestQuery(context, publicDoctorQuerySchema);
-  const doctors = await doctor.getPublicDoctorList(createDbClient(context.env.DB), query.lang);
+  const doctors = await doctor.getPublicDoctorList(createDbClient(context.env.DB), query.lang, {
+    category: query.category,
+    bookable: query.bookable,
+  });
   applyPublicCmsCache(context);
   return context.json(successResponse({ doctors }));
 }
 
 export async function getPublicDoctorController(context: Context<AppEnv>) {
   const query = parseRequestQuery(context, publicDoctorQuerySchema);
-  const slug = context.req.param('slug');
-  if (!slug) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
+  const { slug } = parseRequestParams(context, slugPathParamSchema);
   const doctorDetail = await doctor.getPublicDoctor(
     createDbClient(context.env.DB),
     slug,
@@ -48,25 +52,29 @@ export async function createAdminDoctorController(context: Context<AppEnv>) {
 }
 
 export async function getAdminDoctorController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   const doctorDetail = await doctor.getAdminDoctor(createDbClient(context.env.DB), id);
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ doctor: doctorDetail }));
 }
 
 export async function updateAdminDoctorController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   const input = await parseRequestBody(context, updateDoctorSchema);
   const doctorDetail = await doctor.updateManagedDoctor(createDbClient(context.env.DB), id, input);
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ doctor: doctorDetail }));
 }
 
+export async function reorderAdminDoctorsController(context: Context<AppEnv>) {
+  const input = await parseRequestBody(context, reorderDoctorsSchema);
+  await doctor.reorderManagedDoctors(createDbClient(context.env.DB), input);
+  context.header('Cache-Control', 'private, no-store');
+  return context.json(successResponse({ reordered: true }));
+}
+
 export async function deleteAdminDoctorController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Doctor not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   await doctor.deleteManagedDoctor(createDbClient(context.env.DB), id);
   context.header('Cache-Control', 'private, no-store');
   return context.json(successResponse({ deleted: true }));

@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { mapBookingOptions, mapLandingBranchHero, toLandingDoctor, toLandingService } from './public-page-mappers';
 import { publicBookingChrome } from '@/features/public-content/public-page-chrome';
+import type { PublicDoctorSummary } from './public-content';
+
+const doctorDefaults = {
+  category: 'DENTIST',
+  bookable: true,
+  department: null,
+  teamNote: null,
+  profileItems: [],
+} satisfies Pick<
+  PublicDoctorSummary,
+  'category' | 'bookable' | 'department' | 'teamNote' | 'profileItems'
+>;
 
 describe('public page mappers', () => {
   it('uses canonical branch contact data for each homepage hero', () => {
@@ -38,14 +50,14 @@ describe('public page mappers', () => {
 
   it('does not fabricate a CMS image when an API image key is absent', () => {
     expect(toLandingService({ id: 'service-id', slug: 'cleaning', name: 'Cleaning', shortDescription: null, listingThumbnailKey: null, category: null, featured: false }).imageUrl).toBe('');
-    expect(toLandingDoctor({ id: 'doctor-id', slug: 'dara', name: 'Dr. Dara', title: null, specialty: null, shortBio: null, photoKey: null, featured: false }).imageUrl).toBe('');
+    expect(toLandingDoctor({ ...doctorDefaults, id: 'doctor-id', slug: 'dara', name: 'Dr. Dara', title: null, specialty: null, shortBio: null, photoKey: null, featured: false }).imageUrl).toBe('');
   });
 
   it('uses public UUIDs for appointment choices and preserves No Preference', () => {
     const content = mapBookingOptions(
       publicBookingChrome('en'),
       [{ id: 'service-uuid', slug: 'cleaning', name: 'Cleaning', shortDescription: null, listingThumbnailKey: null, category: null, featured: false }],
-      [{ id: 'doctor-uuid', slug: 'dara', name: 'Dr. Dara', title: null, specialty: null, shortBio: null, photoKey: null, featured: false }],
+      [{ ...doctorDefaults, id: 'doctor-uuid', slug: 'dara', name: 'Dr. Dara', title: null, specialty: null, shortBio: null, photoKey: null, featured: false }],
       [{
         id: 'branch-uuid',
         slug: 'ttp',
@@ -81,6 +93,7 @@ describe('public page mappers', () => {
       [],
       [
         {
+          ...doctorDefaults,
           id: 'doc-1',
           slug: 'dr-sophea',
           name: 'Dr. Sophea',
@@ -107,6 +120,21 @@ describe('public page mappers', () => {
     ]);
   });
 
+  it('defensively excludes non-bookable and non-clinical team members from booking options', () => {
+    const content = mapBookingOptions(
+      publicBookingChrome('en'),
+      [],
+      [
+        { ...doctorDefaults, id: 'dentist', slug: 'dentist', name: 'Dentist', title: null, specialty: null, shortBio: null, photoKey: null, featured: false },
+        { ...doctorDefaults, id: 'disabled-gp', slug: 'disabled-gp', name: 'Disabled GP', title: null, specialty: null, shortBio: null, photoKey: null, featured: false, category: 'GENERAL_PRACTITIONER', bookable: false },
+        { ...doctorDefaults, id: 'receptionist', slug: 'receptionist', name: 'Receptionist', title: null, specialty: null, shortBio: null, photoKey: null, featured: false, category: 'RECEPTIONIST', bookable: true },
+      ],
+      [],
+    );
+
+    expect(content.doctors.map((doctor) => doctor.value)).toEqual(['', 'dentist']);
+  });
+
   it('excludes branches that do not accept appointment requests', () => {
     const content = mapBookingOptions(publicBookingChrome('en'), [], [], [{ id: 'branch-uuid', slug: 'closed', name: 'Closed', address: 'Street 1', branchImageKey: null, googleMapsUrl: null, acceptsAppointments: false }]);
     expect(content.branches).toEqual([]);
@@ -114,7 +142,7 @@ describe('public page mappers', () => {
 
   it('localizes doctor bookingLabel in Khmer when language is km', () => {
     const doctorKm = toLandingDoctor(
-      { id: 'doctor-id', slug: 'dara', name: 'វេជ្ជបណ្ឌិត តារា', title: null, specialty: null, shortBio: null, photoKey: null, featured: false },
+      { ...doctorDefaults, id: 'doctor-id', slug: 'dara', name: 'វេជ្ជបណ្ឌិត តារា', title: null, specialty: null, shortBio: null, photoKey: null, featured: false },
       'km',
     );
     expect(doctorKm.bookingLabel).toBe('កក់ជាមួយ វេជ្ជបណ្ឌិត តារា');

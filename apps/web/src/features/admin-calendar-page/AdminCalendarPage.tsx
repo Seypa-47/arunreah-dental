@@ -693,6 +693,13 @@ export function DayView({
   );
 }
 
+export function getBookingDoctorOptions(doctors: readonly string[]): string[] {
+  const candidates = Array.from(new Set(doctors.map((item) => item.trim())))
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+  return ['Any Doctor', ...candidates];
+}
+
 function CalendarContent({
   content,
   onSelectDate,
@@ -745,9 +752,10 @@ function CalendarContent({
     return [content.controls.allDoctors, 'Any Doctor', ...combined];
   }, [content.doctors, content.calendar.days, createdAppointments, content.controls.allDoctors]);
 
-  const modalDoctors = useMemo(() => {
-    return doctorOptions.filter((d) => d !== content.controls.allDoctors);
-  }, [doctorOptions, content.controls.allDoctors]);
+  const modalDoctors = useMemo(
+    () => getBookingDoctorOptions(content.bookingDoctors),
+    [content.bookingDoctors],
+  );
 
   // Group all appointments by date key
   const allAppointmentsMap = useMemo(() => {

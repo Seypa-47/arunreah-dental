@@ -49,10 +49,11 @@ const state = vi.hoisted(() => ({
 
 vi.mock('../src/db/client', () => ({ createDbClient: () => ({}) }));
 vi.mock('../src/repositories/image-presentation.repository', () => ({
-  listForOwners: async (_database: unknown, owners: Array<{ ownerId: string; slot: string }>) => owners.flatMap((owner) => {
-    const presentation = state.presentations.get(owner.ownerId);
-    return presentation ? [{ ...owner, ...presentation }] : [];
-  }),
+  listForOwners: async (_database: unknown, owners: Array<{ ownerId: string; slot: string }>) =>
+    owners.flatMap((owner) => {
+      const presentation = state.presentations.get(owner.ownerId);
+      return presentation ? [{ ...owner, ...presentation }] : [];
+    }),
 }));
 vi.mock('../src/repositories/session.repository', () => ({
   findAuthenticatedSession: async (_database: unknown, tokenHash: string) =>
@@ -72,7 +73,7 @@ vi.mock('../src/repositories/showcase.repository', () => ({
     state.showcases.find((item) => item.slug === slug && item.status === 'PUBLISHED'),
   createShowcase: async (_database: unknown, input: ShowcaseInput) => {
     const showcase = {
-      ...fixture({ id: `showcase-${state.showcases.length + 1}`, slug: input.slug ?? 'new' }),
+      ...fixture({ id: '550e8400-e29b-41d4-a716-446655440504', slug: input.slug ?? 'new' }),
       ...input,
       excerptEn: input.summaryEn,
       excerptKm: input.summaryKm,
@@ -128,7 +129,7 @@ const bindings = {
 } satisfies Bindings;
 function fixture(overrides: Partial<ShowcaseRecord> = {}): ShowcaseRecord {
   return {
-    id: 'showcase-1',
+    id: '550e8400-e29b-41d4-a716-446655440504',
     slug: 'smile-transformation',
     status: 'PUBLISHED',
     showOnHomepage: true,
@@ -180,7 +181,7 @@ describe('showcase API routes', () => {
       fixture({ id: 'showcase-2', slug: 'draft', status: 'DRAFT' }),
       fixture({ id: 'showcase-3', slug: 'not-home', showOnHomepage: false }),
     ];
-    state.sections.set('showcase-1', [
+    state.sections.set('550e8400-e29b-41d4-a716-446655440504', [
       {
         sectionType: 'TEXT',
         headingEn: 'Plan',
@@ -290,7 +291,7 @@ describe('showcase API routes', () => {
     expect(
       (
         await app.request(
-          'http://localhost/api/admin/showcases/showcase-1',
+          'http://localhost/api/admin/showcases/550e8400-e29b-41d4-a716-446655440504',
           {
             method: 'PATCH',
             headers: { ...cmsHeaders, 'Content-Type': 'application/json' },
@@ -300,14 +301,14 @@ describe('showcase API routes', () => {
         )
       ).status,
     ).toBe(200);
-    expect(state.sections.get('showcase-1')).toHaveLength(1);
+    expect(state.sections.get('550e8400-e29b-41d4-a716-446655440504')).toHaveLength(1);
   });
   it('returns saved cover-image framing to the admin editor', async () => {
     state.showcases = [fixture()];
     const cmsHeaders = await headers('CMS_ADMIN');
     const framing = { positionX: 36, positionY: 22, zoom: 1.25 };
     const update = await app.request(
-      'http://localhost/api/admin/showcases/showcase-1',
+      'http://localhost/api/admin/showcases/550e8400-e29b-41d4-a716-446655440504',
       {
         method: 'PATCH',
         headers: { ...cmsHeaders, 'Content-Type': 'application/json' },
@@ -320,7 +321,7 @@ describe('showcase API routes', () => {
     });
 
     const detail = await app.request(
-      'http://localhost/api/admin/showcases/showcase-1',
+      'http://localhost/api/admin/showcases/550e8400-e29b-41d4-a716-446655440504',
       { headers: cmsHeaders },
       bindings,
     );
@@ -329,16 +330,19 @@ describe('showcase API routes', () => {
     });
   });
   it('validates related showcases and cleans up relationships during deletion', async () => {
-    state.showcases = [fixture(), fixture({ id: 'showcase-2', slug: 'implant-case' })];
+    state.showcases = [
+      fixture(),
+      fixture({ id: '550e8400-e29b-41d4-a716-446655440508', slug: 'implant-case' }),
+    ];
     const superHeaders = await headers('SUPER_ADMIN');
     expect(
       (
         await app.request(
-          'http://localhost/api/admin/showcases/showcase-1',
+          'http://localhost/api/admin/showcases/550e8400-e29b-41d4-a716-446655440504',
           {
             method: 'PATCH',
             headers: { ...superHeaders, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ relatedShowcaseIds: ['showcase-1'] }),
+            body: JSON.stringify({ relatedShowcaseIds: ['550e8400-e29b-41d4-a716-446655440504'] }),
           },
           bindings,
         )
@@ -347,7 +351,7 @@ describe('showcase API routes', () => {
     expect(
       (
         await app.request(
-          'http://localhost/api/admin/showcases/showcase-1',
+          'http://localhost/api/admin/showcases/550e8400-e29b-41d4-a716-446655440504',
           {
             method: 'PATCH',
             headers: { ...superHeaders, 'Content-Type': 'application/json' },
@@ -360,7 +364,7 @@ describe('showcase API routes', () => {
     expect(
       (
         await app.request(
-          'http://localhost/api/admin/showcases/showcase-2',
+          'http://localhost/api/admin/showcases/550e8400-e29b-41d4-a716-446655440508',
           { method: 'DELETE', headers: superHeaders },
           bindings,
         )

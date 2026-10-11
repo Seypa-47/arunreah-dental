@@ -1,17 +1,15 @@
 import type { DatabaseClient } from './client';
 
-type Transaction = Parameters<Parameters<DatabaseClient['transaction']>[0]>[0];
+export type AtomicBatchStatement = Parameters<DatabaseClient['batch']>[0][number];
 
 /**
- * Cloudflare D1 in standard Worker runtime does not support SQL BEGIN/COMMIT statements.
- * Calling drizzle's database.transaction() issues raw BEGIN statements that Cloudflare
- * rejects with error code 7500. Executing the callback directly executes all queries
- * sequentially against the database client.
+ * D1 executes every prepared statement in batch() as one transaction. If any
+ * statement fails, D1 rolls the complete batch back. This deliberately avoids
+ * drizzle.transaction(), whose BEGIN/COMMIT SQL is unsupported by D1 Workers.
  */
-export async function inTransaction<T>(
+export async function atomicBatch(
   database: DatabaseClient,
-  callback: (transaction: Transaction) => Promise<T>,
-): Promise<T> {
-  return callback(database as unknown as Transaction);
+  statements: [AtomicBatchStatement, ...AtomicBatchStatement[]],
+) {
+  return database.batch(statements);
 }
-

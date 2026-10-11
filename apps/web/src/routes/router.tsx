@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom';
 import { Suspense, type ReactNode } from 'react';
 import '@/styles/admin.css';
 import { LandingPage } from '@/features/landing-page/LandingPage';
@@ -30,10 +30,10 @@ const AdminAboutTimelinePage = lazyWithRetry(() => import('@/features/admin-abou
 const BookAppointmentPage = lazyWithRetry(() => import('@/features/book-appointment-page/BookAppointmentPage').then(({ BookAppointmentPage: Page }) => ({ default: Page })));
 const BranchesPage = lazyWithRetry(() => import('@/features/branches-page/BranchesPage').then(({ BranchesPage: Page }) => ({ default: Page })));
 const ContactPage = lazyWithRetry(() => import('@/features/contact-page/ContactPage').then(({ ContactPage: Page }) => ({ default: Page })));
-const DoctorDetailPage = lazyWithRetry(() => import('@/features/doctor-detail-page/DoctorDetailPage').then(({ DoctorDetailPage: Page }) => ({ default: Page })));
 const DoctorsPage = lazyWithRetry(() => import('@/features/doctors-page/DoctorsPage').then(({ DoctorsPage: Page }) => ({ default: Page })));
 const ServiceDetailPage = lazyWithRetry(() => import('@/features/service-detail-page/ServiceDetailPage').then(({ ServiceDetailPage: Page }) => ({ default: Page })));
 const ServicesPage = lazyWithRetry(() => import('@/features/services-page/ServicesPage').then(({ ServicesPage: Page }) => ({ default: Page })));
+const TeamMemberProfilePage = lazyWithRetry(() => import('@/features/team-member-profile-page/TeamMemberProfilePage').then(({ TeamMemberProfilePage: Page }) => ({ default: Page })));
 const ShowcasesPage = lazyWithRetry(() => import('@/features/showcases-page/ShowcasesPage').then(({ ShowcasesPage: Page }) => ({ default: Page })));
 const ShowcaseDetailPage = lazyWithRetry(() => import('@/features/showcase-detail-page/ShowcaseDetailPage').then(({ ShowcaseDetailPage: Page }) => ({ default: Page })));
 const PublicNotFoundPage = lazyWithRetry(() => import('@/features/public-content/PublicNotFoundPage').then(({ PublicNotFoundPage: Page }) => ({ default: Page })));
@@ -47,6 +47,11 @@ function RouteLoadingBoundary({ children }: { children: ReactNode }) {
 }
 
 const lazyPublicRoute = (element: ReactNode) => <RouteLoadingBoundary>{element}</RouteLoadingBoundary>;
+
+function LegacyRouteRedirect({ from, to }: { from: string; to: string }) {
+  const location = useLocation();
+  return <Navigate replace to={`${location.pathname.replace(from, to)}${location.search}${location.hash}`} />;
+}
 
 const routes = [
   {
@@ -90,20 +95,28 @@ const routes = [
     element: protectedAdminRoute(<AdminServiceDetailPage />),
   },
   {
-    path: '/admin/doctors/new',
+    path: '/admin/team/new',
     element: protectedAdminRoute(<AdminAddDoctorPage />),
   },
   {
+    path: '/admin/team',
+    element: protectedAdminRoute(<AdminDoctorsPage />),
+  },
+  {
+    path: '/admin/team/:doctorId',
+    element: protectedAdminRoute(<AdminDoctorsPage />),
+  },
+  {
+    path: '/admin/team/:doctorId/edit',
+    element: protectedAdminRoute(<AdminDoctorsPage />),
+  },
+  {
+    path: '/admin/doctors/*',
+    element: protectedAdminRoute(<LegacyRouteRedirect from="/admin/doctors" to="/admin/team" />),
+  },
+  {
     path: '/admin/doctors',
-    element: protectedAdminRoute(<AdminDoctorsPage />),
-  },
-  {
-    path: '/admin/doctors/:doctorId',
-    element: protectedAdminRoute(<AdminDoctorsPage />),
-  },
-  {
-    path: '/admin/doctors/:doctorId/edit',
-    element: protectedAdminRoute(<AdminDoctorsPage />),
+    element: protectedAdminRoute(<LegacyRouteRedirect from="/admin/doctors" to="/admin/team" />),
   },
   {
     path: '/admin/showcase/new',
@@ -182,12 +195,20 @@ const routes = [
     element: lazyPublicRoute(<ServiceDetailPage />),
   },
   {
-    path: '/doctors',
+    path: '/team',
     element: lazyPublicRoute(<DoctorsPage />),
   },
   {
-    path: '/doctors/:doctorSlug',
-    element: lazyPublicRoute(<DoctorDetailPage />),
+    path: '/team/:memberSlug',
+    element: lazyPublicRoute(<TeamMemberProfilePage />),
+  },
+  {
+    path: '/doctors/*',
+    element: lazyPublicRoute(<LegacyRouteRedirect from="/doctors" to="/team" />),
+  },
+  {
+    path: '/doctors',
+    element: lazyPublicRoute(<LegacyRouteRedirect from="/doctors" to="/team" />),
   },
   {
     path: '/branches',
@@ -221,4 +242,3 @@ export const router = createBrowserRouter(
     errorElement: <RouteErrorBoundary />,
   })),
 );
-

@@ -19,7 +19,7 @@ const statusPresentation: Record<
 };
 const contentAreas: { key: keyof DashboardContentSummary; label: string; to: string }[] = [
   { key: 'services', label: 'Services', to: '/admin/services' },
-  { key: 'doctors', label: 'Doctors', to: '/admin/doctors' },
+  { key: 'doctors', label: 'Team members', to: '/admin/team' },
   { key: 'showcases', label: 'Showcases', to: '/admin/showcase' },
   { key: 'branches', label: 'Branches', to: '/admin/clinic-info/branches' },
 ];

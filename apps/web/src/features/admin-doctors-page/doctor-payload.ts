@@ -1,4 +1,4 @@
-import type { UpdateDoctorInput } from '@arunreah/shared';
+import type { CreateDoctorPayload, TeamProfileItemInput, UpdateDoctorInput } from '@arunreah/shared';
 import type { AdminDoctor } from '@/services/admin-doctors';
 import { toMediaKey } from '@/services/media';
 
@@ -66,8 +66,7 @@ export function sanitizeDoctorUpdatePayload(doctor: AdminDoctor): UpdateDoctorIn
   }
 
   const nameEn = doctor.name.trim();
-  const rawNameKm = doctor.nameKm?.trim();
-  const nameKm = (rawNameKm || nameEn).slice(0, 160);
+  const nameKm = (doctor.nameKm?.trim() ?? '').slice(0, 160);
 
   const slug = sanitizeSlug(doctor.seo?.slug, nameEn);
 
@@ -77,8 +76,8 @@ export function sanitizeDoctorUpdatePayload(doctor: AdminDoctor): UpdateDoctorIn
       const titleKm = item.titleKm?.trim() || '';
       if (!titleEn && !titleKm) return null;
       return {
-        titleEn: (titleEn || titleKm).slice(0, 160),
-        titleKm: (titleKm || titleEn).slice(0, 160),
+        titleEn: titleEn.slice(0, 160),
+        titleKm: titleKm.slice(0, 160),
         displayOrder: index,
       };
     })
@@ -93,10 +92,10 @@ export function sanitizeDoctorUpdatePayload(doctor: AdminDoctor): UpdateDoctorIn
       const instKm = item.institutionKm?.trim() || '';
       if (!qualEn && !qualKm && !instEn && !instKm) return null;
       return {
-        qualificationEn: (qualEn || qualKm || 'Degree').slice(0, 300),
-        qualificationKm: (qualKm || qualEn || 'សញ្ញាបត្រ').slice(0, 300),
-        institutionEn: (instEn || instKm || 'Institution').slice(0, 300),
-        institutionKm: (instKm || instEn || 'សាកលវិទ្យាល័យ').slice(0, 300),
+        qualificationEn: qualEn.slice(0, 300),
+        qualificationKm: qualKm.slice(0, 300),
+        institutionEn: instEn.slice(0, 300),
+        institutionKm: instKm.slice(0, 300),
         yearLabel: item.yearLabel?.trim() ? item.yearLabel.trim().slice(0, 100) : null,
         displayOrder: index,
       };
@@ -108,6 +107,27 @@ export function sanitizeDoctorUpdatePayload(doctor: AdminDoctor): UpdateDoctorIn
     .map((id) => id.trim())
     .filter((id) => Boolean(id) && id !== doctor.id)
     .slice(0, 3);
+
+  const profileItems = (doctor.profileItems ?? [])
+    .map((item): TeamProfileItemInput | null => {
+      const titleEn = item.titleEn.trim();
+      const titleKm = item.titleKm.trim();
+      const subtitleEn = item.subtitleEn?.trim() || null;
+      const subtitleKm = item.subtitleKm?.trim() || null;
+      if (!titleEn && !titleKm && !subtitleEn && !subtitleKm) return null;
+      return {
+        kind: item.kind,
+        icon: item.kind === 'RESPONSIBILITY' ? item.icon ?? null : null,
+        titleEn,
+        titleKm,
+        subtitleEn,
+        subtitleKm,
+        meta: item.meta?.trim() || null,
+        displayOrder: item.displayOrder,
+      };
+    })
+    .filter((item): item is TeamProfileItemInput => item !== null)
+    .slice(0, 24);
 
   const payload: UpdateDoctorInput = {
     status: effectiveStatus,
@@ -131,8 +151,15 @@ export function sanitizeDoctorUpdatePayload(doctor: AdminDoctor): UpdateDoctorIn
     successfulProcedures: parseProcedures(doctor.procedures),
     patientSatisfaction: parseSatisfaction(doctor.satisfaction),
     phone: parsePhone(doctor.contactPhone),
+    category: doctor.category ?? 'DENTIST',
+    bookable: doctor.category === 'RECEPTIONIST' || doctor.category === 'ASSISTANT' ? false : doctor.bookable !== false,
+    departmentEn: doctor.departmentEn?.trim() || null,
+    departmentKm: doctor.departmentKm?.trim() || null,
+    teamNoteEn: doctor.teamNoteEn?.trim() || null,
+    teamNoteKm: doctor.teamNoteKm?.trim() || null,
     expertise,
     education,
+    profileItems,
     relatedDoctorIds,
     branchIds: doctor.branchIds,
   };
@@ -146,4 +173,24 @@ export function sanitizeDoctorUpdatePayload(doctor: AdminDoctor): UpdateDoctorIn
   }
 
   return payload;
+}
+
+export function sanitizeDoctorCreatePayload(doctor: AdminDoctor): CreateDoctorPayload {
+  const payload = sanitizeDoctorUpdatePayload(doctor);
+  return {
+    ...payload,
+    slug: payload.slug ?? '',
+    status: payload.status ?? 'DRAFT',
+    featured: payload.featured ?? false,
+    displayOrder: payload.displayOrder ?? 0,
+    nameEn: payload.nameEn ?? '',
+    nameKm: payload.nameKm ?? '',
+    category: payload.category ?? 'DENTIST',
+    bookable: payload.bookable ?? true,
+    expertise: payload.expertise ?? [],
+    education: payload.education ?? [],
+    profileItems: payload.profileItems ?? [],
+    relatedDoctorIds: payload.relatedDoctorIds ?? [],
+    branchIds: payload.branchIds ?? [],
+  };
 }

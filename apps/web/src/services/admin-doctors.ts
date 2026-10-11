@@ -1,5 +1,5 @@
 import type { AdminNavIcon } from '@/services/admin-inbox';
-import type { AdminDoctorListQuery, ImagePresentation } from '@arunreah/shared';
+import type { AdminDoctorListQuery, ImagePresentation, TeamCategory, TeamProfileItemInput } from '@arunreah/shared';
 import { cmsApi, type AdminDoctorDetail, type AdminDoctorRecord, type CmsListMeta } from '@/services/cms';
 import { getPublicMediaUrl } from '@/services/media';
 
@@ -49,10 +49,17 @@ export type AdminDoctor = {
   specialtyKm?: string;
   relatedDoctorIds?: string[];
   branchIds?: string[];
+  bookable?: boolean;
+  category?: TeamCategory;
+  departmentEn?: string;
+  departmentKm?: string;
   displayOrder?: number;
+  profileItems?: TeamProfileItemInput[];
   showOnWebsite: boolean;
   specialty: string;
   status: DoctorStatus;
+  teamNoteEn?: string;
+  teamNoteKm?: string;
   updatedAt: string;
   yearsExp: string;
 };
@@ -104,15 +111,15 @@ const adminDoctorsContent: AdminDoctorsContent = {
     logoUrl: '/assets/landing/footer-logo-cropped.png',
   },
   controls: {
-    addLabel: 'Add New Doctor',
+    addLabel: 'Add Team Member',
     allSpecialties: 'All Specialties',
     allStatuses: 'All Status',
     dateLabel: 'October 24, 2024',
-    searchPlaceholder: 'Search doctors...',
+    searchPlaceholder: 'Search team members...',
   },
   empty: {
-    description: 'No doctors matched your criteria. Try adjusting your search query or filters.',
-    title: 'No specialists found',
+    description: 'No team members matched your criteria. Try adjusting your search query or filters.',
+    title: 'No team members found',
   },
   footer: {
     copyright: '© 2026 Arunreah Dental Clinic. All rights reserved.',
@@ -120,8 +127,8 @@ const adminDoctorsContent: AdminDoctorsContent = {
     sslLabel: 'SSL Secured',
   },
   header: {
-    subtitle: 'Add, edit, and manage specialist profiles shown on the website.',
-    title: 'Doctor Management',
+    subtitle: 'Add, edit, order, and manage every team profile shown on the website.',
+    title: 'Team Management',
   },
   navigation: [
     { icon: 'dashboard', label: 'Dashboard' },
@@ -130,7 +137,7 @@ const adminDoctorsContent: AdminDoctorsContent = {
     { icon: 'calendar', label: 'Calendar', section: 'appointments' },
     { icon: 'appointments', label: 'All Appointments', section: 'appointments' },
     { icon: 'services', label: 'Services' },
-    { icon: 'doctors', label: 'Doctors' },
+    { icon: 'doctors', label: 'Team' },
     { icon: 'showcase', label: 'Showcase' },
     { icon: 'clinicInfo', label: 'Clinic Info' },
   ],
@@ -409,7 +416,7 @@ export function toAdminDoctor(doctor: AdminDoctorRecord): AdminDoctor {
     id: doctor.id, name: doctor.nameEn, nameKm: doctor.nameKm, roleTitle: doctor.titleEn ?? '', roleTitleKm: doctor.titleKm ?? '', specialty: doctor.specialtyEn ?? '', specialtyKm: doctor.specialtyKm ?? '', shortIntro: doctor.shortBioEn ?? '', shortIntroKm: doctor.shortBioKm ?? '', content: doctor.aboutEn ?? '', contentKm: doctor.aboutKm ?? '',
     imageAlt: doctor.nameEn, imageUrl: getPublicMediaUrl(doctor.photoKey), photoKey: doctor.photoKey, photoImagePresentation: doctor.photoImagePresentation, contactPhone: doctor.phone ?? '', expertise: [], expertiseItems: [],
     education: [], educationItems: [], relatedDoctorIds: [], branchIds: doctor.branchIds ?? [], procedures: doctor.successfulProcedures?.toString() ?? '', satisfaction: doctor.patientSatisfaction?.toString() ?? '', yearsExp: doctor.yearsExperience?.toString() ?? '',
-    featuredDoctor: doctor.featured, showOnWebsite: doctor.status === 'PUBLISHED', status: statusForUi(doctor.status), updatedAt: doctor.updatedAt, ctaButtonText: 'Book Now', seo: { slug: doctor.slug }, displayOrder: doctor.displayOrder,
+    bookable: doctor.bookable, category: doctor.category, departmentEn: doctor.departmentEn ?? '', departmentKm: doctor.departmentKm ?? '', featuredDoctor: doctor.featured, profileItems: [], showOnWebsite: doctor.status === 'PUBLISHED', status: statusForUi(doctor.status), teamNoteEn: doctor.teamNoteEn ?? '', teamNoteKm: doctor.teamNoteKm ?? '', updatedAt: doctor.updatedAt, ctaButtonText: 'Book Now', seo: { slug: doctor.slug }, displayOrder: doctor.displayOrder,
   };
 }
 
@@ -421,6 +428,7 @@ export function toAdminDoctorDetail(doctor: AdminDoctorDetail): AdminDoctor {
     educationItems: doctor.education.map(({ displayOrder, institutionEn, institutionKm, qualificationEn, qualificationKm, yearLabel }) => ({ displayOrder, institutionEn, institutionKm, qualificationEn, qualificationKm, yearLabel })),
     expertise: doctor.expertise.map((item) => item.titleEn),
     expertiseItems: doctor.expertise.map(({ displayOrder, titleEn, titleKm }) => ({ displayOrder, titleEn, titleKm })),
+    profileItems: doctor.profileItems.map(({ kind, icon, titleEn, titleKm, subtitleEn, subtitleKm, meta, displayOrder }) => ({ kind, icon, titleEn, titleKm, subtitleEn, subtitleKm, meta, displayOrder })),
     relatedDoctorIds: doctor.relatedDoctorIds,
   };
 }

@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,16 @@ import { CmsImage, ResilientImage } from '@/components/layout/public-ui';
 import type { DoctorsPageContent, LandingDoctor } from '@/features/landing-page/types';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useDoctorsPageQuery } from './use-doctors-page';
+import {
+  teamCategories,
+  teamDirectoryCopy,
+  teamMemberProfileHref,
+  teamSectionAnchor,
+  TEAM_DIRECTORY_ANCHOR,
+  type TeamCategory,
+  type TeamDirectoryGroups,
+  type TeamMember,
+} from './team-directory';
 import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
@@ -19,6 +30,31 @@ function CalendarIcon() {
   return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('hero-calendar.svg')} />;
 }
 
+function ArrowIcon() {
+  return <img alt="" aria-hidden="true" className="size-[14px]" src={asset('arrow-right.svg')} />;
+}
+
+/**
+ * One card design, shared by every team category. The dentist card is the
+ * original design, so these class strings are the source of truth for all
+ * other staff cards too.
+ */
+const teamCard = {
+  body: 'flex min-w-0 flex-1 flex-col bg-white p-4 sm:min-h-[156px] sm:p-5',
+  bodyCompact:
+    'flex min-w-0 flex-1 flex-col justify-center bg-white p-4 sm:min-h-[112px] sm:justify-start sm:p-5',
+  inner: 'flex min-h-[196px] sm:block',
+  media:
+    'min-h-[196px] w-[42%] max-w-[176px] shrink-0 self-stretch bg-[#edf5f8] sm:aspect-[11/10] sm:h-auto sm:min-h-0 sm:w-full sm:max-w-none',
+  name: 'text-[15px] font-bold leading-5 text-[#005687] sm:text-[16px]',
+  role: 'mt-1 text-[12px] font-semibold leading-4 text-[#0d7596] sm:text-[13px]',
+  shell:
+    'overflow-hidden rounded-xl border-[#e6edf1] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-[border-color,box-shadow] duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]',
+  support: 'mt-2 line-clamp-2 text-[13px] font-normal leading-5 text-[#64748b]',
+};
+
+const teamGrid = 'grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4';
+
 const LEGACY_LONG_DOCTORS_SUBTITLES = new Set([
   "our dental team brings together experience, continuous learning, and a thoughtful approach to every patient's care.",
   'our dental team brings together experience, continuous learning, and a thoughtful approach to every patient’s care.',
@@ -27,11 +63,34 @@ const LEGACY_LONG_DOCTORS_SUBTITLES = new Set([
   'ជួបជាមួយក្រុមទន្តបណ្ឌិតឯកទេសរបស់យើងដែលប្តេជ្ញាផ្តល់ការថែទាំដ៏ល្អបំផុត។',
 ]);
 
-function getConciseDoctorsSubtitle(raw: string | null | undefined, language: 'en' | 'km') {
+/**
+ * The page now covers the whole clinic team, not only dentists. Until the
+ * DOCTORS_HERO title is renamed in the CMS, the known dentist-only titles are
+ * mapped to the team heading here. Delete this shim once the CMS copy is
+ * updated; any other title passes through untouched.
+ */
+const LEGACY_DOCTORS_HERO_TITLES = new Set([
+  'doctors',
+  'meet the arunreah dental team',
+  'meet our dental team',
+  'វេជ្ជបណ្ឌិត',
+  'ទន្តបណ្ឌិត',
+  'ជួបជាមួយក្រុមទន្តបណ្ឌិតអរុណរះ',
+]);
+
+function getTeamHeroTitle(raw: string | null | undefined, language: 'en' | 'km') {
+  const defaultTitle = language === 'km' ? 'ក្រុមការងាររបស់យើង' : 'Our Team';
+  const trimmed = raw?.trim();
+  if (!trimmed) return defaultTitle;
+  if (LEGACY_DOCTORS_HERO_TITLES.has(trimmed.toLowerCase())) return defaultTitle;
+  return trimmed;
+}
+
+function getTeamHeroSubtitle(raw: string | null | undefined, language: 'en' | 'km') {
   const defaultSubtitle =
     language === 'km'
-      ? 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ពីក្រុមទន្តបណ្ឌិតរបស់យើង។'
-      : 'Thoughtful dental care from our experienced clinic team.';
+      ? 'ទន្តបណ្ឌិត គ្រូពេទ្យទូទៅ បុគ្គលិកទទួលភ្ញៀវ និងជំនួយការព្យាបាល ដែលថែទាំអ្នកតាំងពីការស្វាគមន៍ដំបូង រហូតដល់ការពិនិត្យចុងក្រោយ។'
+      : 'Dentists, general practitioners, receptionists, and clinical assistants who look after you from your first hello to your final check-up.';
   const trimmed = raw?.trim();
   if (!trimmed) return defaultSubtitle;
   if (LEGACY_LONG_DOCTORS_SUBTITLES.has(trimmed.toLowerCase())) {
@@ -40,7 +99,7 @@ function getConciseDoctorsSubtitle(raw: string | null | undefined, language: 'en
   return trimmed;
 }
 
-function DoctorsHero({
+function TeamHero({
   hero,
   heroMedia,
 }: {
@@ -51,10 +110,10 @@ function DoctorsHero({
   const uiCopy = publicUiCopy(language).doctors;
   const imageUrl = heroMedia ? getPublicMediaUrl(heroMedia.imageKey) : null;
   const fallbackImageUrl = '/assets/landing/hero-clinic.png';
-  const title = heroMedia?.title ?? hero.title;
-  const description = getConciseDoctorsSubtitle(heroMedia?.body ?? hero.description, language);
+  const title = getTeamHeroTitle(heroMedia?.title ?? hero.title, language);
+  const description = getTeamHeroSubtitle(heroMedia?.body ?? hero.description, language);
   const eyebrow =
-    heroMedia?.badge || (language === 'km' ? 'ក្រុមទន្តបណ្ឌិតរបស់យើង' : 'OUR DENTAL TEAM');
+    heroMedia?.badge || (language === 'km' ? 'ជួបជាមួយក្រុមការងារ' : 'MEET THE TEAM');
 
   return (
     <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
@@ -103,17 +162,18 @@ function DoctorsHero({
 
 export function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
   const { language } = usePublicLanguage();
+  const doctorsCopy = publicUiCopy(language).doctors;
   const hasImage = Boolean(doctor.imageUrl);
 
   return (
-    <Card className="overflow-hidden rounded-xl border-[#e6edf1] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition-[border-color,box-shadow] duration-200 hover:border-[#cfe4ec] hover:shadow-[0_8px_20px_rgba(15,23,42,0.07)]">
+    <Card className={teamCard.shell}>
       <Link
-        aria-label={`View profile for ${doctor.name}`}
-        className="group flex min-h-[196px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9] sm:block"
+        aria-label={`${doctorsCopy.viewProfile}: ${doctor.name}`}
+        className={`group ${teamCard.inner} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]`}
         to={doctor.detail.profileHref}
       >
         {hasImage ? (
-          <div className="min-h-[196px] w-[42%] max-w-[176px] shrink-0 self-stretch overflow-hidden bg-[#edf5f8] sm:aspect-[11/10] sm:h-auto sm:min-h-0 sm:w-full sm:max-w-none">
+          <div className={`${teamCard.media} overflow-hidden`}>
             <CmsImage
               alt={doctor.imageAlt || doctor.name}
               className="h-full w-full object-cover"
@@ -122,22 +182,13 @@ export function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
             />
           </div>
         ) : (
-          <div
-            aria-hidden="true"
-            className="min-h-[196px] w-[42%] max-w-[176px] shrink-0 self-stretch bg-[#edf5f8] sm:aspect-[11/10] sm:h-auto sm:min-h-0 sm:w-full sm:max-w-none"
-          />
+          <div aria-hidden="true" className={teamCard.media} />
         )}
-        <div className="flex min-w-0 flex-1 flex-col bg-white p-4 sm:min-h-[156px] sm:p-5">
-          <h3 className="text-[15px] font-bold leading-5 text-[#005687] sm:text-[16px]">
-            {doctor.name}
-          </h3>
-          <p className="mt-1 text-[12px] font-semibold leading-4 text-[#3695B9] sm:text-[13px]">
-            {doctor.credential ?? doctor.specialty}
-          </p>
-          <p className="mt-2 line-clamp-2 text-[13px] font-normal leading-5 text-[#64748b]">
-            {doctor.focus ?? doctor.specialty}
-          </p>
-          <span className="mt-auto inline-flex min-h-9 items-center justify-start gap-2 pt-3 text-left text-[12px] font-bold leading-4 text-[#167ea7] transition group-hover:text-[#005687] sm:mt-3 sm:min-h-0 sm:pt-0">
+        <div className={teamCard.body}>
+          <h3 className={teamCard.name}>{doctor.name}</h3>
+          <p className={teamCard.role}>{doctor.credential ?? doctor.specialty}</p>
+          <p className={teamCard.support}>{doctor.focus ?? doctor.specialty}</p>
+          <span className="mt-auto inline-flex min-h-9 items-center justify-start gap-2 pt-3 text-left text-[12px] font-bold leading-4 text-[#0d7596] transition group-hover:text-[#005687] sm:mt-3 sm:min-h-0 sm:pt-0">
             <CalendarIcon />
             {doctor.bookingLabel ??
               (language === 'km' ? `កក់ជាមួយ ${doctor.name}` : `Book with ${doctor.name}`)}
@@ -148,42 +199,252 @@ export function DoctorCard({ doctor }: { doctor: LandingDoctor }) {
   );
 }
 
-function DoctorsGrid({ doctors }: { doctors: LandingDoctor[] }) {
-  const { language } = usePublicLanguage();
-  const copy =
-    language === 'km'
-      ? {
-          eyebrow: 'ជួបជាមួយក្រុមរបស់យើង',
-          title: 'ក្រុមទន្តបណ្ឌិតដែលយកចិត្តទុកដាក់ស្តាប់អ្នកជាមុន',
-          body: 'ស្វែងយល់ពីប្រវត្តិ ជំនាញ និងវិធីសាស្ត្រថែទាំអ្នកជំងឺរបស់ទន្តបណ្ឌិតនីមួយៗ។',
-        }
-      : {
-          eyebrow: 'Meet the team',
-          title: 'Professionals who listen first',
-          body: 'Explore each profile to learn about their background, areas of practice, and approach to patient care.',
-        };
+function TeamMonogram({ name }: { name: string }) {
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => [...part][0] ?? '')
+    .join('');
+
   return (
-    <section
-      aria-label={publicUiCopy(language).doctors.profilesLabel}
-      className="bg-white py-10 sm:py-14"
+    <div aria-hidden="true" className={`${teamCard.media} grid place-items-center`}>
+      <span className="text-[26px] font-extrabold leading-none text-[#9cc2d3] sm:text-[30px]">
+        {initials}
+      </span>
+    </div>
+  );
+}
+
+function TeamMemberCardContent({
+  actionLabel,
+  member,
+}: {
+  actionLabel: string | null;
+  member: TeamMember;
+}) {
+  return (
+    <>
+      {member.imageUrl ? (
+        <div className={`${teamCard.media} overflow-hidden`}>
+          <CmsImage
+            alt={member.imageAlt || member.name}
+            className="h-full w-full object-cover"
+            presentation={member.imagePresentation ?? { positionX: 50, positionY: 0, zoom: 1 }}
+            src={member.imageUrl}
+          />
+        </div>
+      ) : (
+        <TeamMonogram name={member.name} />
+      )}
+      <div className={actionLabel ? teamCard.body : teamCard.bodyCompact}>
+        <h3 className={teamCard.name}>{member.name}</h3>
+        <p className={teamCard.role}>{member.roleTitle}</p>
+        {member.responsibility ? (
+          <p className={teamCard.support}>{member.responsibility}</p>
+        ) : null}
+        {actionLabel ? (
+          <span className="mt-auto inline-flex min-h-9 items-center justify-start gap-2 pt-3 text-left text-[12px] font-bold leading-4 text-[#0d7596] transition group-hover:text-[#005687] sm:mt-3 sm:min-h-0 sm:pt-0">
+            <ArrowIcon />
+            {actionLabel}
+          </span>
+        ) : null}
+      </div>
+    </>
+  );
+}
+
+export function TeamMemberCard({ member }: { member: TeamMember }) {
+  const { language } = usePublicLanguage();
+  const copy = teamDirectoryCopy(language);
+  const profileHref = member.slug ? teamMemberProfileHref(member.slug) : null;
+
+  if (!profileHref) {
+    return (
+      <Card className={teamCard.shell}>
+        <div className={teamCard.inner}>
+          <TeamMemberCardContent actionLabel={null} member={member} />
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className={teamCard.shell}>
+      <Link
+        aria-label={`${copy.viewProfile} — ${member.name}`}
+        className={`group ${teamCard.inner} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#3695B9]`}
+        to={profileHref}
+      >
+        <TeamMemberCardContent actionLabel={copy.viewProfile} member={member} />
+      </Link>
+    </Card>
+  );
+}
+
+const STICKY_PROBE_OFFSET = 160;
+
+function useActiveTeamSection(anchors: string[]) {
+  const key = anchors.join('|');
+  const [active, setActive] = useState<string | null>(null);
+
+  useEffect(() => {
+    const ids = key.split('|');
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+      let current: string | null = null;
+      for (const id of ids) {
+        const element = document.getElementById(id);
+        if (element && element.getBoundingClientRect().top <= STICKY_PROBE_OFFSET) {
+          current = id;
+        }
+      }
+      setActive(current);
+    };
+
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [key]);
+
+  return active;
+}
+
+function TeamCategoryNav({ categories }: { categories: TeamCategory[] }) {
+  const { language } = usePublicLanguage();
+  const copy = teamDirectoryCopy(language);
+  const anchors = useMemo(() => categories.map((category) => teamSectionAnchor(category.id)), [categories]);
+  const activeAnchor = useActiveTeamSection(anchors);
+
+  const items = [
+    { anchor: TEAM_DIRECTORY_ANCHOR, label: copy.allLabel },
+    ...categories.map((category) => ({ anchor: teamSectionAnchor(category.id), label: category.navLabel })),
+  ];
+
+  return (
+    // `sticky` only takes effect once the SiteLayout root stops creating a
+    // scroll container (`overflow-x-hidden`), which also stops the site header
+    // from sticking. Until then this reads as a static bar under the hero.
+    <nav
+      aria-label={copy.navLabel}
+      className="sticky top-[64px] z-30 border-b border-[#e7eff3] bg-white/95 backdrop-blur-xl sm:top-[74px]"
     >
       <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="mb-6 max-w-[650px] sm:mb-8">
-          <p className="ui-eyebrow text-[11px] font-bold uppercase tracking-[0.06em] text-[#3695B9] sm:text-[12px]">
-            {copy.eyebrow}
-          </p>
-          <h2 className="mt-2 text-[27px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">
-            {copy.title}
+        <ul className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 py-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {items.map((item) => {
+            const isActive =
+              item.anchor === TEAM_DIRECTORY_ANCHOR ? activeAnchor === null : activeAnchor === item.anchor;
+            return (
+              <li key={item.anchor}>
+                <a
+                  aria-current={isActive ? 'true' : undefined}
+                  className={`inline-flex min-h-9 items-center whitespace-nowrap rounded-full border px-4 text-[13px] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#168aad] sm:text-[14px] ${
+                    isActive
+                      ? 'border-[#b9dce8] bg-[#eef8fb] text-[#005687]'
+                      : 'border-[#e3edf1] bg-white text-[#526879] hover:border-[#cfe4ec] hover:text-[#005687]'
+                  }`}
+                  href={`#${item.anchor}`}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </nav>
+  );
+}
+
+function TeamSection({
+  anchor,
+  children,
+  description,
+  eyebrow,
+  isFirst,
+  title,
+}: {
+  anchor: string;
+  children: ReactNode;
+  description: string;
+  eyebrow: string;
+  isFirst: boolean;
+  title: string;
+}) {
+  return (
+    <section
+      aria-labelledby={`${anchor}-title`}
+      className={`scroll-mt-[88px] sm:scroll-mt-[96px] ${isFirst ? '' : 'border-t border-[#e7eff3]'}`}
+      id={anchor}
+    >
+      <div className="mx-auto w-full max-w-[1280px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+        <div className="mb-6 max-w-[680px] sm:mb-8">
+          <div className="flex items-center gap-3">
+            <span aria-hidden="true" className="h-px w-8 shrink-0 bg-[#3695B9]" />
+            <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#0d7596]">
+              {eyebrow}
+            </p>
+          </div>
+          <h2
+            className="mt-2 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]"
+            id={`${anchor}-title`}
+          >
+            {title}
           </h2>
-          <p className="mt-2 text-[15px] leading-6 text-[#64748b]">{copy.body}</p>
+          <p className="mt-2 text-[15px] leading-6 text-[#64748b]">{description}</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
-          {doctors.map((doctor) => (
-            <DoctorCard doctor={doctor} key={doctor.detail.profileHref} />
-          ))}
-        </div>
+        {children}
       </div>
     </section>
+  );
+}
+
+function TeamDirectory({ categories, doctors, teamMembers }: { categories: TeamCategory[]; doctors: LandingDoctor[]; teamMembers: TeamDirectoryGroups }) {
+  const { language } = usePublicLanguage();
+
+  return (
+    <div
+      aria-label={publicUiCopy(language).doctors.profilesLabel}
+      className="scroll-mt-[88px] bg-white sm:scroll-mt-[96px]"
+      id={TEAM_DIRECTORY_ANCHOR}
+      role="region"
+    >
+      {categories.map((category, index) => (
+        <TeamSection
+          anchor={teamSectionAnchor(category.id)}
+          description={category.description}
+          eyebrow={category.eyebrow}
+          isFirst={index === 0}
+          key={category.id}
+          title={category.title}
+        >
+          {category.id === 'dentists' ? (
+            <div className={teamGrid}>
+              {doctors.map((doctor) => (
+                <DoctorCard doctor={doctor} key={doctor.detail.profileHref} />
+              ))}
+            </div>
+          ) : teamMembers[category.id].length > 0 ? (
+            <div className={teamGrid}>
+              {teamMembers[category.id].map((member) => (
+                <TeamMemberCard key={member.id} member={member} />
+              ))}
+            </div>
+          ) : null}
+        </TeamSection>
+      ))}
+    </div>
   );
 }
 
@@ -202,10 +463,10 @@ function PatientFirstApproach({
     <section className="border-t border-[#e7eff3] bg-[#f7fafc] py-12 sm:py-16">
       <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8">
         <div className="max-w-[640px]">
-          <p className="ui-eyebrow text-[12px] font-bold uppercase tracking-[0.06em] text-[#3695B9]">
+          <p className="ui-eyebrow text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#0d7596]">
             {copy.eyebrow}
           </p>
-          <h2 className="mt-2 text-[28px] font-extrabold tracking-[-0.035em] text-[#073f60] sm:text-[34px]">
+          <h2 className="mt-2 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#005687] sm:text-[28px]">
             {copy.title}
           </h2>
         </div>
@@ -233,7 +494,7 @@ function PatientFirstApproach({
                   className={`p-5 sm:p-6 ${items.length === 1 ? 'rounded-b-xl border border-t-0 border-[#dce9ee] bg-white md:rounded-xl md:border' : ''}`}
                 >
                   {item.title ? (
-                    <h3 className="text-[19px] font-bold text-[#073f60]">{item.title}</h3>
+                    <h3 className="text-[19px] font-bold text-[#005687]">{item.title}</h3>
                   ) : null}
                   {item.body ? (
                     <p className="mt-2 text-[15px] leading-6 text-[#607486]">{item.body}</p>
@@ -248,7 +509,13 @@ function PatientFirstApproach({
   );
 }
 
-function DoctorsPageView({ content }: { content: DoctorsPageContent }) {
+type TeamDoctorsPageContent = DoctorsPageContent & { teamMembers: TeamDirectoryGroups };
+
+function DoctorsPageView({ content }: { content: TeamDoctorsPageContent }) {
+  const { language } = usePublicLanguage();
+  const categories = teamCategories(language).filter((category) =>
+    category.id === 'dentists' ? content.doctors.length > 0 : content.teamMembers[category.id].length > 0,
+  );
   return (
     <SiteLayout
       actions={content.actions}
@@ -256,8 +523,9 @@ function DoctorsPageView({ content }: { content: DoctorsPageContent }) {
       services={content.services}
     >
       <main>
-        <DoctorsHero hero={content.hero} heroMedia={content.heroMedia} />
-        <DoctorsGrid doctors={content.doctors} />
+        <TeamHero hero={content.hero} heroMedia={content.heroMedia} />
+        <TeamCategoryNav categories={categories} />
+        <TeamDirectory categories={categories} doctors={content.doctors} teamMembers={content.teamMembers} />
         <PatientFirstApproach items={content.patientEducation ?? []} />
       </main>
       <SiteFooter {...content.footer} />
@@ -282,6 +550,14 @@ function DoctorsPageSkeleton() {
             <div className="mx-auto h-3 w-28 animate-pulse rounded-full bg-[#dcebf0]" />
             <div className="mx-auto mt-3 h-9 w-56 max-w-full animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
             <div className="mx-auto mt-4 h-4 w-[84%] animate-pulse rounded-full bg-[#e5f0f4] sm:w-[66%]" />
+          </div>
+        </section>
+
+        <section aria-hidden="true" className="border-b border-[#e7eff3] bg-white">
+          <div className="mx-auto flex w-full max-w-[1280px] gap-2 px-4 py-3 sm:px-6 lg:px-8">
+            {Array.from({ length: 5 }, (_, index) => (
+              <div className="h-9 w-28 animate-pulse rounded-full bg-[#e5f0f4]" key={index} />
+            ))}
           </div>
         </section>
 
@@ -340,16 +616,16 @@ function DoctorsPageError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-function hasDoctorsContent(content: DoctorsPageContent | undefined): content is DoctorsPageContent {
-  return Boolean(
-    content && content.navigation.length > 0 && content.hero.title && content.doctors.length > 0,
-  );
+function hasDoctorsContent(content: TeamDoctorsPageContent | undefined): content is TeamDoctorsPageContent {
+  return Boolean(content && content.navigation.length > 0 && content.hero.title);
 }
 
 export function DoctorsPage() {
   const { data, isError, isLoading, refetch } = useDoctorsPageQuery();
   const { language } = usePublicLanguage();
-  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'ទន្តបណ្ឌិត' : 'Doctors'));
+  usePublicDocumentTitle(
+    getTeamHeroTitle(data?.hero.title, language),
+  );
 
   if (isLoading) {
     return <DoctorsPageSkeleton />;

@@ -6,6 +6,7 @@ import {
   doctorBranches,
   doctorEducation,
   doctorExpertise,
+  doctorProfileItems,
   doctorRelatedDoctors,
   doctors,
 } from './doctors';
@@ -72,6 +73,7 @@ export const serviceRelatedServicesRelations = relations(serviceRelatedServices,
 export const doctorsRelations = relations(doctors, ({ many }) => ({
   expertise: many(doctorExpertise),
   education: many(doctorEducation),
+  profileItems: many(doctorProfileItems),
   relatedDoctors: many(doctorRelatedDoctors, { relationName: 'relatedDoctorSource' }),
   relatedToDoctors: many(doctorRelatedDoctors, { relationName: 'relatedDoctorTarget' }),
   appointments: many(appointments),
@@ -99,6 +101,13 @@ export const doctorExpertiseRelations = relations(doctorExpertise, ({ one }) => 
 export const doctorEducationRelations = relations(doctorEducation, ({ one }) => ({
   doctor: one(doctors, {
     fields: [doctorEducation.doctorId],
+    references: [doctors.id],
+  }),
+}));
+
+export const doctorProfileItemsRelations = relations(doctorProfileItems, ({ one }) => ({
+  doctor: one(doctors, {
+    fields: [doctorProfileItems.doctorId],
     references: [doctors.id],
   }),
 }));

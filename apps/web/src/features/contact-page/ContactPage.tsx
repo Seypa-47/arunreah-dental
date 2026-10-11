@@ -173,7 +173,7 @@ function ContactCards({
         {branchContacts && branchContacts.length > 1 && onSelectBranch ? (
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="ui-eyebrow text-[11.5px] font-extrabold uppercase tracking-[0.06em] text-[#3695B9]">
+              <p className="ui-eyebrow text-[11.5px] font-extrabold uppercase tracking-[0.06em] text-[#0d7596]">
                 {isKm ? 'ព័ត៌មានទំនាក់ទំនងតាមសាខា' : 'Branch Contact Details'}
               </p>
               <h2 className="mt-1 text-[20px] font-extrabold text-[#005687] sm:text-[22px]">

@@ -67,7 +67,7 @@ const adminAddDoctorContent: AdminAddDoctorContent = {
   header: {
     dateLabel: 'October 24, 2024',
     subtitle: 'Fill in the details below to add a new doctor to the clinic.',
-    title: 'Add New Doctor',
+    title: 'Add Team Member',
   },
   navigation: [
     { icon: 'dashboard', label: 'Dashboard' },
@@ -76,9 +76,9 @@ const adminAddDoctorContent: AdminAddDoctorContent = {
     { icon: 'calendar', label: 'Calendar', section: 'appointments' },
     { icon: 'appointments', label: 'All Appointments', section: 'appointments' },
     { icon: 'services', label: 'Services' },
-    { icon: 'doctors', label: 'Doctors' },
-    { icon: 'doctors', label: 'Doctor Management', section: 'doctors' },
-    { icon: 'doctors', label: 'Add New Doctor', section: 'doctors' },
+    { icon: 'doctors', label: 'Team' },
+    { icon: 'doctors', label: 'Team Management', section: 'doctors' },
+    { icon: 'doctors', label: 'Add Team Member', section: 'doctors' },
     { icon: 'showcase', label: 'Showcase' },
     { icon: 'clinicInfo', label: 'Clinic Info' },
   ],

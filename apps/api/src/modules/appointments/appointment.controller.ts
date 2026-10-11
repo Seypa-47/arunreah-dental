@@ -4,6 +4,7 @@ import {
   errorResponse,
   successResponse,
   updateAppointmentStatusSchema,
+  uuidPathParamSchema,
 } from '@arunreah/shared';
 import type { Context } from 'hono';
 import { createDbClient } from '../../db/client';
@@ -11,12 +12,14 @@ import { createAppointmentRequestRateLimitKey } from '../../services/appointment
 import { createPublicAppointmentRequest } from '../../services/appointment.service';
 import * as adminAppointment from '../../services/admin-appointment.service';
 import { HttpError } from '../../shared/http-error';
-import { parseRequestBody, parseRequestQuery } from '../../shared/request';
+import { parseRequestBody, parseRequestParams, parseRequestQuery } from '../../shared/request';
 import type { AppEnv } from '../../types/env';
+import { runBestEffortMaintenance } from '../../services/maintenance.service';
 
 export async function createPublicAppointmentController(context: Context<AppEnv>) {
   const input = await parseRequestBody(context, createPublicAppointmentSchema);
   const database = createDbClient(context.env.DB);
+  await runBestEffortMaintenance(database);
   const rateLimitKey = await createAppointmentRequestRateLimitKey(context.req.raw.headers);
 
   const result = await createPublicAppointmentRequest(
@@ -43,8 +46,7 @@ export async function listAdminAppointmentsController(context: Context<AppEnv>) 
 }
 
 export async function getAdminAppointmentController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Appointment not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   const appointment = await adminAppointment.getAdminAppointmentDetail(
     createDbClient(context.env.DB),
     id,
@@ -54,8 +56,7 @@ export async function getAdminAppointmentController(context: Context<AppEnv>) {
 }
 
 export async function updateAdminAppointmentStatusController(context: Context<AppEnv>) {
-  const id = context.req.param('id');
-  if (!id) throw new HttpError(404, 'NOT_FOUND', 'Appointment not found.');
+  const { id } = parseRequestParams(context, uuidPathParamSchema);
   const input = await parseRequestBody(context, updateAppointmentStatusSchema);
   const admin = context.get('authenticatedAdmin');
   if (!admin) throw new HttpError(401, 'UNAUTHORIZED', 'Authentication is required.');
@@ -95,8 +96,11 @@ export async function getAdminTelegramStatusController(context: Context<AppEnv>)
       const data = (await meRes.json()) as { ok?: boolean };
       botReachable = Boolean(data.ok);
     }
-  } catch (error) {
-    console.error('Failed to query Telegram API:', error);
+  } catch {
+    console.error('Notification provider request failed', {
+      provider: 'telegram',
+      code: 'PROVIDER_UNREACHABLE',
+    });
   }
 
   context.header('Cache-Control', 'private, no-store');
@@ -117,10 +121,15 @@ export async function testAdminTelegramNotificationController(context: Context<A
   const chatId = context.env.TELEGRAM_CHAT_ID;
 
   if (!botToken || !chatId) {
-    throw new HttpError(400, 'VALIDATION_ERROR', 'Telegram notification settings are not configured.');
+    throw new HttpError(
+      400,
+      'VALIDATION_ERROR',
+      'Telegram notification settings are not configured.',
+    );
   }
 
-  const text = '🔔 Arunreah Dental Clinic — Test notification to Telegram group. Group notifications are active!';
+  const text =
+    '🔔 Arunreah Dental Clinic — Test notification to Telegram group. Group notifications are active!';
   const response = await fetch(
     `https://api.telegram.org/bot${encodeURIComponent(botToken)}/sendMessage`,
     {

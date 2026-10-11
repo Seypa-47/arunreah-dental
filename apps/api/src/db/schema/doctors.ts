@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { check, index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { branches } from './branches';
+import { profileItemKindValues, teamCategoryValues } from '@arunreah/shared';
 import { contentStatusValues, timestamps } from './common';
 
 export const doctors = sqliteTable(
@@ -26,15 +27,75 @@ export const doctors = sqliteTable(
     successfulProcedures: integer('successful_procedures'),
     patientSatisfaction: integer('patient_satisfaction'),
     phone: text('phone'),
+    /** Which Our Team section this member appears in. */
+    category: text('category', { enum: teamCategoryValues }).notNull().default('DENTIST'),
+    /**
+     * Whether this member can be attached to an appointment. Only ever true for
+     * DENTIST / GENERAL_PRACTITIONER — enforced in the shared schema and again
+     * in doctor.service.ts.
+     */
+    bookable: integer('bookable', { mode: 'boolean' }).notNull().default(true),
+    departmentEn: text('department_en'),
+    departmentKm: text('department_km'),
+    teamNoteEn: text('team_note_en'),
+    teamNoteKm: text('team_note_km'),
     ...timestamps(),
   },
   (table) => [
     uniqueIndex('doctors_slug_unique').on(table.slug),
+    index('doctors_category_idx').on(table.category),
+    index('doctors_category_status_order_idx').on(table.category, table.status, table.displayOrder),
     index('doctors_status_idx').on(table.status),
     index('doctors_featured_idx').on(table.featured),
     index('doctors_display_order_idx').on(table.displayOrder),
     index('doctors_status_display_order_idx').on(table.status, table.displayOrder),
     check('doctors_status_check', sql`status in ('DRAFT', 'PUBLISHED', 'ARCHIVED')`),
+    check(
+      'doctors_category_check',
+      sql`category in ('DENTIST', 'GENERAL_PRACTITIONER', 'RECEPTIONIST', 'ASSISTANT')`,
+    ),
+  ],
+);
+
+/**
+ * Ordered list blocks on a team member profile: GP experience, support-staff
+ * responsibilities, assistant training, and spoken languages. One table with a
+ * `kind` discriminator because all four share the same shape.
+ */
+export const doctorProfileItems = sqliteTable(
+  'doctor_profile_items',
+  {
+    id: text('id').primaryKey(),
+    doctorId: text('doctor_id')
+      .notNull()
+      .references(() => doctors.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    kind: text('kind', { enum: profileItemKindValues }).notNull(),
+    /** RESPONSIBILITY items only. */
+    icon: text('icon'),
+    titleEn: text('title_en').notNull(),
+    titleKm: text('title_km').notNull(),
+    subtitleEn: text('subtitle_en'),
+    subtitleKm: text('subtitle_km'),
+    /** Period or year label, shown only when confirmed. */
+    meta: text('meta'),
+    displayOrder: integer('display_order').notNull().default(0),
+    ...timestamps(),
+  },
+  (table) => [
+    index('doctor_profile_items_doctor_id_idx').on(table.doctorId),
+    index('doctor_profile_items_doctor_kind_order_idx').on(
+      table.doctorId,
+      table.kind,
+      table.displayOrder,
+    ),
+    check(
+      'doctor_profile_items_kind_check',
+      sql`kind in ('EXPERIENCE', 'RESPONSIBILITY', 'TRAINING', 'LANGUAGE')`,
+    ),
+    check(
+      'doctor_profile_items_icon_check',
+      sql`(kind = 'RESPONSIBILITY' and icon is not null) or (kind <> 'RESPONSIBILITY' and icon is null)`,
+    ),
   ],
 );
 

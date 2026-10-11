@@ -3,6 +3,7 @@ import type { AdminRole } from '@arunreah/shared';
 const appointmentPathPrefixes = ['/admin/appointments', '/admin/calendar'] as const;
 const cmsPathPrefixes = [
   '/admin/services',
+  '/admin/team',
   '/admin/doctors',
   '/admin/showcase',
   '/admin/clinic-info',

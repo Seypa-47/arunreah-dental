@@ -200,7 +200,7 @@ describe('BookAppointmentPage Date & Time features', () => {
       expect(html).toContain(':30');
       expect(html).toContain(':45');
       // The selected minute :30 has aria-pressed="true"
-      expect(html).toContain('aria-label="10:30 AM" aria-pressed="true"');
+      expect(html).toContain('aria-label="Select 10:30 AM" aria-pressed="true"');
     });
 
     it('disables already-passed hours and minutes for today in Asia/Phnom_Penh time', () => {
@@ -222,9 +222,9 @@ describe('BookAppointmentPage Date & Time features', () => {
       expect(html).toMatch(/aria-label="Select 08:00 AM"[^>]*disabled=""/);
       expect(html).toMatch(/aria-label="Select 09:00 AM"[^>]*disabled=""/);
       // Within active 10:xx hour, 10:00 AM and 10:15 AM are disabled while 10:30 AM is active
-      expect(html).toMatch(/aria-label="10:00 AM"[^>]*disabled=""/);
-      expect(html).toMatch(/aria-label="10:15 AM"[^>]*disabled=""/);
-      expect(html).toContain('aria-label="10:30 AM" aria-pressed="true"');
+      expect(html).toMatch(/aria-label="Select 10:00 AM"[^>]*disabled=""/);
+      expect(html).toMatch(/aria-label="Select 10:15 AM"[^>]*disabled=""/);
+      expect(html).toContain('aria-label="Select 10:30 AM" aria-pressed="true"');
     });
 
     it('dynamically adapts hours based on branch schedule for Mon-Sat (8am-6pm) vs Sunday (8am-4pm)', () => {

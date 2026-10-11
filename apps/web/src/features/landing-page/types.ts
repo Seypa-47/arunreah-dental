@@ -130,6 +130,13 @@ export type LandingPageContent = {
   };
   services: LandingService[];
   showcase: LandingShowcase[];
+  sectionIssues: {
+    branches: boolean;
+    doctors: boolean;
+    promotions: boolean;
+    services: boolean;
+    showcase: boolean;
+  };
 };
 
 export type DoctorDetailContent = Pick<LandingPageContent, 'actions' | 'footer' | 'navigation' | 'services'> & {
@@ -393,6 +400,10 @@ export type ServiceDetailContent = Pick<LandingPageContent, 'actions' | 'footer'
           imageUrl: string;
           subtitle: string;
           title: string;
+        };
+        seo: {
+          description: string | null;
+          title: string | null;
         };
         slug: string;
       })

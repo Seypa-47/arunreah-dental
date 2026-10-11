@@ -24,6 +24,7 @@ import {
   hashSessionToken,
   sessionCookieName,
 } from '../../services/session.service';
+import { runBestEffortMaintenance } from '../../services/maintenance.service';
 import type { AppEnv } from '../../types/env';
 
 export const authModule = new Hono<AppEnv>();
@@ -32,6 +33,7 @@ authModule.post('/login', async (context) => {
   const input = await parseRequestBody(context, adminLoginSchema);
   const email = normalizeAdminEmail(input.email);
   const database = createDbClient(context.env.DB);
+  await runBestEffortMaintenance(database);
   const rateLimitKeys = await createLoginRateLimitKeys(email, getClientIp(context.req.raw.headers));
 
   await assertLoginAllowed(database, rateLimitKeys);
@@ -46,6 +48,9 @@ authModule.post('/login', async (context) => {
     throw new HttpError(401, 'UNAUTHORIZED', 'Invalid email or password.');
   }
 
+  // A concurrent failed attempt may have locked either key while the password
+  // hash was being checked. Re-check before creating a session.
+  await assertLoginAllowed(database, rateLimitKeys);
   await clearFailedLogins(database, rateLimitKeys);
 
   const token = createSessionToken();

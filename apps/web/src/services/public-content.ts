@@ -1,112 +1,51 @@
 import type {
-  ClinicSettingsPublicRead,
-  ContactSettingsPublicRead,
+  AppointmentAcknowledgement,
   CreatePublicAppointmentInput,
-  ImagePresentation,
   PageMediaPlacement,
+  PublicAboutTimelineItem,
+  PublicBranch,
+  PublicDoctorDetail,
+  PublicDoctorProfileItem,
+  PublicDoctorSummary,
+  PublicPageMedia,
+  PublicServiceDetail,
+  PublicServiceSummary,
+  PublicShowcaseDetail,
+  PublicShowcaseSummary,
+  TeamCategory,
+} from '@arunreah/shared';
+import {
+  appointmentAcknowledgementSchema,
+  publicAboutTimelineResponseSchema,
+  publicBranchesResponseSchema,
+  publicBranchResponseSchema,
+  publicClinicResponseSchema,
+  publicContactResponseSchema,
+  publicDoctorsResponseSchema,
+  publicDoctorResponseSchema,
+  publicPageMediaResponseSchema,
+  publicServicesResponseSchema,
+  publicServiceResponseSchema,
+  publicShowcasesResponseSchema,
+  publicShowcaseResponseSchema,
 } from '@arunreah/shared';
 import { getApiClient, type ApiClient } from '@/lib/api';
 
 export type PublicLanguage = 'en' | 'km';
 
-export type PublicServiceSummary = {
-  id: string;
-  slug: string;
-  name: string;
-  shortDescription: string | null;
-  listingThumbnailKey: string | null;
-  imagePresentation?: ImagePresentation;
-  category: string | null;
-  featured: boolean;
-};
-
-export type PublicServiceDetail = PublicServiceSummary & {
-  detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
-  hero: { eyebrow: string | null; title: string | null; summary: string | null; imageKey: string | null; imagePresentation?: ImagePresentation };
-  about: { title: string | null; body: string | null; imageKey: string | null; imagePresentation?: ImagePresentation };
-  treatmentAtAGlance: { duration: string | null; recovery: string | null; visits: string | null; consultation: string | null };
-  editorial: { label: string | null; title: string | null };
-  benefits: { title: string; description: string | null; icon: string | null }[];
-  detailSections: { sectionType: 'TEXT' | 'IMAGE'; heading: string | null; body: string | null; imageKey: string | null; imagePresentation?: ImagePresentation; displayOrder: number }[];
-  relatedServices: PublicServiceSummary[];
-  cta: { title: string | null; description: string | null; primaryLabel: string | null; secondaryLabel: string | null };
-  seo: { title: string | null; description: string | null };
-};
-
-export type PublicDoctorSummary = {
-  id: string;
-  slug: string;
-  name: string;
-  title: string | null;
-  specialty: string | null;
-  shortBio: string | null;
-  photoKey: string | null;
-  photoImagePresentation?: ImagePresentation;
-  featured: boolean;
-  branchIds?: string[];
-};
-
-export type PublicDoctorDetail = PublicDoctorSummary & {
-  about: string | null;
-  statistics: { yearsExperience: number | null; successfulProcedures: number | null; patientSatisfaction: number | null };
-  expertise: { title: string; displayOrder: number }[];
-  education: { qualification: string; institution: string; yearLabel: string | null; displayOrder: number }[];
-  relatedDoctors: PublicDoctorSummary[];
-};
-
-export type PublicBranch = {
-  id: string;
-  slug: string;
-  name: string;
-  badge: string | null;
-  address: string;
-  cityProvince: string | null;
-  shortLocationLabel: string | null;
-  openingHours: string | null;
-  openingDays: string | null;
-  openingTime: string | null;
-  closingTime: string | null;
-  phone: string;
-  secondaryPhone: string | null;
-  googleMapsUrl: string | null;
-  heroImageKey: string | null;
-  branchImageKey: string | null;
-  heroImagePresentation?: ImagePresentation;
-  branchImagePresentation?: ImagePresentation;
-  heroHeadline: string | null;
-  heroSupportingText: string | null;
-  heroCtaLabel: string | null;
-  shortSummary: string | null;
-  featured: boolean;
-  acceptsAppointments: boolean;
-  showOnHomepage: boolean;
-  includeInHomepageHero: boolean;
-};
-
-export type PublicShowcaseSummary = {
-  slug: string;
-  title: string;
-  summary: string | null;
-  category: string | null;
-  coverImageKey: string | null;
-  coverImagePresentation?: ImagePresentation;
-  showOnHomepage: boolean;
-};
-
-export type PublicShowcaseDetail = PublicShowcaseSummary & {
-  body: string | null;
-  sections: { sectionType: 'TEXT' | 'IMAGE' | 'QUOTE'; heading: string | null; body: string | null; imageKey: string | null; imagePresentation?: ImagePresentation; displayOrder: number }[];
-  relatedShowcases: PublicShowcaseSummary[];
-  seo: { title: string | null; description: string | null };
-};
-export type PublicPageMedia = { id: string; imageKey: string; imagePresentation: import('@arunreah/shared').ImagePresentation; title: string | null; body: string | null; badge: string | null; benefits: string | null; discount: string | null; validUntil: string | null; displayOrder: number };
-export type { PageMediaPlacement };
-export type PublicAboutTimelineItem = { id: string; year: number; title: string; body: string; displayOrder: number };
-
-export type AppointmentAcknowledgement = {
-  reference: string;
-  status: 'PENDING';
-  message: string;
+export type {
+  AppointmentAcknowledgement,
+  PageMediaPlacement,
+  PublicAboutTimelineItem,
+  PublicBranch,
+  PublicDoctorDetail,
+  PublicDoctorProfileItem,
+  PublicDoctorSummary,
+  PublicPageMedia,
+  PublicServiceDetail,
+  PublicServiceSummary,
+  PublicShowcaseDetail,
+  PublicShowcaseSummary,
 };
 
 function languageQuery(language: PublicLanguage, extra?: Record<string, string | boolean | undefined>) {
@@ -122,27 +61,44 @@ export function getPublicLanguage(): PublicLanguage {
 }
 
 export function getPublicClinic(client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ clinic: ClinicSettingsPublicRead }>('/api/public/clinic').then((response) => response.clinic);
+  return client.get('/api/public/clinic', { responseSchema: publicClinicResponseSchema }).then((response) => response.clinic);
 }
 
 export function getPublicContact(client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ contact: ContactSettingsPublicRead }>('/api/public/contact').then((response) => response.contact);
+  return client.get('/api/public/contact', { responseSchema: publicContactResponseSchema }).then((response) => response.contact);
 }
 
 export function getPublicServices(language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ services: PublicServiceSummary[] }>(`/api/public/services${languageQuery(language)}`);
+  return client.get(`/api/public/services${languageQuery(language)}`, { responseSchema: publicServicesResponseSchema });
 }
 
 export function getPublicService(slug: string, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ service: PublicServiceDetail }>(`/api/public/services/${encodeURIComponent(slug)}${languageQuery(language)}`);
+  return client.get(`/api/public/services/${encodeURIComponent(slug)}${languageQuery(language)}`, { responseSchema: publicServiceResponseSchema });
 }
 
-export function getPublicDoctors(language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ doctors: PublicDoctorSummary[] }>(`/api/public/doctors${languageQuery(language)}`);
+export function getPublicDoctors(
+  language: PublicLanguage,
+  category?: TeamCategory,
+  client: Pick<ApiClient, 'get'> = getApiClient(),
+) {
+  return client.get(
+    `/api/public/team${languageQuery(language, { category })}`,
+    { responseSchema: publicDoctorsResponseSchema },
+  );
+}
+
+export function getPublicBookableDoctors(
+  language: PublicLanguage,
+  client: Pick<ApiClient, 'get'> = getApiClient(),
+) {
+  return client.get(
+    `/api/public/team${languageQuery(language, { bookable: true })}`,
+    { responseSchema: publicDoctorsResponseSchema },
+  );
 }
 
 export function getPublicDoctor(slug: string, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ doctor: PublicDoctorDetail }>(`/api/public/doctors/${encodeURIComponent(slug)}${languageQuery(language)}`);
+  return client.get(`/api/public/team/${encodeURIComponent(slug)}${languageQuery(language)}`, { responseSchema: publicDoctorResponseSchema });
 }
 
 export function getPublicBranches(
@@ -150,27 +106,27 @@ export function getPublicBranches(
   scope: 'branches' | 'landing' | 'appointments' = 'branches',
   client: Pick<ApiClient, 'get'> = getApiClient(),
 ) {
-  return client.get<{ branches: PublicBranch[] }>(`/api/public/branches${languageQuery(language, { scope })}`);
+  return client.get(`/api/public/branches${languageQuery(language, { scope })}`, { responseSchema: publicBranchesResponseSchema });
 }
 
 export function getPublicBranch(slug: string, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ branch: PublicBranch }>(`/api/public/branches/${encodeURIComponent(slug)}${languageQuery(language)}`);
+  return client.get(`/api/public/branches/${encodeURIComponent(slug)}${languageQuery(language)}`, { responseSchema: publicBranchResponseSchema });
 }
 
 export function getPublicShowcases(language: PublicLanguage, homepageOnly = false, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ showcases: PublicShowcaseSummary[] }>(`/api/public/showcases${languageQuery(language, homepageOnly ? { homepage: true } : undefined)}`);
+  return client.get(`/api/public/showcases${languageQuery(language, homepageOnly ? { homepage: true } : undefined)}`, { responseSchema: publicShowcasesResponseSchema });
 }
 
 export function getPublicShowcase(slug: string, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ showcase: PublicShowcaseDetail }>(`/api/public/showcases/${encodeURIComponent(slug)}${languageQuery(language)}`);
+  return client.get(`/api/public/showcases/${encodeURIComponent(slug)}${languageQuery(language)}`, { responseSchema: publicShowcaseResponseSchema });
 }
 export function getPublicPageMedia(placement: PageMediaPlacement, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ items: PublicPageMedia[] }>(`/api/public/page-media${languageQuery(language, { placement })}`);
+  return client.get(`/api/public/page-media${languageQuery(language, { placement })}`, { responseSchema: publicPageMediaResponseSchema });
 }
 export function getPublicAboutTimeline(language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get<{ items: PublicAboutTimelineItem[] }>(`/api/public/about-timeline${languageQuery(language)}`);
+  return client.get(`/api/public/about-timeline${languageQuery(language)}`, { responseSchema: publicAboutTimelineResponseSchema });
 }
 
 export function createPublicAppointment(input: CreatePublicAppointmentInput, client: Pick<ApiClient, 'post'> = getApiClient()) {
-  return client.post<AppointmentAcknowledgement>('/api/public/appointments', { json: input });
+  return client.post('/api/public/appointments', { json: input, responseSchema: appointmentAcknowledgementSchema });
 }

@@ -1,11 +1,16 @@
-import { createAdminSchema, successResponse, updateAdminSchema } from '@arunreah/shared';
+import {
+  createAdminSchema,
+  successResponse,
+  updateAdminSchema,
+  uuidPathParamSchema,
+} from '@arunreah/shared';
 import { Hono } from 'hono';
 import { createDbClient } from '../../db/client';
 import { requireAdmin } from '../../middleware/require-admin';
 import { requirePermission } from '../../middleware/require-permission';
 import { listAdmins } from '../../repositories/admin.repository';
 import { toSafeAdmin } from '../../shared/admin';
-import { parseRequestBody } from '../../shared/request';
+import { parseRequestBody, parseRequestParams } from '../../shared/request';
 import { createManagedAdmin, updateManagedAdmin } from '../../services/admin.service';
 import type { AppEnv } from '../../types/env';
 
@@ -32,7 +37,7 @@ adminsModule.patch('/:id', async (context) => {
   const admin = await updateManagedAdmin(
     createDbClient(context.env.DB),
     context.get('authenticatedAdmin').id,
-    context.req.param('id'),
+    parseRequestParams(context, uuidPathParamSchema).id,
     input,
   );
 

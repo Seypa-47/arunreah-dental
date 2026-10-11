@@ -4,11 +4,13 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicShell } from '@/features/public-content/public-page-chrome';
+import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
 
 export function PublicNotFoundPage() {
   const { language } = usePublicLanguage();
   const isKm = language === 'km';
   const shell = publicShell(language);
+  usePublicDocumentTitle(isKm ? 'រកមិនឃើញទំព័រ' : 'Page not found');
 
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation} services={shell.services}>

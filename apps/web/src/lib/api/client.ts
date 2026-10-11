@@ -68,8 +68,19 @@ function throwApiError(payload: unknown, status: number): never {
   });
 }
 
-function unwrapSuccess<T>(payload: unknown, status: number): T {
+function unwrapSuccess<T>(payload: unknown, status: number, options: ApiRequestOptions<T>): T {
   if (isRecord(payload) && payload.success === true && 'data' in payload) {
+    if (options.responseSchema) {
+      const result = options.responseSchema.safeParse(payload.data);
+      if (!result.success) {
+        throw new ApiClientError({
+          code: 'INVALID_RESPONSE',
+          message: genericErrorMessage,
+          status,
+        });
+      }
+      return result.data;
+    }
     return payload.data as T;
   }
 
@@ -97,7 +108,7 @@ function createRequestInit(options: ApiRequestOptions): RequestInit {
 export function createApiClient({ baseUrl, fetchImplementation = fetch }: ApiClientConfig): ApiClient {
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
 
-  async function request<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  async function request<T>(path: string, options: ApiRequestOptions<T> = {}): Promise<T> {
     let response: Response;
 
     try {
@@ -114,18 +125,18 @@ export function createApiClient({ baseUrl, fetchImplementation = fetch }: ApiCli
     const payload = await readResponsePayload(response);
     if (!response.ok) return throwApiError(payload, response.status);
 
-    return unwrapSuccess<T>(payload, response.status);
+    return unwrapSuccess<T>(payload, response.status, options);
   }
 
   return {
     request,
-    get: <T>(path: string, options: Omit<ApiRequestOptions, 'method'> = {}) =>
+    get: <T>(path: string, options: Omit<ApiRequestOptions<T>, 'method'> = {}) =>
       request<T>(path, { ...options, method: 'GET' }),
-    post: <T>(path: string, options: Omit<ApiRequestOptions, 'method'> = {}) =>
+    post: <T>(path: string, options: Omit<ApiRequestOptions<T>, 'method'> = {}) =>
       request<T>(path, { ...options, method: 'POST' }),
-    patch: <T>(path: string, options: Omit<ApiRequestOptions, 'method'> = {}) =>
+    patch: <T>(path: string, options: Omit<ApiRequestOptions<T>, 'method'> = {}) =>
       request<T>(path, { ...options, method: 'PATCH' }),
-    delete: <T>(path: string, options: Omit<ApiRequestOptions, 'method'> = {}) =>
+    delete: <T>(path: string, options: Omit<ApiRequestOptions<T>, 'method'> = {}) =>
       request<T>(path, { ...options, method: 'DELETE' }),
   };
 }

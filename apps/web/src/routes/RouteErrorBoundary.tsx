@@ -35,7 +35,7 @@ export function RouteErrorBoundary() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f5f9fb] px-4 py-16">
       <Card className="max-w-lg p-8 text-center shadow-sm">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#3695B9]">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--clinic-accent-hover)]">
           {isKm ? 'គ្លីនិកធ្មេញ អរុណរះ' : 'Arunreah Dental Clinic'}
         </p>
         <h1 className="mt-3 text-2xl font-black text-[#005687] sm:text-3xl">{title}</h1>

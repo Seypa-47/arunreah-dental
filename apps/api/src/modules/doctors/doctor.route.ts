@@ -9,18 +9,20 @@ import {
   getPublicDoctorController,
   listAdminDoctorsController,
   listPublicDoctorsController,
+  reorderAdminDoctorsController,
   updateAdminDoctorController,
 } from './doctor.controller';
 
-export const publicDoctorsModule = new Hono<AppEnv>();
-export const adminDoctorsModule = new Hono<AppEnv>();
+export const publicTeamModule = new Hono<AppEnv>();
+export const adminTeamModule = new Hono<AppEnv>();
 
-publicDoctorsModule.get('/', listPublicDoctorsController);
-publicDoctorsModule.get('/:slug', getPublicDoctorController);
+publicTeamModule.get('/', listPublicDoctorsController);
+publicTeamModule.get('/:slug', getPublicDoctorController);
 
-adminDoctorsModule.use('*', requireAdmin, requirePermission('CMS_MANAGEMENT'));
-adminDoctorsModule.get('/', listAdminDoctorsController);
-adminDoctorsModule.post('/', createAdminDoctorController);
-adminDoctorsModule.get('/:id', getAdminDoctorController);
-adminDoctorsModule.patch('/:id', updateAdminDoctorController);
-adminDoctorsModule.delete('/:id', deleteAdminDoctorController);
+adminTeamModule.use('*', requireAdmin, requirePermission('CMS_MANAGEMENT'));
+adminTeamModule.get('/', listAdminDoctorsController);
+adminTeamModule.post('/', createAdminDoctorController);
+adminTeamModule.patch('/reorder', reorderAdminDoctorsController);
+adminTeamModule.get('/:id', getAdminDoctorController);
+adminTeamModule.patch('/:id', updateAdminDoctorController);
+adminTeamModule.delete('/:id', deleteAdminDoctorController);

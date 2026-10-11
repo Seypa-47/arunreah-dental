@@ -5,7 +5,6 @@ import {
   saveLoginRateLimit,
 } from '../repositories/session.repository';
 import type { DatabaseClient } from '../db/client';
-import { inTransaction } from '../db/transaction';
 import { HttpError } from '../shared/http-error';
 
 const loginAttemptLimit = 5;
@@ -53,29 +52,23 @@ export async function assertLoginAllowed(
 async function recordFailedLogin(
   database: DatabaseClient,
   { key, attemptLimit }: LoginRateLimitKey,
-): Promise<void> {
-  await inTransaction(database, async (transaction) => {
-    const now = new Date();
-    const current = await getLoginRateLimit(transaction, key);
-    const windowStartedAt = current ? new Date(current.windowStartedAt) : now;
-    const withinWindow = now.getTime() - windowStartedAt.getTime() < loginWindowMilliseconds;
-    const attempts = withinWindow ? (current?.attempts ?? 0) + 1 : 1;
-    const lockedUntil =
-      attempts >= attemptLimit
-        ? new Date(now.getTime() + loginLockoutMilliseconds).toISOString()
-        : null;
-
-    await saveLoginRateLimit(transaction, {
-      key,
-      attempts,
-      windowStartedAt: withinWindow ? windowStartedAt.toISOString() : now.toISOString(),
-      lockedUntil,
-    });
+): Promise<boolean> {
+  const now = new Date();
+  const record = await saveLoginRateLimit(database, {
+    key,
+    attemptLimit,
+    now: now.toISOString(),
+    windowCutoff: new Date(now.getTime() - loginWindowMilliseconds).toISOString(),
+    lockedUntil: new Date(now.getTime() + loginLockoutMilliseconds).toISOString(),
   });
+  return Boolean(record?.lockedUntil && record.lockedUntil > now.toISOString());
 }
 
 export async function recordFailedLogins(database: DatabaseClient, keys: LoginRateLimitKey[]) {
-  await Promise.all(keys.map((key) => recordFailedLogin(database, key)));
+  const locked = await Promise.all(keys.map((key) => recordFailedLogin(database, key)));
+  if (locked.some(Boolean)) {
+    throw new HttpError(429, 'RATE_LIMITED', 'Too many login attempts. Please try again later.');
+  }
 }
 
 export async function clearFailedLogins(

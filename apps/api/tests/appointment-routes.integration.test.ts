@@ -5,6 +5,7 @@ type AppointmentRecord = {
   id: string;
   reference: string;
   idempotencyKey: string;
+  requestFingerprint: string | null;
   status: 'PENDING';
   serviceId: string | null;
   doctorId: string | null;
@@ -32,12 +33,36 @@ const ids = {
 };
 
 const state = vi.hoisted(() => ({
-  services: new Map<string, { id: string; status: 'DRAFT' | 'PUBLISHED'; nameEn: string }>(),
-  doctors: new Map<string, { id: string; status: 'DRAFT' | 'PUBLISHED'; nameEn: string }>(),
+  services: new Map<
+    string,
+    { id: string; status: 'DRAFT' | 'PUBLISHED'; nameEn: string; nameKm?: string }
+  >(),
+  doctors: new Map<
+    string,
+    {
+      id: string;
+      status: 'DRAFT' | 'PUBLISHED';
+      nameEn: string;
+      nameKm?: string;
+      category: 'DENTIST' | 'GENERAL_PRACTITIONER' | 'RECEPTIONIST' | 'ASSISTANT';
+      bookable: boolean;
+    }
+  >(),
   branches: new Map<
     string,
-    { id: string; status: 'DRAFT' | 'PUBLISHED'; acceptsAppointments: boolean; nameEn: string }
+    {
+      id: string;
+      status: 'DRAFT' | 'PUBLISHED';
+      acceptsAppointments: boolean;
+      nameEn: string;
+      nameKm?: string;
+      openingDaysEn?: string | null;
+      openingDaysKm?: string | null;
+      openingTime?: string | null;
+      closingTime?: string | null;
+    }
   >(),
+  doctorBranches: new Map<string, string[]>(),
   appointments: [] as AppointmentRecord[],
   rateLimits: new Map<string, { attempts: number; windowStartedAt: string }>(),
   notificationReferences: [] as string[],
@@ -57,6 +82,7 @@ vi.mock('../src/repositories/service.repository', () => ({
 }));
 vi.mock('../src/repositories/doctor.repository', () => ({
   findDoctorById: async (_database: unknown, id: string) => state.doctors.get(id),
+  getDoctorBranchIds: async (_database: unknown, id: string) => state.doctorBranches.get(id) ?? [],
 }));
 vi.mock('../src/repositories/branch.repository', () => ({
   findBranchById: async (_database: unknown, id: string) => state.branches.get(id),
@@ -73,9 +99,23 @@ vi.mock('../src/repositories/appointment.repository', () => ({
     state.rateLimits.get(key),
   saveAppointmentRequestRateLimit: async (
     _database: unknown,
-    input: { key: string; attempts: number; windowStartedAt: string },
+    input: { key: string; now: string; windowCutoff: string; attemptLimit: number },
   ) => {
-    state.rateLimits.set(input.key, input);
+    const current = state.rateLimits.get(input.key);
+    if (
+      current &&
+      current.windowStartedAt > input.windowCutoff &&
+      current.attempts >= input.attemptLimit
+    )
+      return false;
+    state.rateLimits.set(input.key, {
+      attempts: current && current.windowStartedAt > input.windowCutoff ? current.attempts + 1 : 1,
+      windowStartedAt:
+        current && current.windowStartedAt > input.windowCutoff
+          ? current.windowStartedAt
+          : input.now,
+    });
+    return true;
   },
 }));
 vi.mock('../src/services/appointment-notification.service', () => ({
@@ -109,6 +149,7 @@ function payload(overrides: Record<string, unknown> = {}) {
     preferredTime: '10:30',
     notes: 'Please call before the appointment.',
     idempotencyKey: '550e8400-e29b-41d4-a716-446655440010',
+    locale: 'en',
     ...overrides,
   };
 }
@@ -129,6 +170,7 @@ beforeEach(() => {
   state.services.clear();
   state.doctors.clear();
   state.branches.clear();
+  state.doctorBranches.clear();
   state.appointments = [];
   state.rateLimits.clear();
   state.notificationReferences = [];
@@ -139,13 +181,22 @@ beforeEach(() => {
     id: ids.service,
     status: 'PUBLISHED',
     nameEn: 'Dental Implants',
+    nameKm: 'ដាំធ្មេញ',
   });
-  state.doctors.set(ids.doctor, { id: ids.doctor, status: 'PUBLISHED', nameEn: 'Dr. Dara' });
+  state.doctors.set(ids.doctor, {
+    id: ids.doctor,
+    status: 'PUBLISHED',
+    nameEn: 'Dr. Dara',
+    nameKm: 'វេជ្ជបណ្ឌិត ដារ៉ា',
+    category: 'DENTIST',
+    bookable: true,
+  });
   state.branches.set(ids.branch, {
     id: ids.branch,
     status: 'PUBLISHED',
     acceptsAppointments: true,
     nameEn: 'Main Branch',
+    nameKm: 'សាខាចម្បង',
   });
 });
 
@@ -232,9 +283,21 @@ describe('public appointment request API', () => {
       status: 'PUBLISHED',
       nameEn: 'Dental Implants',
     });
-    state.doctors.set(ids.doctor, { id: ids.doctor, status: 'DRAFT', nameEn: 'Draft Doctor' });
+    state.doctors.set(ids.doctor, {
+      id: ids.doctor,
+      status: 'DRAFT',
+      nameEn: 'Draft Doctor',
+      category: 'DENTIST',
+      bookable: true,
+    });
     expect((await submit()).status).toBe(404);
-    state.doctors.set(ids.doctor, { id: ids.doctor, status: 'PUBLISHED', nameEn: 'Dr. Dara' });
+    state.doctors.set(ids.doctor, {
+      id: ids.doctor,
+      status: 'PUBLISHED',
+      nameEn: 'Dr. Dara',
+      category: 'DENTIST',
+      bookable: true,
+    });
     state.branches.set(ids.branch, {
       id: ids.branch,
       status: 'PUBLISHED',
@@ -242,6 +305,29 @@ describe('public appointment request API', () => {
       nameEn: 'Main Branch',
     });
     expect((await submit()).status).toBe(404);
+  });
+
+  it('rejects a receptionist doctor id with the shared availability error code', async () => {
+    state.doctors.set(ids.doctor, {
+      id: ids.doctor,
+      status: 'PUBLISHED',
+      nameEn: 'Sokha Reception',
+      category: 'RECEPTIONIST',
+      bookable: false,
+    });
+
+    const response = await submit();
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toMatchObject({
+      success: false,
+      error: {
+        code: 'DOCTOR_NOT_AVAILABLE',
+        message: 'The selected doctor is not available.',
+      },
+    });
+    expect(state.appointments).toHaveLength(0);
+    expect(state.notificationReferences).toHaveLength(0);
   });
 
   it('is idempotent and generates distinct references for distinct requests', async () => {
@@ -257,6 +343,73 @@ describe('public appointment request API', () => {
     expect(state.appointments).toHaveLength(2);
     expect(retryBody.data.reference).toBe(firstBody.data.reference);
     expect(secondBody.data.reference).not.toBe(firstBody.data.reference);
+  });
+
+  it('binds an idempotency key to the normalized appointment payload', async () => {
+    expect((await submit()).status).toBe(201);
+    const conflict = await submit({ preferredTime: '11:00' });
+    expect(conflict.status).toBe(409);
+    await expect(conflict.json()).resolves.toMatchObject({
+      success: false,
+      error: { code: 'CONFLICT' },
+    });
+    expect(state.appointments).toHaveLength(1);
+  });
+
+  it('persists Khmer locale and localized immutable snapshots', async () => {
+    const response = await submit({ locale: 'km' });
+    expect(response.status).toBe(201);
+    expect(state.appointments[0]).toMatchObject({
+      locale: 'km',
+      serviceNameSnapshot: 'ដាំធ្មេញ',
+      doctorNameSnapshot: 'វេជ្ជបណ្ឌិត ដារ៉ា',
+      branchNameSnapshot: 'សាខាចម្បង',
+    });
+  });
+
+  it('rejects a doctor assigned to a different branch', async () => {
+    state.doctorBranches.set(ids.doctor, ['550e8400-e29b-41d4-a716-446655440099']);
+    const response = await submit();
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'DOCTOR_NOT_AVAILABLE' },
+    });
+  });
+
+  it('rejects closed days, outside hours, past times today, and malformed schedules', async () => {
+    const branch = state.branches.get(ids.branch)!;
+    const appointmentDate = '2099-01-01';
+    const weekday = new Date(`${appointmentDate}T12:00:00.000Z`).getUTCDay();
+    const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    branch.openingDaysEn = labels[(weekday + 1) % 7];
+    branch.openingTime = '08:00';
+    branch.closingTime = '17:00';
+    expect((await submit()).status).toBe(400);
+
+    branch.openingDaysEn = 'Mon - Sun';
+    expect((await submit({ preferredTime: '17:30' })).status).toBe(400);
+
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Phnom_Penh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date());
+    const part = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find((item) => item.type === type)?.value;
+    expect(
+      (
+        await submit({
+          preferredDate: `${part('year')}-${part('month')}-${part('day')}`,
+          preferredTime: '00:00',
+        })
+      ).status,
+    ).toBe(400);
+
+    branch.openingDaysEn = 'Mon - Sun | Sun';
+    branch.openingTime = '08:00';
+    branch.closingTime = '17:00 | 16:00';
+    expect((await submit()).status).toBe(409);
   });
 
   it('applies the request rate limit and never rolls back a persisted request when notification fails', async () => {

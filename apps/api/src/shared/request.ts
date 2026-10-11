@@ -29,3 +29,12 @@ export function parseRequestQuery<TOutput, TInput>(
 
   return result.data;
 }
+
+export function parseRequestParams<TOutput, TInput>(
+  context: Context<AppEnv>,
+  schema: ZodType<TOutput, ZodTypeDef, TInput>,
+): TOutput {
+  const result = schema.safeParse(context.req.param());
+  if (!result.success) throw new HttpError(400, 'VALIDATION_ERROR', 'Path parameters are invalid.');
+  return result.data;
+}

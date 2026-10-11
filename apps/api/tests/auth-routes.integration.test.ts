@@ -15,8 +15,14 @@ type SessionRecord = {
 const state = vi.hoisted(() => ({
   admins: new Map<string, AdminRecord>(),
   sessions: new Map<string, SessionRecord>(),
-  createdSessions: [] as Array<{ id: string; adminId: string; tokenHash: string; expiresAt: string }>,
+  createdSessions: [] as Array<{
+    id: string;
+    adminId: string;
+    tokenHash: string;
+    expiresAt: string;
+  }>,
   failedLoginKeys: [] as string[],
+  loginRateLimits: new Map<string, { attempts: number; lockedUntil: string | null }>(),
   revokedSessionIds: [] as string[],
 }));
 
@@ -41,11 +47,28 @@ vi.mock('../src/repositories/session.repository', () => ({
   },
   findAuthenticatedSession: async (_database: unknown, tokenHash: string) =>
     state.sessions.get(tokenHash),
-  getLoginRateLimit: async () => undefined,
-  saveLoginRateLimit: async (_database: unknown, input: { key: string }) => {
+  getLoginRateLimit: async (_database: unknown, key: string) => state.loginRateLimits.get(key),
+  saveLoginRateLimit: async (
+    _database: unknown,
+    input: { key: string; attemptLimit: number; lockedUntil: string },
+  ) => {
     state.failedLoginKeys.push(input.key);
+    const attempts = (state.loginRateLimits.get(input.key)?.attempts ?? 0) + 1;
+    const record = {
+      attempts,
+      lockedUntil: attempts >= input.attemptLimit ? input.lockedUntil : null,
+    };
+    state.loginRateLimits.set(input.key, record);
+    return record;
   },
-  clearLoginRateLimit: async () => undefined,
+  clearLoginRateLimit: async (_database: unknown, key: string) => {
+    state.loginRateLimits.delete(key);
+  },
+  cleanupExpiredAuthenticationRecords: async () => undefined,
+}));
+
+vi.mock('../src/services/maintenance.service', () => ({
+  runBestEffortMaintenance: async () => undefined,
 }));
 
 vi.mock('../src/services/password.service', () => ({
@@ -55,7 +78,10 @@ vi.mock('../src/services/password.service', () => ({
 }));
 
 vi.mock('../src/services/admin.service', () => ({
-  createManagedAdmin: async (_database: unknown, input: { name: string; email: string; role: string }) => ({
+  createManagedAdmin: async (
+    _database: unknown,
+    input: { name: string; email: string; role: string },
+  ) => ({
     id: 'created-admin-id',
     name: input.name,
     email: input.email,
@@ -70,7 +96,7 @@ vi.mock('../src/services/admin.service', () => ({
     targetAdminId: string,
     input: { name?: string; email?: string; role?: string; isActive?: boolean },
   ) => {
-    if (targetAdminId === 'protected-admin') {
+    if (targetAdminId === '550e8400-e29b-41d4-a716-446655440506') {
       throw new HttpError(409, 'CONFLICT', 'At least one active super administrator is required.');
     }
 
@@ -96,9 +122,7 @@ const testBindings = {
   ASSETS: {} as R2Bucket,
 } satisfies Bindings;
 
-function adminFixture(
-  overrides: Partial<AdminRecord> = {},
-): AdminRecord & { displayName: string } {
+function adminFixture(overrides: Partial<AdminRecord> = {}): AdminRecord & { displayName: string } {
   return {
     id: 'super-admin-id',
     name: 'Super Admin',
@@ -131,6 +155,7 @@ beforeEach(() => {
   state.sessions.clear();
   state.createdSessions.length = 0;
   state.failedLoginKeys.length = 0;
+  state.loginRateLimits.clear();
   state.revokedSessionIds.length = 0;
 });
 
@@ -190,9 +215,39 @@ describe('authentication API routes', () => {
     expect(state.createdSessions).toHaveLength(0);
   });
 
+  it('atomically enforces credential limits across concurrent failed logins', async () => {
+    state.admins.set('super@example.com', adminFixture());
+
+    const responses = await Promise.all(
+      Array.from({ length: 8 }, () =>
+        app.request(
+          'http://localhost/api/auth/login',
+          {
+            method: 'POST',
+            headers: {
+              'CF-Connecting-IP': '203.0.113.10',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: 'super@example.com', password: 'WrongPassword123!' }),
+          },
+          testBindings,
+        ),
+      ),
+    );
+
+    const statuses = responses.map((response) => response.status);
+    expect(statuses.filter((status) => status === 401)).toHaveLength(4);
+    expect(statuses.filter((status) => status === 429)).toHaveLength(4);
+    expect(state.createdSessions).toHaveLength(0);
+  });
+
   it('returns the current admin for a valid session and rejects missing or expired sessions', async () => {
     const headers = await authenticatedHeaders();
-    const validResponse = await app.request('http://localhost/api/auth/me', { headers }, testBindings);
+    const validResponse = await app.request(
+      'http://localhost/api/auth/me',
+      { headers },
+      testBindings,
+    );
 
     expect(validResponse.status).toBe(200);
     await expect(validResponse.json()).resolves.toMatchObject({
@@ -200,7 +255,11 @@ describe('authentication API routes', () => {
       data: { admin: { role: 'SUPER_ADMIN', email: 'super_admin@example.com' } },
     });
 
-    const noSessionResponse = await app.request('http://localhost/api/auth/me', undefined, testBindings);
+    const noSessionResponse = await app.request(
+      'http://localhost/api/auth/me',
+      undefined,
+      testBindings,
+    );
     expect(noSessionResponse.status).toBe(401);
 
     const expiredResponse = await app.request(
@@ -231,7 +290,11 @@ describe('admin-management API routes', () => {
     state.admins.set('super@example.com', adminFixture());
     const headers = await authenticatedHeaders();
 
-    const listResponse = await app.request('http://localhost/api/admin/admins', { headers }, testBindings);
+    const listResponse = await app.request(
+      'http://localhost/api/admin/admins',
+      { headers },
+      testBindings,
+    );
     expect(listResponse.status).toBe(200);
     await expect(listResponse.json()).resolves.toMatchObject({
       success: true,
@@ -259,7 +322,7 @@ describe('admin-management API routes', () => {
     });
 
     const updateResponse = await app.request(
-      'http://localhost/api/admin/admins/receptionist-id',
+      'http://localhost/api/admin/admins/550e8400-e29b-41d4-a716-446655440505',
       {
         method: 'PATCH',
         headers: { ...headers, 'Content-Type': 'application/json' },
@@ -270,7 +333,7 @@ describe('admin-management API routes', () => {
     expect(updateResponse.status).toBe(200);
     await expect(updateResponse.json()).resolves.toMatchObject({
       success: true,
-      data: { admin: { id: 'receptionist-id', role: 'CMS_ADMIN' } },
+      data: { admin: { id: '550e8400-e29b-41d4-a716-446655440505', role: 'CMS_ADMIN' } },
     });
   });
 
@@ -285,7 +348,7 @@ describe('admin-management API routes', () => {
 
     const superAdminHeaders = await authenticatedHeaders();
     const protectedResponse = await app.request(
-      'http://localhost/api/admin/admins/protected-admin',
+      'http://localhost/api/admin/admins/550e8400-e29b-41d4-a716-446655440506',
       {
         method: 'PATCH',
         headers: { ...superAdminHeaders, 'Content-Type': 'application/json' },

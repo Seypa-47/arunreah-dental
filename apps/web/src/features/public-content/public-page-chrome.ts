@@ -13,7 +13,7 @@ import type {
 } from '@/features/landing-page/types';
 import type { ClinicSettingsPublicRead, PublicBranchRead } from '@arunreah/shared';
 import { getPublicMediaUrl } from '@/services/media';
-import type { PublicDoctorSummary, PublicShowcaseDetail } from '@/services/public-content';
+import type { PublicDoctorSummary, PublicPageMedia } from '@/services/public-content';
 import { formatPublicBranchHours } from './public-branch';
 
 // These values are interface copy and layout configuration. CMS-owned records
@@ -22,7 +22,7 @@ export const skeletonNavigation: LandingNavigationItem[] = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
   { href: '/services', label: 'Services' },
-  { href: '/doctors', label: 'Doctors' },
+  { href: '/team', label: 'Our Team' },
   { href: '/branches', label: 'Branches' },
   { href: '/showcases', label: 'Showcases' },
 ];
@@ -42,7 +42,7 @@ export function publicShell(language: 'en' | 'km') {
           title: isKm ? 'ស្វែងរក' : 'Explore',
           links: [
             { href: '/services', label: isKm ? 'សេវាកម្ម' : 'Services' },
-            { href: '/doctors', label: isKm ? 'វេជ្ជបណ្ឌិត' : 'Doctors' },
+            { href: '/team', label: isKm ? 'ក្រុមការងាររបស់យើង' : 'Our Team' },
             { href: '/branches', label: isKm ? 'សាខា' : 'Locations' },
           ],
         },
@@ -60,7 +60,7 @@ export function publicShell(language: 'en' | 'km') {
       { href: '/', label: isKm ? 'ទំព័រដើម' : 'Home' },
       { href: '/about', label: isKm ? 'អំពីយើង' : 'About' },
       { href: '/services', label: isKm ? 'សេវាកម្ម' : 'Services' },
-      { href: '/doctors', label: isKm ? 'វេជ្ជបណ្ឌិត' : 'Doctors' },
+      { href: '/team', label: isKm ? 'ក្រុមការងាររបស់យើង' : 'Our Team' },
       { href: '/branches', label: isKm ? 'សាខា' : 'Branches' },
       { href: '/showcases', label: isKm ? 'ស្នាដៃ' : 'Showcases' },
     ],
@@ -81,52 +81,39 @@ export function publicLandingChrome(language: 'en' | 'km'): LandingPageContent {
     promotionsEditorial: language === 'km'
       ? { eyebrow: 'ព័ត៌មាន និងកម្មវិធីពិសេស', subtitle: 'ស្វែងយល់អំពីកម្មវិធី និងព័ត៌មានថ្មីៗពីគ្លីនិករបស់យើង។', title: 'កម្មវិធីពិសេសពីគ្លីនិក' }
       : { eyebrow: 'News and special offers', subtitle: 'Explore current clinic campaigns and helpful updates from our care team.', title: 'Clinic promotions' },
+    sectionIssues: {
+      branches: false,
+      doctors: false,
+      promotions: false,
+      services: false,
+      showcase: false,
+    },
     showcase: [],
   };
 }
 
-function extractShowcaseGallery(
-  showcase?: PublicShowcaseDetail,
-  coverCaption = 'Clinic Exterior',
+function extractPageMediaGallery(
+  items: PublicPageMedia[] | undefined,
   fallbackImages?: { imageAlt: string; imageUrl: string }[],
 ): { imageAlt: string; imagePresentation?: import('@arunreah/shared').ImagePresentation; imageUrl: string }[] {
-  if (showcase) {
-    const list: { imageAlt: string; imagePresentation?: import('@arunreah/shared').ImagePresentation; imageUrl: string }[] = [];
-    if (showcase.coverImageKey) {
-      const url = getPublicMediaUrl(showcase.coverImageKey) ?? (showcase.coverImageKey.startsWith('http') || showcase.coverImageKey.startsWith('/') ? showcase.coverImageKey : `/assets/landing/${showcase.coverImageKey.replace(/^showcases\//, '')}`);
-      if (url) {
-        list.push({
-          imageAlt: coverCaption,
-          imagePresentation: showcase.coverImagePresentation,
-          imageUrl: url,
-        });
-      }
-    }
-    for (const section of showcase.sections) {
-      if (section.sectionType === 'IMAGE' && section.imageKey) {
-        const url = getPublicMediaUrl(section.imageKey) ?? (section.imageKey.startsWith('http') || section.imageKey.startsWith('/') ? section.imageKey : `/assets/landing/${section.imageKey.replace(/^showcases\//, '')}`);
-        if (url) {
-          list.push({
-            imageAlt: section.heading ?? '',
-            imagePresentation: section.imagePresentation,
-            imageUrl: url,
-          });
-        }
-      }
-    }
-    if (list.length > 0) return list;
-  }
+  const list = (items ?? []).flatMap((item) => {
+    const imageUrl = getPublicMediaUrl(item.imageKey);
+    return imageUrl ? [{ imageAlt: item.title ?? '', imagePresentation: item.imagePresentation, imageUrl }] : [];
+  });
+  if (list.length > 0) return list;
   return fallbackImages ?? [];
 }
 
 export function publicAboutContent(
   clinic: ClinicSettingsPublicRead,
   language: 'en' | 'km',
-  clinicShowcase?: PublicShowcaseDetail,
   featuredDoctor?: PublicDoctorSummary,
   advancedFacilities: { id: string; imageKey: string; imagePresentation: import('@arunreah/shared').ImagePresentation; title: string | null; body: string | null; displayOrder: number }[] = [],
   branches: (PublicBranchRead | import('@/services/public-content').PublicBranch)[] = [],
-  branchShowcases?: { psaChas?: PublicShowcaseDetail; toulTompoung?: PublicShowcaseDetail },
+  branchGalleryMedia?: {
+    psaChas?: { items: PublicPageMedia[] };
+    toulTompoung?: { items: PublicPageMedia[] };
+  },
   secondFeaturedDoctor?: PublicDoctorSummary,
 ): AboutPageContent {
   const clinicName = language === 'km' ? clinic.clinicNameKm : clinic.clinicNameEn;
@@ -141,7 +128,7 @@ export function publicAboutContent(
         imageUrl: getPublicMediaUrl(doctor.photoKey) ?? '',
         name: doctor.name,
         presentation: doctor.photoImagePresentation,
-        profileHref: `/doctors/${doctor.slug}`,
+        profileHref: `/team/${doctor.slug}`,
         specialty: doctor.specialty ?? '',
         summary: doctor.shortBio ?? '',
         title: doctor.title ?? '',
@@ -156,25 +143,23 @@ export function publicAboutContent(
   ];
 
   const defaultToulTompoungImages = [
-    { imageAlt: exteriorCaption, imageUrl: '/assets/landing/branches-clinic.png' },
+    { imageAlt: exteriorCaption, imageUrl: '/assets/landing/branches-clinic.webp' },
     { imageAlt: language === 'km' ? 'ការិយាល័យទទួលភ្ញៀវ' : 'Our reception', imageUrl: '/assets/landing/hero-clinic.png' },
     { imageAlt: language === 'km' ? 'កន្លែងរង់ចាំ' : 'Comfortable waiting area', imageUrl: '/assets/landing/showcase-room.png' },
     { imageAlt: language === 'km' ? 'បរិយាកាសគ្លីនិក' : 'A calm clinic environment', imageUrl: '/assets/landing/branch-card-clinic.png' },
   ];
 
   const psaChasBranch = branches.find((b) => b.slug === 'psa-chas');
-  const psaChasGallery = extractShowcaseGallery(
-    branchShowcases?.psaChas,
-    exteriorCaption,
+  const psaChasGallery = extractPageMediaGallery(
+    branchGalleryMedia?.psaChas?.items,
     defaultPsaChasImages,
   );
   const psaChasFormattedHours = psaChasBranch ? formatPublicBranchHours(psaChasBranch) : { days: '', time: '' };
   const psaChasHoursLabel = [psaChasFormattedHours.days, psaChasFormattedHours.time].filter(Boolean).join(': ') || psaChasBranch?.openingHours;
 
   const toulTompoungBranch = branches.find((b) => b.slug === 'toul-tompoung');
-  const toulTompoungGallery = extractShowcaseGallery(
-    branchShowcases?.toulTompoung ?? clinicShowcase,
-    exteriorCaption,
+  const toulTompoungGallery = extractPageMediaGallery(
+    branchGalleryMedia?.toulTompoung?.items,
     defaultToulTompoungImages,
   );
   const toulTompoungFormattedHours = toulTompoungBranch ? formatPublicBranchHours(toulTompoungBranch) : { days: '', time: '' };
@@ -193,7 +178,7 @@ export function publicAboutContent(
       openingHours: psaChasHoursLabel || (language === 'km' ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM'),
       phone: [psaChasBranch?.phone, psaChasBranch?.secondaryPhone].filter(Boolean).join(' / ') || '069 978 997',
       googleMapsUrl: psaChasBranch?.googleMapsUrl ?? 'https://maps.app.goo.gl/sxiKakoGPZEMzciB9',
-      showcaseTitle: branchShowcases?.psaChas?.title ?? (language === 'km' ? 'អ្វីដែលត្រូវរំពឹងក្នុងការមកពិនិត្យលើកដំបូង - សាខាផ្សារចាស់' : 'What To Expect During Your First Visit - Psa Chas Branch'),
+      showcaseTitle: psaChasBranch?.name ?? (language === 'km' ? 'សាខាផ្សារចាស់' : 'Psa Chas Branch'),
       images: psaChasGallery,
     },
     {
@@ -206,7 +191,7 @@ export function publicAboutContent(
       openingHours: toulTompoungHoursLabel || (language === 'km' ? 'ច័ន្ទ - អាទិត្យ៖ ៨:០០ ព្រឹក - ៧:០០ ល្ងាច' : 'Monday - Sunday: 8:00 AM - 7:00 PM'),
       phone: [toulTompoungBranch?.phone, toulTompoungBranch?.secondaryPhone].filter(Boolean).join(' / ') || '061 978 997',
       googleMapsUrl: toulTompoungBranch?.googleMapsUrl ?? 'https://maps.app.goo.gl/6HenBVpmvf4PiWwv6',
-      showcaseTitle: (branchShowcases?.toulTompoung ?? clinicShowcase)?.title ?? (language === 'km' ? 'អ្វីដែលត្រូវរំពឹងក្នុងការមកពិនិត្យលើកដំបូង - សាខាទួលទំពូង' : 'What To Expect During Your First Visit - Toul Tompoung Branch'),
+      showcaseTitle: toulTompoungBranch?.name ?? (language === 'km' ? 'សាខាទួលទំពូង' : 'Toul Tompoung Branch'),
       images: toulTompoungGallery,
     },
     ...extraBranches.map((branch) => {
@@ -274,7 +259,7 @@ export function publicAboutContent(
     hero: {
       eyebrow: language === 'km' ? 'អំពីយើង' : 'ABOUT US',
       imageAlt: clinicName,
-      imageUrl: '/assets/landing/figma-branches/image2_183_4173.png',
+      imageUrl: '/assets/landing/figma-branches/image2_183_4173.webp',
       subtitle: tagline ?? (language === 'km' ? 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ ដើម្បីស្នាមញញឹមមានសុខភាពល្អ និងទំនុកចិត្ត។' : 'Thoughtful dental care for a healthier, more confident smile.'),
       title: clinicName ? (language === 'km' ? `អំពី ${clinicName}` : `About ${clinicName}`) : (language === 'km' ? 'អំពី គ្លីនិកធ្មេញ អរុណរះ' : 'About Arunreah Dental Clinic'),
     },
@@ -315,9 +300,9 @@ export function publicDoctorsChrome(language: 'en' | 'km'): DoctorsPageContent {
     doctors: [],
     hero: {
       description: isKm
-        ? 'ការថែទាំធ្មេញដោយយកចិត្តទុកដាក់ពីក្រុមទន្តបណ្ឌិតរបស់យើង។'
-        : 'Thoughtful dental care from our experienced clinic team.',
-      title: isKm ? 'ជួបជាមួយក្រុមទន្តបណ្ឌិតអរុណរះ' : 'Meet the Arunreah Dental Team',
+        ? 'ទន្តបណ្ឌិត គ្រូពេទ្យទូទៅ បុគ្គលិកទទួលភ្ញៀវ និងជំនួយការព្យាបាល ដែលថែទាំអ្នកតាំងពីការស្វាគមន៍ដំបូង រហូតដល់ការពិនិត្យចុងក្រោយ។'
+        : 'Dentists, general practitioners, receptionists, and clinical assistants who look after you from your first hello to your final check-up.',
+      title: isKm ? 'ក្រុមការងាររបស់យើង' : 'Our Team',
     },
   };
 }

@@ -16,6 +16,8 @@ export const queryKeys = {
     contact: () => ['public', 'contact'] as const,
     doctor: (slug: string, language: 'en' | 'km') =>
       ['public', 'doctors', slug, language] as const,
+    teamMember: (slug: string, language: 'en' | 'km') =>
+      ['public', 'team-members', slug, language] as const,
     doctors: (language: 'en' | 'km') => ['public', 'doctors', language] as const,
     service: (slug: string, language: 'en' | 'km') =>
       ['public', 'services', slug, language] as const,

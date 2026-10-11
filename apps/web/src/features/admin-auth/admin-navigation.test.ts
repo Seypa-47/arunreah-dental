@@ -18,7 +18,9 @@ describe('role-based admin navigation', () => {
   it('limits CMS admins to content operations', () => {
     const labels = labelsFor('CMS_ADMIN');
     expect(labels).toContain('Services');
-    expect(labels).toContain('Doctors');
+    expect(labels).toContain('Team');
+    expect(labels).toContain('Team Management');
+    expect(labels).toContain('Add Team Member');
     expect(labels).toContain('Showcase');
     expect(labels).toContain('Page Media');
     expect(labels).not.toContain('Appointments');

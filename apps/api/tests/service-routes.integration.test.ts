@@ -27,7 +27,14 @@ type ServiceRecord = {
   editorialLabelKm: string | null;
   editorialTitleEn: string | null;
   editorialTitleKm: string | null;
-  detailPresentation: 'STANDARD' | 'JOURNEY' | 'CARE_MENU' | 'CLINICAL_SCOPE' | 'IMAGING_GUIDE' | 'PROBLEM_TO_CARE' | 'FAMILY_CARE';
+  detailPresentation:
+    | 'STANDARD'
+    | 'JOURNEY'
+    | 'CARE_MENU'
+    | 'CLINICAL_SCOPE'
+    | 'IMAGING_GUIDE'
+    | 'PROBLEM_TO_CARE'
+    | 'FAMILY_CARE';
   aboutTitleEn: string | null;
   aboutTitleKm: string | null;
   aboutBodyEn: string | null;
@@ -101,7 +108,7 @@ vi.mock('../src/repositories/service.repository', () => ({
     state.services.find((service) => service.slug === slug && service.status === 'PUBLISHED'),
   createService: async (_database: unknown, input: ServiceInput) => {
     const service = {
-      ...serviceFixture({ id: `service-${state.services.length + 1}`, slug: input.slug ?? 'new' }),
+      ...serviceFixture({ id: '550e8400-e29b-41d4-a716-446655440501', slug: input.slug ?? 'new' }),
       ...input,
       createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
@@ -163,7 +170,7 @@ const testBindings = {
 
 function serviceFixture(overrides: Partial<ServiceRecord> = {}): ServiceRecord {
   return {
-    id: 'service-1',
+    id: '550e8400-e29b-41d4-a716-446655440501',
     slug: 'dental-implants',
     status: 'PUBLISHED',
     featured: true,
@@ -255,7 +262,7 @@ describe('service API routes', () => {
       serviceFixture(),
       serviceFixture({ id: 'service-2', slug: 'draft', status: 'DRAFT' }),
     ];
-    state.benefits.set('service-1', [
+    state.benefits.set('550e8400-e29b-41d4-a716-446655440501', [
       {
         titleEn: 'Durable',
         titleKm: 'រឹងមាំ',
@@ -265,7 +272,7 @@ describe('service API routes', () => {
         displayOrder: 0,
       },
     ]);
-    state.detailSections.set('service-1', [
+    state.detailSections.set('550e8400-e29b-41d4-a716-446655440501', [
       {
         sectionType: 'IMAGE',
         headingEn: 'Digital assessment',
@@ -284,7 +291,11 @@ describe('service API routes', () => {
     expect(list.status).toBe(200);
     await expect(list.json()).resolves.toMatchObject({
       success: true,
-      data: { services: [{ id: 'service-1', slug: 'dental-implants', name: 'ដាំធ្មេញ' }] },
+      data: {
+        services: [
+          { id: '550e8400-e29b-41d4-a716-446655440501', slug: 'dental-implants', name: 'ដាំធ្មេញ' },
+        ],
+      },
     });
     const detail = await app.request(
       'http://localhost/api/public/services/dental-implants?lang=en',
@@ -300,7 +311,9 @@ describe('service API routes', () => {
           hero: { title: 'Dental Implants' },
           editorial: { label: 'Treatment guide', title: 'Your implant treatment journey' },
           benefits: [{ title: 'Durable' }],
-          detailSections: [{ heading: 'Digital assessment', imageKey: 'service-guides/assessment.png' }],
+          detailSections: [
+            { heading: 'Digital assessment', imageKey: 'service-guides/assessment.png' },
+          ],
         },
       },
     });
@@ -385,7 +398,7 @@ describe('service API routes', () => {
     );
     expect(duplicate.status).toBe(409);
     const update = await app.request(
-      'http://localhost/api/admin/services/service-1',
+      'http://localhost/api/admin/services/550e8400-e29b-41d4-a716-446655440501',
       {
         method: 'PATCH',
         headers: { ...headers, 'Content-Type': 'application/json' },
@@ -394,11 +407,11 @@ describe('service API routes', () => {
       testBindings,
     );
     expect(update.status).toBe(200);
-    expect(state.benefits.get('service-1')).toHaveLength(1);
+    expect(state.benefits.get('550e8400-e29b-41d4-a716-446655440501')).toHaveLength(1);
     expect(
       (
         await app.request(
-          'http://localhost/api/admin/services/service-1',
+          'http://localhost/api/admin/services/550e8400-e29b-41d4-a716-446655440501',
           { headers },
           testBindings,
         )
@@ -407,33 +420,36 @@ describe('service API routes', () => {
   });
 
   it('validates related services and protects appointment-referenced records from deletion', async () => {
-    state.services = [serviceFixture(), serviceFixture({ id: 'service-2', slug: 'whitening' })];
+    state.services = [
+      serviceFixture(),
+      serviceFixture({ id: '550e8400-e29b-41d4-a716-446655440507', slug: 'whitening' }),
+    ];
     const headers = await authenticatedHeaders('SUPER_ADMIN');
     const selfReference = await app.request(
-      'http://localhost/api/admin/services/service-1',
+      'http://localhost/api/admin/services/550e8400-e29b-41d4-a716-446655440501',
       {
         method: 'PATCH',
         headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ relatedServiceIds: ['service-1'] }),
+        body: JSON.stringify({ relatedServiceIds: ['550e8400-e29b-41d4-a716-446655440501'] }),
       },
       testBindings,
     );
     expect(selfReference.status).toBe(400);
     const relatedUpdate = await app.request(
-      'http://localhost/api/admin/services/service-1',
+      'http://localhost/api/admin/services/550e8400-e29b-41d4-a716-446655440501',
       {
         method: 'PATCH',
         headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ relatedServiceIds: ['service-2'] }),
+        body: JSON.stringify({ relatedServiceIds: ['550e8400-e29b-41d4-a716-446655440507'] }),
       },
       testBindings,
     );
     expect(relatedUpdate.status).toBe(200);
-    state.appointmentServiceIds.add('service-1');
+    state.appointmentServiceIds.add('550e8400-e29b-41d4-a716-446655440501');
     expect(
       (
         await app.request(
-          'http://localhost/api/admin/services/service-1',
+          'http://localhost/api/admin/services/550e8400-e29b-41d4-a716-446655440501',
           { method: 'DELETE', headers },
           testBindings,
         )
@@ -442,7 +458,7 @@ describe('service API routes', () => {
     expect(
       (
         await app.request(
-          'http://localhost/api/admin/services/service-2',
+          'http://localhost/api/admin/services/550e8400-e29b-41d4-a716-446655440507',
           { method: 'DELETE', headers },
           testBindings,
         )
