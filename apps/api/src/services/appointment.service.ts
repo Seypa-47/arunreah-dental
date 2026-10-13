@@ -133,7 +133,11 @@ function createReference() {
 }
 
 function acknowledgement(appointment: { reference: string; status: string }) {
-  return { reference: appointment.reference, status: appointment.status };
+  return {
+    reference: appointment.reference,
+    status: appointment.status,
+    message: 'Your request has been received. Our team will contact you shortly.',
+  };
 }
 
 function isUniqueConstraintError(error: unknown) {
@@ -147,6 +151,7 @@ export async function createPublicAppointmentRequest(
   input: CreatePublicAppointmentInput,
   environment: 'development' | 'staging' | 'production',
   turnstileSecret: string | undefined,
+  turnstileHostnames: string | undefined,
   notificationEnvironment: Bindings,
   headers: Headers,
   rateLimitKey: string,
@@ -167,7 +172,13 @@ export async function createPublicAppointmentRequest(
 
   // Failed Turnstile and invalid selections count too, before remote verification.
   await consumeAppointmentRequestAttempt(database, rateLimitKey);
-  await verifyTurnstile(input.turnstileToken, turnstileSecret, getClientIp(headers), environment);
+  await verifyTurnstile(
+    input.turnstileToken,
+    turnstileSecret,
+    turnstileHostnames,
+    getClientIp(headers),
+    environment,
+  );
   assertPreferredDate(input.preferredDate);
 
   const [service, branch, doctor] = await Promise.all([

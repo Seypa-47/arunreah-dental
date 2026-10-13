@@ -10,7 +10,11 @@ export function PublicNotFoundPage() {
   const { language } = usePublicLanguage();
   const isKm = language === 'km';
   const shell = publicShell(language);
-  usePublicDocumentTitle(isKm ? 'រកមិនឃើញទំព័រ' : 'Page not found');
+  usePublicDocumentTitle(
+    isKm ? 'រកមិនឃើញទំព័រ' : 'Page not found',
+    isKm ? 'រកមិនឃើញទំព័រដែលអ្នកបានស្នើទេ។' : 'The requested page could not be found.',
+    { noIndex: true },
+  );
 
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation} services={shell.services}>

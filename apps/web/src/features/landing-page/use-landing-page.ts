@@ -17,7 +17,7 @@ export function useLandingPageQuery() {
   const { language } = usePublicLanguage();
   return useQuery({
     queryFn: async () => {
-      const clinic = await getPublicClinic();
+      const clinic = await getPublicClinic(language);
       const [servicesResult, doctorsResult, branchesResult, showcasesResult, promotionsResult] = await Promise.allSettled([
         getPublicServices(language),
         getPublicBookableDoctors(language),

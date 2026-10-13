@@ -88,7 +88,7 @@ export function SiteLayout({ actions, children, navigation }: SiteLayoutProps) {
     staleTime: 5 * 60 * 1000,
   });
   const services = servicesQuery.data?.services ?? [];
-  const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic() });
+  const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic(activeLanguage) });
   const { hash, pathname } = useLocation();
   const navigate = useNavigate();
   const mainContentRef = useRef<HTMLDivElement>(null);

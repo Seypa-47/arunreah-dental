@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { SkeletonBlock, SkeletonImage, SkeletonSection, SkeletonText } from '@/components/ui/skeleton';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ContentBlocks, ResilientImage } from '@/components/layout/public-ui';
@@ -11,7 +12,11 @@ import { useShowcaseDetailPageQuery } from './use-showcase-detail-page';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { isPublicNotFoundError } from '@/features/public-content/public-errors';
-import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
+import {
+  buildBreadcrumbStructuredData,
+  publicSiteOrigin,
+  usePublicDocumentTitle,
+} from '@/features/public-content/public-document-title';
 
 export function ShowcaseDetailPage() {
   const { showcaseSlug } = useParams();
@@ -20,7 +25,30 @@ export function ShowcaseDetailPage() {
   const copy = publicUiCopy(language);
   usePublicDocumentTitle(
     data?.showcase.seo.title ?? data?.showcase.title ?? (language === 'km' ? 'ស្នាដៃ' : 'Showcase'),
-    data?.showcase.seo.description,
+    data?.showcase.seo.description ?? data?.showcase.summary,
+    {
+      imageUrl: data?.showcase.coverImageKey ? getPublicMediaUrl(data.showcase.coverImageKey) : undefined,
+      noIndex: isError && isPublicNotFoundError(error),
+      type: 'article',
+      structuredData: data?.showcase
+        ? [
+            buildBreadcrumbStructuredData([
+              { name: 'Home', path: '/' },
+              { name: language === 'km' ? 'ស្នាដៃ' : 'Showcases', path: '/showcases' },
+              { name: data.showcase.title, path: `/showcases/${data.showcase.slug}` },
+            ]),
+            {
+              '@context': 'https://schema.org',
+              '@type': 'Article',
+              headline: data.showcase.title,
+              description: data.showcase.seo.description ?? data.showcase.summary,
+              image: data.showcase.coverImageKey ? getPublicMediaUrl(data.showcase.coverImageKey) : undefined,
+              mainEntityOfPage: `${publicSiteOrigin}/showcases/${data.showcase.slug}`,
+              publisher: { '@id': `${publicSiteOrigin}/#organization` },
+            },
+          ]
+        : null,
+    },
   );
 
   if (isLoading) return <ShowcaseDetailPageSkeleton />;
@@ -106,65 +134,37 @@ export function ShowcaseDetailPage() {
   );
 }
 
-function ShowcaseDetailPageSkeleton() {
+export function ShowcaseDetailPageSkeleton() {
   const { language } = usePublicLanguage();
   const shell = publicShell(language);
   const copy = publicUiCopy(language).showcaseDetail;
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation}>
-      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+      <main aria-busy="true" className="bg-white">
         <span className="sr-only">{copy.loading}</span>
 
         <article>
-          <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] py-6 sm:py-8">
+          <SkeletonSection className="border-b border-[#e7eff3] bg-[#f7fafc] py-6 sm:py-8" data-skeleton-section="showcase-cover">
             <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-              <div className="h-[250px] w-full animate-pulse rounded-xl bg-[linear-gradient(135deg,#dbeef3_0%,#edf5f7_100%)] sm:h-[390px]" />
+              <SkeletonBlock className="mb-4 h-4 w-36 rounded-full" data-skeleton-slot="back-link" />
+              <SkeletonImage className="h-[250px] w-full sm:h-[390px]" data-skeleton-slot="cover-image" />
             </div>
-          </section>
+          </SkeletonSection>
 
-          <section aria-hidden="true" className="mx-auto max-w-[820px] px-4 py-10 sm:px-6 sm:py-14">
-            <div className="h-5 w-24 animate-pulse rounded-full bg-[#e1f0f4]" />
-            <div className="mt-4 h-10 w-[92%] animate-pulse rounded-lg bg-[#d4e7ed] sm:h-12" />
-            <div className="mt-3 h-10 w-[66%] animate-pulse rounded-lg bg-[#d4e7ed] sm:h-12" />
+          <SkeletonSection className="mx-auto max-w-[820px] px-4 py-10 sm:px-6 sm:py-14" data-skeleton-section="showcase-article">
+            <SkeletonBlock className="h-5 w-24 rounded-full" />
+            <SkeletonBlock className="mt-4 h-10 w-[92%] sm:h-12" data-skeleton-slot="title" />
+            <SkeletonBlock className="mt-3 h-10 w-[66%] sm:h-12" />
+            <SkeletonText className="mt-6" lineClassName="h-4" lines={3} widths={['100%', '92%', '70%']} data-skeleton-slot="summary" />
+            <SkeletonText className="mt-9 border-t border-[#e7eff3] pt-8" lineClassName="h-4" lines={5} widths={['100%', '100%', '100%', '86%', '68%']} data-skeleton-slot="body" />
 
-            <div className="mt-6 space-y-3">
-              <div className="h-4 w-full animate-pulse rounded-full bg-[#e7f0f3]" />
-              <div className="h-4 w-[92%] animate-pulse rounded-full bg-[#e7f0f3]" />
-              <div className="h-4 w-[70%] animate-pulse rounded-full bg-[#e7f0f3]" />
+            <div className="mt-9 border-t border-[#e7eff3] pt-8" data-skeleton-slot="content-section">
+              <SkeletonImage className="mb-5 h-[200px] w-full sm:h-[420px]" />
+              <SkeletonBlock className="h-7 w-56 max-w-full" />
+              <SkeletonText className="mt-4" lineClassName="h-4" lines={3} widths={['100%', '84%', '62%']} />
             </div>
-
-            <div className="mt-9 space-y-3 border-t border-[#e7eff3] pt-8">
-              {Array.from({ length: 5 }, (_, index) => (
-                <div className={`h-4 animate-pulse rounded-full bg-[#edf4f6] ${index === 4 ? 'w-[68%]' : index === 3 ? 'w-[86%]' : 'w-full'}`} key={index} />
-              ))}
-            </div>
-
-            <div className="mt-9 border-t border-[#e7eff3] pt-8">
-              <div className="h-7 w-56 animate-pulse rounded-lg bg-[#d9e9ee]" />
-              <div className="mt-5 h-[220px] w-full animate-pulse rounded-xl bg-[#e4f0f3] sm:h-[320px]" />
-              <div className="mt-5 space-y-3">
-                <div className="h-4 w-full animate-pulse rounded-full bg-[#edf4f6]" />
-                <div className="h-4 w-[84%] animate-pulse rounded-full bg-[#edf4f6]" />
-              </div>
-            </div>
-          </section>
+          </SkeletonSection>
         </article>
-
-        <section aria-hidden="true" className="border-t border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-            <div className="h-8 w-56 animate-pulse rounded-lg bg-[#d4e7ed]" />
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-              {Array.from({ length: 3 }, (_, index) => (
-                <div className="flex min-h-[150px] overflow-hidden rounded-xl border border-[#e1ebef] bg-white sm:block" key={index}>
-                  <div className="h-[150px] w-[40%] shrink-0 animate-pulse bg-[#e3eef2] sm:h-40 sm:w-full" />
-                  <div className="flex flex-1 items-center p-4 sm:block sm:p-5">
-                    <div className="h-5 w-full animate-pulse rounded-full bg-[#dcebf0]" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
       </main>
     </SiteLayout>
   );

@@ -97,11 +97,16 @@ function loadTurnstile(): Promise<void> {
 }
 
 type TurnstileWidgetProps = {
+  action?: string;
   onToken: (token: string | null) => void;
   resetSignal: number;
 };
 
-export function TurnstileWidget({ onToken, resetSignal }: TurnstileWidgetProps) {
+export function TurnstileWidget({
+  action = 'appointment_request',
+  onToken,
+  resetSignal,
+}: TurnstileWidgetProps) {
   const { language } = usePublicLanguage();
   const copy = publicUiCopy(language).booking;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -134,7 +139,7 @@ export function TurnstileWidget({ onToken, resetSignal }: TurnstileWidgetProps) 
         containerRef.current.innerHTML = '';
 
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
-          action: 'appointment_request',
+          action,
           callback: (token) => {
             if (active) onToken(token);
           },
@@ -172,7 +177,7 @@ export function TurnstileWidget({ onToken, resetSignal }: TurnstileWidgetProps) 
         widgetIdRef.current = undefined;
       }
     };
-  }, [onToken, siteKey, retryCount]);
+  }, [action, onToken, siteKey, retryCount]);
 
   useEffect(() => {
     if (prevResetSignalRef.current !== resetSignal) {

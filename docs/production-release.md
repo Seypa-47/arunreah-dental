@@ -9,9 +9,9 @@ production` fail instead of writing to the wrong place.
 Planned topology, following the staging pattern of same-site HTTPS subdomains:
 
 ```text
-Frontend: https://arunreah.mekhla.digital
-API:      https://api.arunreah.mekhla.digital
-Media:    https://media.arunreah.mekhla.digital
+Frontend: https://arunreahdental.com
+API:      https://api.arunreahdental.com
+Media:    https://media.arunreahdental.com
 ```
 
 Production must never share D1 data, R2 objects, admin accounts, sessions,
@@ -46,7 +46,7 @@ applied migration; add a new one.
 
 ## 3. Set the media URL
 
-Attach `media.arunreah.mekhla.digital` to the production bucket and set that
+Attach `media.arunreahdental.com` to the production bucket and set that
 exact HTTPS origin as `MEDIA_PUBLIC_BASE_URL`. Do not enable or use an `r2.dev`
 development URL in production. Keep direct bucket listing private; public reads
 must use only the intended custom domain. An empty value renders the site
@@ -66,9 +66,9 @@ npx wrangler secret put TELEGRAM_BOT_TOKEN --env production   # only if Telegram
 Generate a `SESSION_SIGNING_KEY` unique to production. Public appointment
 requests reject submissions without `TURNSTILE_SECRET_KEY`.
 
-To turn on Telegram notifications, set the production chat id and flip
-`TELEGRAM_NOTIFICATIONS_ENABLED` to `"true"` in the `production` vars. It ships
-disabled so a fresh deploy cannot message a staging chat.
+The production owner approved reusing the existing clinic Telegram bot and
+group. The chat id is a non-secret production var, while the bot token must be
+entered again as a production Worker secret.
 
 ## 5. Deploy the Worker and attach the domain
 
@@ -81,7 +81,7 @@ selects the production environment explicitly. Record the resulting Worker
 version/deployment id in the release record. Do not bypass the guard with a
 direct Wrangler deploy during a routine release.
 
-The `routes` entry claims `api.arunreah.mekhla.digital` as a custom domain, so
+The `routes` entry claims `api.arunreahdental.com` as a custom domain, so
 that hostname must be on the same Cloudflare account as the zone.
 
 ## 6. Create the Pages project and deploy the site
@@ -94,19 +94,25 @@ Build the frontend against production values — these are embedded in the
 browser bundle, so they must contain no secrets:
 
 ```text
-VITE_API_BASE_URL=https://api.arunreah.mekhla.digital
+VITE_API_BASE_URL=https://api.arunreahdental.com
 VITE_MEDIA_PUBLIC_BASE_URL=<the media URL from step 3>
 VITE_TURNSTILE_SITE_KEY=<production Turnstile site key>
 ```
 
 ```bash
-cd apps/web && pnpm build
+pnpm --filter @arunreah/web build:production
+cd apps/web
 npx wrangler pages deploy dist --project-name arunreah-dental-production --branch main
 ```
 
+The production build command pins the public production API and media origins
+so a developer's local staging environment file cannot be embedded in the
+production browser bundle. It still reads the public Turnstile site key from
+the production environment configuration.
+
 The Pages project's production branch label decides which deploys are served at
 the custom domain; other labels are previews. Attach
-`arunreah.mekhla.digital` to the project, and confirm it matches
+`arunreahdental.com` to the project, and confirm it matches
 `CORS_ALLOWED_ORIGINS` exactly, including the scheme and any `www`.
 
 ## 7. Create the first administrator
@@ -117,8 +123,8 @@ session across.
 
 ## 8. Verify before announcing
 
-- `GET https://api.arunreah.mekhla.digital/api/health` returns ok.
-- `GET https://api.arunreah.mekhla.digital/api/health/ready` returns 200. Treat
+- `GET https://api.arunreahdental.com/api/health` returns ok.
+- `GET https://api.arunreahdental.com/api/health/ready` returns 200. Treat
   any non-200 response as a release blocker; the response intentionally omits
   provider and database details.
 - The site loads at the custom domain and its asset hash matches the local build.

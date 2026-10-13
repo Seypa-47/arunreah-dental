@@ -7,10 +7,13 @@
   "vars": {
     "APP_ENV": "development",
     "CORS_ALLOWED_ORIGINS": "http://localhost:5173",
+    "ADMIN_APP_BASE_URL": "http://localhost:5173",
+    "TURNSTILE_HOSTNAMES": "localhost,127.0.0.1",
     "MEDIA_PUBLIC_BASE_URL": "",
     "EMAIL_NOTIFICATIONS_ENABLED": "false",
     "EMAIL_NOTIFICATION_RECIPIENT": "arunreah.dental@outlook.com",
     "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.mekhla.digital>",
+    "USAGE_MONITOR_ENABLED": "false",
   },
   "d1_databases": [
     {
@@ -29,13 +32,17 @@
   "env": {
     "staging": {
       "name": "arunreah-api-staging",
+      "account_id": "c3db515eb4220bdcb0df58584e2d6ee0",
       "vars": {
         "APP_ENV": "staging",
         "CORS_ALLOWED_ORIGINS": "https://staging.mekhla.digital",
+        "ADMIN_APP_BASE_URL": "https://staging.mekhla.digital",
+        "TURNSTILE_HOSTNAMES": "staging.mekhla.digital",
         "MEDIA_PUBLIC_BASE_URL": "https://pub-0dae1b4d79d0465fa30f0366829841b4.r2.dev",
         "EMAIL_NOTIFICATIONS_ENABLED": "true",
         "EMAIL_NOTIFICATION_RECIPIENT": "arunreah.dental@outlook.com",
         "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.mekhla.digital>",
+        "USAGE_MONITOR_ENABLED": "false",
         "TELEGRAM_NOTIFICATIONS_ENABLED": "true",
         "TELEGRAM_CHAT_ID": "-1005593770369",
       },
@@ -60,12 +67,11 @@
         },
       ],
     },
-    // Production is not provisioned yet: the D1 database, the R2 bucket and the
-    // custom domains below do not exist on the Cloudflare account. Follow
-    // docs/production-release.md before the first deploy; a deploy attempted
-    // with the placeholder database_id fails fast instead of writing anywhere.
+    // Production resources are provisioned in the client's Cloudflare account.
+    // Follow docs/production-release.md for the release and rollback procedure.
     "production": {
       "name": "arunreah-api-production",
+      "account_id": "e3fab4e544dd014935f9289d297c0945",
       "workers_dev": false,
       "observability": {
         "enabled": true,
@@ -81,21 +87,31 @@
           "persist": true,
         },
       },
+      "triggers": {
+        "crons": ["17 * * * *"],
+      },
       "vars": {
         "APP_ENV": "production",
-        "CORS_ALLOWED_ORIGINS": "https://arunreah.mekhla.digital",
-        // Set to the production R2 custom domain: https://media.arunreah.mekhla.digital
-        "MEDIA_PUBLIC_BASE_URL": "https://media.arunreah.mekhla.digital",
+        "CORS_ALLOWED_ORIGINS": "https://arunreahdental.com",
+        "ADMIN_APP_BASE_URL": "https://arunreahdental.com",
+        "TURNSTILE_HOSTNAMES": "arunreahdental.com",
+        // Set to the production R2 custom domain: https://media.arunreahdental.com
+        "MEDIA_PUBLIC_BASE_URL": "https://media.arunreahdental.com",
         "EMAIL_NOTIFICATIONS_ENABLED": "true",
         "EMAIL_NOTIFICATION_RECIPIENT": "arunreah.dental@outlook.com",
-        "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.mekhla.digital>",
-        // Enable only after TELEGRAM_BOT_TOKEN is set and the production chat id is confirmed.
-        "TELEGRAM_NOTIFICATIONS_ENABLED": "false",
-        "TELEGRAM_CHAT_ID": "",
+        "EMAIL_FROM_ADDRESS": "Arunreah Dental Clinic <appointments@send.arunreahdental.com>",
+        "USAGE_MONITOR_ENABLED": "true",
+        "USAGE_ALERT_RECIPIENT": "Hongbrathna@gmail.com",
+        "CLOUDFLARE_ACCOUNT_ID": "e3fab4e544dd014935f9289d297c0945",
+        "CLOUDFLARE_WORKERS_DAILY_LIMIT": "100000",
+        // The client explicitly approved reusing the clinic's existing bot and group.
+        // TELEGRAM_BOT_TOKEN must still be set independently as a production secret.
+        "TELEGRAM_NOTIFICATIONS_ENABLED": "true",
+        "TELEGRAM_CHAT_ID": "-1005593770369",
       },
       "routes": [
         {
-          "pattern": "api.arunreah.mekhla.digital",
+          "pattern": "api.arunreahdental.com",
           "custom_domain": true,
         },
       ],
@@ -103,8 +119,7 @@
         {
           "binding": "DB",
           "database_name": "arunreah-dental-production",
-          // Replace with the id printed by `wrangler d1 create arunreah-dental-production`.
-          "database_id": "REPLACE_WITH_PRODUCTION_D1_DATABASE_ID",
+          "database_id": "f37dd4c1-3b83-4339-809e-3bdc66a6ed23",
           "migrations_dir": "migrations",
         },
       ],

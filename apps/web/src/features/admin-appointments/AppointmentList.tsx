@@ -195,7 +195,7 @@ export function AppointmentList({ inbox }: { inbox: boolean }) {
   const publicIds = new Set(publicBranches.map((branch) => branch.id));
   const branchOptions = [...publicBranches, ...branchCounts.filter((branch) => !publicIds.has(branch.id)).map((branch) => ({ id: branch.id, name: branch.nameSnapshot, count: branch.count }))];
 
-  if (listQuery.isLoading) return <main aria-busy="true" aria-label="Loading appointments" className="grid min-h-screen place-items-center bg-[#f6f8fb]"><AdminFeedback title="Loading appointment requests…" tone="loading" /></main>;
+  if (listQuery.isLoading) return <main aria-busy="true" className="grid min-h-screen place-items-center bg-[#f6f8fb]"><AdminFeedback title="Loading appointment requests…" tone="loading" /></main>;
   if (listQuery.isError || !listQuery.data) return <main className="grid min-h-screen place-items-center bg-[#f6f8fb] p-6"><Card className="max-w-md p-8 text-center"><h1 className="text-xl font-bold">Appointments are unavailable</h1><p className="mt-3 text-[#71839e]">{safeMessage(listQuery.error)}</p><Button className="mt-5" onClick={() => void listQuery.refetch()}>Retry</Button></Card></main>;
 
   const { appointments, meta } = listQuery.data;

@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, like, or, type SQL } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, like, or, sql, type SQL } from 'drizzle-orm';
 import type {
   AdminDoctorListQuery,
   CreateDoctorInput,
@@ -490,12 +490,23 @@ export async function listAdminDoctors(
     updatedAt: doctors.updatedAt,
   } as const;
   const order = query.order === 'desc' ? desc : asc;
+  const categoryOrder = sql<number>`case ${doctors.category}
+    when 'DENTIST' then 0
+    when 'GENERAL_PRACTITIONER' then 1
+    when 'RECEPTIONIST' then 2
+    when 'ASSISTANT' then 3
+    else 4
+  end`;
+  const orderBy =
+    !query.category && query.sort === 'displayOrder'
+      ? [asc(categoryOrder), order(doctors.displayOrder), asc(doctors.id)]
+      : [order(columns[query.sort]), asc(doctors.id)];
   const [items, total] = await Promise.all([
     database
       .select()
       .from(doctors)
       .where(where)
-      .orderBy(order(columns[query.sort]), asc(doctors.id))
+      .orderBy(...orderBy)
       .limit(query.limit)
       .offset((query.page - 1) * query.limit),
     database.select({ value: count() }).from(doctors).where(where),

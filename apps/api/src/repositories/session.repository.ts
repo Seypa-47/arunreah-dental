@@ -52,6 +52,14 @@ export async function revokeAdminSession(database: DatabaseClient, sessionId: st
     .where(eq(adminSessions.id, sessionId));
 }
 
+export async function revokeAllAdminSessions(database: DatabaseClient, adminId: string) {
+  const now = new Date().toISOString();
+  await database
+    .update(adminSessions)
+    .set({ revokedAt: now, updatedAt: now })
+    .where(and(eq(adminSessions.adminId, adminId), isNull(adminSessions.revokedAt)));
+}
+
 export async function getLoginRateLimit(database: DatabaseClient, key: string) {
   const [record] = await database
     .select()

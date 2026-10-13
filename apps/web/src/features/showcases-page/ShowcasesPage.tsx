@@ -12,6 +12,14 @@ import { useShowcasesPageQuery } from './use-showcases-page';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
+import {
+  PublicListingHeroSkeleton,
+  publicListingGridClass,
+  publicListingHeroContentClass,
+  publicListingHeroMediaClass,
+  publicListingHeroSectionClass,
+} from '@/components/layout/public-listing-skeleton';
+import { SkeletonBlock, SkeletonCard, SkeletonImage, SkeletonSection, SkeletonText } from '@/components/ui/skeleton';
 
 
 function ShowcaseCard({ showcase }: { showcase: PublicShowcaseSummary }) {
@@ -43,16 +51,16 @@ function ShowcasesHero({ heroMedia }: { heroMedia?: { badge: string | null; body
   const description = heroMedia?.body || copy.heroSubtitle;
 
   return (
-    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
+    <section className={publicListingHeroSectionClass}>
       <PageContainer>
         {imageUrl ? (
-          <div className="relative min-h-[320px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#00546f] sm:min-h-[380px] lg:min-h-[420px]">
+          <div className={publicListingHeroMediaClass}>
             <ResilientImage alt={title} className="absolute inset-0 h-full w-full object-cover object-center" presentation={heroMedia?.imagePresentation} src={imageUrl} />
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#021827]/90 via-[#021827]/40 to-transparent sm:bg-[linear-gradient(100deg,rgba(2,24,39,0.88)_0%,rgba(2,24,39,0.5)_42%,rgba(2,24,39,0.1)_70%,transparent_100%)]"
             />
-            <div className="relative z-10 flex min-h-[320px] max-w-[720px] flex-col justify-end p-6 sm:min-h-[380px] sm:p-10 lg:min-h-[420px] lg:p-12">
+            <div className={publicListingHeroContentClass}>
               <div>
                 {eyebrow ? (
                   <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
@@ -86,7 +94,11 @@ export function ShowcasesPage() {
   const { data, isError, isLoading, refetch } = useShowcasesPageQuery();
   const { language } = usePublicLanguage();
   const copy = publicUiCopy(language);
-  usePublicDocumentTitle(data?.heroMedia?.title ?? copy.showcases.heroTitle);
+  usePublicDocumentTitle(
+    data?.heroMedia?.title ?? copy.showcases.heroTitle,
+    data?.heroMedia?.body ?? copy.showcases.heroSubtitle,
+    { imageUrl: data?.heroMedia?.imageKey ? getPublicMediaUrl(data.heroMedia.imageKey) : undefined },
+  );
 
   if (isLoading) return <ShowcasesPageSkeleton />;
   if (isError || !data) return <PageFeedback action={<Button onClick={() => void refetch()}>{copy.common.retry}</Button>} body={copy.showcases.errorBody} title={copy.showcases.errorTitle} />;
@@ -96,7 +108,7 @@ export function ShowcasesPage() {
       <main className="bg-white">
         <ShowcasesHero heroMedia={data.heroMedia} />
         <section className="py-10 sm:py-14"><PageContainer>
-          {data.showcases.length === 0 ? <Card className="rounded-xl border-[#e1ebef] p-8 text-center text-[16px] text-[#64748b]">{copy.showcases.empty}</Card> : <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{data.showcases.map((showcase) => <ShowcaseCard key={showcase.slug} showcase={showcase} />)}</div>}
+          {data.showcases.length === 0 ? <Card className="rounded-xl border-[#e1ebef] p-8 text-center text-[16px] text-[#64748b]">{copy.showcases.empty}</Card> : <div className={publicListingGridClass}>{data.showcases.map((showcase) => <ShowcaseCard key={showcase.slug} showcase={showcase} />)}</div>}
         </PageContainer></section>
       </main>
       <SiteFooter {...data.chrome.footer} />
@@ -104,46 +116,34 @@ export function ShowcasesPage() {
   );
 }
 
-function ShowcasesPageSkeleton() {
+export function ShowcasesPageSkeleton() {
   const { language } = usePublicLanguage();
   const shell = publicShell(language);
   const copy = publicUiCopy(language).showcases;
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation}>
-      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+      <main aria-busy="true" className="bg-white">
         <span className="sr-only">{copy.loading}</span>
 
-        <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] px-4 py-10 text-center sm:px-6 sm:py-12">
-          <div className="mx-auto max-w-[620px] animate-pulse">
-            <div className="mx-auto h-3 w-24 rounded-full bg-[#dcebf0]" />
-            <div className="mx-auto mt-3 h-9 w-60 max-w-full rounded-lg bg-[#d1e6ee] sm:w-72" />
-          </div>
-        </section>
+        <PublicListingHeroSkeleton />
 
-        <section aria-hidden="true" className="mx-auto max-w-[1280px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-            {Array.from({ length: 6 }, (_, index) => (
-              <article className="overflow-hidden rounded-xl border border-[#e1ebef] bg-white" key={index}>
-                <div className="h-[220px] w-full animate-pulse bg-[#e3eef2]" />
-                <div className="flex min-w-0 flex-1 flex-col justify-center space-y-3 p-4 sm:min-h-[184px] sm:justify-start sm:p-5">
-                  <div className="h-5 w-20 animate-pulse rounded-full bg-[#e2f1f5]" />
-                  <div className="h-5 w-[92%] animate-pulse rounded-full bg-[#d7e8ee] sm:h-6" />
-                  <div className="h-3 w-full animate-pulse rounded-full bg-[#edf4f6]" />
-                  <div className="h-3 w-[74%] animate-pulse rounded-full bg-[#edf4f6]" />
-                  <div className="h-3 w-24 animate-pulse rounded-full bg-[#dcebf0]" />
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section aria-hidden="true" className="border-t border-[#e7eff3] bg-[#f7fafc] px-4 py-10 sm:px-6 sm:py-12">
-          <div className="mx-auto max-w-[860px] rounded-xl border border-[#e1ebef] bg-white px-5 py-8 text-center sm:px-12 sm:py-10">
-            <div className="mx-auto h-8 w-60 max-w-full animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
-            <div className="mx-auto mt-4 h-4 w-[80%] animate-pulse rounded-full bg-[#edf4f6] sm:w-[62%]" />
-            <div className="mx-auto mt-2 h-4 w-[64%] animate-pulse rounded-full bg-[#edf4f6] sm:w-[46%]" />
-          </div>
-        </section>
+        <SkeletonSection className="bg-white py-10 sm:py-14" data-skeleton-section="showcases">
+          <PageContainer>
+            <div className={publicListingGridClass}>
+              {Array.from({ length: 3 }, (_, index) => (
+                <SkeletonCard className="overflow-hidden rounded-xl" data-skeleton-card="showcase" key={index}>
+                  <SkeletonImage className="h-[220px] w-full rounded-none" />
+                  <div className="flex flex-col p-4 sm:min-h-[184px] sm:p-5">
+                    <SkeletonBlock className="h-5 w-20 rounded-full" />
+                    <SkeletonBlock className="mt-3 h-5 w-[92%] rounded-full sm:h-6" />
+                    <SkeletonText className="mt-3" lines={2} widths={['100%', '74%']} />
+                    <SkeletonBlock className="mt-auto h-3 w-24 rounded-full" />
+                  </div>
+                </SkeletonCard>
+              ))}
+            </div>
+          </PageContainer>
+        </SkeletonSection>
       </main>
     </SiteLayout>
   );

@@ -24,6 +24,13 @@ export const listPublic = (db: DatabaseClient, placement: PageMediaPlacement) =>
     .where(and(eq(pageMedia.placement, placement), eq(pageMedia.status, 'PUBLISHED')))
     .orderBy(asc(pageMedia.displayOrder), asc(pageMedia.id));
 
+export const listAllPublic = (db: DatabaseClient) =>
+  db
+    .select()
+    .from(pageMedia)
+    .where(eq(pageMedia.status, 'PUBLISHED'))
+    .orderBy(asc(pageMedia.placement), asc(pageMedia.displayOrder), asc(pageMedia.id));
+
 export const find = async (db: DatabaseClient, id: string) =>
   (await db.select().from(pageMedia).where(eq(pageMedia.id, id)).limit(1))[0];
 

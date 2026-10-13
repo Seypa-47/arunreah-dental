@@ -8,6 +8,7 @@ import { imageFrames } from '@/components/admin/image-frames';
 import { MediaUploader } from '@/components/admin/media-uploader';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { SkeletonBlock, SkeletonCard, SkeletonSection } from '@/components/ui/skeleton';
 import type { AdminServiceDetailContent, BenefitPreview } from '@/services/admin-service-detail';
 import type { AdminService } from '@/services/admin-services';
 import { useAdminServiceDetailPageQuery } from './use-admin-service-detail-page';
@@ -1332,15 +1333,16 @@ function ServiceDetailEditor({ content }: { content: AdminServiceDetailContent &
 function LoadingState() {
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
-      <main aria-busy="true" aria-label="Loading service editor" className="min-h-screen flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
-        <div className="mx-auto max-w-[1200px] w-full">
-          <div className="h-8 w-64 animate-pulse rounded bg-[#e7edf3]" />
+      <main aria-busy="true" className="min-h-screen flex-1 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+        <span className="sr-only">Loading service editor</span>
+        <SkeletonSection className="mx-auto max-w-[1200px]">
+          <SkeletonBlock className="h-8 w-64 rounded" />
           <div className="mt-8 space-y-4">
-            <div className="h-[420px] animate-pulse rounded-[18px] bg-white" />
-            <div className="h-[220px] animate-pulse rounded-[18px] bg-white" />
-            <div className="h-[260px] animate-pulse rounded-[18px] bg-white" />
+            <SkeletonCard className="h-[420px] rounded-[18px]" />
+            <SkeletonCard className="h-[220px] rounded-[18px]" />
+            <SkeletonCard className="h-[260px] rounded-[18px]" />
           </div>
-        </div>
+        </SkeletonSection>
       </main>
     </div>
   );

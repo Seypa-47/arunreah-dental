@@ -313,10 +313,12 @@ export async function getPublicDoctor(
     repository.getRelatedDoctors(database, doctor.id),
   ]);
   const publishedRelatedDoctors = relatedDoctors.filter((item) => item.doctor.status === 'PUBLISHED');
-  const allDoctorIds = [doctor.id, ...publishedRelatedDoctors.map((item) => item.doctor.id)];
-  const [presentations, branchMap] = await Promise.all([
+  const relatedDoctorIds = publishedRelatedDoctors.map((item) => item.doctor.id);
+  const allDoctorIds = [doctor.id, ...relatedDoctorIds];
+  const [presentations, branchMap, relatedProfileItemMap] = await Promise.all([
     listForOwners(database, allDoctorIds.map((ownerId) => ({ ownerType: 'DOCTOR' as const, ownerId, slot: 'PRIMARY' }))),
     repository.getDoctorBranchIdsForDoctors(database, allDoctorIds),
+    repository.getProfileItemsForDoctors(database, relatedDoctorIds),
   ]);
   return {
     ...localize(doctor, language, presentations, branchMap.get(doctor.id) ?? []),
@@ -337,7 +339,12 @@ export async function getPublicDoctor(
       displayOrder: item.displayOrder,
     })),
     profileItems: profileItems.map((item) => toPublicProfileItem(item, language)),
-    relatedDoctors: publishedRelatedDoctors.map((item) => localize(item.doctor, language, presentations, branchMap.get(item.doctor.id) ?? [])),
+    relatedDoctors: publishedRelatedDoctors.map((item) => ({
+      ...localize(item.doctor, language, presentations, branchMap.get(item.doctor.id) ?? []),
+      profileItems: (relatedProfileItemMap.get(item.doctor.id) ?? []).map((profileItem) =>
+        toPublicProfileItem(profileItem, language),
+      ),
+    })),
   };
 }
 

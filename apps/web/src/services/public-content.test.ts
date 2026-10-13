@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { ApiClient } from '@/lib/api';
 import {
   createPublicAppointment,
+  getPublicAboutTimeline,
   getPublicBookableDoctors,
   getPublicBranch,
+  getPublicBranches,
   getPublicClinic,
   getPublicContact,
   getPublicDoctor,
@@ -15,12 +17,63 @@ import {
 } from './public-content';
 
 describe('public content API service', () => {
+  it('coalesces a full public page load into one snapshot request', async () => {
+    const requests: string[] = [];
+    const client = {
+      get: async <T>(path: string) => {
+        requests.push(path);
+        return {
+          site: {
+            aboutTimeline: [],
+            branches: { appointments: [], branches: [], landing: [] },
+            clinic: {},
+            contact: {},
+            doctors: [],
+            pageMedia: {},
+            services: [],
+            showcases: [],
+          },
+        } as T;
+      },
+    } satisfies Pick<ApiClient, 'get'>;
+
+    await Promise.all([
+      getPublicClinic('en', client),
+      getPublicContact('en', client),
+      getPublicServices('en', client),
+      getPublicDoctors('en', undefined, client),
+      getPublicBookableDoctors('en', client),
+      getPublicBranches('en', 'landing', client),
+      getPublicBranches('en', 'branches', client),
+      getPublicBranches('en', 'appointments', client),
+      getPublicShowcases('en', true, client),
+      getPublicPageMedia('HOME_PROMOTIONS', 'en', client),
+      getPublicAboutTimeline('en', client),
+    ]);
+
+    expect(requests).toEqual(['/api/public/site?lang=en']);
+  });
+
   it('uses language-specific public endpoints without admin credentials', async () => {
     const requests: Array<{ path: string; authenticated?: boolean }> = [];
     const client = {
       get: async <T>(path: string, options?: { authenticated?: boolean }) => {
         requests.push({ authenticated: options?.authenticated, path });
-        return { doctors: [], services: [], showcases: [] } as T;
+        if (path.startsWith('/api/public/site')) {
+          return {
+            site: {
+              aboutTimeline: [],
+              branches: { appointments: [], branches: [], landing: [] },
+              clinic: {},
+              contact: {},
+              doctors: [],
+              pageMedia: {},
+              services: [],
+              showcases: [],
+            },
+          } as T;
+        }
+        return {} as T;
       },
     } satisfies Pick<ApiClient, 'get'>;
 
@@ -37,32 +90,10 @@ describe('public content API service', () => {
     await getPublicPageMedia('HOME_PROMOTIONS', 'en', client);
 
     expect(requests).toEqual([
-      { authenticated: undefined, path: '/api/public/services?lang=km' },
-      { authenticated: undefined, path: '/api/public/showcases?lang=en&homepage=true' },
+      { authenticated: undefined, path: '/api/public/site?lang=km' },
+      { authenticated: undefined, path: '/api/public/site?lang=en' },
       { authenticated: undefined, path: '/api/public/showcases/smile%2Ftransformation?lang=en' },
-      { authenticated: undefined, path: '/api/public/team?lang=en&category=ASSISTANT' },
-      { authenticated: undefined, path: '/api/public/team?lang=km&bookable=true' },
       { authenticated: undefined, path: '/api/public/team/a%2Fdoctor?lang=km' },
-      {
-        authenticated: undefined,
-        path: '/api/public/page-media?lang=km&placement=DOCTORS_PATIENT_EDUCATION',
-      },
-      {
-        authenticated: undefined,
-        path: '/api/public/page-media?lang=en&placement=ABOUT_ADVANCED_FACILITIES',
-      },
-      {
-        authenticated: undefined,
-        path: '/api/public/page-media?lang=en&placement=ABOUT_CLINIC_GALLERY_PSA_CHAS',
-      },
-      {
-        authenticated: undefined,
-        path: '/api/public/page-media?lang=km&placement=ABOUT_CLINIC_GALLERY_TOUL_TOMPOUNG',
-      },
-      {
-        authenticated: undefined,
-        path: '/api/public/page-media?lang=en&placement=HOME_PROMOTIONS',
-      },
     ]);
   });
 
@@ -71,17 +102,30 @@ describe('public content API service', () => {
     const client = {
       get: async <T>(path: string, options?: { authenticated?: boolean }) => {
         requests.push({ authenticated: options?.authenticated, path });
+        if (path.startsWith('/api/public/site')) {
+          return {
+            site: {
+              aboutTimeline: [],
+              branches: { appointments: [], branches: [], landing: [] },
+              clinic: {},
+              contact: {},
+              doctors: [],
+              pageMedia: {},
+              services: [],
+              showcases: [],
+            },
+          } as T;
+        }
         return {} as T;
       },
     } satisfies Pick<ApiClient, 'get'>;
 
-    await getPublicClinic(client);
-    await getPublicContact(client);
+    await getPublicClinic('en', client);
+    await getPublicContact('en', client);
     await getPublicBranch('toul tompoung', 'km', client);
 
     expect(requests).toEqual([
-      { authenticated: undefined, path: '/api/public/clinic' },
-      { authenticated: undefined, path: '/api/public/contact' },
+      { authenticated: undefined, path: '/api/public/site?lang=en' },
       { authenticated: undefined, path: '/api/public/branches/toul%20tompoung?lang=km' },
     ]);
   });

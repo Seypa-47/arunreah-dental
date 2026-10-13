@@ -10,7 +10,11 @@ import type { BranchesPageContent } from '@/features/landing-page/types';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
-import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
+import {
+  buildBreadcrumbStructuredData,
+  publicSiteOrigin,
+  usePublicDocumentTitle,
+} from '@/features/public-content/public-document-title';
 import { getBranchSatelliteEmbedUrl } from './branch-coordinates';
 import { useBranchesPageQuery } from './use-branches-page';
 
@@ -421,7 +425,7 @@ function BranchesPageSkeleton() {
   const copy = publicUiCopy(language).branches;
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation}>
-      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+      <main aria-busy="true" className="bg-white">
         <span className="sr-only">{copy.loading}</span>
 
         <section className="relative min-h-[300px] overflow-hidden bg-[#f7fafc] sm:min-h-[340px]" aria-hidden="true">
@@ -532,7 +536,44 @@ function hasBranchesContent(content: BranchesPageContent | undefined): content i
 export function BranchesPage() {
   const { data, isError, isLoading, refetch } = useBranchesPageQuery();
   const { language } = usePublicLanguage();
-  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'សាខា' : 'Branches'));
+  usePublicDocumentTitle(
+    data?.hero.title ?? (language === 'km' ? 'សាខាគ្លីនិក' : 'Dental Clinic Locations'),
+    data?.hero.subtitle,
+    {
+      imageUrl: data?.hero.backgroundImageUrl,
+      structuredData: data
+        ? [
+            buildBreadcrumbStructuredData([
+              { name: 'Home', path: '/' },
+              { name: data.hero.title, path: '/branches' },
+            ]),
+            {
+              '@context': 'https://schema.org',
+              '@type': 'ItemList',
+              itemListElement: data.branches.map((branch, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                item: {
+                  '@type': 'Dentist',
+                  name: `Arunreah Dental Clinic - ${branch.name}`,
+                  url: `${publicSiteOrigin}/branches`,
+                  image: branch.imageUrl,
+                  telephone: branch.phones[0],
+                  openingHours: [branch.hoursDays, branch.hoursTime].filter(Boolean).join(' '),
+                  address: {
+                    '@type': 'PostalAddress',
+                    streetAddress: branch.address,
+                    addressLocality: 'Phnom Penh',
+                    addressCountry: 'KH',
+                  },
+                  parentOrganization: { '@id': `${publicSiteOrigin}/#organization` },
+                },
+              })),
+            },
+          ]
+        : null,
+    },
+  );
 
   if (isLoading) {
     return <BranchesPageSkeleton />;

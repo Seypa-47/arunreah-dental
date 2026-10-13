@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { SkeletonBlock, SkeletonCard, SkeletonSection } from '@/components/ui/skeleton';
 import type { AdminCalendarContent, CalendarAppointmentItem, NewCalendarAppointment } from '@/services/admin-calendar';
 import { useAdminCalendarPageQuery, useCreateAdminCalendarAppointmentMutation } from './use-admin-calendar-page';
 
@@ -1168,9 +1169,12 @@ function CalendarContent({
 
 function CalendarSkeleton() {
   return (
-    <main aria-busy="true" aria-label="Loading appointment calendar" className="min-h-screen bg-[#f6f8fb] p-7 lg:p-11">
-      <div className="h-10 w-72 animate-pulse rounded bg-[#e7edf3]" />
-      <div className="mt-9 h-[720px] animate-pulse rounded-[32px] bg-white" />
+    <main aria-busy="true" className="min-h-screen bg-[#f6f8fb] p-7 lg:p-11">
+      <span className="sr-only">Loading appointment calendar</span>
+      <SkeletonSection>
+        <SkeletonBlock className="h-10 w-72 rounded" />
+        <SkeletonCard className="mt-9 h-[720px] rounded-[32px]" />
+      </SkeletonSection>
     </main>
   );
 }

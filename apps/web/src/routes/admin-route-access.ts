@@ -30,7 +30,13 @@ export function canAccessAdminPath(role: AdminRole, pathname: string): boolean {
 }
 
 export function getSafeAdminReturnPath(value: unknown): string {
-  return typeof value === 'string' && value.startsWith('/admin/') && !value.startsWith('/admin/login')
-    ? value
-    : '/admin/dashboard';
+  if (typeof value !== 'string' || !value.startsWith('/admin/')) return '/admin/dashboard';
+  if (
+    value.startsWith('/admin/login') ||
+    value.startsWith('/admin/forgot-password') ||
+    value.startsWith('/admin/reset-password')
+  ) {
+    return '/admin/dashboard';
+  }
+  return value;
 }

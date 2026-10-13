@@ -32,6 +32,8 @@ describe('admin route access', () => {
   it('preserves only safe admin return paths after login', () => {
     expect(getSafeAdminReturnPath('/admin/appointments/inbox?status=PENDING')).toBe('/admin/appointments/inbox?status=PENDING');
     expect(getSafeAdminReturnPath('/admin/login?from=/admin/services')).toBe('/admin/dashboard');
+    expect(getSafeAdminReturnPath('/admin/forgot-password')).toBe('/admin/dashboard');
+    expect(getSafeAdminReturnPath('/admin/reset-password?token=secret')).toBe('/admin/dashboard');
     expect(getSafeAdminReturnPath('https://attacker.example')).toBe('/admin/dashboard');
   });
 });

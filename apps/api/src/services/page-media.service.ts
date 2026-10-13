@@ -2,6 +2,7 @@ import {
   defaultImagePresentation,
   type CreatePageMediaInput,
   type PageMediaPlacement,
+  type PublicPageMedia,
   type UpdatePageMediaInput,
 } from '@arunreah/shared';
 import type { DatabaseClient } from '../db/client';
@@ -39,19 +40,49 @@ export async function listPublic(
 ) {
   const items = await withPresentations(db, await repository.listPublic(db, placement));
   return {
-    items: items.map((item) => ({
-      id: item.id,
-      imageKey: item.imageKey,
-      imagePresentation: item.imagePresentation,
-      title: localize(item.titleEn, item.titleKm, lang),
-      body: localize(item.bodyEn, item.bodyKm, lang),
-      badge: localize(item.badgeEn, item.badgeKm, lang),
-      benefits: localize(item.benefitsEn, item.benefitsKm, lang),
-      discount: localize(item.discountEn, item.discountKm, lang),
-      validUntil: item.validUntil,
-      displayOrder: item.displayOrder,
-    })),
+    items: items.map((item) => toPublicItem(item, lang)),
   };
+}
+
+function toPublicItem(
+  item: Awaited<ReturnType<typeof withPresentations>>[number],
+  lang: 'en' | 'km',
+): PublicPageMedia {
+  return {
+    id: item.id,
+    imageKey: item.imageKey,
+    imagePresentation: item.imagePresentation,
+    title: localize(item.titleEn, item.titleKm, lang),
+    body: localize(item.bodyEn, item.bodyKm, lang),
+    badge: localize(item.badgeEn, item.badgeKm, lang),
+    benefits: localize(item.benefitsEn, item.benefitsKm, lang),
+    discount: localize(item.discountEn, item.discountKm, lang),
+    validUntil: item.validUntil,
+    displayOrder: item.displayOrder,
+  };
+}
+
+export async function listAllPublic(db: DatabaseClient, lang: 'en' | 'km') {
+  const empty = (): PublicPageMedia[] => [];
+  const grouped = {
+    HOME_PROMOTIONS: empty(),
+    HOME_HERO: empty(),
+    ABOUT_HERO: empty(),
+    ABOUT_CLINIC_GALLERY_PSA_CHAS: empty(),
+    ABOUT_CLINIC_GALLERY_TOUL_TOMPOUNG: empty(),
+    ABOUT_PROFESSIONAL_DEVELOPMENT: empty(),
+    ABOUT_ADVANCED_FACILITIES: empty(),
+    SERVICES_HERO: empty(),
+    DOCTORS_HERO: empty(),
+    DOCTORS_PATIENT_EDUCATION: empty(),
+    BRANCHES_HERO: empty(),
+    CONTACT_HERO: empty(),
+    SHOWCASES_HERO: empty(),
+    BOOKING_HERO: empty(),
+  } satisfies Record<PageMediaPlacement, PublicPageMedia[]>;
+  const items = await withPresentations(db, await repository.listAllPublic(db));
+  for (const item of items) grouped[item.placement].push(toPublicItem(item, lang));
+  return grouped;
 }
 export async function create(db: DatabaseClient, input: CreatePageMediaInput) {
   const item = await repository.create(db, input);

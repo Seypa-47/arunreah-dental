@@ -26,7 +26,7 @@ export function useAboutPageQuery() {
         timeline,
         aboutHero,
       ] = await Promise.all([
-        getPublicClinic(),
+        getPublicClinic(language),
         getPublicPageMedia('ABOUT_CLINIC_GALLERY_PSA_CHAS', language).catch(() => ({ items: [] })),
         getPublicPageMedia('ABOUT_CLINIC_GALLERY_TOUL_TOMPOUNG', language).catch(() => ({ items: [] })),
         getPublicBranches(language, 'branches').catch(() => ({ branches: [] })),

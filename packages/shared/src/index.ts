@@ -9,7 +9,13 @@ export {
   updateAppointmentStatusSchema,
 } from './schemas/appointments';
 export { adminRoleValues, permissionValues, rolesByPermission } from './auth/roles';
-export { adminLoginSchema, createAdminSchema, updateAdminSchema } from './schemas/admin-auth';
+export {
+  adminLoginSchema,
+  adminPasswordResetRequestSchema,
+  adminPasswordResetSchema,
+  createAdminSchema,
+  updateAdminSchema,
+} from './schemas/admin-auth';
 export {
   clinicSettingsAdminReadSchema,
   clinicSettingsPublicReadSchema,
@@ -75,7 +81,13 @@ export type {
   UpdateAppointmentStatusInput,
 } from './schemas/appointments';
 export type { AdminRole, Permission } from './auth/roles';
-export type { AdminLoginInput, CreateAdminInput, UpdateAdminInput } from './schemas/admin-auth';
+export type {
+  AdminLoginInput,
+  AdminPasswordResetInput,
+  AdminPasswordResetRequestInput,
+  CreateAdminInput,
+  UpdateAdminInput,
+} from './schemas/admin-auth';
 export type {
   ClinicSettingsAdminRead,
   ClinicSettingsPublicRead,

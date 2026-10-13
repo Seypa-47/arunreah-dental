@@ -2,6 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { SkeletonBlock, SkeletonCard, SkeletonImage, SkeletonSection, SkeletonText } from '@/components/ui/skeleton';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { ResilientImage } from '@/components/layout/public-ui';
@@ -14,7 +15,11 @@ import {
 } from '@/features/doctors-page/team-directory';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicShell } from '@/features/public-content/public-page-chrome';
-import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
+import {
+  buildBreadcrumbStructuredData,
+  publicSiteOrigin,
+  usePublicDocumentTitle,
+} from '@/features/public-content/public-document-title';
 import { isPublicNotFoundError } from '@/features/public-content/public-errors';
 import { ClinicalProfileBody } from './ClinicalProfileBody';
 import { SupportProfileBody, SupportVisitCta, TeamBackLink } from './SupportProfileBody';
@@ -163,18 +168,88 @@ function TeamMemberProfileEmpty() {
   );
 }
 
-function TeamMemberProfileSkeleton() {
+export function TeamMemberProfileSkeleton() {
   const { language } = usePublicLanguage();
   const shell = publicShell(language);
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation}>
-      <main aria-busy="true" aria-label={language === 'km' ? 'កំពុងផ្ទុកប្រវត្តិរូបក្រុមការងារ' : 'Loading team member profile'} className="bg-white">
-        <section className="bg-[#f7fafc] py-10 sm:py-12">
-          <div className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 sm:px-6 md:grid-cols-[280px_minmax(0,1fr)] lg:px-8">
-            <div className="aspect-[15/16] animate-pulse rounded-xl bg-[#dfecef]" />
-            <div className="space-y-4 py-8"><div className="h-3 w-32 animate-pulse rounded bg-[#d7e9ef]" /><div className="h-10 w-72 max-w-full animate-pulse rounded bg-[#d1e6ee]" /><div className="h-4 w-full max-w-xl animate-pulse rounded bg-[#e5f0f4]" /><div className="h-4 w-4/5 max-w-lg animate-pulse rounded bg-[#e5f0f4]" /></div>
+      <main aria-busy="true" className="bg-white">
+        <span className="sr-only">{language === 'km' ? 'កំពុងផ្ទុកប្រវត្តិរូបក្រុមការងារ' : 'Loading team member profile'}</span>
+        <SkeletonSection className="border-b border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12" data-skeleton-section="profile-hero">
+          <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+            <SkeletonBlock className="mb-5 h-4 w-32 rounded-full" data-skeleton-slot="back-link" />
           </div>
-        </section>
+          <div className="mx-auto grid w-full max-w-[1280px] gap-6 px-4 sm:px-6 md:grid-cols-[280px_minmax(0,1fr)] md:items-center md:gap-8 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-10 lg:px-8">
+            <SkeletonImage className="mx-auto aspect-[15/16] w-full max-w-[380px] md:h-[360px] md:max-w-none" data-skeleton-slot="portrait" />
+            <div>
+              <div className="flex items-center gap-3">
+                <SkeletonBlock className="h-3 w-32 rounded-full" />
+                <SkeletonBlock className="h-6 w-24 rounded-full" />
+              </div>
+              <SkeletonBlock className="mt-3 h-10 w-[82%] max-w-[420px] sm:h-12" />
+              <SkeletonText className="mt-4 max-w-[600px]" lineClassName="h-4" lines={2} widths={['100%', '78%']} />
+              <SkeletonBlock className="mt-6 h-[52px] w-full rounded-full sm:w-52" data-skeleton-slot="appointment-action" />
+            </div>
+          </div>
+        </SkeletonSection>
+
+        <SkeletonSection className="bg-white py-10 sm:py-14" data-skeleton-section="profile-content">
+          <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12 lg:px-8">
+            <div className="min-w-0">
+              <SkeletonCard className="p-5 sm:p-7" data-skeleton-slot="biography">
+                <SkeletonBlock className="h-3 w-28 rounded-full" />
+                <SkeletonBlock className="mt-3 h-8 w-52" />
+                <SkeletonText className="mt-5" lineClassName="h-4" lines={5} widths={['100%', '96%', '100%', '91%', '66%']} />
+              </SkeletonCard>
+
+              <div className="mt-8" data-skeleton-slot="qualifications-or-responsibilities">
+                <SkeletonBlock className="h-3 w-32 rounded-full" />
+                <SkeletonBlock className="mt-3 h-8 w-64 max-w-full" />
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <SkeletonCard className="min-h-[92px] p-4" key={index}>
+                      <div className="flex gap-3">
+                        <SkeletonBlock className="size-10 shrink-0 rounded-lg" />
+                        <SkeletonText className="flex-1" lines={2} widths={['78%', '58%']} />
+                      </div>
+                    </SkeletonCard>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start" data-skeleton-slot="desktop-sidebar">
+              <SkeletonCard className="min-h-[240px] p-5">
+                <SkeletonBlock className="h-3 w-24 rounded-full" />
+                <SkeletonBlock className="mt-3 h-6 w-40" />
+                <SkeletonText className="mt-5" lines={4} widths={['92%', '76%', '88%', '62%']} />
+              </SkeletonCard>
+              <SkeletonCard className="min-h-[170px] border-transparent bg-[#167ea7] p-5">
+                <SkeletonBlock className="h-6 w-40 bg-white/55" />
+                <SkeletonText className="mt-4" lineClassName="bg-white/30" lines={2} widths={['100%', '80%']} />
+                <SkeletonBlock className="mt-5 h-11 w-full rounded-full bg-white/70" />
+              </SkeletonCard>
+            </aside>
+          </div>
+        </SkeletonSection>
+
+        <SkeletonSection className="border-t border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-14" data-skeleton-section="related-team">
+          <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+            <SkeletonBlock className="h-8 w-56 max-w-full" />
+            <SkeletonText className="mt-3 max-w-md" lines={1} widths={['88%']} />
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 4 }, (_, index) => (
+                <SkeletonCard className="overflow-hidden p-0" data-skeleton-card="related-team" key={index}>
+                  <SkeletonImage className="aspect-[4/3] w-full rounded-none sm:aspect-[11/10]" />
+                  <div className="p-4">
+                    <SkeletonBlock className="h-5 w-3/4" />
+                    <SkeletonBlock className="mt-3 h-3 w-1/2 rounded-full" />
+                  </div>
+                </SkeletonCard>
+              ))}
+            </div>
+          </div>
+        </SkeletonSection>
       </main>
     </SiteLayout>
   );
@@ -201,7 +276,34 @@ export function TeamMemberProfilePage() {
   const { language } = usePublicLanguage();
   const { data: lookup, error, isError, isLoading, refetch } = useTeamMemberProfileQuery(memberSlug);
   const shell = publicShell(language);
-  usePublicDocumentTitle(lookup?.member.name ?? (language === 'km' ? 'ក្រុមការងារ' : 'Our Team'));
+  usePublicDocumentTitle(
+    lookup?.member.name ?? (language === 'km' ? 'ក្រុមការងារ' : 'Our Team'),
+    lookup?.member.profile.heroSummary || lookup?.member.responsibility,
+    {
+      imageUrl: lookup?.member.imageUrl,
+      noIndex: isError && isPublicNotFoundError(error),
+      type: 'profile',
+      structuredData: lookup
+        ? [
+            buildBreadcrumbStructuredData([
+              { name: 'Home', path: '/' },
+              { name: language === 'km' ? 'ក្រុមការងារ' : 'Our Team', path: '/team' },
+              { name: lookup.member.name, path: `/team/${lookup.member.slug}` },
+            ]),
+            {
+              '@context': 'https://schema.org',
+              '@type': 'Person',
+              name: lookup.member.name,
+              jobTitle: lookup.member.roleTitle,
+              description: lookup.member.profile.heroSummary || lookup.member.responsibility,
+              image: lookup.member.imageUrl,
+              url: `${publicSiteOrigin}/team/${lookup.member.slug}`,
+              worksFor: { '@id': `${publicSiteOrigin}/#organization` },
+            },
+          ]
+        : null,
+    },
+  );
 
   if (isLoading) return <TeamMemberProfileSkeleton />;
   if (isError && !isPublicNotFoundError(error)) return <TeamMemberProfileError onRetry={() => void refetch()} />;

@@ -371,6 +371,28 @@ describe('doctor API routes', () => {
         ],
       },
     });
+    state.doctors.push(
+      doctorFixture({
+        id: 'doctor-3',
+        slug: 'related-doctor',
+        nameEn: 'Dr. Related',
+        nameKm: 'វេជ្ជបណ្ឌិតពាក់ព័ន្ធ',
+      }),
+    );
+    state.profileItems.set('doctor-3', [
+      {
+        id: 'related-profile-1',
+        kind: 'LANGUAGE',
+        icon: null,
+        titleEn: 'English',
+        titleKm: 'ភាសាអង់គ្លេស',
+        subtitleEn: null,
+        subtitleKm: null,
+        meta: null,
+        displayOrder: 0,
+      },
+    ]);
+    state.related.set('550e8400-e29b-41d4-a716-446655440503', ['doctor-3']);
     const detail = await app.request(
       'http://localhost/api/public/doctors/sreng-heng?lang=en',
       undefined,
@@ -394,6 +416,12 @@ describe('doctor API routes', () => {
           ],
           expertise: [{ title: 'Implants' }],
           statistics: { patientSatisfaction: 98 },
+          relatedDoctors: [
+            {
+              slug: 'related-doctor',
+              profileItems: [{ kind: 'LANGUAGE', title: 'English' }],
+            },
+          ],
         },
       },
     });

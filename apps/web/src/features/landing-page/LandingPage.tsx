@@ -18,6 +18,7 @@ import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { formatShortDate } from '@/features/public-content/public-dates';
 import { CmsImage } from '@/components/layout/public-ui';
 import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
+import { SkeletonBlock, SkeletonCard, SkeletonImage, SkeletonSection, SkeletonText } from '@/components/ui/skeleton';
 
 const asset = (name: string) => `/assets/landing/${name}`;
 const serviceId = (name: string) => `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
@@ -849,86 +850,144 @@ export function LandingPageView({ content, onRetry = () => undefined }: { conten
   );
 }
 
-function LandingPageSkeleton() {
+function LandingSkeletonHeading({ action = true }: { action?: boolean }) {
+  return (
+    <div className="flex items-end justify-between gap-4">
+      <div>
+        <SkeletonBlock className="h-3 w-28 rounded-full" />
+        <SkeletonBlock className="mt-3 h-8 w-56 max-w-full rounded-lg sm:w-72 sm:h-10" />
+      </div>
+      {action ? <SkeletonBlock className="hidden h-9 w-32 rounded-full sm:block" /> : null}
+    </div>
+  );
+}
+
+export function LandingPageSkeleton() {
   const copy = publicUiCopy(usePublicLanguage().language).landing;
   return (
     <SiteLayout>
-      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+      <main aria-busy="true" className="bg-white">
         <span className="sr-only">{copy.loadingLabel}</span>
 
-        <section aria-hidden="true" className="bg-[#f7fafc]">
-          <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:h-[530px] md:pb-0 lg:px-8">
+        <SkeletonSection className="relative bg-[#f7fafc]" data-skeleton-section="hero">
+          <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-7 pt-3 sm:px-6 md:px-8 lg:min-h-[600px] lg:pb-0">
             <div className="relative h-full">
-              <div className="relative h-[264px] overflow-hidden rounded-[20px] bg-[#dfecef] sm:h-[310px] md:absolute md:inset-x-0 md:top-3 md:h-[438px] md:rounded-[24px]">
-                <div className="h-full w-full animate-pulse bg-[linear-gradient(110deg,rgba(255,255,255,0.18),rgba(255,255,255,0.5),rgba(255,255,255,0.18))]" />
-              </div>
-              <div className="relative mx-2 -mt-7 grid min-h-[84px] overflow-hidden rounded-xl bg-[#e8f1f4] p-4 md:absolute md:left-1/2 md:top-[395px] md:mx-0 md:mt-0 md:w-[calc(100%-4rem)] md:-translate-x-1/2 md:grid-cols-[72px_repeat(3,minmax(0,1fr))] md:p-0 lg:w-[920px] lg:grid-cols-[88px_276px_276px_280px]">
-                <div className="hidden bg-white/70 md:block" />
-                <div className="flex items-center gap-3 py-2 md:border-r md:border-white/70 md:px-5">
-                  <span className="size-10 shrink-0 animate-pulse rounded-full bg-white/80" />
+              <SkeletonImage className="relative h-[320px] w-full rounded-[20px] bg-[#dfe9ee] shadow-[0_8px_22px_rgba(15,61,84,0.08)] sm:h-[390px] md:h-[460px] lg:absolute lg:inset-x-0 lg:top-3 lg:h-[510px] lg:rounded-[24px]" />
+              <div className="relative mx-2 -mt-7 grid overflow-hidden rounded-xl border border-[#dcebef] bg-white text-[#005687] shadow-[0_8px_22px_rgba(15,61,84,0.09)] sm:mx-4 sm:grid-cols-2 lg:absolute lg:left-1/2 lg:top-[468px] lg:mx-0 lg:mt-0 lg:w-[calc(100%-4rem)] lg:-translate-x-1/2 lg:grid-cols-[minmax(0,1.35fr)_auto_minmax(0,0.85fr)] xl:w-[920px]">
+                <div className="order-2 flex items-center gap-3 px-5 py-4 sm:px-6 sm:py-5 lg:order-none">
+                  <SkeletonBlock className="size-10 shrink-0 rounded-full sm:size-[43px]" />
                   <div className="space-y-2">
-                    <div className="h-2.5 w-16 animate-pulse rounded-full bg-white/75" />
-                    <div className="h-3 w-28 animate-pulse rounded-full bg-white" />
+                    <SkeletonBlock className="h-2.5 w-16 rounded-full" />
+                    <SkeletonBlock className="h-3 w-36 rounded-full" />
                   </div>
                 </div>
-                <div className="hidden items-center justify-center border-x border-white/70 px-5 md:flex">
-                  <div className="h-11 w-full max-w-[210px] animate-pulse rounded-xl bg-white" />
+                <div className="order-1 flex items-center justify-center border-b border-[#e5eef1] px-5 py-3.5 sm:col-span-2 sm:border-y sm:px-6 sm:py-4 lg:order-none lg:col-span-1 lg:border-y-0 lg:border-x">
+                  <SkeletonBlock className="h-11 w-full max-w-[240px] rounded-lg" />
                 </div>
-                <div className="hidden items-center gap-3 px-5 md:flex">
-                  <span className="size-10 shrink-0 animate-pulse rounded-full bg-white/80" />
+                <div className="order-3 flex items-center gap-3 border-t border-[#e5eef1] px-5 py-4 sm:border-t-0 sm:px-6 sm:py-5 lg:order-none">
+                  <SkeletonBlock className="size-10 shrink-0 rounded-full sm:size-[43px]" />
                   <div className="space-y-2">
-                    <div className="h-2.5 w-12 animate-pulse rounded-full bg-white/75" />
-                    <div className="h-3 w-24 animate-pulse rounded-full bg-white" />
+                    <SkeletonBlock className="h-2.5 w-12 rounded-full" />
+                    <SkeletonBlock className="h-3 w-28 rounded-full" />
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </SkeletonSection>
 
-        <section aria-hidden="true" className="bg-white py-12 sm:py-16">
+        <SkeletonSection className="border-y border-[#e2edf2] bg-[#f7fafc] py-14 sm:py-16" data-skeleton-section="promotions">
           <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-            <div className="flex items-end justify-between gap-4">
-              <div className="space-y-3">
-                <div className="h-3 w-28 animate-pulse rounded-full bg-[#dcebf0]" />
-                <div className="h-8 w-48 animate-pulse rounded-lg bg-[#d1e6ee] sm:w-64" />
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+              <div className="w-full max-w-[680px]">
+                <SkeletonBlock className="h-3 w-28 rounded-full" />
+                <SkeletonBlock className="mt-3 h-8 w-56 rounded-lg sm:h-10 sm:w-72" />
+                <SkeletonText className="mt-3 max-w-[620px]" lines={2} widths={['92%', '68%']} />
               </div>
-              <div className="hidden h-9 w-32 animate-pulse rounded-full bg-[#e5f0f4] sm:block" />
+              <SkeletonBlock className="h-11 w-40 rounded-lg" />
             </div>
-            <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {Array.from({ length: 4 }, (_, index) => (
-                <div className="overflow-hidden rounded-xl border border-[#e3edf1] bg-white" key={index}>
-                  <div className="h-[152px] animate-pulse bg-[#e3eef2] sm:h-[180px]" />
-                  <div className="space-y-3 p-4">
-                    <div className="h-4 w-2/3 animate-pulse rounded-full bg-[#dcebf0]" />
-                    <div className="h-3 w-full animate-pulse rounded-full bg-[#edf4f6]" />
-                    <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#edf4f6]" />
+            <div className="mt-7 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }, (_, index) => (
+                <SkeletonCard className="overflow-hidden rounded-2xl" data-skeleton-card="promotion" key={index}>
+                  <SkeletonImage className="aspect-[16/10] w-full rounded-none" />
+                  <div className="p-5 sm:p-6">
+                    <SkeletonBlock className="h-5 w-2/3 rounded-full" />
+                    <SkeletonText className="mt-3" lines={2} widths={['100%', '82%']} />
+                    <SkeletonBlock className="mt-5 h-10 w-28 rounded-full" />
                   </div>
+                </SkeletonCard>
+              ))}
+            </div>
+          </div>
+        </SkeletonSection>
+
+        <SkeletonSection className="mt-2 bg-white pb-16 pt-16 sm:pb-20 sm:pt-20" data-skeleton-section="services">
+          <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+            <LandingSkeletonHeading />
+            <div className="no-scrollbar mt-6 flex items-start gap-4 overflow-hidden px-1 py-2">
+              {Array.from({ length: 4 }, (_, index) => (
+                <SkeletonCard className="min-h-[318px] w-[268px] shrink-0 overflow-hidden rounded-xl sm:min-h-[334px] sm:w-[286px]" data-skeleton-card="service" key={index}>
+                  <SkeletonImage className="h-[182px] w-full rounded-none sm:h-[196px]" />
+                  <div className="min-h-[136px] px-4 py-4 sm:min-h-[138px] sm:px-5">
+                    <SkeletonBlock className="h-4 w-3/5 rounded-full" />
+                    <SkeletonText className="mt-3" lines={2} widths={['100%', '78%']} />
+                  </div>
+                </SkeletonCard>
+              ))}
+            </div>
+          </div>
+        </SkeletonSection>
+
+        <SkeletonSection className="bg-[#f4f9fb] pb-16 pt-16 sm:pb-20 sm:pt-20" data-skeleton-section="specialists">
+          <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+            <LandingSkeletonHeading />
+            <div className="mt-6 flex gap-4 overflow-hidden px-1 py-2">
+              {Array.from({ length: 4 }, (_, index) => (
+                <SkeletonCard className="min-h-[344px] w-[268px] shrink-0 overflow-hidden rounded-xl sm:min-h-[360px] sm:w-[286px]" data-skeleton-card="specialist" key={index}>
+                  <SkeletonImage className="h-[244px] w-full rounded-none sm:h-[260px]" />
+                  <div className="min-h-[100px] px-4 py-4 sm:px-5">
+                    <SkeletonBlock className="h-4 w-3/5 rounded-full" />
+                    <SkeletonBlock className="mt-3 h-3 w-2/5 rounded-full" />
+                  </div>
+                </SkeletonCard>
+              ))}
+            </div>
+          </div>
+        </SkeletonSection>
+
+        <SkeletonSection className="bg-[#f4f9fb] pb-16 pt-6 sm:pb-20" data-skeleton-section="branches">
+          <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+            <LandingSkeletonHeading />
+            <div className="mt-6 grid gap-5 lg:grid-cols-2">
+              {Array.from({ length: 2 }, (_, index) => (
+                <SkeletonCard className="grid min-h-[212px] grid-cols-1 overflow-hidden rounded-xl sm:grid-cols-[1.15fr_0.85fr] md:min-h-[232px] md:grid-cols-[1.08fr_0.92fr]" data-skeleton-card="branch" key={index}>
+                  <div className="p-4 sm:p-5 md:p-6">
+                    <SkeletonBlock className="h-5 w-3/4 rounded-full" />
+                    <SkeletonText className="mt-5" lines={3} widths={['72%', '64%', '82%']} />
+                  </div>
+                  <SkeletonImage className="h-[188px] w-full rounded-none sm:h-full sm:min-h-[212px] md:min-h-0" />
+                </SkeletonCard>
+              ))}
+            </div>
+          </div>
+        </SkeletonSection>
+
+        <SkeletonSection className="relative overflow-hidden bg-[#00546f] pb-16 pt-16 sm:pb-20 sm:pt-20" data-skeleton-section="showcase">
+          <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+            <div className="mb-7 border-b border-white/25 pb-4">
+              <SkeletonBlock className="h-3 w-24 rounded-full bg-white/30" />
+              <SkeletonBlock className="mt-3 h-8 w-56 rounded-lg bg-white/45 sm:h-10 sm:w-72" />
+            </div>
+            <div className="mx-auto grid max-w-[1080px] gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }, (_, index) => (
+                <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.05] p-2" data-skeleton-card="showcase" key={index}>
+                  <SkeletonImage className="h-[212px] w-full rounded-lg bg-white/20" />
+                  <SkeletonBlock className="mx-2 mb-3 mt-4 h-5 w-3/4 rounded-full bg-white/35" />
                 </div>
               ))}
             </div>
           </div>
-        </section>
-
-        <section aria-hidden="true" className="bg-[#f4f9fb] py-12 sm:py-16">
-          <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-            <div className="space-y-3">
-              <div className="h-3 w-24 animate-pulse rounded-full bg-[#dcebf0]" />
-              <div className="h-8 w-56 animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
-            </div>
-            <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {Array.from({ length: 4 }, (_, index) => (
-                <div className="overflow-hidden rounded-xl border border-[#e3edf1] bg-white" key={index}>
-                  <div className="h-[190px] animate-pulse bg-[#e3eef2] sm:h-[220px]" />
-                  <div className="space-y-2 p-4">
-                    <div className="h-4 w-3/5 animate-pulse rounded-full bg-[#dcebf0]" />
-                    <div className="h-3 w-2/5 animate-pulse rounded-full bg-[#edf4f6]" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        </SkeletonSection>
       </main>
     </SiteLayout>
   );
@@ -975,7 +1034,11 @@ export function hasLandingContent(content: LandingPageContent | undefined): cont
 export function LandingPage() {
   const { data, isError, isLoading, refetch } = useLandingPageQuery();
   const { language } = usePublicLanguage();
-  usePublicDocumentTitle(language === 'km' ? 'ទំព័រដើម' : 'Home');
+  usePublicDocumentTitle(
+    language === 'km' ? 'គ្លីនិកធ្មេញនៅភ្នំពេញ' : 'Dental Clinic in Phnom Penh',
+    data?.footer.description,
+    { imageUrl: data?.heroes[0]?.imageUrl },
+  );
 
   if (isLoading) {
     return <LandingPageSkeleton />;

@@ -4,11 +4,18 @@ export type Bindings = {
   APP_ENV: 'development' | 'staging' | 'production';
   CORS_ALLOWED_ORIGINS: string;
   MEDIA_PUBLIC_BASE_URL?: string;
+  TURNSTILE_HOSTNAMES?: string;
   TURNSTILE_SECRET_KEY?: string;
   EMAIL_NOTIFICATIONS_ENABLED?: string;
   EMAIL_NOTIFICATION_RECIPIENT?: string;
   EMAIL_FROM_ADDRESS?: string;
+  ADMIN_APP_BASE_URL?: string;
   RESEND_API_KEY?: string;
+  CLOUDFLARE_ANALYTICS_API_TOKEN?: string;
+  CLOUDFLARE_ACCOUNT_ID?: string;
+  CLOUDFLARE_WORKERS_DAILY_LIMIT?: string;
+  USAGE_MONITOR_ENABLED?: string;
+  USAGE_ALERT_RECIPIENT?: string;
   TELEGRAM_NOTIFICATIONS_ENABLED?: string;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;

@@ -46,6 +46,28 @@ or `--env production`; never place it in `wrangler.jsonc` or `VITE_*` values.
 Local development may omit it, allowing local API testing without a real
 Turnstile challenge.
 
+`ADMIN_APP_BASE_URL` is a non-secret Worker variable containing the exact
+frontend origin for password-reset links, such as
+`https://arunreahdental.com` in production. Do not derive reset links from
+request headers.
+
+## Provider usage monitoring
+
+Production sets `USAGE_MONITOR_ENABLED=true` and
+`USAGE_ALERT_RECIPIENT=Hongbrathna@gmail.com`. An hourly Cloudflare Cron Trigger
+reads Resend's Usage API and Cloudflare's Workers Analytics API. It sends a
+warning when either Resend's rolling daily or calendar-month email quota, or
+Cloudflare Workers' daily request quota, crosses 80%, then another warning at
+95%. D1 stores only the quota window and warning level needed to suppress
+duplicate alerts. The monitor runs outside user requests and adds no website or
+CMS latency.
+
+`CLOUDFLARE_ANALYTICS_API_TOKEN` must be a Worker secret scoped only to the
+production account with `Account Analytics: Read`. The non-secret
+`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_WORKERS_DAILY_LIMIT` variables select the
+account and current plan limit. Review the configured limit whenever the
+Cloudflare plan changes.
+
 ## Appointment notifications
 
 Appointment persistence is independent from notification delivery: a request is
@@ -86,7 +108,7 @@ the R2 custom domain for each environment, without a trailing slash. It is
 empty locally because Wrangler's local R2 simulation has no public custom
 domain. Do not use the R2 API endpoint or credentials as this value.
 Production must use the approved custom media domain
-`https://media.arunreah.mekhla.digital`; keep the public `r2.dev` development
+`https://media.arunreahdental.com`; keep the public `r2.dev` development
 URL disabled.
 
 ## Staging browser-admin prerequisite
