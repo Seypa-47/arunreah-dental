@@ -1729,7 +1729,7 @@ function BookAppointmentSkeleton() {
   const copy = publicUiCopy(language).booking;
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation}>
-      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+      <main aria-busy="true" className="bg-white">
         <span className="sr-only">{copy.loading}</span>
 
         <section
@@ -1862,6 +1862,8 @@ export function BookAppointmentPage() {
   const { language } = usePublicLanguage();
   usePublicDocumentTitle(
     data?.hero.title ?? (language === 'km' ? 'ស្នើសុំការណាត់ជួប' : 'Book Appointment'),
+    data?.hero.subtitle,
+    { imageUrl: data?.hero.backgroundImageUrl },
   );
 
   if (isLoading) {

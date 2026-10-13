@@ -1,4 +1,9 @@
-import { adminLoginSchema, successResponse } from '@arunreah/shared';
+import {
+  adminLoginSchema,
+  adminPasswordResetRequestSchema,
+  adminPasswordResetSchema,
+  successResponse,
+} from '@arunreah/shared';
 import { Hono } from 'hono';
 import { deleteCookie, setCookie } from 'hono/cookie';
 import { createDbClient } from '../../db/client';
@@ -26,8 +31,30 @@ import {
 } from '../../services/session.service';
 import { runBestEffortMaintenance } from '../../services/maintenance.service';
 import type { AppEnv } from '../../types/env';
+import {
+  requestAdminPasswordReset,
+  resetAdminPassword,
+} from '../../services/password-reset.service';
 
 export const authModule = new Hono<AppEnv>();
+
+authModule.post('/password-reset/request', async (context) => {
+  const input = await parseRequestBody(context, adminPasswordResetRequestSchema);
+  const database = createDbClient(context.env.DB);
+  await runBestEffortMaintenance(database);
+  const result = await requestAdminPasswordReset(database, input, context.env, context.req.raw.headers);
+  context.header('Cache-Control', 'no-store');
+  return context.json(successResponse(result));
+});
+
+authModule.post('/password-reset/confirm', async (context) => {
+  const input = await parseRequestBody(context, adminPasswordResetSchema);
+  const database = createDbClient(context.env.DB);
+  await runBestEffortMaintenance(database);
+  const result = await resetAdminPassword(database, input, context.req.raw.headers);
+  context.header('Cache-Control', 'no-store');
+  return context.json(successResponse(result));
+});
 
 authModule.post('/login', async (context) => {
   const input = await parseRequestBody(context, adminLoginSchema);

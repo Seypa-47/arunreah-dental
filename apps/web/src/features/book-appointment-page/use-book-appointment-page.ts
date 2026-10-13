@@ -15,7 +15,7 @@ export function useBookAppointmentPageQuery() {
         getPublicServices(language),
         getPublicBookableDoctors(language),
         getPublicBranches(language, 'appointments'),
-        getPublicContact(),
+        getPublicContact(language),
         getPublicPageMedia('BOOKING_HERO', language).catch(() => ({ items: [] })),
       ]);
       const content = mapBookingOptions(publicBookingChrome(language), services.services, doctors.doctors, branches.branches, contact, language);

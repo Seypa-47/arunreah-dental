@@ -72,8 +72,8 @@ function SocialIcon({ platform }: { platform: SocialPlatform }) {
 export function SiteFooter({ branchLinks, description, linkGroups, tagline }: LandingPageContent['footer']) {
   const { language } = usePublicLanguage();
   const layoutCopy = publicUiCopy(language).layout;
-  const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic() });
-  const contactQuery = useQuery({ queryKey: queryKeys.public.contact(), queryFn: () => getPublicContact() });
+  const clinicQuery = useQuery({ queryKey: queryKeys.public.clinic(), queryFn: () => getPublicClinic(language) });
+  const contactQuery = useQuery({ queryKey: queryKeys.public.contact(), queryFn: () => getPublicContact(language) });
   const branchesQuery = useQuery({ queryKey: queryKeys.public.branches(language), queryFn: () => getPublicBranches(language) });
   const clinic = clinicQuery.data;
   const contact = contactQuery.data;

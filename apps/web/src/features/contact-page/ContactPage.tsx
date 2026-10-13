@@ -327,7 +327,7 @@ function ContactPageSkeleton() {
   const copy = publicUiCopy(language).contact;
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation}>
-      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+      <main aria-busy="true" className="bg-white">
         <span className="sr-only">{copy.loading}</span>
 
         <section aria-hidden="true" className="relative overflow-hidden border-b border-[#e7eff3] bg-[#f7fafc]">
@@ -442,7 +442,11 @@ function hasContactContent(content: ContactPageContent | undefined): content is 
 export function ContactPage() {
   const { data, isError, isLoading, refetch } = useContactPageQuery();
   const { language } = usePublicLanguage();
-  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'ទំនាក់ទំនង' : 'Contact'));
+  usePublicDocumentTitle(
+    data?.hero.title ?? (language === 'km' ? 'ទំនាក់ទំនង' : 'Contact Our Dental Clinic'),
+    data?.hero.subtitle,
+    { imageUrl: data?.hero.backgroundImageUrl },
+  );
 
   if (isLoading) {
     return <ContactPageSkeleton />;

@@ -14,7 +14,7 @@ export function useContactPageQuery() {
     queryFn: async () => {
       const isKm = language === 'km';
       const [contact, branchResponse, serviceResponse, heroMediaResponse] = await Promise.all([
-        getPublicContact(),
+        getPublicContact(language),
         getPublicBranches(language),
         getPublicServices(language),
         getPublicPageMedia('CONTACT_HERO', language).catch(() => ({ items: [] })),

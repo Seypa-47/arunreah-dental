@@ -24,6 +24,10 @@ const state = vi.hoisted(() => ({
   failedLoginKeys: [] as string[],
   loginRateLimits: new Map<string, { attempts: number; lockedUntil: string | null }>(),
   revokedSessionIds: [] as string[],
+  revokedAllSessionAdminIds: [] as string[],
+  passwordResetTokens: new Map<string, string>(),
+  passwordResetEmails: [] as Array<{ recipient: string; token: string }>,
+  updatedPasswords: [] as Array<{ adminId: string; passwordHash: string }>,
 }));
 
 vi.mock('../src/db/client', () => ({
@@ -45,6 +49,9 @@ vi.mock('../src/repositories/session.repository', () => ({
   revokeAdminSession: async (_database: unknown, sessionId: string) => {
     state.revokedSessionIds.push(sessionId);
   },
+  revokeAllAdminSessions: async (_database: unknown, adminId: string) => {
+    state.revokedAllSessionAdminIds.push(adminId);
+  },
   findAuthenticatedSession: async (_database: unknown, tokenHash: string) =>
     state.sessions.get(tokenHash),
   getLoginRateLimit: async (_database: unknown, key: string) => state.loginRateLimits.get(key),
@@ -65,6 +72,34 @@ vi.mock('../src/repositories/session.repository', () => ({
     state.loginRateLimits.delete(key);
   },
   cleanupExpiredAuthenticationRecords: async () => undefined,
+}));
+
+vi.mock('../src/repositories/password-reset.repository', () => ({
+  createPasswordResetToken: async (
+    _database: unknown,
+    input: { adminId: string; tokenHash: string },
+  ) => {
+    state.passwordResetTokens.clear();
+    state.passwordResetTokens.set(input.tokenHash, input.adminId);
+  },
+  consumePasswordResetToken: async (_database: unknown, tokenHash: string) => {
+    const adminId = state.passwordResetTokens.get(tokenHash);
+    if (!adminId) return undefined;
+    state.passwordResetTokens.delete(tokenHash);
+    return { adminId };
+  },
+  updateAdminPassword: async (_database: unknown, adminId: string, passwordHash: string) => {
+    state.updatedPasswords.push({ adminId, passwordHash });
+    return { id: adminId };
+  },
+  cleanupExpiredPasswordResetTokens: async () => undefined,
+}));
+
+vi.mock('../src/services/password-reset-email.service', () => ({
+  sendAdminPasswordResetEmail: async (recipient: string, token: string) => {
+    state.passwordResetEmails.push({ recipient, token });
+    return true;
+  },
 }));
 
 vi.mock('../src/services/maintenance.service', () => ({
@@ -157,6 +192,10 @@ beforeEach(() => {
   state.failedLoginKeys.length = 0;
   state.loginRateLimits.clear();
   state.revokedSessionIds.length = 0;
+  state.revokedAllSessionAdminIds.length = 0;
+  state.passwordResetTokens.clear();
+  state.passwordResetEmails.length = 0;
+  state.updatedPasswords.length = 0;
 });
 
 describe('authentication API routes', () => {
@@ -282,6 +321,65 @@ describe('authentication API routes', () => {
     await expect(response.json()).resolves.toEqual({ success: true, data: { loggedOut: true } });
     expect(state.revokedSessionIds).toEqual(['SUPER_ADMIN-session-id']);
     expect(response.headers.get('Set-Cookie')).toContain('arunreah_admin_session=');
+  });
+
+  it('returns the same password-reset request response for known and unknown emails', async () => {
+    state.admins.set('super@example.com', adminFixture());
+    const expectedMessage =
+      'If an active administrator account matches that email, a reset link will be sent shortly.';
+
+    for (const email of ['super@example.com', 'missing@example.com']) {
+      const response = await app.request(
+        'http://localhost/api/auth/password-reset/request',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        },
+        testBindings,
+      );
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({
+        success: true,
+        data: { message: expectedMessage },
+      });
+    }
+
+    expect(state.passwordResetEmails).toHaveLength(1);
+    expect(state.passwordResetEmails[0]?.recipient).toBe('super@example.com');
+    expect(state.passwordResetTokens.size).toBe(1);
+  });
+
+  it('uses a password-reset token once, updates the password, and revokes all sessions', async () => {
+    const rawToken = 'a'.repeat(43);
+    state.passwordResetTokens.set(await hashSessionToken(rawToken), 'super-admin-id');
+
+    const first = await app.request(
+      'http://localhost/api/auth/password-reset/confirm',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: rawToken, password: 'NewSecurePassword123!' }),
+      },
+      testBindings,
+    );
+    expect(first.status).toBe(200);
+    await expect(first.json()).resolves.toEqual({ success: true, data: { reset: true } });
+    expect(state.updatedPasswords).toEqual([
+      { adminId: 'super-admin-id', passwordHash: 'password-hash' },
+    ]);
+    expect(state.revokedAllSessionAdminIds).toEqual(['super-admin-id']);
+
+    const replay = await app.request(
+      'http://localhost/api/auth/password-reset/confirm',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: rawToken, password: 'AnotherSecurePassword123!' }),
+      },
+      testBindings,
+    );
+    expect(replay.status).toBe(400);
   });
 });
 

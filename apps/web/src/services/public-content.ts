@@ -10,24 +10,18 @@ import type {
   PublicPageMedia,
   PublicServiceDetail,
   PublicServiceSummary,
+  PublicSiteSnapshot,
   PublicShowcaseDetail,
   PublicShowcaseSummary,
   TeamCategory,
 } from '@arunreah/shared';
 import {
   appointmentAcknowledgementSchema,
-  publicAboutTimelineResponseSchema,
-  publicBranchesResponseSchema,
   publicBranchResponseSchema,
-  publicClinicResponseSchema,
-  publicContactResponseSchema,
-  publicDoctorsResponseSchema,
   publicDoctorResponseSchema,
-  publicPageMediaResponseSchema,
-  publicServicesResponseSchema,
   publicServiceResponseSchema,
-  publicShowcasesResponseSchema,
   publicShowcaseResponseSchema,
+  publicSiteResponseSchema,
 } from '@arunreah/shared';
 import { getApiClient, type ApiClient } from '@/lib/api';
 
@@ -44,9 +38,40 @@ export type {
   PublicPageMedia,
   PublicServiceDetail,
   PublicServiceSummary,
+  PublicSiteSnapshot,
   PublicShowcaseDetail,
   PublicShowcaseSummary,
 };
+
+const publicSiteCacheTtlMs = 60_000;
+type PublicSiteCacheEntry = {
+  expiresAt: number;
+  promise: Promise<PublicSiteSnapshot>;
+};
+const publicSiteCache = new WeakMap<object, Map<PublicLanguage, PublicSiteCacheEntry>>();
+
+function getPublicSite(
+  language: PublicLanguage,
+  client: Pick<ApiClient, 'get'> = getApiClient(),
+): Promise<PublicSiteSnapshot> {
+  let byLanguage = publicSiteCache.get(client);
+  if (!byLanguage) {
+    byLanguage = new Map();
+    publicSiteCache.set(client, byLanguage);
+  }
+  const cached = byLanguage.get(language);
+  if (cached && cached.expiresAt > Date.now()) return cached.promise;
+
+  const promise = client
+    .get(`/api/public/site${languageQuery(language)}`, { responseSchema: publicSiteResponseSchema })
+    .then((response) => response.site)
+    .catch((error: unknown) => {
+      byLanguage?.delete(language);
+      throw error;
+    });
+  byLanguage.set(language, { expiresAt: Date.now() + publicSiteCacheTtlMs, promise });
+  return promise;
+}
 
 function languageQuery(language: PublicLanguage, extra?: Record<string, string | boolean | undefined>) {
   const params = new URLSearchParams({ lang: language });
@@ -56,20 +81,16 @@ function languageQuery(language: PublicLanguage, extra?: Record<string, string |
   return `?${params.toString()}`;
 }
 
-export function getPublicLanguage(): PublicLanguage {
-  return document.documentElement.lang.toLowerCase().startsWith('km') ? 'km' : 'en';
+export function getPublicClinic(language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
+  return getPublicSite(language, client).then((site) => site.clinic);
 }
 
-export function getPublicClinic(client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get('/api/public/clinic', { responseSchema: publicClinicResponseSchema }).then((response) => response.clinic);
-}
-
-export function getPublicContact(client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get('/api/public/contact', { responseSchema: publicContactResponseSchema }).then((response) => response.contact);
+export function getPublicContact(language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
+  return getPublicSite(language, client).then((site) => site.contact);
 }
 
 export function getPublicServices(language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get(`/api/public/services${languageQuery(language)}`, { responseSchema: publicServicesResponseSchema });
+  return getPublicSite(language, client).then((site) => ({ services: site.services }));
 }
 
 export function getPublicService(slug: string, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
@@ -81,20 +102,20 @@ export function getPublicDoctors(
   category?: TeamCategory,
   client: Pick<ApiClient, 'get'> = getApiClient(),
 ) {
-  return client.get(
-    `/api/public/team${languageQuery(language, { category })}`,
-    { responseSchema: publicDoctorsResponseSchema },
-  );
+  return getPublicSite(language, client).then((site) => ({
+    doctors: category
+      ? site.doctors.filter((doctor) => doctor.category === category)
+      : site.doctors,
+  }));
 }
 
 export function getPublicBookableDoctors(
   language: PublicLanguage,
   client: Pick<ApiClient, 'get'> = getApiClient(),
 ) {
-  return client.get(
-    `/api/public/team${languageQuery(language, { bookable: true })}`,
-    { responseSchema: publicDoctorsResponseSchema },
-  );
+  return getPublicSite(language, client).then((site) => ({
+    doctors: site.doctors.filter((doctor) => doctor.bookable),
+  }));
 }
 
 export function getPublicDoctor(slug: string, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
@@ -106,7 +127,7 @@ export function getPublicBranches(
   scope: 'branches' | 'landing' | 'appointments' = 'branches',
   client: Pick<ApiClient, 'get'> = getApiClient(),
 ) {
-  return client.get(`/api/public/branches${languageQuery(language, { scope })}`, { responseSchema: publicBranchesResponseSchema });
+  return getPublicSite(language, client).then((site) => ({ branches: site.branches[scope] }));
 }
 
 export function getPublicBranch(slug: string, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
@@ -114,17 +135,21 @@ export function getPublicBranch(slug: string, language: PublicLanguage, client: 
 }
 
 export function getPublicShowcases(language: PublicLanguage, homepageOnly = false, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get(`/api/public/showcases${languageQuery(language, homepageOnly ? { homepage: true } : undefined)}`, { responseSchema: publicShowcasesResponseSchema });
+  return getPublicSite(language, client).then((site) => ({
+    showcases: homepageOnly
+      ? site.showcases.filter((showcase) => showcase.showOnHomepage).slice(0, 3)
+      : site.showcases,
+  }));
 }
 
 export function getPublicShowcase(slug: string, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
   return client.get(`/api/public/showcases/${encodeURIComponent(slug)}${languageQuery(language)}`, { responseSchema: publicShowcaseResponseSchema });
 }
 export function getPublicPageMedia(placement: PageMediaPlacement, language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get(`/api/public/page-media${languageQuery(language, { placement })}`, { responseSchema: publicPageMediaResponseSchema });
+  return getPublicSite(language, client).then((site) => ({ items: site.pageMedia[placement] ?? [] }));
 }
 export function getPublicAboutTimeline(language: PublicLanguage, client: Pick<ApiClient, 'get'> = getApiClient()) {
-  return client.get(`/api/public/about-timeline${languageQuery(language)}`, { responseSchema: publicAboutTimelineResponseSchema });
+  return getPublicSite(language, client).then((site) => ({ items: site.aboutTimeline }));
 }
 
 export function createPublicAppointment(input: CreatePublicAppointmentInput, client: Pick<ApiClient, 'post'> = getApiClient()) {

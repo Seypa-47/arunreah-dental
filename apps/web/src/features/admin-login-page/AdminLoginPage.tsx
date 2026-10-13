@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { SkeletonBlock, SkeletonCard } from '@/components/ui/skeleton';
 import type { AdminLoginContent } from '@/services/admin-auth';
 import { useAdminLoginMutation, useAdminLoginPageQuery } from './use-admin-login-page';
 import { getSafeAdminReturnPath } from '@/routes/admin-route-access';
@@ -108,9 +109,9 @@ function AdminLoginForm({ content }: { content: AdminLoginContent }) {
           <label className="block" htmlFor="admin-password">
             <span className="mb-2 flex items-center justify-between gap-4 text-[15px] font-medium text-[#71839e]">
               {content.fields.password.label}
-              <a className="text-[#218caf] hover:text-[#096d91] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#218caf]" href={content.form.forgotPasswordUrl}>
+              <Link className="text-[#218caf] hover:text-[#096d91] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#218caf]" to={content.form.forgotPasswordUrl}>
                 {content.form.forgotPasswordLabel}
-              </a>
+              </Link>
             </span>
             <span className="flex h-[58px] items-center gap-3 rounded-xl border border-[#d9e3ee] bg-white px-4 text-[#97a8be] transition focus-within:border-[#2187a8] focus-within:ring-2 focus-within:ring-[#2187a8]/20">
               <LockIcon />
@@ -163,14 +164,15 @@ function AdminLoginForm({ content }: { content: AdminLoginContent }) {
 
 function AdminLoginSkeleton() {
   return (
-    <main aria-busy="true" aria-label="Loading admin login" className="grid min-h-screen place-items-center bg-[#f7f9fc] px-5 py-12">
-      <div className="w-full max-w-[520px] animate-pulse rounded-[34px] bg-white px-6 py-10 sm:px-[44px]">
-        <div className="h-9 w-52 rounded bg-[#e7edf3]" />
-        <div className="mt-4 h-6 w-72 rounded bg-[#eef2f6]" />
-        <div className="mt-8 h-[58px] rounded-xl bg-[#eef2f6]" />
-        <div className="mt-5 h-[58px] rounded-xl bg-[#eef2f6]" />
-        <div className="mt-6 h-[58px] rounded-xl bg-[#e7edf3]" />
-      </div>
+    <main aria-busy="true" className="grid min-h-screen place-items-center bg-[#f7f9fc] px-5 py-12">
+      <span className="sr-only">Loading admin login</span>
+      <SkeletonCard className="w-full max-w-[520px] rounded-[34px] px-6 py-10 sm:px-[44px]">
+        <SkeletonBlock className="h-9 w-52 rounded" />
+        <SkeletonBlock className="mt-4 h-6 w-72 rounded bg-[#eef2f6]" />
+        <SkeletonBlock className="mt-8 h-[58px] rounded-xl bg-[#eef2f6]" />
+        <SkeletonBlock className="mt-5 h-[58px] rounded-xl bg-[#eef2f6]" />
+        <SkeletonBlock className="mt-6 h-[58px] rounded-xl" />
+      </SkeletonCard>
     </main>
   );
 }

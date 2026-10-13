@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:production": "tsc -b && VITE_API_BASE_URL=https://api.arunreahdental.com VITE_MEDIA_PUBLIC_BASE_URL=https://media.arunreahdental.com vite build",
+    "seo:generate": "node scripts/generate-sitemap.mjs",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint src",
     "test": "vitest run --passWithNoTests"

@@ -2,11 +2,13 @@ import type { DatabaseClient } from '../db/client';
 import { cleanupExpiredAppointmentRateLimits } from '../repositories/appointment.repository';
 import { cleanupStaleMediaDeletionLocks } from '../repositories/media.repository';
 import { cleanupExpiredAuthenticationRecords } from '../repositories/session.repository';
+import { cleanupExpiredPasswordResetTokens } from '../repositories/password-reset.repository';
 
 const cleanupLimit = 100;
 const fifteenMinutes = 15 * 60 * 1000;
 const fiveMinutes = 5 * 60 * 1000;
 const revokedSessionRetention = 7 * 24 * 60 * 60 * 1000;
+const usedPasswordResetRetention = 24 * 60 * 60 * 1000;
 
 /** Opportunistic, bounded cleanup for short-lived operational records. */
 export async function runBoundedMaintenance(database: DatabaseClient, date = new Date()) {
@@ -19,6 +21,12 @@ export async function runBoundedMaintenance(database: DatabaseClient, date = new
     revokedSessionCutoff: new Date(date.getTime() - revokedSessionRetention).toISOString(),
     limit: cleanupLimit,
   });
+  await cleanupExpiredPasswordResetTokens(
+    database,
+    now,
+    new Date(date.getTime() - usedPasswordResetRetention).toISOString(),
+    cleanupLimit,
+  );
   await cleanupExpiredAppointmentRateLimits(database, inactiveRateLimitCutoff, cleanupLimit);
   await cleanupStaleMediaDeletionLocks(
     database,

@@ -3,6 +3,7 @@ import { clinicSettingsPublicReadSchema } from './clinic-settings';
 import { contactSettingsPublicReadSchema } from './contact-settings';
 import { imagePresentationSchema } from './image-presentation';
 import { profileItemKindValues, responsibilityIconValues, teamCategoryValues } from './doctors';
+import { pageMediaPlacementSchema } from './page-media';
 
 const nullableText = z.string().nullable();
 const optionalPresentation = imagePresentationSchema.optional();
@@ -201,6 +202,27 @@ export const publicShowcaseResponseSchema = z.object({ showcase: publicShowcaseD
 export const publicPageMediaResponseSchema = z.object({ items: z.array(publicPageMediaSchema) });
 export const publicAboutTimelineResponseSchema = z.object({ items: z.array(publicAboutTimelineItemSchema) });
 
+export const publicSiteQuerySchema = z.object({
+  lang: z.enum(['en', 'km']).default('en'),
+});
+
+export const publicSiteResponseSchema = z.object({
+  site: z.object({
+    clinic: clinicSettingsPublicReadSchema,
+    contact: contactSettingsPublicReadSchema,
+    services: z.array(publicServiceSummarySchema),
+    doctors: z.array(publicDoctorSummarySchema),
+    branches: z.object({
+      branches: z.array(publicBranchSchema),
+      landing: z.array(publicBranchSchema),
+      appointments: z.array(publicBranchSchema),
+    }),
+    showcases: z.array(publicShowcaseSummarySchema),
+    pageMedia: z.record(pageMediaPlacementSchema, z.array(publicPageMediaSchema)),
+    aboutTimeline: z.array(publicAboutTimelineItemSchema),
+  }),
+});
+
 export type PublicServiceSummary = z.infer<typeof publicServiceSummarySchema>;
 export type PublicServiceDetail = z.infer<typeof publicServiceDetailSchema>;
 export type PublicDoctorProfileItem = z.infer<typeof publicDoctorProfileItemSchema>;
@@ -212,3 +234,4 @@ export type PublicShowcaseDetail = z.infer<typeof publicShowcaseDetailSchema>;
 export type PublicPageMedia = z.infer<typeof publicPageMediaSchema>;
 export type PublicAboutTimelineItem = z.infer<typeof publicAboutTimelineItemSchema>;
 export type AppointmentAcknowledgement = z.infer<typeof appointmentAcknowledgementSchema>;
+export type PublicSiteSnapshot = z.infer<typeof publicSiteResponseSchema>['site'];

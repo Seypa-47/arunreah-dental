@@ -16,6 +16,8 @@ but it must not be treated as permission enforcement.
 | Endpoint                      | Access               |
 | ----------------------------- | -------------------- |
 | `POST /api/auth/login`        | Public, rate-limited |
+| `POST /api/auth/password-reset/request` | Public, Turnstile protected and rate-limited |
+| `POST /api/auth/password-reset/confirm` | Public, single-use token and rate-limited |
 | `POST /api/auth/logout`       | Authenticated admin  |
 | `GET /api/auth/me`            | Authenticated admin  |
 | `GET /api/admin/admins`       | `SUPER_ADMIN` only   |
@@ -63,6 +65,20 @@ Use same-site HTTPS custom subdomains for staging (for example,
 browser cookie authentication there. Do not weaken the cookie policy or place
 session secrets in `VITE_*` variables to work around this.
 
+## Password reset
+
+`/admin/forgot-password` always shows the same result whether an account exists
+or not. Active admins receive a Resend email containing a random 256-bit token
+that expires after 30 minutes. D1 stores only the SHA-256 token hash. Issuing a
+new token invalidates earlier unused tokens; a successful reset consumes the
+token and revokes every existing session for that admin.
+
+The request form uses Turnstile action `admin_password_reset`. The Worker builds
+the link from the non-secret `ADMIN_APP_BASE_URL` environment variable and uses
+the existing `EMAIL_FROM_ADDRESS` and `RESEND_API_KEY` settings. Password-reset
+tokens, raw passwords, authorization headers, and email contents must never be
+logged.
+
 ## First super-admin bootstrap
 
 1. Apply migrations to the target environment.
@@ -85,7 +101,7 @@ Never commit bootstrap credentials, generated SQL, or Worker secret values.
 
 - Only super admins can create/update admin accounts.
 - Password hashes are generated with Workers-native PBKDF2-HMAC-SHA-256 at
-  600,000 iterations and a random 16-byte salt.
+  100,000 iterations and a random 16-byte salt.
 - Login failures use a generic credential error and a D1-backed per-email/IP
   rate-limit record.
 - The final active super admin cannot be disabled or demoted.

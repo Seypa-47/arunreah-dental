@@ -22,6 +22,7 @@ import { adminMediaModule } from './modules/media/media.route';
 import { adminPageMediaModule, publicPageMediaModule } from './modules/page-media/page-media.route';
 import { adminAboutTimelineModule, publicAboutTimelineModule } from './modules/about-timeline/about-timeline.route';
 import { adminDashboardModule } from './modules/dashboard/dashboard.route';
+import { publicSiteModule } from './modules/public-site/public-site.route';
 import {
   adminAppointmentsModule,
   publicAppointmentsModule,
@@ -37,6 +38,7 @@ app.use('/api/auth/*', privateResponse);
 app.use('/api/admin/*', privateResponse);
 app.use('/api/auth/login', requireTrustedOrigin);
 app.use('/api/auth/logout', requireTrustedOrigin);
+app.use('/api/auth/password-reset/*', requireTrustedOrigin);
 app.use('/api/admin/*', requireTrustedOrigin);
 
 app.route('/api/health', healthModule);
@@ -44,6 +46,7 @@ app.route('/api/auth', authModule);
 app.route('/api/admin/admins', adminsModule);
 app.route('/api/admin/clinic', adminClinicModule);
 app.route('/api/public/clinic', publicClinicModule);
+app.route('/api/public/site', publicSiteModule);
 app.route('/api/admin/contact', adminContactModule);
 app.route('/api/public/contact', publicContactModule);
 app.route('/api/admin/branches', adminBranchesModule);

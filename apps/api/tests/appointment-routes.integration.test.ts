@@ -203,10 +203,13 @@ beforeEach(() => {
 describe('public appointment request API', () => {
   it('creates a PENDING request with immutable CMS snapshots and a patient-safe reference', async () => {
     const response = await submit();
-    const body = await response.json<{ data: { reference: string; status: string } }>();
+    const body = await response.json<{
+      data: { message: string; reference: string; status: string };
+    }>();
 
     expect(response.status).toBe(201);
     expect(body.data).toEqual({
+      message: 'Your request has been received. Our team will contact you shortly.',
       reference: expect.stringMatching(/^AR-\d{8}-[A-F0-9]{6}$/),
       status: 'PENDING',
     });

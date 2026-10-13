@@ -2,6 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { SkeletonBlock, SkeletonCard, SkeletonImage, SkeletonSection, SkeletonText } from '@/components/ui/skeleton';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLayout } from '@/components/layout/site-layout';
 import { CmsImage, ContentBlocks, EditorialImage } from '@/components/layout/public-ui';
@@ -11,7 +12,11 @@ import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { publicShell } from '@/features/public-content/public-page-chrome';
 import { useServiceDetailPageQuery } from './use-service-detail-page';
 import { isPublicNotFoundError } from '@/features/public-content/public-errors';
-import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
+import {
+  buildBreadcrumbStructuredData,
+  publicSiteOrigin,
+  usePublicDocumentTitle,
+} from '@/features/public-content/public-document-title';
 
 const serviceSlug = (name: string) => name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '');
 
@@ -563,105 +568,99 @@ function ServiceDetailView({ content }: { content: ServiceDetailContent & { serv
   );
 }
 
-function ServiceDetailSkeleton() {
+export function ServiceDetailSkeleton() {
   const { language } = usePublicLanguage();
   const shell = publicShell(language);
   const copy = publicUiCopy(language).serviceDetail;
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation}>
-      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+      <main aria-busy="true" className="bg-white">
         <span className="sr-only">{copy.loading}</span>
 
-        <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
-          <div className="mx-auto grid w-full max-w-[1280px] gap-7 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-center lg:gap-12 lg:px-8">
-            <div className="space-y-4">
-              <div className="h-3 w-32 animate-pulse rounded-full bg-[#dcebf0]" />
-              <div className="h-9 w-[88%] max-w-[500px] animate-pulse rounded-lg bg-[#d1e6ee] sm:w-[72%]" />
-              <div className="space-y-2 pt-1">
-                <div className="h-4 w-full max-w-[520px] animate-pulse rounded-full bg-[#e5f0f4]" />
-                <div className="h-4 w-[82%] max-w-[420px] animate-pulse rounded-full bg-[#e5f0f4]" />
-              </div>
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <div className="h-11 w-full animate-pulse rounded-full bg-[#dcebf0] sm:w-44" />
-                <div className="h-11 w-full animate-pulse rounded-full bg-white ring-1 ring-[#dcebf0] sm:w-44" />
-              </div>
-            </div>
-            <div className="h-[260px] animate-pulse rounded-xl border-4 border-[#d9edf4] bg-[#e3eef2] sm:h-[320px]" />
+        <SkeletonSection className="border-b border-[#e7eff3] bg-[#f7fafc] pb-12 pt-10 sm:pb-14 sm:pt-12" data-skeleton-section="service-hero">
+          <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+            <SkeletonBlock className="mb-5 h-4 w-36 rounded-full" data-skeleton-slot="back-link" />
           </div>
-        </section>
-
-        <section aria-hidden="true" className="bg-white py-10 sm:py-14">
-          <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-12 lg:px-8">
+          <div className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,440px)] lg:items-center lg:gap-12 lg:px-8">
             <div>
-              <div className="h-8 w-56 animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
-              <div className="mt-5 max-w-[760px] space-y-3">
-                <div className="h-4 w-full animate-pulse rounded-full bg-[#edf4f6]" />
-                <div className="h-4 w-[94%] animate-pulse rounded-full bg-[#edf4f6]" />
-                <div className="h-4 w-[86%] animate-pulse rounded-full bg-[#edf4f6]" />
-                <div className="h-4 w-[72%] animate-pulse rounded-full bg-[#edf4f6]" />
+              <SkeletonBlock className="h-6 w-32 rounded-full" />
+              <SkeletonBlock className="mt-3 h-9 w-[88%] max-w-[500px] sm:h-12 sm:w-[72%]" />
+              <SkeletonText className="mt-4 max-w-[540px]" lineClassName="h-4" lines={2} widths={['100%', '82%']} />
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <SkeletonBlock className="h-[46px] w-full rounded-full sm:w-44" />
+                <SkeletonBlock className="h-[46px] w-full rounded-full bg-white ring-1 ring-[#dcebf0] sm:w-44" />
               </div>
-              <div className="mt-7 h-[210px] animate-pulse rounded-xl bg-[#e3eef2] sm:h-[280px]" />
             </div>
-            <div className="rounded-xl border border-[#e1ebef] bg-[#fbfdfe] p-5 sm:p-6">
-              <div className="h-5 w-40 animate-pulse rounded-full bg-[#d1e6ee]" />
-              <div className="mt-5 space-y-4">
-                {Array.from({ length: 3 }, (_, index) => (
-                  <div className="flex gap-3" key={index}>
-                    <span className="size-8 shrink-0 animate-pulse rounded-full bg-[#dcebf0]" />
-                    <div className="flex-1 space-y-2 pt-1">
-                      <div className="h-3 w-2/5 animate-pulse rounded-full bg-[#dcebf0]" />
-                      <div className="h-3 w-full animate-pulse rounded-full bg-[#edf4f6]" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 h-11 w-full animate-pulse rounded-full bg-[#dcebf0]" />
-            </div>
+            <SkeletonCard className="flex min-h-[180px] items-end border-4 border-[#d9edf4] bg-[#edf5f8] p-5 sm:min-h-[220px] lg:min-h-[260px]" data-skeleton-slot="media-or-guide">
+              <SkeletonText className="w-full" lines={2} widths={['64%', '92%']} />
+            </SkeletonCard>
           </div>
-        </section>
+        </SkeletonSection>
 
-        <section aria-hidden="true" className="border-y border-[#e7eff3] bg-[#f7fafc] py-10 sm:py-12">
-          <div className="mx-auto max-w-[1280px] px-4 text-center sm:px-6 lg:px-8">
-            <div className="mx-auto h-8 w-64 max-w-full animate-pulse rounded-lg bg-[#d1e6ee] sm:w-80" />
-            <div className="mx-auto mt-4 h-4 w-[78%] animate-pulse rounded-full bg-[#e5f0f4] sm:w-[46%]" />
-            <div className="mt-7 grid gap-4 text-left sm:grid-cols-2 lg:grid-cols-3">
+        <SkeletonSection className="border-b border-[#e7eff3] bg-white py-9 sm:py-11" data-skeleton-section="service-overview">
+          <div className="mx-auto grid w-full max-w-[1280px] gap-7 px-4 sm:px-6 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-12 lg:px-8">
+            <div>
+              <SkeletonBlock className="h-3 w-24 rounded-full" />
+              <SkeletonBlock className="mt-3 h-7 w-52 max-w-full" />
+            </div>
+            <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 3 }, (_, index) => (
-                <div className="min-h-[154px] rounded-xl border border-[#e1ebef] bg-white p-5" key={index}>
-                  <span className="block size-10 animate-pulse rounded-lg bg-[#dcebf0]" />
-                  <div className="mt-4 h-4 w-3/5 animate-pulse rounded-full bg-[#d1e6ee]" />
-                  <div className="mt-3 h-3 w-full animate-pulse rounded-full bg-[#edf4f6]" />
-                  <div className="mt-2 h-3 w-4/5 animate-pulse rounded-full bg-[#edf4f6]" />
+                <div className="border-l border-[#dcebf0] pl-4" key={index}>
+                  <SkeletonBlock className="h-4 w-3/5 rounded-full" />
+                  <SkeletonText className="mt-3" lines={2} widths={['100%', '76%']} />
                 </div>
               ))}
             </div>
           </div>
-        </section>
+        </SkeletonSection>
 
-        <section aria-hidden="true" className="bg-white py-10 sm:py-12">
+        <SkeletonSection className="bg-white py-12 sm:py-16" data-skeleton-section="treatment-content">
+          <div className="mx-auto w-full max-w-[1120px] px-4 sm:px-6 lg:px-8">
+            <SkeletonBlock className="h-3 w-32 rounded-full" />
+            <SkeletonBlock className="mt-3 h-8 w-80 max-w-full sm:h-9" />
+            <div className="mt-8 divide-y divide-[#dcebf0] border-y border-[#dcebf0] sm:mt-10">
+              {Array.from({ length: 3 }, (_, index) => (
+                <article className="grid gap-5 py-7 sm:gap-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-14" data-skeleton-card="treatment" key={index}>
+                  <SkeletonImage className="h-[220px] w-full sm:h-[300px]" />
+                  <div className="px-1 sm:px-3">
+                    <SkeletonBlock className="h-3 w-8 rounded-full" />
+                    <SkeletonBlock className="mt-4 h-7 w-3/4" />
+                    <SkeletonText className="mt-4" lineClassName="h-4" lines={4} widths={['100%', '94%', '88%', '62%']} />
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </SkeletonSection>
+
+        <SkeletonSection className="bg-[#f7fafc] py-14 sm:py-16" data-skeleton-section="related-services">
           <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-            <div className="h-8 w-56 animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <SkeletonBlock className="h-8 w-64 max-w-full sm:h-9" />
+            <SkeletonText className="mt-3 max-w-lg" lines={1} widths={['88%']} />
+            <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 3 }, (_, index) => (
-                <div className="flex min-h-[192px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white sm:block sm:h-[326px]" key={index}>
-                  <div className="h-[192px] w-[42%] shrink-0 animate-pulse bg-[#e3eef2] sm:h-[188px] sm:w-full" />
-                  <div className="flex flex-1 flex-col justify-center space-y-3 p-4 sm:h-[138px] sm:justify-start sm:p-5">
-                    <div className="h-4 w-3/4 animate-pulse rounded-full bg-[#dcebf0]" />
-                    <div className="h-3 w-full animate-pulse rounded-full bg-[#edf4f6]" />
-                    <div className="h-3 w-2/3 animate-pulse rounded-full bg-[#edf4f6]" />
+                <SkeletonCard className="flex min-h-[192px] overflow-hidden p-0 sm:block sm:h-[326px]" data-skeleton-card="related-service" key={index}>
+                  <SkeletonImage className="h-[192px] w-[42%] shrink-0 rounded-none sm:h-[188px] sm:w-full" />
+                  <div className="flex flex-1 flex-col justify-center p-4 sm:h-[138px] sm:justify-start sm:p-5">
+                    <SkeletonBlock className="h-4 w-3/4 rounded-full" />
+                    <SkeletonText className="mt-3" lines={2} widths={['100%', '66%']} />
                   </div>
-                </div>
+                </SkeletonCard>
               ))}
             </div>
           </div>
-        </section>
+        </SkeletonSection>
 
-        <section aria-hidden="true" className="border-t border-[#e7eff3] bg-[#f7fafc] px-4 py-10 sm:px-6 sm:py-12">
-          <div className="mx-auto max-w-[860px] rounded-xl bg-[#1682a4] px-5 py-8 text-center sm:px-12 sm:py-10">
-            <div className="mx-auto h-8 w-56 max-w-full animate-pulse rounded-lg bg-white/45 sm:w-72" />
-            <div className="mx-auto mt-4 h-4 w-[78%] animate-pulse rounded-full bg-white/25 sm:w-[56%]" />
-            <div className="mx-auto mt-6 h-11 w-48 animate-pulse rounded-full bg-white/70" />
+        <SkeletonSection className="bg-white px-4 py-14 sm:px-6 sm:py-16" data-skeleton-section="service-cta">
+          <div className="mx-auto max-w-[860px] rounded-xl bg-[#087b9f] px-5 py-9 text-center sm:px-12 sm:py-11">
+            <SkeletonBlock className="mx-auto h-8 w-64 max-w-full bg-white/50 sm:h-9 sm:w-80" />
+            <SkeletonText className="mx-auto mt-4 max-w-[580px]" lineClassName="h-4 bg-white/25" lines={2} widths={['100%', '72%']} />
+            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <SkeletonBlock className="h-12 w-full rounded-full bg-white/75 sm:w-48" />
+              <SkeletonBlock className="h-12 w-full rounded-full bg-white/25 sm:w-40" />
+            </div>
           </div>
-        </section>
+        </SkeletonSection>
       </main>
     </SiteLayout>
   );
@@ -710,7 +709,30 @@ export function ServiceDetailPage() {
   const { language } = usePublicLanguage();
   usePublicDocumentTitle(
     data?.service?.seo.title ?? data?.service?.name ?? (language === 'km' ? 'សេវាកម្ម' : 'Service'),
-    data?.service?.seo.description,
+    data?.service?.seo.description ?? data?.service?.hero.subtitle ?? data?.service?.description,
+    {
+      imageUrl: data?.service?.hero.imageUrl ?? data?.service?.imageUrl,
+      noIndex: isError && isPublicNotFoundError(error),
+      structuredData: data?.service
+        ? [
+            buildBreadcrumbStructuredData([
+              { name: 'Home', path: '/' },
+              { name: language === 'km' ? 'សេវាកម្ម' : 'Services', path: '/services' },
+              { name: data.service.name, path: `/services/${data.service.slug}` },
+            ]),
+            {
+              '@context': 'https://schema.org',
+              '@type': 'Service',
+              name: data.service.name,
+              description: data.service.seo.description ?? data.service.hero.subtitle ?? data.service.description,
+              image: data.service.hero.imageUrl || data.service.imageUrl || undefined,
+              url: `${publicSiteOrigin}/services/${data.service.slug}`,
+              areaServed: { '@type': 'City', name: 'Phnom Penh' },
+              provider: { '@id': `${publicSiteOrigin}/#organization` },
+            },
+          ]
+        : null,
+    },
   );
 
   if (isLoading) {

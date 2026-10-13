@@ -23,6 +23,7 @@ import { getPublicMediaUrl } from '@/services/media';
 import { usePublicLanguage } from '@/features/public-content/public-language-provider';
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
+import { SkeletonBlock, SkeletonCard, SkeletonImage, SkeletonSection, SkeletonText } from '@/components/ui/skeleton';
 
 const asset = (name: string) => `/assets/landing/${name}`;
 
@@ -533,53 +534,79 @@ function DoctorsPageView({ content }: { content: TeamDoctorsPageContent }) {
   );
 }
 
-function DoctorsPageSkeleton() {
+function TeamDirectorySkeletonCard() {
+  return (
+    <SkeletonCard className={teamCard.shell} data-skeleton-card="team-member">
+      <div className={teamCard.inner}>
+        <SkeletonImage className={teamCard.media} />
+        <div className={teamCard.body}>
+          <SkeletonBlock className="h-4 w-3/4 rounded-full" />
+          <SkeletonBlock className="mt-2 h-3 w-1/2 rounded-full" />
+          <SkeletonText className="mt-3" lines={2} widths={['100%', '80%']} />
+          <SkeletonBlock className="mt-auto h-3 w-28 rounded-full sm:mt-3" />
+        </div>
+      </div>
+    </SkeletonCard>
+  );
+}
+
+export function DoctorsPageSkeleton() {
   const { language } = usePublicLanguage();
   const shell = publicShell(language);
   const copy = publicUiCopy(language).doctors;
+  const categories = teamCategories(language);
+
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation}>
-      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+      <main aria-busy="true" className="bg-white">
         <span className="sr-only">{copy.loadingLabel}</span>
 
-        <section
-          aria-hidden="true"
-          className="border-b border-[#e7eff3] bg-[#f7fafc] pb-10 pt-12 text-center sm:pb-12 sm:pt-14"
-        >
-          <div className="mx-auto max-w-[650px] px-4 sm:px-6">
-            <div className="mx-auto h-3 w-28 animate-pulse rounded-full bg-[#dcebf0]" />
-            <div className="mx-auto mt-3 h-9 w-56 max-w-full animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
-            <div className="mx-auto mt-4 h-4 w-[84%] animate-pulse rounded-full bg-[#e5f0f4] sm:w-[66%]" />
-          </div>
-        </section>
-
-        <section aria-hidden="true" className="border-b border-[#e7eff3] bg-white">
-          <div className="mx-auto flex w-full max-w-[1280px] gap-2 px-4 py-3 sm:px-6 lg:px-8">
-            {Array.from({ length: 5 }, (_, index) => (
-              <div className="h-9 w-28 animate-pulse rounded-full bg-[#e5f0f4]" key={index} />
-            ))}
-          </div>
-        </section>
-
-        <section aria-hidden="true" className="bg-white py-10 sm:py-14">
-          <div className="mx-auto grid w-full max-w-[1280px] gap-4 px-4 sm:grid-cols-2 sm:gap-5 sm:px-6 lg:grid-cols-3 lg:px-8 xl:grid-cols-4">
-            {Array.from({ length: 8 }, (_, index) => (
-              <div
-                className="flex min-h-[196px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white sm:block"
-                key={index}
-              >
-                <div className="h-[196px] w-[42%] max-w-[176px] shrink-0 animate-pulse bg-[#e3eef2] sm:aspect-[11/10] sm:h-auto sm:w-full sm:max-w-none" />
-                <div className="flex flex-1 flex-col justify-center space-y-3 p-4 sm:h-[156px] sm:justify-start sm:p-5">
-                  <div className="h-4 w-3/4 animate-pulse rounded-full bg-[#dcebf0]" />
-                  <div className="h-3 w-1/2 animate-pulse rounded-full bg-[#d1e6ee]" />
-                  <div className="h-3 w-full animate-pulse rounded-full bg-[#edf4f6]" />
-                  <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#edf4f6]" />
-                  <div className="h-3 w-28 animate-pulse rounded-full bg-[#dcebf0]" />
+        <SkeletonSection className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7" data-skeleton-section="hero">
+          <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+            <div className="relative min-h-[260px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#f7fafc] sm:min-h-[360px] md:min-h-[420px] lg:min-h-[460px]">
+              <SkeletonImage className="absolute inset-0 h-full w-full rounded-none bg-[#dcebf0]" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-white/90 via-white/65 to-transparent sm:right-auto sm:h-[68%] sm:w-[66%] sm:bg-[radial-gradient(100%_100%_at_0%_100%,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.62)_48%,rgba(255,255,255,0.22)_76%,transparent_100%)]" />
+              <div className="relative z-10 flex min-h-[260px] flex-col justify-end p-4 pb-5 sm:min-h-[360px] sm:p-7 sm:pb-7 md:min-h-[420px] lg:min-h-[460px] lg:px-9 lg:pb-8">
+                <div className="w-full max-w-[520px]">
+                  <SkeletonBlock className="h-6 w-32 rounded-full bg-white/70" />
+                  <SkeletonBlock className="mt-3 h-8 w-[68%] rounded-lg bg-white/75 sm:h-10" />
+                  <SkeletonText className="mt-3 max-w-[460px]" lineClassName="h-4 bg-white/60" lines={2} widths={['100%', '82%']} />
                 </div>
               </div>
+            </div>
+          </div>
+        </SkeletonSection>
+
+        <nav aria-hidden="true" className="sticky top-[64px] z-30 border-b border-[#e7eff3] bg-white/95 backdrop-blur-xl sm:top-[74px]" data-skeleton-section="category-navigation">
+          <div className="mx-auto flex w-full max-w-[1280px] gap-2 overflow-hidden px-4 py-3 sm:px-6 lg:px-8">
+            {Array.from({ length: 5 }, (_, index) => (
+              <SkeletonBlock className="h-9 w-28 shrink-0 rounded-full" key={index} />
             ))}
           </div>
-        </section>
+        </nav>
+
+        <div className="bg-white" data-skeleton-section="team-directory">
+          {categories.map((category, categoryIndex) => (
+            <SkeletonSection
+              className={`scroll-mt-[88px] sm:scroll-mt-[96px] ${categoryIndex === 0 ? '' : 'border-t border-[#e7eff3]'}`}
+              data-skeleton-group={category.id}
+              key={category.id}
+            >
+              <div className="mx-auto w-full max-w-[1280px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+                <div className="mb-6 max-w-[680px] sm:mb-8">
+                  <SkeletonBlock className="h-3 w-28 rounded-full" />
+                  <SkeletonBlock className="mt-3 h-7 w-64 max-w-full rounded-lg" />
+                  <SkeletonText className="mt-3 max-w-[560px]" lines={2} widths={['100%', '78%']} />
+                </div>
+                <div className={teamGrid}>
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <TeamDirectorySkeletonCard key={index} />
+                  ))}
+                </div>
+              </div>
+            </SkeletonSection>
+          ))}
+        </div>
       </main>
     </SiteLayout>
   );
@@ -625,6 +652,8 @@ export function DoctorsPage() {
   const { language } = usePublicLanguage();
   usePublicDocumentTitle(
     getTeamHeroTitle(data?.hero.title, language),
+    data?.hero.description,
+    { imageUrl: data?.heroMedia?.imageKey ? getPublicMediaUrl(data.heroMedia.imageKey) : undefined },
   );
 
   if (isLoading) {

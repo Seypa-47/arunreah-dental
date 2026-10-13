@@ -52,7 +52,7 @@ const adminLoginContent: AdminLoginContent = {
   form: {
     errorMessage: 'Invalid email or password',
     forgotPasswordLabel: 'Forgot password?',
-    forgotPasswordUrl: 'mailto:info@arunreahclinic.com?subject=Admin%20password%20reset',
+    forgotPasswordUrl: '/admin/forgot-password',
     submitLabel: 'Log In',
     subtitle: 'Please enter your details to sign in.',
     title: 'Welcome Back',

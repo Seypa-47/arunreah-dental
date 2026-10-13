@@ -8,6 +8,7 @@ import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { AdminToggle } from '@/components/admin/admin-toggle';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { SkeletonBlock, SkeletonCard, SkeletonSection } from '@/components/ui/skeleton';
 import { useAdminShowcasePageQuery } from './use-admin-showcase-page';
 import type { AdminShowcaseContent, ShowcaseStatus } from '@/services/admin-showcase';
 import { cmsApi } from '@/services/cms';
@@ -367,14 +368,13 @@ function ShowcaseListContent({
 
 function ShowcaseSkeleton() {
   return (
-    <main
-      aria-busy="true"
-      aria-label="Loading showcase management"
-      className="min-h-screen flex-1 bg-[#f6f8fb] p-7 lg:p-11"
-    >
-      <div className="h-10 w-72 animate-pulse rounded bg-[#e7edf3]" />
-      <div className="mt-9 h-[92px] animate-pulse rounded-[26px] bg-white" />
-      <div className="mt-8 h-[520px] animate-pulse rounded-[32px] bg-white" />
+    <main aria-busy="true" className="min-h-screen flex-1 bg-[#f6f8fb] p-7 lg:p-11">
+      <span className="sr-only">Loading showcase management</span>
+      <SkeletonSection>
+        <SkeletonBlock className="h-10 w-72 rounded" />
+        <SkeletonCard className="mt-9 h-[92px] rounded-[26px]" />
+        <SkeletonCard className="mt-8 h-[520px] rounded-[32px]" />
+      </SkeletonSection>
     </main>
   );
 }

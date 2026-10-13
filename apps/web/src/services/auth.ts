@@ -1,4 +1,9 @@
-import type { AdminLoginInput, AdminRole } from '@arunreah/shared';
+import type {
+  AdminLoginInput,
+  AdminPasswordResetInput,
+  AdminPasswordResetRequestInput,
+  AdminRole,
+} from '@arunreah/shared';
 import { getApiClient, isApiClientError, type ApiClient } from '@/lib/api';
 
 export type AuthenticatedAdmin = {
@@ -43,4 +48,21 @@ export async function logoutAdmin(client: AuthApiClient = getApiClient()): Promi
     if (isApiClientError(error) && error.status === 401) return;
     throw error;
   }
+}
+
+export async function requestAdminPasswordReset(
+  input: AdminPasswordResetRequestInput,
+  client: AuthApiClient = getApiClient(),
+): Promise<string> {
+  const response = await client.post<{ message: string }>('/api/auth/password-reset/request', {
+    json: input,
+  });
+  return response.message;
+}
+
+export async function resetAdminPassword(
+  input: AdminPasswordResetInput,
+  client: AuthApiClient = getApiClient(),
+): Promise<void> {
+  await client.post<{ reset: boolean }>('/api/auth/password-reset/confirm', { json: input });
 }

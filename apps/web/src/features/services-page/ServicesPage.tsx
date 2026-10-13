@@ -10,6 +10,14 @@ import { usePublicLanguage } from '@/features/public-content/public-language-pro
 import { publicUiCopy } from '@/features/public-content/public-ui-copy';
 import { useServicesPageQuery } from './use-services-page';
 import { usePublicDocumentTitle } from '@/features/public-content/public-document-title';
+import {
+  PublicListingHeroSkeleton,
+  publicListingGridClass,
+  publicListingHeroContentClass,
+  publicListingHeroMediaClass,
+  publicListingHeroSectionClass,
+} from '@/components/layout/public-listing-skeleton';
+import { SkeletonBlock, SkeletonCard, SkeletonImage, SkeletonSection, SkeletonText } from '@/components/ui/skeleton';
 
 const serviceId = (name: string) =>
   `service-${name.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-').replaceAll(/(^-|-$)/g, '')}`;
@@ -19,16 +27,16 @@ function ServicesHero({ hero }: { hero: ServicesPageContent['hero'] }) {
   const servicesCopy = publicUiCopy(usePublicLanguage().language).services;
   const eyebrow = hero.eyebrow || servicesCopy.heroEyebrow;
   return (
-    <section className="border-b border-[#e7eff3] bg-[#f7fafc] py-5 sm:py-7">
+    <section className={publicListingHeroSectionClass}>
       <PageContainer>
         {hero.imageUrl ? (
-          <div className="relative min-h-[320px] overflow-hidden rounded-2xl border border-[#d9e9ee] bg-[#00546f] sm:min-h-[380px] lg:min-h-[420px]">
+          <div className={publicListingHeroMediaClass}>
             <ResilientImage alt={hero.title} className="absolute inset-0 h-full w-full object-cover object-center" presentation={hero.imagePresentation} src={hero.imageUrl} />
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#021827]/90 via-[#021827]/40 to-transparent sm:bg-[linear-gradient(100deg,rgba(2,24,39,0.88)_0%,rgba(2,24,39,0.5)_42%,rgba(2,24,39,0.1)_70%,transparent_100%)]"
             />
-            <div className="relative z-10 flex min-h-[320px] max-w-[720px] flex-col justify-end p-6 sm:min-h-[380px] sm:p-10 lg:min-h-[420px] lg:p-12">
+            <div className={publicListingHeroContentClass}>
               <div>
                 {eyebrow ? (
                   <p className="ui-eyebrow inline-flex w-fit items-center rounded-full bg-[#005687] px-3 py-1 text-[11px] font-extrabold uppercase leading-4 tracking-[0.06em] text-white shadow-sm sm:text-[12px]">
@@ -108,7 +116,7 @@ function ServicesGrid({ services }: { services: LandingService[] }) {
   return (
     <section className="bg-white py-10 sm:py-14">
       <PageContainer>
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+        <div className={publicListingGridClass}>
           {services.map((service) => (
             <ServiceCard key={service.name} service={service} />
           ))}
@@ -162,48 +170,48 @@ function ServicesPageView({ content }: { content: ServicesPageContent }) {
   );
 }
 
-function ServicesPageSkeleton() {
+export function ServicesPageSkeleton() {
   const { language } = usePublicLanguage();
   const shell = publicShell(language);
   const copy = publicUiCopy(language).services;
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation}>
-      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+      <main aria-busy="true" className="bg-white">
         <span className="sr-only">{copy.loadingLabel}</span>
 
-        <section aria-hidden="true" className="border-b border-[#e7eff3] bg-[#f7fafc] px-4 py-12 text-center sm:px-6 sm:py-14">
-          <div className="mx-auto max-w-[620px]">
-            <div className="mx-auto h-3 w-28 animate-pulse rounded-full bg-[#dcebf0]" />
-            <div className="mx-auto mt-3 h-9 w-56 max-w-full animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
-            <div className="mx-auto mt-4 h-4 w-[88%] animate-pulse rounded-full bg-[#e5f0f4] sm:w-[72%]" />
-            <div className="mx-auto mt-2 h-4 w-[70%] animate-pulse rounded-full bg-[#e5f0f4] sm:w-[56%]" />
-          </div>
-        </section>
+        <PublicListingHeroSkeleton />
 
-        <section aria-hidden="true" className="py-10 sm:py-14">
-          <div className="mx-auto grid max-w-[1280px] gap-4 px-4 sm:grid-cols-2 sm:gap-5 sm:px-6 lg:grid-cols-3 lg:px-8">
-            {Array.from({ length: 8 }, (_, index) => (
-              <div className="min-h-[330px] overflow-hidden rounded-xl border border-[#e3edf1] bg-white" key={index}>
-                <div className="h-[190px] w-full animate-pulse bg-[#e3eef2]" />
-                <div className="flex flex-1 flex-col justify-center space-y-3 p-4 sm:h-[140px] sm:justify-start sm:p-5">
-                  <div className="h-4 w-3/4 animate-pulse rounded-full bg-[#dcebf0]" />
-                  <div className="h-3 w-full animate-pulse rounded-full bg-[#edf4f6]" />
-                  <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#edf4f6]" />
-                  <div className="h-3 w-20 animate-pulse rounded-full bg-[#dcebf0]" />
-                </div>
+        <SkeletonSection className="bg-white py-10 sm:py-14" data-skeleton-section="services">
+          <PageContainer>
+            <div className={publicListingGridClass}>
+              {Array.from({ length: 3 }, (_, index) => (
+                <SkeletonCard className="min-h-[330px] overflow-hidden rounded-xl" data-skeleton-card="service" key={index}>
+                  <SkeletonImage className="h-[190px] w-full rounded-none" />
+                  <div className="flex min-h-[140px] flex-col justify-between p-5">
+                    <div>
+                      <SkeletonBlock className="h-4 w-3/4 rounded-full" />
+                      <SkeletonText className="mt-3" lines={2} widths={['100%', '80%']} />
+                    </div>
+                    <SkeletonBlock className="mt-3 h-3 w-20 rounded-full" />
+                  </div>
+                </SkeletonCard>
+              ))}
+            </div>
+          </PageContainer>
+        </SkeletonSection>
+
+        <SkeletonSection className="bg-[#f7fafc] py-12 sm:py-14" data-skeleton-section="cta">
+          <PageContainer>
+            <SkeletonCard className="mx-auto max-w-[860px] rounded-xl px-5 py-8 text-center sm:px-12 sm:py-10">
+              <SkeletonBlock className="mx-auto h-8 w-56 max-w-full rounded-lg sm:w-72" />
+              <SkeletonText className="mx-auto mt-4 max-w-[620px]" lineClassName="mx-auto h-4" lines={2} widths={['82%', '64%']} />
+              <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <SkeletonBlock className="h-[46px] w-full rounded-full sm:w-48" />
+                <SkeletonBlock className="h-[46px] w-full rounded-full sm:w-40" />
               </div>
-            ))}
-          </div>
-        </section>
-
-        <section aria-hidden="true" className="border-t border-[#e7eff3] bg-[#f7fafc] px-4 py-10 sm:px-6 sm:py-12">
-          <div className="mx-auto max-w-[860px] rounded-xl border border-[#e1ebef] bg-white px-5 py-8 text-center sm:px-12 sm:py-10">
-            <div className="mx-auto h-8 w-56 max-w-full animate-pulse rounded-lg bg-[#d1e6ee] sm:w-72" />
-            <div className="mx-auto mt-4 h-4 w-[82%] animate-pulse rounded-full bg-[#edf4f6] sm:w-[64%]" />
-            <div className="mx-auto mt-2 h-4 w-[68%] animate-pulse rounded-full bg-[#edf4f6] sm:w-[48%]" />
-            <div className="mx-auto mt-6 h-11 w-48 animate-pulse rounded-full bg-[#dcebf0]" />
-          </div>
-        </section>
+            </SkeletonCard>
+          </PageContainer>
+        </SkeletonSection>
       </main>
     </SiteLayout>
   );
@@ -227,7 +235,11 @@ function hasServicesContent(content: ServicesPageContent | undefined): content i
 export function ServicesPage() {
   const { data, isError, isLoading, refetch } = useServicesPageQuery();
   const { language } = usePublicLanguage();
-  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'សេវាកម្ម' : 'Services'));
+  usePublicDocumentTitle(
+    data?.hero.title ?? (language === 'km' ? 'សេវាកម្មធ្មេញ' : 'Dental Services'),
+    data?.hero.description,
+    { imageUrl: data?.hero.imageUrl },
+  );
 
   if (isLoading) {
     return <ServicesPageSkeleton />;

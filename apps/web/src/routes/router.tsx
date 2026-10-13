@@ -5,11 +5,14 @@ import { LandingPage } from '@/features/landing-page/LandingPage';
 import { RedirectAuthenticatedAdmin, RequireAdminRoute } from '@/features/admin-auth/admin-route-guard';
 import { lazyWithRetry, registerVitePreloadErrorHandler } from './lazy-with-retry';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
+import { AdminRouteFallback, PublicRouteFallback } from './route-fallbacks';
 
 registerVitePreloadErrorHandler();
 
 const AboutPage = lazyWithRetry(() => import('@/features/about-page/AboutPage').then(({ AboutPage: Page }) => ({ default: Page })));
 const AdminLoginPage = lazyWithRetry(() => import('@/features/admin-login-page/AdminLoginPage').then(({ AdminLoginPage: Page }) => ({ default: Page })));
+const AdminForgotPasswordPage = lazyWithRetry(() => import('@/features/admin-password-reset-page/AdminPasswordResetPage').then(({ AdminForgotPasswordPage: Page }) => ({ default: Page })));
+const AdminResetPasswordPage = lazyWithRetry(() => import('@/features/admin-password-reset-page/AdminPasswordResetPage').then(({ AdminResetPasswordPage: Page }) => ({ default: Page })));
 const AdminInboxPage = lazyWithRetry(() => import('@/features/admin-inbox-page/AdminInboxPage').then(({ AdminInboxPage: Page }) => ({ default: Page })));
 const AdminDashboardPage = lazyWithRetry(() => import('@/features/admin-dashboard-page/AdminDashboardPage').then(({ AdminDashboardPage: Page }) => ({ default: Page })));
 const AdminCalendarPage = lazyWithRetry(() => import('@/features/admin-calendar-page/AdminCalendarPage').then(({ AdminCalendarPage: Page }) => ({ default: Page })));
@@ -39,14 +42,14 @@ const ShowcaseDetailPage = lazyWithRetry(() => import('@/features/showcase-detai
 const PublicNotFoundPage = lazyWithRetry(() => import('@/features/public-content/PublicNotFoundPage').then(({ PublicNotFoundPage: Page }) => ({ default: Page })));
 
 const protectedAdminRoute = (element: ReactNode) => (
-  <div className="admin-ui"><RequireAdminRoute><RouteLoadingBoundary>{element}</RouteLoadingBoundary></RequireAdminRoute></div>
+  <div className="admin-ui"><RouteLoadingBoundary fallback={<AdminRouteFallback />}><RequireAdminRoute>{element}</RequireAdminRoute></RouteLoadingBoundary></div>
 );
 
-function RouteLoadingBoundary({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<main aria-busy="true" className="admin-state-page"><span className="sr-only">Loading page</span></main>}>{children}</Suspense>;
+function RouteLoadingBoundary({ children, fallback }: { children: ReactNode; fallback: ReactNode }) {
+  return <Suspense fallback={fallback}>{children}</Suspense>;
 }
 
-const lazyPublicRoute = (element: ReactNode) => <RouteLoadingBoundary>{element}</RouteLoadingBoundary>;
+const lazyPublicRoute = (element: ReactNode) => <RouteLoadingBoundary fallback={<PublicRouteFallback />}>{element}</RouteLoadingBoundary>;
 
 function LegacyRouteRedirect({ from, to }: { from: string; to: string }) {
   const location = useLocation();
@@ -56,7 +59,15 @@ function LegacyRouteRedirect({ from, to }: { from: string; to: string }) {
 const routes = [
   {
     path: '/admin/login',
-    element: <div className="admin-ui"><RedirectAuthenticatedAdmin><RouteLoadingBoundary><AdminLoginPage /></RouteLoadingBoundary></RedirectAuthenticatedAdmin></div>,
+    element: <div className="admin-ui"><RedirectAuthenticatedAdmin><RouteLoadingBoundary fallback={<AdminRouteFallback variant="auth" />}><AdminLoginPage /></RouteLoadingBoundary></RedirectAuthenticatedAdmin></div>,
+  },
+  {
+    path: '/admin/forgot-password',
+    element: <div className="admin-ui"><RouteLoadingBoundary fallback={<AdminRouteFallback variant="auth" />}><AdminForgotPasswordPage /></RouteLoadingBoundary></div>,
+  },
+  {
+    path: '/admin/reset-password',
+    element: <div className="admin-ui"><RouteLoadingBoundary fallback={<AdminRouteFallback variant="auth" />}><AdminResetPasswordPage /></RouteLoadingBoundary></div>,
   },
   {
     path: '/admin/dashboard',

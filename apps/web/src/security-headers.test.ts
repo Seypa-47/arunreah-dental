@@ -17,10 +17,11 @@ describe('Cloudflare Pages security headers', () => {
     }
     expect(headers).toContain("frame-ancestors 'none'");
     expect(headers).toContain('https://challenges.cloudflare.com');
+    expect(headers).toContain('https://static.cloudflareinsights.com');
     expect(headers).toContain('https://www.google.com');
     expect(headers).toContain('https://fonts.googleapis.com');
     expect(headers).toContain('https://fonts.gstatic.com');
-    expect(headers).toContain('https://media.arunreah.mekhla.digital');
+    expect(headers).toContain('https://media.arunreahdental.com');
     expect(headers).not.toContain("script-src 'self' 'unsafe-inline'");
   });
 });

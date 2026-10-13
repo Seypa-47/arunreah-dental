@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { AdminIcon } from '@/components/layout/admin-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { SkeletonBlock, SkeletonCard, SkeletonSection } from '@/components/ui/skeleton';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { cmsApi } from '@/services/cms';
 import { invalidateCmsDomain } from '@/services/cms-cache';
@@ -398,14 +399,13 @@ function ServicesContent({ content, listState, onListStateChange, busy }: { busy
 
 function ServicesSkeleton() {
   return (
-    <main
-      aria-busy="true"
-      aria-label="Loading services management"
-      className="min-h-screen flex-1 bg-[#f6f8fb] p-7 lg:p-11"
-    >
-      <div className="h-10 w-72 animate-pulse rounded bg-[#e7edf3]" />
-      <div className="mt-9 h-[92px] animate-pulse rounded-[26px] bg-white" />
-      <div className="mt-8 h-[520px] animate-pulse rounded-[32px] bg-white" />
+    <main aria-busy="true" className="min-h-screen flex-1 bg-[#f6f8fb] p-7 lg:p-11">
+      <span className="sr-only">Loading services management</span>
+      <SkeletonSection>
+        <SkeletonBlock className="h-10 w-72 rounded" />
+        <SkeletonCard className="mt-9 h-[92px] rounded-[26px]" />
+        <SkeletonCard className="mt-8 h-[520px] rounded-[32px]" />
+      </SkeletonSection>
     </main>
   );
 }

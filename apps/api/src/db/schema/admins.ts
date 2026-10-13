@@ -52,3 +52,22 @@ export const adminSessions = sqliteTable(
     uniqueIndex('admin_sessions_token_hash_unique').on(table.tokenHash),
   ],
 );
+
+export const adminPasswordResetTokens = sqliteTable(
+  'admin_password_reset_tokens',
+  {
+    id: text('id').primaryKey(),
+    adminId: text('admin_id')
+      .notNull()
+      .references(() => admins.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: text('expires_at').notNull(),
+    usedAt: text('used_at'),
+    ...timestamps(),
+  },
+  (table) => [
+    index('admin_password_reset_tokens_admin_id_idx').on(table.adminId),
+    index('admin_password_reset_tokens_expires_at_idx').on(table.expiresAt),
+    uniqueIndex('admin_password_reset_tokens_token_hash_unique').on(table.tokenHash),
+  ],
+);

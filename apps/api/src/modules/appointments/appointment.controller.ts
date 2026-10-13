@@ -27,6 +27,7 @@ export async function createPublicAppointmentController(context: Context<AppEnv>
     input,
     context.env.APP_ENV,
     context.env.TURNSTILE_SECRET_KEY,
+    context.env.TURNSTILE_HOSTNAMES,
     context.env,
     context.req.raw.headers,
     rateLimitKey,

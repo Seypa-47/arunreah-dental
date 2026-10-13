@@ -8,6 +8,7 @@ const maintenance = vi.hoisted(() => ({
   authentication: vi.fn(),
   appointments: vi.fn(),
   media: vi.fn(),
+  passwordResets: vi.fn(),
 }));
 
 vi.mock('../src/repositories/session.repository', async (importOriginal) => ({
@@ -21,6 +22,10 @@ vi.mock('../src/repositories/appointment.repository', async (importOriginal) => 
 vi.mock('../src/repositories/media.repository', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../src/repositories/media.repository')>()),
   cleanupStaleMediaDeletionLocks: maintenance.media,
+}));
+vi.mock('../src/repositories/password-reset.repository', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../src/repositories/password-reset.repository')>()),
+  cleanupExpiredPasswordResetTokens: maintenance.passwordResets,
 }));
 
 describe('production-readiness safeguards', () => {
@@ -47,6 +52,7 @@ describe('production-readiness safeguards', () => {
     maintenance.authentication.mockResolvedValue(undefined);
     maintenance.appointments.mockResolvedValue(undefined);
     maintenance.media.mockResolvedValue(undefined);
+    maintenance.passwordResets.mockResolvedValue(undefined);
     const now = new Date('2026-10-11T12:00:00.000Z');
 
     await runBoundedMaintenance({} as DatabaseClient, now);
@@ -63,6 +69,12 @@ describe('production-readiness safeguards', () => {
     expect(maintenance.appointments).toHaveBeenCalledWith(
       expect.anything(),
       '2026-10-11T11:45:00.000Z',
+      100,
+    );
+    expect(maintenance.passwordResets).toHaveBeenCalledWith(
+      expect.anything(),
+      now.toISOString(),
+      '2026-10-10T12:00:00.000Z',
       100,
     );
     expect(maintenance.media).toHaveBeenCalledWith(

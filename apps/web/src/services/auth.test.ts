@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { ApiClientError } from '@/lib/api';
 import type { ApiClient, ApiRequestOptions } from '@/lib/api';
-import { getCurrentAdmin, loginAdmin, logoutAdmin } from './auth';
+import {
+  getCurrentAdmin,
+  loginAdmin,
+  logoutAdmin,
+  requestAdminPasswordReset,
+  resetAdminPassword,
+} from './auth';
 
 const admin = {
   email: 'owner@example.test',
@@ -59,5 +65,38 @@ describe('admin auth API service', () => {
 
     await expect(getCurrentAdmin(unavailableClient)).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
     await expect(logoutAdmin(expiredSessionClient)).resolves.toBeUndefined();
+  });
+
+  it('uses the public password-reset request and confirmation contracts', async () => {
+    const requests: Array<{ path: string; options: unknown }> = [];
+    const client = createAuthClient({
+      post: async <T>(path: string, options?: Omit<ApiRequestOptions, 'method'>) => {
+        requests.push({ path, options });
+        return (path.endsWith('/request')
+          ? { message: 'Check your email.' }
+          : { reset: true }) as T;
+      },
+    });
+
+    await expect(
+      requestAdminPasswordReset(
+        { email: admin.email, turnstileToken: 'turnstile-token' },
+        client,
+      ),
+    ).resolves.toBe('Check your email.');
+    await expect(
+      resetAdminPassword({ token: 'a'.repeat(43), password: 'NewSecurePassword123!' }, client),
+    ).resolves.toBeUndefined();
+
+    expect(requests).toEqual([
+      {
+        path: '/api/auth/password-reset/request',
+        options: { json: { email: admin.email, turnstileToken: 'turnstile-token' } },
+      },
+      {
+        path: '/api/auth/password-reset/confirm',
+        options: { json: { token: 'a'.repeat(43), password: 'NewSecurePassword123!' } },
+      },
+    ]);
   });
 });

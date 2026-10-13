@@ -490,7 +490,7 @@ function AboutPageSkeleton() {
   const copy = publicUiCopy(language).about;
   return (
     <SiteLayout actions={shell.actions} navigation={shell.navigation}>
-      <main aria-busy="true" aria-label={copy.loading} className="bg-white">
+      <main aria-busy="true" className="bg-white">
         <span className="sr-only">{copy.loadingLabel}</span>
 
         <section aria-hidden="true" className="grid min-h-[236px] place-items-center overflow-hidden bg-[radial-gradient(circle_at_15%_0%,rgba(79,181,209,0.34),transparent_36%),linear-gradient(120deg,#00546f,#087b9f)] px-4 py-12 sm:min-h-[260px] sm:px-6 sm:py-14">
@@ -590,7 +590,11 @@ function hasAboutContent(content: AboutPageContent | undefined): content is Abou
 export function AboutPage() {
   const { data, isError, isLoading, refetch } = useAboutPageQuery();
   const { language } = usePublicLanguage();
-  usePublicDocumentTitle(data?.hero.title ?? (language === 'km' ? 'អំពីយើង' : 'About Us'));
+  usePublicDocumentTitle(
+    data?.hero.title ?? (language === 'km' ? 'អំពីយើង' : 'About Us'),
+    data?.hero.subtitle,
+    { imageUrl: data?.hero.imageUrl },
+  );
 
   if (isLoading) {
     return <AboutPageSkeleton />;

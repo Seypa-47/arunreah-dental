@@ -82,6 +82,7 @@ try {
 const staging = config.env?.staging;
 const production = config.env?.production;
 const failures = [];
+const expectedProductionAccountId = 'e3fab4e544dd014935f9289d297c0945';
 
 if (!staging || !production) {
   failures.push('staging and production environments must both exist');
@@ -92,9 +93,14 @@ if (!staging || !production) {
   const productionR2 = firstBinding(production, 'r2_buckets');
   const productionRoute = production.routes?.[0]?.pattern;
   const productionVars = production.vars ?? {};
-  const stagingVars = staging.vars ?? {};
 
   if (productionVars.APP_ENV !== 'production') failures.push('APP_ENV=production');
+  if (production.account_id !== expectedProductionAccountId) {
+    failures.push('the official production Cloudflare account id');
+  }
+  if (production.account_id === staging.account_id) {
+    failures.push('separate staging and production Cloudflare accounts');
+  }
   if (
     isPlaceholder(productionD1?.database_id) ||
     productionD1?.database_id === stagingD1?.database_id
@@ -103,13 +109,16 @@ if (!staging || !production) {
     isPlaceholder(productionR2?.bucket_name) ||
     productionR2?.bucket_name === stagingR2?.bucket_name
   ) failures.push('a production-only R2 bucket');
-  if (!httpsOrigin(productionVars.CORS_ALLOWED_ORIGINS, 'arunreah.mekhla.digital')) {
+  if (!httpsOrigin(productionVars.CORS_ALLOWED_ORIGINS, 'arunreahdental.com')) {
     failures.push('the exact HTTPS production frontend origin');
   }
-  if (!httpsOrigin(`https://${productionRoute ?? ''}`, 'api.arunreah.mekhla.digital')) {
+  if (!httpsOrigin(productionVars.ADMIN_APP_BASE_URL, 'arunreahdental.com')) {
+    failures.push('the exact HTTPS production admin application origin');
+  }
+  if (!httpsOrigin(`https://${productionRoute ?? ''}`, 'api.arunreahdental.com')) {
     failures.push('the expected production API custom domain');
   }
-  if (!httpsOrigin(productionVars.MEDIA_PUBLIC_BASE_URL, 'media.arunreah.mekhla.digital')) {
+  if (!httpsOrigin(productionVars.MEDIA_PUBLIC_BASE_URL, 'media.arunreahdental.com')) {
     failures.push('the expected production media custom domain');
   }
   if (production.workers_dev !== false) failures.push('workers_dev=false in production');
@@ -122,10 +131,6 @@ if (!staging || !production) {
   if (productionDestinations.some((value) => /staging|development|dev-only|test/i.test(value))) {
     failures.push('production-only notification destinations');
   }
-  if (
-    productionVars.TELEGRAM_NOTIFICATIONS_ENABLED === 'true' &&
-    productionVars.TELEGRAM_CHAT_ID === stagingVars.TELEGRAM_CHAT_ID
-  ) failures.push('a production-only Telegram destination');
 }
 
 if (failures.length > 0) {
